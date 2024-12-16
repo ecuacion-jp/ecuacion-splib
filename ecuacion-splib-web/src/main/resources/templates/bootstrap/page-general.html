@@ -1,0 +1,103 @@
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!--/*
+	詳細は以下を参照。
+	https://spring-library-dev-sample.aws.ecuacion.jp/spring-library-dev-sample/public/ptGeneral/page
+ */-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		layout:decorate="~{bootstrap/page-base}"
+		th:with="headTitle=${title}">
+
+<body>
+	<div layout:fragment="base-content" th:remove="tag">
+		
+		<div layout:fragment="top-space"></div>
+
+		<div class="mt-3"></div>
+
+		<th:block th:if="${multipleForms != null && multipleForms}">
+			<!--/* formの使用がゼロということはgeneral pageでは想定していないので、form1は必ず使用する前提であることからusesForm1のパラメータは存在しない。 */-->
+			<th th:replace="~{bootstrap/components :: generalForm(~{::internalForm1FormContent}, ~{::internalForm1TopSpaceContent}, ~{::internalForm1BottomSpaceContent}, 
+					${formMethod1}, ${multipart1}, ${subFunction1}, ${versionFieldName1}, ${versionInitialValue1}, '')}"></th>
+
+			<th:block th:if="${usesForm2 != null && usesForm2}">
+				<th th:replace="~{bootstrap/components :: generalForm(~{::internalForm2FormContent}, ~{::internalForm2TopSpaceContent}, ~{::internalForm2BottomSpaceContent}, 
+						${formMethod2}, ${multipart2}, ${subFunction2}, ${versionFieldName2}, ${versionInitialValue2}, '')}"></th>
+			</th:block>
+			
+			<th:block th:if="${usesForm3 != null && usesForm3}">
+				<th th:replace="~{bootstrap/components :: generalForm(~{::internalForm3FormContent}, ~{::internalForm3TopSpaceContent}, ~{::internalForm3BottomSpaceContent}, 
+						${formMethod3}, ${multipart3}, ${subFunction3}, ${versionFieldName3}, ${versionInitialValue3}, '')}"></th>
+			</th:block>
+ 		</th:block>
+
+		<th:block th:if="${multipleForms == null || !multipleForms}">
+			<th th:replace="~{bootstrap/components :: generalForm(~{::internalFormFormContent}, ~{::internalFormTopSpaceContent}, ~{::internalFormBottomSpaceContent}, 
+					${formMethod}, ${multipart}, ${subFunction}, ${versionFieldName}, ${versionInitialValue}, '')}"></th>
+		</th:block>
+
+		<div layout:fragment="bottom-space"></div>
+
+		<div layout:fragment="scripts"></div>
+
+	</div>
+	
+	<div th:fragment="internalForm1FormContent" th:remove="tag">
+		<div layout:fragment="form-content-1"></div>
+	</div>
+	<div th:fragment="internalForm1TopSpaceContent" th:remove="tag">
+		<div layout:fragment="form-top-space-content-1"></div>
+	</div>
+	<div th:fragment="internalForm1BottomSpaceContent" th:remove="tag">
+		<div layout:fragment="form-bottom-space-content-1"></div>
+	</div>
+	
+	<div th:fragment="internalForm2FormContent" th:remove="tag">
+		<div layout:fragment="form-content-2"></div>
+	</div>
+	<div th:fragment="internalForm2TopSpaceContent" th:remove="tag">
+		<div layout:fragment="form-top-space-content-2"></div>
+	</div>
+	<div th:fragment="internalForm2BottomSpaceContent" th:remove="tag">
+		<div layout:fragment="form-bottom-space-content-2"></div>
+	</div>
+	
+	<div th:fragment="internalForm3FormContent" th:remove="tag">
+		<div layout:fragment="form-content-3"></div>
+	</div>
+	<div th:fragment="internalForm3TopSpaceContent" th:remove="tag">
+		<div layout:fragment="form-top-space-content-3"></div>
+	</div>
+	<div th:fragment="internalForm3BottomSpaceContent" th:remove="tag">
+		<div layout:fragment="form-bottom-space-content-3"></div>
+	</div>
+	
+	<div th:fragment="internalFormFormContent" th:remove="tag">
+		<div layout:fragment="form-content"></div>
+	</div>
+	<div th:fragment="internalFormTopSpaceContent" th:remove="tag">
+		<div layout:fragment="form-top-space-content"></div>
+	</div>
+	<div th:fragment="internalFormBottomSpaceContent" th:remove="tag">
+		<div layout:fragment="form-bottom-space-content"></div>
+	</div>
+
+</body>
+</html>
