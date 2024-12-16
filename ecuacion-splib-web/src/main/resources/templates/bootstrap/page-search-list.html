@@ -1,0 +1,100 @@
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!--/*
+	詳細は以下を参照。
+	https://spring-library-dev-sample.aws.ecuacion.jp/spring-library-dev-sample/public/ptSearchList/page
+ */-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		layout:decorate="~{bootstrap/page-general-2-forms}"
+		th:with="ctrlSubFunction='searchList'
+				, subFunction1='search', formMethod1='get'
+				, subFunction2='list', formMethod2='post'
+				, idFieldName2=${idFieldName}
+				, versionFieldName2=${versionFieldName}
+				, itemDisplayedOnDelete2=${itemDisplayedOnDelete}
+		">
+
+<body>
+	<div layout:fragment="form-content-1" th:remove="tag">
+		<div class="container-fluid mt-6">
+			<th:block th:if="${needsSearchPane}">
+			
+				<div layout:fragment="search-content"></div>
+	
+				<br>
+				<div class="row">
+					<div class="col-4"></div>
+					<div class="col-4 d-flex justify-content-center">
+						<div th:replace="~{bootstrap/components :: searchButton('')}"></div>
+					</div>
+					<div class="col-4 d-flex justify-content-end">
+						<div th:replace="~{bootstrap/components :: searchConditionClearButton('')}"></div>
+					</div>
+				</div>
+				<div th:replace="~{bootstrap/components :: horizontalLine('')}"></div>
+			</th:block>
+			<input type="hidden" name="dataKind" th:value="*{dataKind}">
+			<input type="hidden" name="action" id="action">
+			<div th:replace="~{bootstrap/components :: sortPagingAndRecordsInScreen(${__${function + 'SearchForm'}__}, '')}"></div>
+		</div>
+	</div>
+	
+	<div layout:fragment="form-content-2" th:remove="tag">
+		<div class="container-fluid">
+	<!--/* 
+			<div th:replace="~{bootstrap/components :: version(${rootRecordName}, ${versionFieldName}, '')}"></div>
+ */-->
+ 			<div th:replace="~{bootstrap/components :: hiddenForInlineButtons(${rootRecordName}, ${idFieldName2}, '')}"></div>
+			<input type="hidden" name="dataKind" th:value="*{dataKind}">
+			
+			<div class="table-responsive">
+				<table class="table table-striped text-nowrap table-bordered">
+					<thead class="text-white bg-color-tbl-header" th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+							th:with="form=${__${function + 'SearchForm'}__}"  th:object="${__${function + 'SearchForm'}__}">
+						<tr>
+
+							<div layout:fragment="list-table-header-content"></div>
+
+						</tr>
+					</thead>
+					<tbody>
+						<th:block th:each="rec : ${__${function + 'ListForm'}__.recList}" th:object="${rec}"
+									th:with="form=${__${function + 'ListForm'}__}">
+
+								<div layout:fragment="list-table-body-content"></div>
+
+						</th:block>
+					</tbody>
+				</table>
+			</div>
+			<br>
+
+			<div layout:fragment="list-buttons-content"></div>
+
+		</div>
+	</div>
+	
+	<div layout:fragment="scripts">
+		<div th:replace="~{bootstrap/components :: scriptFortdUpdateButton(${rootRecordName}, ${idFieldName2}, ${versionFieldName2}, '')}"></div>
+		<div th:replace="~{bootstrap/components :: scriptFortdDeleteButton(${rootRecordName}, ${idFieldName2}, ${versionFieldName2}, ${itemDisplayedOnDelete2}, '')}"></div>
+		<div th:replace="~{bootstrap/components :: scriptForSortPagingAndRecordsInScreen('')}"></div>
+	</div>
+</body>
+</html>
