@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE xml>
+<included>
+
+	<!-- 
+		spring及び他の外部framework, libraryのコンソール出力。local環境でしか使わないのでこちらのファイルに記載。
+		spring frameworkが出力するlogのloglevelは、appenderのfitlter設定では制御できるが、loggerのlevel設定では制御できない。
+		が、app側で設定しているloggingをtraceにしたい場合にspring frameworkで出力するlogのloglevelもtraceになると、ログが出過ぎてしまうので困る。
+		以上から、spring framework用のログ出力appenderを別途保持する必要がある。
+	 -->
+	<appender name="all-console" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.out</target>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+		</encoder>
+
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>${loglevel-spring}</level>
+		</filter>
+	</appender>
+	
+	<!-- 
+		app用のコンソール出力。local環境でしか使わないのでこちらのファイルに記載。
+		こちらは使用せずspring-console側に一本化できるほうが運用が楽なのでそれを目指すが、個別appで埋めたlogはtraceで見たいが
+		spring framkework内のtrace logが大量に出られても困る、という場面の時はこちらを使用すること。
+	 -->
+	<appender name="app-console" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.out</target>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+	
+</included>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE xml>
+<included>
+
+	<logger name="error-logger" level="INFO">
+		<appender-ref ref="error-appender" />
+	</logger>
+
+	<logger name="jp.ecuacion" level="${loglevel-jp.ecuacion}">
+		<appender-ref ref="app-detail-appender" />
+	</logger>
+
+	<!-- 画面のアクセス先URLを表示するログ。これはapplogに出しておきたい。 -->
+	<logger name="org.springframework.security" level="${loglevel-security}">
+		<appender-ref ref="app-detail-appender" />
+	</logger>
+
+	<!-- SQL logが、application.propertiesでloglevelを変更できそうに見えるが変更されないので抜き出しのためここで定義。 -->
+	<logger name="org.hibernate.SQL" level="${loglevel-sql}">
+		<appender-ref ref="app-detail-appender" />
+	</logger>
+	<logger name="org.hibernate.type" level="${loglevel-sql}">
+		<appender-ref ref="app-detail-appender" />
+	</logger>
+	<logger name="org.hibernate.orm.jdbc.bind" level="${loglevel-sql}">
+		<appender-ref ref="app-detail-appender" />
+	</logger>
+	<logger name="org.hibernate.orm.jdbc.extract" level="${loglevel-sql}">
+		<appender-ref ref="app-detail-appender" />
+	</logger>
+
+	<!-- root logger -->
+	<root level="${loglevel-root}">
+		<appender-ref ref="all-detail-appender" />
+	</root>
+	
+</included>

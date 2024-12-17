@@ -1,0 +1,177 @@
+/* 共通 */
+
+.text-deleted {
+	color: #aaa;
+}
+
+
+/* footer関連 */
+
+.content-wrapper{
+	min-height: 100vh;
+	position: relative;/*←相対位置*/
+	padding-bottom: 100px;/*←footerの高さ*/
+	box-sizing: border-box;/*←全て含めてmin-height:100vhに*/
+}
+
+footer{
+	width: 100%;
+	text-align: center;
+	padding: 10px 0;
+
+ 	position: absolute;/*←絶対位置*/
+	bottom: 0; /*下に固定*/
+}
+
+/* 画面上部出力の全エラーメッセージ表示欄 */
+
+.all-error-messages-list-wrapper {
+	margin-left:  0px;
+	margin-right:  0px;
+	margin-top:  0px; 		/*20 */
+	margin-bottom: 0px;		/*30 */
+	padding: 0;
+}
+
+.all-error-messages-list-ul {
+	list-style:  none;
+	margin-top:  0px;
+	margin-bottom: 0px;
+	padding: 0px;
+}
+
+.all-error-messages-list-li {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding: 0px;
+}
+
+.all-error-messages-list-li:before {
+	content:  "- ";
+	margin-left: 30px;
+	margin-right: 5px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+/* multi-level dropdown */
+
+.dropdown-menu li {
+	position: relative;
+}
+
+.dropdown-menu .dropdown-submenu {
+	display: none;
+	position: absolute;
+	left: 100%;
+	top: -7px;
+}
+
+.dropdown-menu .dropdown-submenu-left {
+	right: 100%;
+	left: auto;
+}
+
+.dropdown-menu > li:hover > .dropdown-submenu {
+	display: block;
+}
+
+
+
+/************************************/
+/***** speech balloons for comments *****/
+/************************************/
+/* special thanks to: https://stand-4u.com/css/fukidashi.html */
+
+.balloon_l {
+  display:flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  margin-right: 50px;
+}
+
+.balloon_r {
+  display:flex;
+  justify-content:flex-end;
+  align-items: flex-start;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  margin-right: 20px;
+  margin-left: 50px;
+}
+
+.faceicon img {
+  width: 80px;
+  height: auto;
+}
+
+.balloon_l .faceicon {
+  margin-right:25px;
+}
+
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.balloon_l .name {
+	justify-content: left;
+}
+
+.balloon_r .name {
+	justify-content: right;
+}
+
+.says,.says-selectable {
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+  padding: 17px 13px 15px 18px;
+  border-radius: 12px;
+  box-sizing:border-box;
+  margin:0 !important;
+  line-height:1.5;
+}
+
+.balloon_l .says,.balloon_l .says-selectable {
+  background: #ddd;
+}
+
+.balloon_l .says-selectable:hover {
+  background: #ccc;
+}
+
+.balloon_r .says,.balloon_r .says-selectable {
+  background: #99dddd;
+}
+
+.balloon_r .says-selectable:hover {
+  background: #77cccc;
+}
+
+.says p,.says-selectable p {
+  margin:8px 0 0 !important; 
+}
+
+.says p:first-child,.says-selectable p:first-child {
+  margin-top:0 !important;
+}
+
+.says:after,.says-selectable:after {
+  content: "";
+  position: absolute;
+  border: 10px solid transparent;
+}
+
+.balloon_l .says:after,.balloon_l .says-selectable:after {
+  left: -26px;
+  border-right: 22px solid #ddd;
+}
+
+.balloon_r .says:after,.balloon_r .says-selectable:after {
+  right: -26px;
+  border-left: 22px solid #99dddd;
+}
