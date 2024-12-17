@@ -44,6 +44,7 @@
 		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
 		<ecuacion-splib.version>3.0.0</ecuacion-splib.version>
 		<ecuacion-lib.version>14.0.1</ecuacion-lib.version>
+		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp/private</remote-location.javadoc>
 	</properties>
 	<distributionManagement>
 		<!-- ビルドサーバでのみ使用。作成されたjarのdeploy先 -->
