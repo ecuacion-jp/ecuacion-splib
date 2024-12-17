@@ -137,3 +137,6 @@ products/
 
 # checkstyle
 .checkstyle
+
+# mac
+.DS_Store
