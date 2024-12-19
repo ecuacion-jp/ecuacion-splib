@@ -46,6 +46,7 @@ module jp.ecuacion.splib.web {
   requires jp.ecuacion.splib.jpa;
 
   requires transitive jp.ecuacion.lib.jpa;
+  requires transitive jp.ecuacion.lib.core;
   
   requires org.apache.commons.lang3;
   requires thymeleaf;

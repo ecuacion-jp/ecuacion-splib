@@ -35,6 +35,12 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>wagon-maven-plugin</artifactId>
 			</plugin>
+				
+			<!-- mycila license-maven-plugin -->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+			</plugin>
 		
 			<!-- checkstyle -->
 			<plugin>

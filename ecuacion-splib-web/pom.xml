@@ -35,6 +35,12 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>wagon-maven-plugin</artifactId>
 			</plugin>
+				
+			<!-- mycila license-maven-plugin -->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+			</plugin>
 		
 			<!-- checkstyle -->
 			<plugin>
@@ -91,7 +97,13 @@
 		<!-- 現時点ではjpaを標準で入れているが、理想はjpaはオプション扱い -->
 		<dependency>
 			<groupId>jp.ecuacion.splib</groupId>
+			<artifactId>ecuacion-splib-core</artifactId>
+		</dependency>
+		<!-- jpaはoptional扱いでprovidedとしておく -->
+		<dependency>
+			<groupId>jp.ecuacion.splib</groupId>
 			<artifactId>ecuacion-splib-jpa</artifactId>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

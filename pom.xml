@@ -43,7 +43,7 @@
 		<repository.ecuacion-repo-sftp-private-root>sftp://maven-repo.ecuacion.jp/home/ytbiz/www/maven-repo.ecuacion.jp/private</repository.ecuacion-repo-sftp-private-root>
 		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
 		<ecuacion-splib.version>3.0.0</ecuacion-splib.version>
-		<ecuacion-lib.version>14.0.1</ecuacion-lib.version>
+		<ecuacion-lib.version>14.0.2</ecuacion-lib.version>
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp/private</remote-location.javadoc>
 	</properties>
 	<distributionManagement>
@@ -125,6 +125,41 @@
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+
+				<!-- mycila license-maven-plugin -->
+				<plugin>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>4.6</version>
+					<executions>
+					<execution>
+						<id>license</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+					</executions>
+					<configuration>
+						<properties>
+							<owner>ecuacion.jp</owner>
+							<email>info@ecuacion.jp</email>
+							<year>2012</year>
+						</properties>
+						<licenseSets>
+							<licenseSet>
+								<header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+								<excludes>
+									<exclude>src/test/resources/**</exclude>
+									<exclude>src/main/resources/**</exclude>
+									<exclude>**/*.css</exclude>
+									<exclude>**/*.txt</exclude>
+									<exclude>**/*.md</exclude>
+								</excludes>
+							</licenseSet>
+						</licenseSets>
+					</configuration>
 				</plugin>
 
 				<!-- checkstyle -->
@@ -253,40 +288,11 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+				
 			<!-- mycila license-maven-plugin -->
 			<plugin>
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>4.6</version>
-				<executions>
-					<execution>
-						<id>license</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<properties>
-						<owner>ecuacion.jp</owner>
-						<email>info@ecuacion.jp</email>
-						<year>2012</year>
-					</properties>
-					<licenseSets>
-						<licenseSet>
-							<header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
-							<excludes>
-								<exclude>src/test/resources/**</exclude>
-								<exclude>src/main/resources/**</exclude>
-								<exclude>**/*.css</exclude>
-								<exclude>**/*.txt</exclude>
-								<exclude>**/*.md</exclude>
-							</excludes>
-						</licenseSet>
-					</licenseSets>
-				</configuration>
 			</plugin>
 
 		</plugins>
