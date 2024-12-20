@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.controller;
+package jp.ecuacion.splib.web.jpa.controller;
 
 import jakarta.annotation.Nonnull;
+import jp.ecuacion.splib.web.controller.SplibEditController;
+import jp.ecuacion.splib.web.controller.SplibGeneralController;
+import jp.ecuacion.splib.web.controller.SplibEditController.PageTemplatePatternEnum;
+import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.form.SplibEditForm;
-import jp.ecuacion.splib.web.service.SplibEditJpaService;
+import jp.ecuacion.splib.web.jpa.service.SplibEditJpaService;
 
 //@formatter:off
 public abstract class SplibEditJpaController 

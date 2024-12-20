@@ -18,7 +18,7 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ecuacion-splib-web</artifactId>
+	<artifactId>ecuacion-splib-web-jpa</artifactId>
 	<packaging>jar</packaging>
 	<parent>
 		<groupId>jp.ecuacion.splib</groupId>
@@ -79,11 +79,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
-		<!-- spring-data-coreは使用したいが、jpaなどの個別実装は含めたくない。starterにはそのような選択肢がないようなのでmoduleを個別指定 -->
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-commons</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -99,10 +94,13 @@
 		</dependency>
 		
 		<!-- ecuacion-splib -->
-		<!-- 現時点ではjpaを標準で入れているが、理想はjpaはオプション扱い -->
 		<dependency>
 			<groupId>jp.ecuacion.splib</groupId>
-			<artifactId>ecuacion-splib-core</artifactId>
+			<artifactId>ecuacion-splib-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jp.ecuacion.splib</groupId>
+			<artifactId>ecuacion-splib-jpa</artifactId>
 		</dependency>
 	</dependencies>
 </project>

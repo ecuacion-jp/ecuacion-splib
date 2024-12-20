@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.service;
+package jp.ecuacion.splib.web.jpa.service;
 
 import java.util.Optional;
 import jp.ecuacion.lib.core.exception.checked.AppException;

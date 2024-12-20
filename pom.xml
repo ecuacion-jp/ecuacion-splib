@@ -335,6 +335,11 @@
 				<artifactId>ecuacion-splib-web</artifactId>
 				<version>${ecuacion-splib.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>jp.ecuacion.splib</groupId>
+				<artifactId>ecuacion-splib-web-jpa</artifactId>
+				<version>${ecuacion-splib.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
@@ -401,6 +406,7 @@
 		<module>ecuacion-splib-jpa</module>
 		<module>ecuacion-splib-batch</module>
 		<module>ecuacion-splib-web</module>
+		<module>ecuacion-splib-web-jpa</module>
 		<module>ecuacion-splib-rest</module>
 	</modules>
 </project>

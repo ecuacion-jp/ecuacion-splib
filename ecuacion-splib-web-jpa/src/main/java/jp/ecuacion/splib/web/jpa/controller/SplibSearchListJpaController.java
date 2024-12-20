@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.controller;
+package jp.ecuacion.splib.web.jpa.controller;
 
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jp.ecuacion.splib.web.controller.SplibGeneralController;
+import jp.ecuacion.splib.web.controller.SplibSearchListController;
+import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
-import jp.ecuacion.splib.web.service.SplibSearchListJpaService;
+import jp.ecuacion.splib.web.jpa.service.SplibSearchListJpaService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
