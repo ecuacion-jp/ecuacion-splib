@@ -21,7 +21,7 @@
 	<groupId>jp.ecuacion.splib</groupId>
 	<artifactId>ecuacion-splib-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.3</version>
+	<version>3.0.4</version>
 	<organization>
 		<name>ecuacion.jp</name>
 	</organization>
@@ -42,8 +42,8 @@
 		<repository.ecuacion-repo-http-root>http://maven-repo.ecuacion.jp/public</repository.ecuacion-repo-http-root>
 		<repository.ecuacion-repo-sftp-private-root>sftp://maven-repo.ecuacion.jp/home/ytbiz/www/maven-repo.ecuacion.jp/private</repository.ecuacion-repo-sftp-private-root>
 		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
-		<ecuacion-splib.version>3.0.3</ecuacion-splib.version>
-		<ecuacion-lib.version>14.0.3</ecuacion-lib.version>
+		<ecuacion-splib.version>3.0.4</ecuacion-splib.version>
+		<ecuacion-lib.version>14.0.4</ecuacion-lib.version>
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp/private</remote-location.javadoc>
 	</properties>
 	<distributionManagement>
@@ -102,6 +102,53 @@
 							<configuration>
 								<executable>../../ecuacion-internal-lib/ecuacion-internal-lib-tools/scripts/code-generator/create-version-properties.sh</executable>
 							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<!-- maven-source-plugin (outputs a jar of source) -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.3.1</version>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<!-- maven-javadoc-plugin (outputs a jar of javadocs) -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.11.1</version>
+					<configuration>
+						<show>protected</show>
+						<encoding>UTF-8</encoding>
+						<charset>UTF-8</charset>
+						<docencoding>UTF-8</docencoding>
+						<failOnError>true</failOnError>
+						<failOnWarnings>false</failOnWarnings>
+						<doclint>all,-missing</doclint>
+						<excludePackageNames>*.internal</excludePackageNames>
+						<additionalJOptions>
+							<additionalJOption>-Xmaxerrs</additionalJOption>
+							<additionalJOption>1000</additionalJOption>
+							<additionalJOption>-Xmaxwarns</additionalJOption>
+							<additionalJOption>1000</additionalJOption>
+						</additionalJOptions>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<phase>install</phase>
+							<goals>
+								<goal>jar</goal>
+							</goals>
 						</execution>
 					</executions>
 				</plugin>
@@ -224,20 +271,6 @@
 		
 		<plugins>
 
-			<!-- maven-source-plugin（build時にsourceのjarを追加） -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- maven-enforcer-plugin (maven version指定) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -256,43 +289,6 @@
 						</requireMavenVersion>
 					</rules>
 				</configuration>
-			</plugin>
-			
-			<!-- maven-javadoc-plugin -->			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<show>protected</show>
-					<encoding>UTF-8</encoding>
-					<charset>UTF-8</charset>
-					<docencoding>UTF-8</docencoding>
-					<failOnError>true</failOnError>
-					<failOnWarnings>false</failOnWarnings>
-					<doclint>all,-missing</doclint>
-					<excludePackageNames>*.internal</excludePackageNames>
-					<additionalJOptions>
-						<additionalJOption>-Xmaxerrs</additionalJOption>
-						<additionalJOption>1000</additionalJOption>
-						<additionalJOption>-Xmaxwarns</additionalJOption>
-						<additionalJOption>1000</additionalJOption>
-					</additionalJOptions>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<phase>install</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-				
-			<!-- mycila license-maven-plugin -->
-			<plugin>
-				<groupId>com.mycila</groupId>
-				<artifactId>license-maven-plugin</artifactId>
 			</plugin>
 
 		</plugins>
