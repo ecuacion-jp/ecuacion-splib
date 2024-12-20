@@ -31,21 +31,16 @@ module jp.ecuacion.splib.web {
   requires transitive spring.boot.autoconfigure;
   requires transitive spring.context;
   requires spring.core;
-  requires transitive spring.data.jpa;
   requires transitive spring.data.commons;
-  requires transitive spring.orm;
   requires transitive spring.security.core;
   requires spring.security.crypto;
   requires transitive spring.security.web;
   requires transitive spring.security.config;
-  requires transitive spring.tx;
   requires transitive spring.web;
   requires transitive spring.webmvc;
 
   requires transitive jp.ecuacion.splib.core;
-  requires jp.ecuacion.splib.jpa;
 
-  requires transitive jp.ecuacion.lib.jpa;
   requires transitive jp.ecuacion.lib.core;
   
   requires org.apache.commons.lang3;

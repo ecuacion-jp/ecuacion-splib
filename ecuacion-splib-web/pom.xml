@@ -23,7 +23,7 @@
 	<parent>
 		<groupId>jp.ecuacion.splib</groupId>
 		<artifactId>ecuacion-splib-parent</artifactId>
-		<version>3.0.2</version>
+		<version>3.0.3</version>
 		<relativePath>..</relativePath>
 	</parent>
 	
@@ -79,6 +79,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<!-- spring-data-coreは使用したいが、jpaなどの個別実装は含めたくない。starterにはそのような選択肢がないようなのでmoduleを個別指定 -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -98,12 +103,6 @@
 		<dependency>
 			<groupId>jp.ecuacion.splib</groupId>
 			<artifactId>ecuacion-splib-core</artifactId>
-		</dependency>
-		<!-- jpaはoptional扱いでprovidedとしておく -->
-		<dependency>
-			<groupId>jp.ecuacion.splib</groupId>
-			<artifactId>ecuacion-splib-jpa</artifactId>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

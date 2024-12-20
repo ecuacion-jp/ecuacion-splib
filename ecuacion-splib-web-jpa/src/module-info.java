@@ -13,9 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.exceptionhandler;
-
-/** SplibExceptionHandlerNoJpaに、jpa独自の例外処理を追加したクラス。JPAを使用している場合はこちらを継承。 */
-public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
-
+module jp.ecuacion.splib.web.jpa {
 }

@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.exceptionhandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
+import java.nio.channels.OverlappingFileLockException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,9 +55,7 @@ import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
@@ -211,31 +210,21 @@ public abstract class SplibExceptionHandler {
         redirectBean == null ? getController().getRedirectUrlOnAppExceptionBean() : redirectBean;
     return common(getController(), loginUser, redirectBean);
   }
-
+  
   /**
-   * 楽観的排他制御の処理。 画面表示〜ボタン押下の間にレコード更新された場合は、手動でチェックなので直接BizLogicAppExceptionを投げても良いのだが、
-   * 複数sessionで同一レコードを同時更新した場合（service内の処理内でのselectからupdateの間に別sessionがselect〜updateを完了）は
-   * JPAが自動でObjectOptimisticLockingFailureExceptionを投げてくるので、それも同様に処理できるよう楽観的排他制御エラーは
-   * ObjectOptimisticLockingFailureExceptionで統一しておく。
-   * 尚、jpa以外でも、jdbcやfileでのlockでも同様の事象があるので全て統一しObjectOptimisticLockingFailureExceptionを使用するものとする。
+   * 
+   * @param exception
+   * @param loginUser
+   * @return
+   * @throws Exception
    */
-  @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
-  public ModelAndView handleObjectOptimisticLockingFailureException(
-      ObjectOptimisticLockingFailureException exception,
+  @ExceptionHandler({OverlappingFileLockException.class})
+  public ModelAndView handleOptimisticLockingFailureException(
+      OverlappingFileLockException exception,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     // 通常のチェックエラー扱いとする
     return handleAppException(
         new BizLogicAppException("jp.ecuacion.splib.web.common.message.optimisticLocking"),
-        loginUser);
-  }
-
-  @ExceptionHandler({PessimisticLockingFailureException.class})
-  public ModelAndView handlePessimisticLockingFailureException(
-      PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser)
-      throws Exception {
-    // 通常のチェックエラー扱いとする
-    return handleAppException(
-        new BizLogicAppException("jp.ecuacion.splib.web.common.message.pessimisticLocking"),
         loginUser);
   }
 
