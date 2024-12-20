@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.util;
+package jp.ecuacion.splib.web.jpa.util;
 
 import jakarta.persistence.criteria.Expression;
 import java.time.LocalDate;

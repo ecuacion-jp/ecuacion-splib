@@ -36,7 +36,6 @@ import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public abstract class SplibGeneralService {
@@ -105,13 +104,13 @@ public abstract class SplibGeneralService {
       // ファイルロックを試行。例外発生ではなくlockedObjectがnullの場合は、ロック取得に失敗したことになる場合もあるらしい
       lockedObject = channel.tryLock();
       if (lockedObject == null) {
-        throw new ObjectOptimisticLockingFailureException((String) null, null);
+        throw new OverlappingFileLockException();
       }
 
       // 画面表示時のtimestampとの差異比較
       String fileTimestamp = getLockFileVersion(lockFile);
       if (!version.equals(fileTimestamp)) {
-        throw new ObjectOptimisticLockingFailureException((String) null, null);
+        throw new OverlappingFileLockException();
       }
 
       // ここまででロックを獲得できたので、ロックを獲得できた場合に実行したい内容を記載。
@@ -128,7 +127,7 @@ public abstract class SplibGeneralService {
       lockedObject.release();
 
     } catch (IOException | OverlappingFileLockException ex) {
-      throw new ObjectOptimisticLockingFailureException((String) null, null);
+      throw new OverlappingFileLockException();
     }
   }
 

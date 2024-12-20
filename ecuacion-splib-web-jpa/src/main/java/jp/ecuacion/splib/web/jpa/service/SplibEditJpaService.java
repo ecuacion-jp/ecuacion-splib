@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.service;
+package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
 import jp.ecuacion.lib.jpa.entity.AbstractEntity;
 import jp.ecuacion.splib.web.form.SplibEditForm;
+import jp.ecuacion.splib.web.service.SplibEditService;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(rollbackFor = Exception.class)
