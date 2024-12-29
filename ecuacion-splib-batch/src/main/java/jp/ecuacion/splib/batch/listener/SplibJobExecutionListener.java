@@ -22,6 +22,9 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Is a listener for jobs.
+ */
 @Component
 public class SplibJobExecutionListener implements JobExecutionListener {
 
