@@ -20,6 +20,9 @@ import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Is a listener for steps.
+ */
 @Component
 public class SplibStepExecutionListener implements StepExecutionListener {
 

@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.6</version>
+		<version>3.4.1</version>
 	</parent>
 	<properties>
 		<java.version>21</java.version>
@@ -43,7 +43,7 @@
 		<repository.ecuacion-repo-sftp-private-root>sftp://maven-repo.ecuacion.jp/home/ytbiz/www/maven-repo.ecuacion.jp/private</repository.ecuacion-repo-sftp-private-root>
 		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
 		<ecuacion-splib.version>3.0.4</ecuacion-splib.version>
-		<ecuacion-lib.version>14.0.5</ecuacion-lib.version>
+		<ecuacion-lib.version>14.0.7</ecuacion-lib.version>
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp/private</remote-location.javadoc>
 	</properties>
 	<distributionManagement>
@@ -225,7 +225,7 @@
 						<failOnViolation>false</failOnViolation>
 						<failsOnError>false</failsOnError>
 						<violationSeverity>info</violationSeverity>
-						<configLocation>../../ecuacion-lib/checkstyle/google_checks_ecuacion_changed.xml</configLocation>
+						<configLocation>https://ecuacion-jp.github.io/config/common/checkstyle/google_checks_ecuacion_changed.xml</configLocation>
 					</configuration>
 					<executions>
 						<execution>
@@ -262,7 +262,7 @@
 						</execution>
 					</executions>
 					<configuration>
-						<excludeFilterFile>../../ecuacion-lib/spotbugs/exclude.xml</excludeFilterFile>
+						<excludeFilterFile>https://ecuacion-jp.github.io/config/common/spotbugs/exclude.xml</excludeFilterFile>
 						<failOnError>true</failOnError>
 					</configuration>
 				</plugin>
