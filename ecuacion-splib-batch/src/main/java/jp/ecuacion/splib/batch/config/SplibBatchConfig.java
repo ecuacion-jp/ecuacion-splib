@@ -19,7 +19,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 
+ * Provides {@code @ComponentScan}s.
  */
 @Configuration
 @ComponentScan("jp.ecuacion.splib.core.config"

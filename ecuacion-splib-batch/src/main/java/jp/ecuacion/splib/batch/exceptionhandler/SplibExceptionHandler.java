@@ -18,11 +18,13 @@ package jp.ecuacion.splib.batch.exceptionhandler;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
+import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.unchecked.RuntimeAppException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import org.springframework.batch.repeat.RepeatContext;
@@ -31,8 +33,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * webでは汎用性を鑑みExceptionHandlerの使用有無を選択可能としていた（splib内のclassには@Componentはつけていない）が、
- * batchではそこまでの汎用性は不要と思われるので必ず使用する仕様とする。
+ * Provides {@code ExceptionHandler}.
+ * 
+ * <p>In batch apps, this class is always used 
+ *     while in web apps the use of {@code SplibExceptionHandler} is arbitrary.<br>
+ *     It seems that in batch apps that versatility is not needed.</p>
  */
 @Component
 public class SplibExceptionHandler implements ExceptionHandler {
@@ -42,7 +47,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
 
   private LogUtil logUtil = new LogUtil(this);
   private ExceptionUtil exUtil = new ExceptionUtil();
-  
+
   private DetailLogger detailLog = new DetailLogger(this);
 
   private static final String NOT_FOUND_MSG_TMPL =
@@ -50,8 +55,10 @@ public class SplibExceptionHandler implements ExceptionHandler {
           + "or the advice to register current {0} is not implemented.)";
 
   @Override
-  public void handleException(RepeatContext context, Throwable throwable) throws Throwable {
+  public void handleException(RepeatContext context, @RequireNonnull Throwable throwable)
+      throws Throwable {
 
+    throwable = ObjectsUtil.paramRequireNonNull(throwable);
     StringBuilder sb = new StringBuilder();
     sb.append(formatMsg("job", SplibBatchAdvice.getCurrentJob(), true));
     sb.append(formatMsg("step", SplibBatchAdvice.getCurrentStep(), false));

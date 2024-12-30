@@ -21,14 +21,14 @@
 	<groupId>jp.ecuacion.splib</groupId>
 	<artifactId>ecuacion-splib-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.4</version>
+	<version>3.0.5</version>
 	<organization>
 		<name>ecuacion.jp</name>
 	</organization>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.6</version>
+		<version>3.4.1</version>
 	</parent>
 	<properties>
 		<java.version>21</java.version>
@@ -42,9 +42,11 @@
 		<repository.ecuacion-repo-http-root>http://maven-repo.ecuacion.jp/public</repository.ecuacion-repo-http-root>
 		<repository.ecuacion-repo-sftp-private-root>sftp://maven-repo.ecuacion.jp/home/ytbiz/www/maven-repo.ecuacion.jp/private</repository.ecuacion-repo-sftp-private-root>
 		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
-		<ecuacion-splib.version>3.0.4</ecuacion-splib.version>
-		<ecuacion-lib.version>14.0.4</ecuacion-lib.version>
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp/private</remote-location.javadoc>
+		<checkstyle.config.site>https://ecuacion-jp.github.io/config/common/checkstyle</checkstyle.config.site>
+		<ecuacion-splib.version>3.0.5</ecuacion-splib.version>
+		<ecuacion-lib.version>14.0.8</ecuacion-lib.version>
+		<ecuacion-util.version>4.0.1</ecuacion-util.version>
 	</properties>
 	<distributionManagement>
 		<!-- ビルドサーバでのみ使用。作成されたjarのdeploy先 -->
@@ -225,15 +227,13 @@
 						<failOnViolation>false</failOnViolation>
 						<failsOnError>false</failsOnError>
 						<violationSeverity>info</violationSeverity>
-						<configLocation>../../ecuacion-lib/checkstyle/google_checks_ecuacion_changed.xml</configLocation>
+						<configLocation>${checkstyle.config.site}/google_checks.xml</configLocation>
+						<propertiesLocation>${checkstyle.config.site}/checkstyle-for-libs-and-utils.properties</propertiesLocation>
 					</configuration>
 					<executions>
 						<execution>
 							<id>checkstyle</id>
 							<phase>validate</phase>
-							<configuration>
-								<propertyExpansion>config_loc=${basedir}</propertyExpansion>
-							</configuration>
 							<goals>
 								<goal>check</goal>
 							</goals>
@@ -262,7 +262,7 @@
 						</execution>
 					</executions>
 					<configuration>
-						<excludeFilterFile>../../ecuacion-lib/spotbugs/exclude.xml</excludeFilterFile>
+						<excludeFilterFile>https://ecuacion-jp.github.io/config/common/spotbugs/exclude.xml</excludeFilterFile>
 						<failOnError>false</failOnError>
 					</configuration>
 				</plugin>
@@ -305,6 +305,13 @@
 				<version>${ecuacion-lib.version}</version>
 			</dependency>
 
+			<!-- ecuacion-util -->
+			<dependency>
+				<groupId>jp.ecuacion.util</groupId>
+				<artifactId>ecuacion-util-poi</artifactId>
+				<version>${ecuacion-util.version}</version>
+			</dependency>
+			
 			<!-- ecuacion-splib -->
 			<dependency>
 				<groupId>jp.ecuacion.splib</groupId>

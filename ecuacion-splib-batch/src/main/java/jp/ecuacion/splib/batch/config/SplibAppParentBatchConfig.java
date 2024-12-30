@@ -27,6 +27,9 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 
+/**
+ * Provides {@code ecuacion-splib} standard {@code JobBuilder} and {@code stepBuilder}.
+ */
 public abstract class SplibAppParentBatchConfig {
 
   @Autowired
@@ -36,12 +39,27 @@ public abstract class SplibAppParentBatchConfig {
   @Autowired
   private SplibExceptionHandler exceptionHandler;
 
+  /**
+   * Provides {@code ecuacion-spilb} standard {@code JobBuilder}.
+   * 
+   * @param jobName jobName
+   * @param jobRepository jobRepository
+   * @return JobBuilder
+   */
   protected JobBuilder preparedJobBuilder(String jobName, JobRepository jobRepository) {
     return new JobBuilder(jobName, jobRepository).incrementer(new RunIdIncrementer())
         .listener(jobExecutionListener);
   }
 
-  /** chunkは実際に実装してみてからどう組み入れるかを決定予定。 */
+  /**
+   * Provides {@code ecuacion-spilb} standard {@code StepBuilder}.
+   * 
+   * @param stepName stepName
+   * @param jobRepository jobRepository
+   * @param transactionManager transactionManager
+   * @param tasklets tasklets
+   * @return TaskletStepBuilder
+   */
   protected TaskletStepBuilder preparedStepBuilder(String stepName, JobRepository jobRepository,
       PlatformTransactionManager transactionManager, Tasklet... tasklets) {
     StepBuilder builder = new StepBuilder(stepName, jobRepository).listener(stepExecutionListener);

@@ -22,7 +22,9 @@ import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.apache.commons.lang3.StringUtils;
 
 /**
+ * Provides a store which holds info about single something.
  * 
+ * <p>Records are included in form.</p>
  */
 public abstract class SplibRecord {
 
@@ -31,7 +33,7 @@ public abstract class SplibRecord {
   static final Map<String, Integer> stringLengthMap = new HashMap<>();
 
   /**
-   * 
+   * Constructs a new instance.
    */
   public SplibRecord() {
     // defaultを使用
@@ -39,8 +41,9 @@ public abstract class SplibRecord {
   }
 
   /**
+   * Constructs a new instance.with {@code DatetimeFormatParameters}.
    * 
-   * @param params
+   * @param params {@code DatetimeFormatParameters}
    */
   public SplibRecord(DatetimeFormatParameters params) {
     this.dateTimeFormatParams = params;
