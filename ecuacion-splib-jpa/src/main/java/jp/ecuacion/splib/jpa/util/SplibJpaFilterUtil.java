@@ -21,6 +21,7 @@ import org.hibernate.Filter;
 import org.hibernate.Session;
 
 /**
+ * Provides utility methods which helps to use filters easily.
  * 
  */
 public abstract class SplibJpaFilterUtil {
@@ -36,13 +37,14 @@ public abstract class SplibJpaFilterUtil {
   private String customGroupColumnName;
 
   /**
+   * Constructs a new instance.
    * 
-   * @param usesSoftDeleteFeature
-   * @param usesGroupFeature
-   * @param groupColumnName
-   * @param hasCustomGroupColumn
-   * @param customGroupName
-   * @param customGroupColumnName
+   * @param usesSoftDeleteFeature usesSoftDeleteFeature
+   * @param usesGroupFeature usesGroupFeature
+   * @param groupColumnName groupColumnName
+   * @param hasCustomGroupColumn hasCustomGroupColumn
+   * @param customGroupName customGroupName
+   * @param customGroupColumnName customGroupColumnName
    */
   public SplibJpaFilterUtil(boolean usesSoftDeleteFeature, boolean usesGroupFeature,
       String groupColumnName, boolean hasCustomGroupColumn, String customGroupName,
@@ -56,8 +58,9 @@ public abstract class SplibJpaFilterUtil {
   }
 
   /**
+   * Enables group filter.
    * 
-   * @param groupId
+   * @param groupId groupId
    */
   public void enableGroupFilter(Object groupId) {
     if (usesGroupFeature) {
@@ -73,7 +76,7 @@ public abstract class SplibJpaFilterUtil {
   }
 
   /**
-   * 
+   * Disables group filter.
    */
   public void disableGroupFilter() {
     if (usesGroupFeature) {
@@ -87,7 +90,7 @@ public abstract class SplibJpaFilterUtil {
   }
 
   /**
-   * 
+   * Enables soft delete filter.
    */
   public void enableSoftDeleteFilter() {
     if (usesSoftDeleteFeature) {
@@ -97,12 +100,34 @@ public abstract class SplibJpaFilterUtil {
   }
 
   /**
-   * 
+   * Disables soft delete filter.
    */
   public void disableSoftDeleteFilter() {
     if (usesSoftDeleteFeature) {
       Session session = em.unwrap(Session.class);
       session.disableFilter("softDeleteFilter");
     }
+  }
+
+  /**
+   * Enables all filters.
+   * 
+   * @param groupId groupId
+   */
+  public void enableAllFilters(Object groupId) {
+    enableSoftDeleteFilter();
+
+    if (groupId != null) {
+      enableGroupFilter(groupId);
+    }
+  }
+
+  /**
+   * Disables all filters.
+   */
+  public void disableAllFilters() {
+    disableSoftDeleteFilter();
+
+    disableGroupFilter();
   }
 }

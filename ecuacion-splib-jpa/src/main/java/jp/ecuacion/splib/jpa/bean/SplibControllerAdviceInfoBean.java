@@ -13,19 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.jpa.config;
-
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+package jp.ecuacion.splib.jpa.bean;
 
 /**
- * Provides configs for JPA.
+ * Stores values used for controllerAdvices.
  */
-@Configuration
-@ComponentScan("jp.ecuacion.splib.core.config"
-    + ",jp.ecuacion.splib.jpa.entitymanager"
-    + ",jp.ecuacion.splib.jpa.util"
-    )
-public class SplibJpaConfig {
-  
+public class SplibControllerAdviceInfoBean {
+  private static ThreadLocal<Object> thGroupId = new ThreadLocal<>();
+
+  /**
+   * Gets group ID.
+   * 
+   * @return groupId
+   */
+  public static Object getGroupId() {
+    return thGroupId.get();
+  }
+
+  /**
+   * Sets group ID.
+   * 
+   * @param groupId groupId
+   */
+  public static void setGroupId(Object groupId) {
+    thGroupId.set(groupId);
+  }
 }

@@ -17,35 +17,56 @@ package jp.ecuacion.splib.jpa.advice;
 
 import java.util.Optional;
 import jp.ecuacion.lib.jpa.entity.AbstractEntity;
-import jp.ecuacion.splib.jpa.bean.SplibSoftDeleteAdviceInfoBean;
+import jp.ecuacion.splib.jpa.bean.SplibControllerAdviceInfoBean;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Provides the feature to delete the soft-deleted record physically
+ * when inserting a new record with the same unique key as soft-deleted one, 
+ * even though the soft-deleted record and the inserting record belnog to the other groups.
+ * 
+ * @see <a href="https://github.com/ecuacion-jp/ecuacion-splib/tree/main/ecuacion-splib-jpa">README</a> from github for details.
+ */
 public abstract class SplibSoftDeleteAdvice {
 
   @Autowired
   private SplibJpaFilterUtil filterUtil;
+
+  /**
+   * Provides the entrypoint of the feature.
+   * 
+   * @param joinPoint joinPoint
+   */
+  @SuppressWarnings("unchecked")
+  @Before("execution(* *..*.base.repository.*.save(..))")
+  public void onBeforeSave(JoinPoint joinPoint) {
+    beforeAdvice((AbstractEntity) joinPoint.getArgs()[0],
+        (SplibRepository<AbstractEntity, ?>) joinPoint.getThis());
+  }
   
-  /** 
+  /*
    * soft deleteされた状態のレコードがある状態でsave(insert)しようとしたときに、重複エラーが発生しないため
    * 既存レコードを削除する。
    * unique keyの同一値が削除フラグtrueで別groupに存在する場合でも対応かであること、
    * relationにより子テーブルとの関連が存在する場合にはそれらも含めて処理できること、を満たすため、
    * これらの処理は、削除フラグ・グループのfilter設定をoffにした状態で実施する前提とする。
    */
-  public void beforeAdvice(AbstractEntity entity, SplibRepository<AbstractEntity, ?> repo) {
+  private void beforeAdvice(AbstractEntity entity, SplibRepository<AbstractEntity, ?> repo) {
 
     // springっぽくないのだが、@BeanなどでうまくできなかったのでThreadLocalを使用して値を取得
-    Object groupId = SplibSoftDeleteAdviceInfoBean.getGroupId();
+    Object groupId = SplibControllerAdviceInfoBean.getGroupId();
 
-    disableAllFilters(groupId);
+    filterUtil.disableAllFilters();
 
     physicalDeleteSoftDeletedRecords(entity, repo);
 
-    enableAllFilters(groupId);
+    filterUtil.enableAllFilters(groupId);
   }
-
+  
   private void physicalDeleteSoftDeletedRecords(AbstractEntity entity,
       SplibRepository<AbstractEntity, ?> repo) {
     if (entity.hasSoftDeleteField()) {
@@ -67,22 +88,6 @@ public abstract class SplibSoftDeleteAdvice {
           repo.flush();
         }
       }
-    }
-  }
-
-  protected void enableAllFilters(Object groupId) {
-    filterUtil.enableSoftDeleteFilter();
-
-    if (groupId != null) {
-      filterUtil.enableGroupFilter(groupId);
-    }
-  }
-
-  protected void disableAllFilters(Object groupId) {
-    filterUtil.disableSoftDeleteFilter();
-
-    if (groupId != null) {
-      filterUtil.disableGroupFilter();
     }
   }
 }
