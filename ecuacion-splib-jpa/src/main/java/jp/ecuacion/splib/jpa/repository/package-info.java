@@ -13,19 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.jpa.config;
-
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
 /**
- * Provides configs for JPA.
+ * Provides repositories for JPA.
  */
-@Configuration
-@ComponentScan("jp.ecuacion.splib.core.config"
-    + ",jp.ecuacion.splib.jpa.entitymanager"
-    + ",jp.ecuacion.splib.jpa.util"
-    )
-public class SplibJpaConfig {
-  
-}
+package jp.ecuacion.splib.jpa.repository;
