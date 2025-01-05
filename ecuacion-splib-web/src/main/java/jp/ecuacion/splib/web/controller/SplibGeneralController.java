@@ -26,7 +26,7 @@ import jp.ecuacion.splib.web.bean.RedirectUrlPageBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlPageOnSuccessBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlPathBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.exception.InputValidationException;
+import jp.ecuacion.splib.web.exception.FormInputValidationException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
@@ -47,41 +47,139 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+/**
+ * Provides abstract general controller.
+ * 
+ * @param <S> SplibGeneralService
+ */
 public abstract class SplibGeneralController<S extends SplibGeneralService>
     extends SplibBaseController {
 
-  /** 通常constructorの引数とする項目だが、数が多いのでmethodChain方式で渡す形とした。 */
+  /**
+   * Stores controller properties.
+   * 
+   * <p>Since properties are many, 
+   *     the properties are passed not by the constructor, but by method chains.</p>
+   */
   public static class ControllerContext {
 
-    /** 敢えてpublicにはしない。newSettings()から取得する形とする。 */
+    /** 
+     * Constructs a new instance.
+     * 
+     * <p>It's not public because it's supposed 
+     * to use {@code newSettings()} to get the new instance.</p>
+     */
     ControllerContext() {
 
     }
 
-    /**
-     * その機能を表す名前。 form, recordなど各種クラスのprefix、urlの/xxx/searchなどの"xxx"部分などに使用。 複数の機能で同一の機能名を持たせるのは不可。
-     * 
-     * <p>
-     * "accGroup"のようにentity名と同一にするのが推奨。（実装上機能名及び各クラスにentity名が冠されることになりわかりやすいため）
-     * ただし、実際問題、同一entityを主として使用するが、複数画面用意する必要がある場合などに名前を変える必要があるため、
-     * "accGroupManagement"などentity名とは異なる名前も指定可能。 主要となるEntityは同一だが用途が異なるため画面を分けたい、などの場合には本機能名を分ける。
-     * 異なるControllerで同一のfunctionを指定することは不可。 本fieldの値は、html側のtemplateにも渡され、同一のパラメータ名で使用される。
-     * </p>
+    /** 
+     * See function().
      */
-    protected String function;
+    private String function;
+
+    /** 
+     * See subFunction().
+     */
+    private String subFunction = "";
+
+    /** 
+     * See htmlFilenamePostfix().
+     */
+    private String htmlFilenamePostfix;
+
+    /** 
+     * See rootRecordName().
+     */
+    private String rootRecordName;
 
     /**
-     * 機能にsearch-list-editの一連の機能がある場合に、その個々の機能（edit）に対する名称。
-     * nullは不可、指定なしの場合は""を設定。同一機能で複数controllerが存在する場合以外は通常は指定なしで問題なし。
+     * Stores {@code function} and returns {@code ControllerContext}.
+     * 
+     * <p>See {@link ControllerContext#function()}.</p>
+     * 
+     * @param function function
+     * @return ControllerContext
      */
-    protected String subFunction = "";
+    public ControllerContext function(String function) {
+      this.function = function;
+      return this;
+    }
+
+    /**
+     * Returns a name that describes its functionality. 
+     * 
+     * <p>It is used for the prefix of various classes such as form and record, 
+     *     and the "xxx" part of URLs such as /account/xxx/search. <br>
+     *     It is not possible to have the same function name for multiple functions.</p>
+     *     
+     * <p>It is recommended to use the same name as the entity name, such as "accGroup". 
+     * (Due to implementation, the entity name is given to the function name and each class, 
+     * which makes it easier to understand)<br>
+     * However, in reality, there can be multiple screens in which the same entity is mainly used.
+     * In that case you can change the name, like "accGroupManagement" and "accGroupReference".</p>
+     * 
+     * <p>It is not possible to specify the same function in different Controllers. 
+     *     The value of this field is also passed to the html side 
+     *     and used with the same parameter name.</p>
+     */
+    public String function() {
+      return function;
+    }
+
+    /**
+     * Stores {@code subFunction} and returns {@code ControllerContext}.
+     * 
+     * <p>See {@link ControllerContext#subFunction()}.</p>
+     * 
+     * @param subFunction subFunction
+     * @return ControllerContext
+     */
+    public ControllerContext subFunction(String subFunction) {
+      this.subFunction = subFunction;
+      return this;
+    }
+
+    /**
+     * Returns a name that classifies the functions specified in {@code function} field.
+     * 
+     * <p>It is used when a function includes a series of functions 
+     *     such as search-list-edit, the name for each function (edit).</p>
+     * 
+     * <p>It cannot be null. if not specified, set "".<br>
+     * There is usually no problem in not specifying 
+     * it unless there are multiple controllers with the same function.</p>
+     */
+    public String subFunction() {
+      return subFunction;
+    }
+
+    /**
+     * Stores {@code htmlFilenamePostfix} and returns {@code ControllerContext}.
+     * 
+     * <p>See {@link ControllerContext#htmlFilenamePostfix()}.</p>
+     * 
+     * @param htmlFilenamePostfix htmlFilenamePostfix
+     * @return ControllerContext
+     */
+    public ControllerContext htmlFilenamePostfix(String htmlFilenamePostfix) {
+      this.htmlFilenamePostfix = htmlFilenamePostfix;
+      return this;
+    }
 
     /**
      * 通常はhtmlFile名はfunction +
      * subFunctionで指定されるが、1画面に複数controllerを持つ場合は、個々のcontrollerのsubFunctionとhtmlファイル名の
      * postfixは異なる場合がある。 その場合に、postfixをhtmlFilePostfixで指定する。
      */
-    protected String htmlFilenamePostfix;
+    public String htmlFilenamePostfix() {
+      return htmlFilenamePostfix;
+    }
+
+    public ControllerContext rootRecordName(String rootRecordName) {
+      this.rootRecordName = rootRecordName;
+      return this;
+    }
 
     /**
      * form直下のrecordのfield名。対応するentity名を使用する。 特にlist-edit
@@ -97,40 +195,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * page-generalの場合は、recordが存在しない場合もある。その場合は""を指定。（nullは不可）
      * </p>
      */
-    protected String rootRecordName;
-
-    public ControllerContext function(String function) {
-      this.function = function;
-      return this;
-    }
-
-    public String function() {
-      return function;
-    }
-
-    public ControllerContext subFunction(String subFunction) {
-      this.subFunction = subFunction;
-      return this;
-    }
-
-    public String subFunction() {
-      return subFunction;
-    }
-
-    public ControllerContext htmlFilenamePostfix(String htmlFilenamePostfix) {
-      this.htmlFilenamePostfix = htmlFilenamePostfix;
-      return this;
-    }
-
-    public String htmlFilenamePostfix() {
-      return htmlFilenamePostfix;
-    }
-
-    public ControllerContext rootRecordName(String rootRecordName) {
-      this.rootRecordName = rootRecordName;
-      return this;
-    }
-
     /** 未設定の場合はfunctionと同一となる。 */
     public String rootRecordName() {
       return rootRecordName == null ? function : rootRecordName;
@@ -151,16 +215,16 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       paramList.add(new String[] {key, value});
       return this;
     }
-    
+
     public List<String[]> getParamList() {
       return paramList;
     }
-    
+
     public PrepareSettings noRedirect() {
       isRedirect = false;
       return this;
     }
-    
+
     public boolean isRedirect() {
       return isRedirect;
     }
@@ -254,7 +318,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   // }
 
   /**
-   * 全処理に共通のmodelAttributeはSplibWebToolControllerAdviceに設定しているが、本controllerを使用する場合に必要なものはここで定義。
+   * 全処理に共通のmodelAttributeはSplibControllerAdviceに設定しているが、本controllerを使用する場合に必要なものはここで定義。
    * ちなみにmodel自体は、Controllerの保持する値に依存しないため、SplibControllerAdviceにてrequestに追加している。
    */
   @ModelAttribute
@@ -385,12 +449,12 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   public void prepare(Model model, SplibGeneralForm... forms)
-      throws InputValidationException, AppException {
+      throws FormInputValidationException, AppException {
     prepare(model, null, new PrepareSettings(), forms);
   }
 
   public void prepare(Model model, PrepareSettings settings, SplibGeneralForm... forms)
-      throws InputValidationException, AppException {
+      throws FormInputValidationException, AppException {
     prepare(model, null, settings, forms);
   }
 
@@ -398,7 +462,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * 現時点でloginUserを具体的に使用しているわけではないので、loginUserの引数がないmethodを呼んでも問題ないが、 未来のため一応実装しておく。
    */
   public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms)
-      throws InputValidationException, AppException {
+      throws FormInputValidationException, AppException {
     prepare(model, loginUser, new PrepareSettings(), forms);
   }
 
@@ -408,7 +472,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * が、最低でも引数なしのメソッドは呼ぶ（=transactionTokenCheckは実施）ルールとし、transactionTokenCheckが不要の場合は別途それを設定することとする
    */
   public void prepare(Model model, UserDetails loginUser, PrepareSettings settings,
-      SplibGeneralForm... forms) throws InputValidationException, AppException {
+      SplibGeneralForm... forms) throws FormInputValidationException, AppException {
 
     // 全form共通処理
     for (SplibGeneralForm form : forms) {
@@ -419,17 +483,17 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     }
 
     // formは配列でも取得できるよう、別途配列のままrequestにも格納しておく
-    request.setAttribute(SplibWebConstants.KEY_FORMS, forms);
+    model.addAttribute(SplibWebConstants.KEY_FORMS, forms);
 
     // submitされない、毎回再設定が必要な値（selectの選択肢一覧など）を設定
     // getService().prepareForm(new ArrayList<>(Arrays.asList(forms)), loginUser);
 
     // エラー処理のためにmodelにcontrollerを格納
-    request.setAttribute(SplibWebConstants.KEY_CONTROLLER, this);
+    model.addAttribute(SplibWebConstants.KEY_CONTROLLER, this);
 
     // prepareSettingsはcontrollerに設定
     this.prepareSettings = (settings == null) ? new PrepareSettings() : settings;
-    
+
     transactionTokenCheck();
 
     for (SplibGeneralForm form : forms) {
@@ -475,13 +539,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
-      RolesAndAuthoritiesBean bean) throws InputValidationException {
+      RolesAndAuthoritiesBean bean) throws FormInputValidationException {
     // input validation
     boolean hasNotEmptyError = false;
     hasNotEmptyError = form.hasNotEmptyError(loginState, bean);
 
     if (hasNotEmptyError || (result != null && result.hasErrors())) {
-      throw new InputValidationException(form);
+      throw new FormInputValidationException(form);
     }
   }
 }

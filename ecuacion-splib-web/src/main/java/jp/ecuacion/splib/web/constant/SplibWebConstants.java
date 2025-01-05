@@ -15,17 +15,20 @@
  */
 package jp.ecuacion.splib.web.constant;
 
+/**
+ * Provides constants.
+ */
 public class SplibWebConstants {
 
   public static final String KEY_DATA_KIND = "dataKind";
 
-  public static final String KEY_MODEL_MAP = "modelMapKey";
-
-  public static final String KEY_MESSAGES_MAP = "messagesMapKey";
-
-  public static final String KEY_CONTEXT_ID = "contextId";
-
   public static final String KEY_CONTROLLER = "controller";
 
   public static final String KEY_FORMS = "forms";
+
+  public static final String KEY_CONTEXT_ID = "contextId";
+  public static final String KEY_CONTEXT_MAP_PREFIX = "contextId-";
+  public static final String KEY_MESSAGES_BEAN = "responseMessages";
+  public static final String KEY_MODEL = "model";
+  
 }

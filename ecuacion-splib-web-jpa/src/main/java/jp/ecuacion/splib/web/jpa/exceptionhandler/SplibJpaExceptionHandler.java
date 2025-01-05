@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.jpa.exceptionhandler;
 
-import java.nio.channels.OverlappingFileLockException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
 import org.springframework.dao.PessimisticLockingFailureException;

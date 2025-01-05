@@ -33,7 +33,7 @@ public class TransactionTokenUtil {
       request.getSession().setAttribute(SESSION_KEY_TRANSACTION_TOKEN, tokenSet);
     }
 
-    String newToken = RandomStringUtils.randomAlphanumeric(40);
+    String newToken = RandomStringUtils.secure().nextAlphanumeric(40);
     tokenSet.add(newToken);
 
     return newToken;

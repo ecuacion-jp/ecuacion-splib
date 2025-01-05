@@ -19,6 +19,10 @@ import java.util.List;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * 
+ * @param <F>
+ */
 public abstract class SplibGeneral1FormService<F extends SplibGeneralForm>
     extends SplibGeneralService {
 

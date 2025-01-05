@@ -21,7 +21,7 @@ import jp.ecuacion.splib.web.bean.RedirectUrlBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlPageOnAppExceptionBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlPageOnSuccessBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.exception.InputValidationException;
+import jp.ecuacion.splib.web.exception.FormInputValidationException;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
@@ -170,7 +170,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
   @PostMapping(value = "action", params = "showInsertForm")
   public String showInsertForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
-      throws InputValidationException, AppException {
+      throws FormInputValidationException, AppException {
     prepare(model, loginUser);
     RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean("edit", "page").noSuccessMessage()
         .putParamMap(request.getParameterMap());
@@ -179,7 +179,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
   @PostMapping(value = "action", params = "showUpdateForm")
   public String showUpdateForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
-      throws InputValidationException, AppException {
+      throws FormInputValidationException, AppException {
     prepare(model, loginUser);
     RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean("edit", "page").noSuccessMessage()
         .putParamMap(request.getParameterMap());

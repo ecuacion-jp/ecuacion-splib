@@ -26,12 +26,19 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
+/**
+ * Provides abstract base controller.
+ */
 public abstract class SplibBaseController {
 
   @Autowired
   protected HttpServletRequest request;
 
-  /** submit時、request parameter内の各項目を一括変更してくれる処理。 */
+  /**
+   * Provides the feature that the items in a request parameter changes all at once.
+   * 
+   * @param binder binder
+   */
   @InitBinder
   public void initBinder(WebDataBinder binder) {
     // 文字列項目の""をnullに変更。これにより、実際には数字だが””が来るなどを防げる。
@@ -40,7 +47,9 @@ public abstract class SplibBaseController {
     binder.registerCustomEditor(Boolean.class, new NullSupportCustomBooleanEditor());
   }
 
-  /** nullが設定されたらfalseに自動変換するためのPropertyEditor。 */
+  /**
+   * Provides the PropertyEditor which change null to false.
+   */
   static class NullSupportCustomBooleanEditor extends CustomBooleanEditor {
     public NullSupportCustomBooleanEditor() {
       super(false);

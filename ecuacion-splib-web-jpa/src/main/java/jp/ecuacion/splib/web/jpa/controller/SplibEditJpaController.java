@@ -17,23 +17,37 @@ package jp.ecuacion.splib.web.jpa.controller;
 
 import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.controller.SplibEditController;
-import jp.ecuacion.splib.web.controller.SplibGeneralController;
-import jp.ecuacion.splib.web.controller.SplibEditController.PageTemplatePatternEnum;
-import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.jpa.service.SplibEditJpaService;
 
+/**
+ * 
+ * 
+ * @param <F>
+ * @param <S>
+ */
 //@formatter:off
 public abstract class SplibEditJpaController 
     <F extends SplibEditForm, S extends SplibEditJpaService<F, ?>>
     extends SplibEditController<F, S> {
   //@formatter:on
 
+  /**
+   * 
+   * @param pageTemplatePattern
+   * @param function
+   */
   public SplibEditJpaController(PageTemplatePatternEnum pageTemplatePattern,
       @Nonnull String function) {
     super(pageTemplatePattern, function);
   }
 
+  /**
+   * 
+   * @param pageTemplatePattern
+   * @param function
+   * @param settings
+   */
   public SplibEditJpaController(PageTemplatePatternEnum pageTemplatePattern,
       @Nonnull String function, ControllerContext settings) {
     super(pageTemplatePattern, function, settings);

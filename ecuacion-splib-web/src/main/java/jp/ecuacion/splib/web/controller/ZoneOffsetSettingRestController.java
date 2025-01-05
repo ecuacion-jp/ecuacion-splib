@@ -19,13 +19,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@org.springframework.web.bind.annotation.RestController
+/**
+ * Receives zone offset value from the user PC and set it into the session.
+ */
+@RestController
 public class ZoneOffsetSettingRestController {
 
   @Autowired
   private HttpServletRequest request;
   
+  /**
+   * Receives zone offset value from the user PC and set it into the session.
+   * 
+   * @param zoneOffset zoneOffset
+   */
   @GetMapping("/public/zoneOffset")
   public void zoneOffset(@RequestParam String zoneOffset) {
     request.getSession().setAttribute("zoneOffset", zoneOffset);

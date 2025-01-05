@@ -18,13 +18,24 @@ package jp.ecuacion.splib.web.exception;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 
-public class InputValidationException extends AppException {
+/**
+ * Notices that there's a validation error in the received form.
+ * 
+ * <p>This Exception stores the form because validation check have to be done again
+ * to obtain the appropriate error messages.</p>
+ */
+public class FormInputValidationException extends AppException {
 
   private static final long serialVersionUID = 1L;
   
   private SplibGeneralForm form;
 
-  public InputValidationException(SplibGeneralForm form) {
+  /**
+   * Constructs a new instance.
+   * 
+   * @param form form
+   */
+  public FormInputValidationException(SplibGeneralForm form) {
     this.form = form;
   }
   

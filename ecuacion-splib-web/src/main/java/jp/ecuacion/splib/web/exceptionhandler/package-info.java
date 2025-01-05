@@ -13,18 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.service;
-
-import org.springframework.stereotype.Service;
 
 /**
- * Provides a general service with no method.
- * 
- * <p>It is useful when general page is needed but no service is needed.
- *     It happens when a form exists in a page but no need to process the result of the input form.
- *     For instance, login page is often the case because login procedure is not implemented 
- *     by the controller, because the spring security does it instead.</p>
+ * Provides exception handlers.
  */
-@Service
-public class SplibGeneralDoNothingService extends SplibGeneralService {
-}
+package jp.ecuacion.splib.web.exceptionhandler;

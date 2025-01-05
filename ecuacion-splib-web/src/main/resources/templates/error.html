@@ -15,3 +15,35 @@
     limitations under the License.
 
 -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		layout:decorate="~{bootstrap/page-base-narrow}"
+		th:with="loginState='public', noMessages=true">
+<!--/* 
+	spring securityではadviceが呼び出されないことから、login処理中にエラーが発生してこのページを表示する場合に
+	adviceの中で設定するオブジェクトを使用することができない。
+	そのため本ページでは、通常resultで取得するメッセージ表示処理を使用せず、直接PropertyFileUtilを呼び出して使用。
+ */-->
+
+<head>
+	<meta charset="UTF-8"/>
+	<title>[[${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.systemError.title')}]]</title>
+</head>
+<body>
+	<div layout:fragment="base-content" th:remove="tag">
+		<form method="GET" th:action="@{/} + ${@propUtil.get('jp.ecuacion.splib.web.system-error.go-to-path')}">
+			 <div class="mt-2 ml-3">
+				<div th:replace="~{bootstrap/components :: subtitle(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.systemError.title')}, '')}"></div>
+				<p>
+				[[${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.systemError.desc')}]]
+				</p>
+				<br>
+				<div style="text-align: center">
+					<td th:replace="~{bootstrap/components :: commonPrimaryButton('systemError', ${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.systemError.button.gotoLoginPage')}, '')}"></td>
+				</div>
+			</div>
+		</form>
+	</div>
+</body>
+</html>
