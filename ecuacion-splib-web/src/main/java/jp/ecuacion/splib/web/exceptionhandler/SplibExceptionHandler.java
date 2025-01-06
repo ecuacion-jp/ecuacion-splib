@@ -40,16 +40,16 @@ import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.advice.SplibControllerAdvice;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlBean;
 import jp.ecuacion.splib.web.bean.SplibModelAttributes;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.BizLogicRedirectAppException;
-import jp.ecuacion.splib.web.exception.InputValidationException;
-import jp.ecuacion.splib.web.exception.internal.HtmlFileNotAllowedToOpenException;
-import jp.ecuacion.splib.web.exception.internal.HtmlFileNotFoundException;
+import jp.ecuacion.splib.web.exception.FormInputValidationException;
+import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
+import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
+import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
@@ -64,9 +64,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+/**
+ * Provides exception handler.
+ */
 public abstract class SplibExceptionHandler {
-
-  public static final String INFO_FOR_ERROR_HANDLING = "ecuacion.spring.mvc.infoForErrorHandling";
 
   private LogUtil logUtil = new LogUtil(this);
   private DetailLogger detailLog = new DetailLogger(this);
@@ -83,16 +84,27 @@ public abstract class SplibExceptionHandler {
   @Autowired
   private SplibUtil util;
 
+  /**
+   * Returns the controller from which the exception throws.
+   * 
+   * @return SplibGeneralController
+   */
   protected SplibGeneralController<?> getController() {
-    return (SplibGeneralController<?>) request.getAttribute(SplibWebConstants.KEY_CONTROLLER);
+    return (SplibGeneralController<?>) getModel().getAttribute(SplibWebConstants.KEY_CONTROLLER);
   }
 
-  /** Controller処理前にrequestに格納しておいたmodelを取得。 */
+  /**
+   * Returns the model obtained at the controller.
+   * 
+   * @return Model
+   */
   private Model getModel() {
-    return (Model) request.getAttribute(SplibControllerAdvice.REQUEST_KEY_MODEL);
+    return (Model) request.getAttribute(SplibWebConstants.KEY_MODEL);
   }
 
-  /** "{0}"がmessageに含まれる場合はitemNameで置き換える。 */
+  /*
+   * "{0}"がmessageに含まれる場合はitemNameで置き換える。
+   */
   private String addFieldName(String message, String itemName) {
     return addFieldNames(message, new String[] {itemName});
   }
@@ -135,25 +147,44 @@ public abstract class SplibExceptionHandler {
     return sb.toString();
   }
 
+  /**
+   * Catches {@code AppWarningException}.
+   * 
+   * @param exception AppWarningException
+   * @param loginUser UserDetails
+   * @return ModelAndView
+   * @throws Exception Exception
+   */
   @ExceptionHandler({AppWarningException.class})
-  public ModelAndView handleAppWarningException(AppWarningException exception,
+  public ModelAndView handleAppWarningException(WebAppWarningException exception,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    MessagesBean requestResult = ((MessagesBean) getModel().getAttribute(MessagesBean.key));
+    MessagesBean requestResult =
+        ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
     Objects.requireNonNull(requestResult);
-    requestResult.setWarnMessage(exception.getMessageId(), PropertyFileUtil
-        .getMsg(request.getLocale(), exception.getMessageId(), exception.getMessageArgs()),
-        exception.getButtonId());
+    requestResult.setWarnMessage(
+        exception.getMessageId(), PropertyFileUtil.getMsg(request.getLocale(),
+            exception.getMessageId(), exception.getMessageArgs()),
+        exception.buttonIdToPressOnConfirm());
 
     return common(getController(), loginUser);
   }
 
+  /**
+   * Catches {@code AppException}.
+   * 
+   * @param exception AppException
+   * @param loginUser UserDetails
+   * @return ModelAndView
+   * @throws Exception Exception
+   */
   @ExceptionHandler({AppException.class})
   public ModelAndView handleAppException(AppException exception,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     RedirectUrlBean redirectBean = null;
-    MessagesBean requestResult = ((MessagesBean) getModel().getAttribute(MessagesBean.key));
+    MessagesBean requestResult =
+        ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
     // MultipleAppExceptionも考慮し例外を複数持つ
     List<SingleAppException> exList = new ArrayList<>();
@@ -210,18 +241,19 @@ public abstract class SplibExceptionHandler {
         redirectBean == null ? getController().getRedirectUrlOnAppExceptionBean() : redirectBean;
     return common(getController(), loginUser, redirectBean);
   }
-  
+
   /**
+   * Catches {@code OverlappingFileLockException}.
    * 
-   * @param exception
-   * @param loginUser
-   * @return
-   * @throws Exception
+   * @param exception AppException
+   * @param loginUser UserDetails
+   * @return ModelAndView
+   * @throws Exception Exception
    */
   @ExceptionHandler({OverlappingFileLockException.class})
   public ModelAndView handleOptimisticLockingFailureException(
-      OverlappingFileLockException exception,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+      OverlappingFileLockException exception, @AuthenticationPrincipal UserDetails loginUser)
+      throws Exception {
     // 通常のチェックエラー扱いとする
     return handleAppException(
         new BizLogicAppException("jp.ecuacion.splib.web.common.message.optimisticLocking"),
@@ -229,46 +261,40 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
-   * 本来はspring mvcのvalidationに任せれば良いのだが、以下の2点が気に入らず、springで持っているerror情報(*)を    *
-   * 修正しようとしたが「unmodifiablelist」で修正できなかったため、やむなく個別の処理を作成。
+   * Catches {@code InputValidationException}.
+   * 
+   * <p>This method validates the form again to get the appropriate messages.</p>
+   * 
+   * <p>Originally, I would have left it to spring mvc's validation, 
+   * but the following two points are not acceptable.
    * 
    * <ol>
-   * <li>画面上部に複数項目のエラー情報をまとめて表示する場合、並び順が実行するたびに変わる</li>
-   * <li>@Sizeなどのvalidationで、blankを無視する設定になっていないため、
-   * 値がblankで、かつblankがエラーのannotationが付加されている場合でも、@Sizeなどのvalidationが走ってしまう。</li>
+   * <li>the sorting order of multiple error messages changes each time you run it.</li>
+   * <li>Validations such as @Size are not defined to ignore blank, 
+   *     so validations such as @Size will return "false" 
+   *     even if the value is blank and @NotEmpty is set to the variable.</li>
    * </ol>
    * 
-   * <p>
-   * 尚、controller層でのinput validationが漏れた場合、JPAの仕様によりDBアクセス直前にもう一度validationが行われ、
-   * そこでConstraintViolationExceptionが発生する。
-   * そうなる場合は、事前のチェックが漏れた場合のみであり、また単体のConstraintViolationExceptionしか取得できず、 想定しているエラー表示方法（input
-   * validation分はまとめて結果を表示）とは異なり正しくない。
-   * そのため実装不備とみなしシステムエラーとする（＝本クラス上で特別扱いはせず、"handleThrowable"methodで拾う）。 <br>
-   * I(*) このような形でspring mvcのerror情報の取得が可能。最後のprintlnではfieldとcode（validator名："Size"など）を取得している。
-   * </p>
-   * 
-   * <p>
-   * // bean validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。 //
-   * 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。 //
-   * spring標準のvalidatorは、model内に以下のようなkey名で格納されているのでkey名を前方一致で取得 //
-   * org.springframework.validation.BindingResult.driveRecordEditForm String bindingResultKey =
-   * getModel().asMap().keySet().stream() .filter(key ->
-   * key.startsWith("org.springframework.validation.BindingResult"))
-   * .collect(Collectors.toList()).get(0); BeanPropertyBindingResult bindingResult =
-   * (BeanPropertyBindingResult) getModel().asMap().get(bindingResultKey); for (FieldError error :
-   * bindingResult.getFieldErrors()) { System.out.println(error.getCode());
-   * System.out.println(error.getField()); }
-   * </p>
+   * <p>About 1, spring mvc standard validation error messages 
+   *     are obtained from {@code #fields.errors} at thymeleaf.
+   *     I tried to sort the list from java, {@code bindingResult.getFieldErrors()}
+   *     is unmodifiable.</p>
+   *     
+   * @param exception FormInputValidationException
+   * @param loginUser UserDetails
+   * @return ModelAndView
+   * @throws Exception Exception
    */
-  @ExceptionHandler({InputValidationException.class})
-  public ModelAndView handleInputValidationException(InputValidationException exception,
+  @ExceptionHandler({FormInputValidationException.class})
+  public ModelAndView handleInputValidationException(FormInputValidationException exception,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    final MessagesBean requestResult = ((MessagesBean) getModel().getAttribute(MessagesBean.key));
+    final MessagesBean requestResult =
+        ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
     // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
-    List<ValidationErrorInfoBean> errorList = 
+    List<BeanValidationErrorInfoBean> errorList =
         new BeanValidationUtil().validate(exception.getForm(), request.getLocale()).stream()
-            .map(cv -> new ValidationErrorInfoBean(cv)).collect(Collectors.toList());
+            .map(cv -> new BeanValidationErrorInfoBean(cv)).collect(Collectors.toList());
 
     // NotEmptyのチェック結果を追加
     errorList.addAll(exception.getForm()
@@ -303,7 +329,7 @@ public abstract class SplibExceptionHandler {
     }
 
     // messageを設定。{0}を項目名で埋める、などはspring mvcの機能でもやっているが、それだと使いにくいので別途実施
-    for (ValidationErrorInfoBean cv : errorList) {
+    for (BeanValidationErrorInfoBean cv : errorList) {
 
       String message = cv.getMessage();
       String itemId = cv.getPropertyPath().toString();
@@ -321,20 +347,20 @@ public abstract class SplibExceptionHandler {
     return common(getController(), loginUser);
   }
 
-  /**
+  /*
    * bean validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
    * 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
    */
-  private void removeDuplicatedValidators(List<ValidationErrorInfoBean> cvList) {
+  private void removeDuplicatedValidators(List<BeanValidationErrorInfoBean> cvList) {
 
     // 一度、field名をkey, valueをsetとしcvを複数格納するmapを作成し、そのkeyに2件以上validatorが存在しかつNotEmptyが存在する場合は
     // NotEmpty以外を間引く、というロジックとする
-    Map<String, Set<ValidationErrorInfoBean>> duplicateCheckMap = new HashMap<>();
+    Map<String, Set<BeanValidationErrorInfoBean>> duplicateCheckMap = new HashMap<>();
 
     // 後続処理のため、NotEmptyを保持するkeyを保持しておく
     Set<String> keySetWithNotEmpty = new HashSet<>();
 
-    for (ValidationErrorInfoBean cv : cvList) {
+    for (BeanValidationErrorInfoBean cv : cvList) {
       String key = cv.getPropertyPath().toString();
       if (duplicateCheckMap.get(key) == null) {
         duplicateCheckMap.put(key, new HashSet<>());
@@ -350,7 +376,7 @@ public abstract class SplibExceptionHandler {
 
     // duplicateCheckMapで、keySetWithNotEmptyに含まれるkeyのvalueは、NotEmpty以外を取り除く
     for (String key : keySetWithNotEmpty) {
-      for (ValidationErrorInfoBean cv : duplicateCheckMap.get(key)) {
+      for (BeanValidationErrorInfoBean cv : duplicateCheckMap.get(key)) {
         if (!isNotEmptyValidator(cv)) {
           cvList.remove(cv);
         }
@@ -358,15 +384,15 @@ public abstract class SplibExceptionHandler {
     }
   }
 
-  private boolean isNotEmptyValidator(ValidationErrorInfoBean cv) {
+  private boolean isNotEmptyValidator(BeanValidationErrorInfoBean cv) {
     String validatorClass = cv.getValidatorClass();
     return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
   }
 
-  private Comparator<ValidationErrorInfoBean> getComparator() {
+  private Comparator<BeanValidationErrorInfoBean> getComparator() {
     return new Comparator<>() {
       @Override
-      public int compare(ValidationErrorInfoBean f1, ValidationErrorInfoBean f2) {
+      public int compare(BeanValidationErrorInfoBean f1, BeanValidationErrorInfoBean f2) {
         // 項目名で比較
         int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
         if (result != 0) {
@@ -388,9 +414,16 @@ public abstract class SplibExceptionHandler {
     };
   }
 
+  /**
+   * Catches {@code HttpRequestMethodNotSupportedException}, which means HTTP response 403.
+   * 
+   * @param exception HttpRequestMethodNotSupportedException
+   * @param model model
+   * @return redirect URL
+   */
   @ExceptionHandler({HttpRequestMethodNotSupportedException.class})
   public String handleHttpRequestMethodNotSupportedException(
-      HttpRequestMethodNotSupportedException exception, Model model) throws BizLogicAppException {
+      HttpRequestMethodNotSupportedException exception, Model model) {
 
     logUtil.logError(exception, request.getLocale());
     actionOnThrowable.execute(exception);
@@ -399,23 +432,38 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
-   * HTTP 404。
+   * Catches {@code NoResourceFoundException}, which means HTTP response 404.
+   * 
+   * <p>This throws NoResourceFoundException again, that means this method do nothing. 
+   *     It's used just to debug 404 occurrence procedure.</p>
+   * 
+   * @param exception NoResourceFoundException
+   * @param model model
+   * @throws NoResourceFoundException NoResourceFoundException
    */
   @ExceptionHandler({NoResourceFoundException.class})
   public void handleNoResourceFoundException(NoResourceFoundException exception, Model model)
       throws NoResourceFoundException {
     // 後述のhandleThrowableに含まれないよう別出ししているが、特に処理せずそのまま投げることで
     // spring標準のエラー処理（error/404.htmlを参照）の動きとする
+
     throw exception;
   }
 
   /**
-   * ShowPageControllerにおいて、htmlFileが存在しなかった場合に発生。
-   * userが自由にurlパラメータを設定できるため、システムエラーになるのは微妙なことから別処理としておく。
+   * Catches {@code HtmlFileNotFoundException}, 
+   * which means {@code ShowPageController} cannot find the html file specified 
+   * to the parameter of the url.
+   * 
+   * <p>Since users can set the url parameter, system error is not very preferable.</p>
+   * 
+   * @param exception HtmlFileNotFoundException
+   * @param model model
+   * @return ModelAndView
    */
   @ExceptionHandler({HtmlFileNotFoundException.class})
-  ModelAndView handleHtmlFileNotFoundException(HtmlFileNotFoundException exception, Model model)
-      throws NoResourceFoundException {
+  public ModelAndView handleHtmlFileNotFoundException(HtmlFileNotFoundException exception,
+      Model model) {
 
     detailLog.info("Designated html file not found. html file name = " + exception.getFileName());
 
@@ -424,11 +472,17 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
-   * ShowPageControllerにおいて、htmlFileに表示を許す設定がされていなかった場合に発生。
+   * Catches {@code HtmlFileNotAllowedToOpenException}, 
+   * which means {@code ShowPageController} notices the html file doesn't have the needed option 
+   * at the html tag.
+   * 
+   * @param exception HtmlFileNotAllowedToOpenException
+   * @param model model
+   * @return ModelAndView
    */
   @ExceptionHandler({HtmlFileNotAllowedToOpenException.class})
-  ModelAndView handleHtmlFileNotAllowedToOpenException(HtmlFileNotAllowedToOpenException exception,
-      Model model) throws NoResourceFoundException {
+  public ModelAndView handleHtmlFileNotAllowedToOpenException(
+      HtmlFileNotAllowedToOpenException exception, Model model) {
 
     detailLog.info("Designated html file not allowed to open. Needs to add option to html tag."
         + " html file name = " + exception.getFileName());
@@ -438,8 +492,11 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
-   * WebでConstraintViolationExceptionが直接上がってくる場面は、事前のチェックが漏れた場合であり、
-   * この場合は単体のConstraintViolationExceptionしか取得できないこともあり正しくないため、実装不備とみなしここに入れることとする。
+   * Catches {@code Throwable}.
+   * 
+   * @param exception Throwable
+   * @param model model
+   * @return ModelAndView
    */
   @ExceptionHandler({Throwable.class})
   public ModelAndView handleThrowable(Throwable exception, Model model) {
@@ -470,14 +527,14 @@ public abstract class SplibExceptionHandler {
       boolean isRedirect, RedirectUrlBean redirectBean) throws Exception {
 
     SplibGeneralForm[] forms =
-        (SplibGeneralForm[]) request.getAttribute(SplibWebConstants.KEY_FORMS);
+        (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
 
     // #603:
     // 本当は、ExceptionHandlerのエラー処理の中でも、redirectしない場合のみprepareFormを呼べばいいはずなのだが
     // そこのhandlingはまだできていない。必要時に整理。
     getController().getService().prepareForm(Arrays.asList(forms), loginUser);
 
-    // noredirectの有無で分岐
+    // redirectの有無で分岐
     if (!isRedirect) {
       return new ModelAndView(ctrl.getDefaultHtmlFileName(), getModel().asMap());
 
@@ -490,21 +547,27 @@ public abstract class SplibExceptionHandler {
     }
   }
 
-  /**
-   * NotEmptyの効率的な実装のために動的なNotEmptyの適用（BaseRecordに@NotEmptyを記載しておき、何らかの条件でそれをactiveにする形）を検討したが、
-   * 結果不可であることがわかった。その場合、個別ロジックでnot emptyチェックを行右必要があるが、別途実施されたbean validationの結果と合わせる。 その際、実際のbean
-   * validationの結果（ConstraintViolation）を自分で生成するのはなかなか辛いので、bean validationの結果も含め
-   * 必要な項目を本beanに入れて後処理を共通化する
+  /** 
+   * Stores {@code ConstraintViolation} info.
    */
-  public static class ValidationErrorInfoBean {
+  public static class BeanValidationErrorInfoBean {
     private String message;
     private String propertyPath;
     private String validatorClass;
 
     private String annotationDescriptionString;
 
-    /** こちらはnotEmptyのロジックチェック側で使用。 */
-    public ValidationErrorInfoBean(String message, String propertyPath, String validatorClass) {
+    /**
+     * Constructs a new instance 
+     * with {@code message}, {@code propertyPath} and {@code validatorClass}.
+     * 
+     * <p>This is used for {@code NotEmpty} validation logic.</p>
+     * 
+     * @param message message
+     * @param propertyPath propertyPath
+     * @param validatorClass validatorClass
+     */
+    public BeanValidationErrorInfoBean(String message, String propertyPath, String validatorClass) {
       this.message = message;
       this.propertyPath = propertyPath;
       this.validatorClass = validatorClass;
@@ -513,7 +576,12 @@ public abstract class SplibExceptionHandler {
       annotationDescriptionString = "";
     }
 
-    public ValidationErrorInfoBean(ConstraintViolation<?> cv) {
+    /**
+     * Constructs a new instance with {@code ConstraintViolation}.
+     * 
+     * @param cv ConstraintViolation
+     */
+    public BeanValidationErrorInfoBean(ConstraintViolation<?> cv) {
       this.message = cv.getMessage();
       this.propertyPath = cv.getPropertyPath().toString();
       this.validatorClass = cv.getConstraintDescriptor().getAnnotation().annotationType().getName();

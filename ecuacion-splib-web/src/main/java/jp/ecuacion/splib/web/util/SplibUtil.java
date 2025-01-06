@@ -18,9 +18,12 @@ package jp.ecuacion.splib.web.util;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
+import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlPageBean;
 import jp.ecuacion.splib.web.bean.RedirectUrlPageOnAppExceptionBean;
@@ -112,24 +115,39 @@ public class SplibUtil {
     return loginState;
   }
 
+  /**
+   * 
+   * @param redirectBean
+   * @param takesOverModel
+   * @param ctrl
+   * @param request
+   * @param model
+   * @return
+   */
   public String prepareForRedirectAndGetPath(RedirectUrlBean redirectBean, boolean takesOverModel,
       SplibGeneralController<?> ctrl, HttpServletRequest request, Model model) {
 
-    String contextId = (String) request.getSession().getAttribute(SplibWebConstants.KEY_CONTEXT_ID);
+    // contextId and contextMap
+    String contextId = UUID.randomUUID().toString();
+    Map<String, Object> contextMap = new HashMap<>();
+    request.getSession().setAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId,
+        contextMap);
 
-    @SuppressWarnings("unchecked")
-    Map<String, Model> modelMap =
-        (Map<String, Model>) request.getSession().getAttribute(SplibWebConstants.KEY_MODEL_MAP);
+    // messagesBean
+    contextMap.put(SplibWebConstants.KEY_MESSAGES_BEAN,
+        model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
+    // model
+    if (takesOverModel) {
+      // 自画面遷移の場合はmodelもredirect先で取得可にしておく
+      contextMap.put(SplibWebConstants.KEY_MODEL, model);
+    }
+
+    // redirectBean
     // redirectBeanがない場合は自画面遷移。この場合は他のmodelの情報も全て遷移先に渡す。
     // 後続処理の簡便化のため、自画面遷移の場合のredirectBeanを生成しておく。
     if (redirectBean == null) {
       redirectBean = new RedirectUrlPageOnAppExceptionBean();
-    }
-
-    if (takesOverModel) {
-      // 自画面遷移の場合はmodelもredirect先で取得可にしておく
-      modelMap.put(contextId, model);
     }
 
     // redirectBeanに今のuuidを追加設定しておく。

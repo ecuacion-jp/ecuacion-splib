@@ -84,7 +84,8 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
     prepare(model, loginUser, new PrepareSettings().noRedirect(), form);
 
     // redirect元でエラーがあった場合はデータの再取得は行わない
-    MessagesBean messageBean = (MessagesBean) model.getAttribute(MessagesBean.key);
+    MessagesBean messageBean =
+        (MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
 
     if (messageBean.getErrorMessages().size() == 0) {
       form.setIsInsert(isInsert);
@@ -115,7 +116,7 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
   @PostMapping(value = "action", params = "back")
   public String back(@Validated E editForm, BindingResult result, Model model) {
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;
-    
+
     String retunPageFunction = isSingle ? "edit" : "searchList";
     RedirectUrlBean rtnBean = new RedirectUrlPageOnSuccessBean(retunPageFunction, "page")
         .noSuccessMessage().putParam(SplibWebConstants.KEY_DATA_KIND, editForm.getDataKind());

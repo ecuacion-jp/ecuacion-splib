@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.exception.internal;
+package jp.ecuacion.splib.web.exception;
 
+/**
+ * Notices that the html page file specified by url parameter 
+ * does not have the needed option at the html tqg.
+ */
 public class HtmlFileNotAllowedToOpenException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 
   private String fileName;
 
+  /**
+   * Constructs a new instance.
+   * 
+   * @param htmlFileName htmlFileName
+   */
   public HtmlFileNotAllowedToOpenException(String htmlFileName) {
     this.fileName = htmlFileName;
   }

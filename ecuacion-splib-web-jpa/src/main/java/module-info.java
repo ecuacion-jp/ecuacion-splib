@@ -26,7 +26,7 @@ module jp.ecuacion.splib.web.jpa {
   requires jp.ecuacion.lib.jpa;
   requires transitive jp.ecuacion.splib.core;
   requires jp.ecuacion.splib.jpa;
-  requires jp.ecuacion.splib.web;
+  requires transitive jp.ecuacion.splib.web;
   requires org.apache.commons.lang3;
   requires org.apache.tomcat.embed.core;
   requires spring.beans;

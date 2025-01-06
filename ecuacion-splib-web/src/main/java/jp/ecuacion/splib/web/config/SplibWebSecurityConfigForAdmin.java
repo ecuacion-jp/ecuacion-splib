@@ -28,44 +28,62 @@ import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 /**
- * WebSecurityConfigのtemplate。 本templateが使用可能な能合と不可能な場合があるため、abstractクラスとし、EnableWebSecurity
- * などの必要なannotationは子クラス側でつける形とする。
+ *  Provides the abstract SecurityConfig class for admin.
  * 
- * <p>
- * adminを使用する場合は本クラスを使用することになるが、その場合はSplibWebSecurityConfigも使用される前提とし、
- * かつそのinstanceより本instanceを先に実行する前提のため、Order(2) annotationをつけている。
- * Orderの一桁台は、/api/で使用することを想定し11としている。apiを使用しない状態で本クラスを使用しても問題はない。
- * </p>
+ * <p>Since using this class is not mandatory in the library, 
+ *     this class is abstract and no annotations to be recognized as it.
+ *     If you use this, create the class which extends this and has class annotations: 
+ *     {@code Configuration} and {@code EnableWebSecurity}.</p>
  */
 public abstract class SplibWebSecurityConfigForAdmin {
 
+  /**
+   * Defines the string for the role "ACCOUNT_FULL_ACCESS".
+   */
   public static final String ADMIN_FULL_ACCESS = "ADMIN_FULL_ACCESS";
 
-  /** ログイン成功時の遷移先を指定。 */
+  /**
+   * Returns the url when the login proceduree successfully ended.
+   */
   protected abstract String getDefaultSuccessUrl();
 
   /**
-   * ログインが必要なurlにアクセスした際の遷移先。login画面の場合と、それ以前の説明画面などの場合があるため個別設定可能とした。
+   * Returns the url when the login needed page when there is no logged in account in the session.
    */
-  protected abstract String getUrlWithLoginNeededPageAccessed();
+  protected abstract String getLoginNeededPage();
 
   /**
-   * ADMIN_FULL_ACCESSは指定の全てのpathに対して権限追加される仕組みになるようケアしているので、
-   * ADMIN_FULL_ACCESSのことは気にせずに、それ以外のroleの設定のみをすれば良い。
+   * Returns the role list of {@code AuthorizationBean}.
+   * 
+   * <p>There's a reserved role: {@code ACCOUNT_FULL_ACCESS}. 
+   *     This offers full access to /account/** 
+   *     so it's easily used for admin user or power user.</p>
+   *     
+   * @return the role list of AuthorizationBean
    */
   protected abstract List<AuthorizationBean> getRoleInfo();
 
+  /**
+   * Returns the authority list of {@code AuthorizationBean}.
+   * 
+   * @return the authority list of AuthorizationBean
+   */
   protected abstract List<AuthorizationBean> getAuthorityInfo();
 
   /**
-   * accessDeniedPageは、非ログイン時にpermitAllでないパスにアクセスした場合に加え、csrf tokenのエラーの場合も発生。
-   * 後者は、イコールpermitAllのpathにアクセスした場合に毎度発生することになるため、特にログインのないアプリでは設定変更が必要。
-   * ただし、abstractにはせず任意での変更項目としておく。
+   * Returns the url when the access denied page is accessed.
+   * 
+   * <p>This happens in the case of non-exist url access and csrf token error.</p>
    */
-  protected String getAccessDeniedPage() {
-    return "/public/adminLogin/page?accessDenied";
-  }
+  protected abstract String getAccessDeniedPage();
 
+  /**
+   * Adds security settings to the {@code HttpSecurity} object. 
+   * 
+   * <p>Since {@code @Order(11)} is added to the method, 
+   *     the priority is higher than {@code SplibWebSecurityConfig#filterChain},
+   *     and lower than {@code jp.ecuacion.splib.rest.config.SplibRestSecurityConfig}.</p>
+   */
   @Order(11)
   @Bean
   SecurityFilterChain filterChainForAdmin(HttpSecurity http,
@@ -76,7 +94,7 @@ public abstract class SplibWebSecurityConfigForAdmin {
 
     http.httpBasic(basic -> basic.disable());
 
-    http.formLogin(login -> login.loginPage(getUrlWithLoginNeededPageAccessed())
+    http.formLogin(login -> login.loginPage(getLoginNeededPage())
         .loginProcessingUrl("/public/adminLogin/action").usernameParameter("adminLogin.username")
         .passwordParameter("adminLogin.password").defaultSuccessUrl(getDefaultSuccessUrl(), true)
         .failureUrl("/public/adminLogin/page?error"));

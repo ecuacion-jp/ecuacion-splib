@@ -13,18 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.service;
-
-import org.springframework.stereotype.Service;
+package jp.ecuacion.splib.web.exception;
 
 /**
- * Provides a general service with no method.
- * 
- * <p>It is useful when general page is needed but no service is needed.
- *     It happens when a form exists in a page but no need to process the result of the input form.
- *     For instance, login page is often the case because login procedure is not implemented 
- *     by the controller, because the spring security does it instead.</p>
+ * Notices that the html page file specified by url parameter does not exist.
  */
-@Service
-public class SplibGeneralDoNothingService extends SplibGeneralService {
+public class HtmlFileNotFoundException extends RuntimeException {
+
+  private static final long serialVersionUID = 1L;
+
+  private String fileName;
+
+  /**
+   * Constructs a new instance.
+   * 
+   * @param htmlFileName htmlFileName
+   */
+  public HtmlFileNotFoundException(String htmlFileName) {
+    this.fileName = htmlFileName;
+  }
+  
+  public String getFileName() {
+    return fileName;
+  }
 }

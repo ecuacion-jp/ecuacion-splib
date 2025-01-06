@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * Provides spring boot based web classes.
+ */
 module jp.ecuacion.splib.web {
   exports jp.ecuacion.splib.web.advice;
   exports jp.ecuacion.splib.web.bean;

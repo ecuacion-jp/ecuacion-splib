@@ -175,6 +175,8 @@
 	 */-->
 
 	<!--/* ログイン画面用messages */-->
+	<!-- Deprecated. It's integrated to messages(options). -->
+	<!-- 
 	<div th:fragment="loginMessages(options)" th:remove="tag">
 		<div th:replace="~{bootstrap/components :: freeSpace(~{::free-space-login-messages}, '')}"></div>
 		<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
@@ -184,9 +186,19 @@
 			<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
 		</div></th:block>
 	</div>
-
+	 -->
+	 
 	<!--/* messages */-->
 	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
+		<!-- messages from url parameter -->
+		<div th:replace="~{bootstrap/components :: freeSpace(~{::free-space-login-messages}, '')}"></div>
+		<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
+			<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
+			<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
+			<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
+			<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
+		</div></th:block>
+		<!-- messages from ${responseMessages} -->
 		<div class="mt-5" th:object="${responseMessages}">
 			<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || responseMessages.needsSuccessMessage}">
 				<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
