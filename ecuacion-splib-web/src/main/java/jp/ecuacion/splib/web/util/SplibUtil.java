@@ -125,7 +125,8 @@ public class SplibUtil {
    * @return
    */
   public String prepareForRedirectAndGetPath(RedirectUrlBean redirectBean, boolean takesOverModel,
-      SplibGeneralController<?> ctrl, HttpServletRequest request, Model model) {
+      SplibGeneralController<?> ctrl,
+      List<String[]> paramList, HttpServletRequest request, Model model) {
 
     // contextId and contextMap
     String contextId = UUID.randomUUID().toString();
@@ -147,14 +148,14 @@ public class SplibUtil {
     // redirectBeanがない場合は自画面遷移。この場合は他のmodelの情報も全て遷移先に渡す。
     // 後続処理の簡便化のため、自画面遷移の場合のredirectBeanを生成しておく。
     if (redirectBean == null) {
-      redirectBean = new RedirectUrlPageOnAppExceptionBean();
+      redirectBean = new RedirectUrlPageOnAppExceptionBean(ctrl, this);
     }
 
     // redirectBeanに今のuuidを追加設定しておく。
     redirectBean.putParam(SplibWebConstants.KEY_CONTEXT_ID, new String[] {contextId.toString()});
 
     // Controller.PrepareSettingsのparameterを追加
-    for (String[] keyValue : ctrl.getPrepareSettings().getParamList()) {
+    for (String[] keyValue : paramList) {
       redirectBean.putParam(keyValue[0], keyValue[1]);
     }
 
@@ -163,7 +164,7 @@ public class SplibUtil {
     if (redirectBean instanceof RedirectUrlPageBean) {
 
       path = ((RedirectUrlPageBean) redirectBean).getUrl(getLoginState(), ctrl.getFunction(),
-          ctrl.getDefaultSubFunctionOnAppException(), ctrl.getDefaultPageOnAppException());
+          ctrl.getDefaultRedirectDestSubFunctionOnError(), ctrl.getDefaultRedirectDestPageOnAppException());
 
     } else if (redirectBean instanceof RedirectUrlPathBean) {
       path = ((RedirectUrlPathBean) redirectBean).getUrl();

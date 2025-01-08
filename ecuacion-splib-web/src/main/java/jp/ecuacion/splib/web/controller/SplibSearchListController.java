@@ -25,6 +25,7 @@ import jp.ecuacion.splib.web.exception.FormInputValidationException;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
+import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,6 +47,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    */
   @Autowired
   private FST newSearchForm;
+  
+  @Autowired
+  private SplibUtil util;
 
   public SplibSearchListController(@Nonnull String function) {
     this(function, new ControllerContext());
@@ -56,7 +60,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   }
 
   @Override
-  public String getDefaultSubFunctionOnSuccess() {
+  public String getDefaultRedirectDestSubFunctionOnSuccess() {
     return "searchList";
   }
 
@@ -68,7 +72,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
-    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean("searchList", "page"));
+    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean(this, util, "searchList", "page"));
   }
 
   /** listFormはparameterを受け取るわけではないが、instance生成のため引数に付加。 */
@@ -77,9 +81,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     searchForm = getProperSearchForm(model, searchForm);
     listForm.setDataKind(searchForm.getDataKind());
-    redirectUrlOnAppExceptionBean = new RedirectUrlPageOnAppExceptionBean();
+    redirectUrlOnAppExceptionBean = new RedirectUrlPageOnAppExceptionBean(this, util);
 
-    prepare(model, loginUser, new PrepareSettings().noRedirect(), searchForm, listForm);
+    prepare(model, loginUser, searchForm, listForm);
     getService().page(searchForm, listForm, loginUser);
     getService().prepareForm(searchForm, listForm, loginUser);
 
@@ -93,7 +97,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
     prepare(model, searchForm, listForm);
     return prepareForRedirectOrForwardAndGetPath(
-        new RedirectUrlPageOnSuccessBean().noSuccessMessage(), model);
+        new RedirectUrlPageOnSuccessBean(this, util).noSuccessMessage(), model);
   }
 
   /** 本来はpage()で直接受けたいが、1 methodに複数のGetMappingを設定できないため別メソッドとした。 */
@@ -103,7 +107,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
     prepare(model, searchForm, listForm);
     return prepareForRedirectOrForwardAndGetPath(
-        new RedirectUrlPageOnSuccessBean().noSuccessMessage(), model);
+        new RedirectUrlPageOnSuccessBean(this, util).noSuccessMessage(), model);
   }
 
   @SuppressWarnings({"unchecked"})
@@ -154,7 +158,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     request.getSession().setAttribute(sessionKey, newSearchForm);
 
     prepare(model, loginUser, searchForm, listForm);
-    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean().noSuccessMessage()
+    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean(this, util).noSuccessMessage()
         .putParam(SplibWebConstants.KEY_DATA_KIND, searchForm.getDataKind()));
   }
 
@@ -164,7 +168,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     prepare(model, loginUser, searchForm, listForm);
     getService().delete(listForm, loginUser);
 
-    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean()
+    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean(this, util)
         .putParam(SplibWebConstants.KEY_DATA_KIND, listForm.getDataKind()));
   }
 
@@ -172,7 +176,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String showInsertForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
       throws FormInputValidationException, AppException {
     prepare(model, loginUser);
-    RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean("edit", "page").noSuccessMessage()
+    RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean(this, util, "edit", "page").noSuccessMessage()
         .putParamMap(request.getParameterMap());
     return getReturnStringOnSuccess(bean);
   }
@@ -181,7 +185,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String showUpdateForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
       throws FormInputValidationException, AppException {
     prepare(model, loginUser);
-    RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean("edit", "page").noSuccessMessage()
+    RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean(this, util, "edit", "page").noSuccessMessage()
         .putParamMap(request.getParameterMap());
     return getReturnStringOnSuccess(bean);
   }

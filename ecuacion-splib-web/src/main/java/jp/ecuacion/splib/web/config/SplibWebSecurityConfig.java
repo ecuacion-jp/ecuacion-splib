@@ -52,6 +52,9 @@ public abstract class SplibWebSecurityConfig {
 
   /**
    * Returns the url when the login needed page when there is no logged in account in the session.
+   * 
+   * <p>If this page doesn't exist, 
+   *     {@code org.thymeleaf.exceptions.TemplateInputException} occurs.</p>
    */
   protected abstract String getLoginNeededPage();
 

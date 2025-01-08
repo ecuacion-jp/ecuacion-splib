@@ -15,21 +15,39 @@
  */
 package jp.ecuacion.splib.web.bean;
 
+import jp.ecuacion.splib.web.controller.SplibGeneralController;
+import jp.ecuacion.splib.web.util.SplibUtil;
+
 public class RedirectUrlPageOnSuccessBean extends RedirectUrlPageBean
     implements RedirectUrlOnSuccessInterface {
 
-  public RedirectUrlPageOnSuccessBean() {
-    super();
+  // public RedirectUrlPageOnSuccessBean() {
+  // super();
+  // putParam("success", new String[] {""});
+  // }
+  //
+  // public RedirectUrlPageOnSuccessBean(String page) {
+  // super(page);
+  // putParam("success", new String[] {""});
+  // }
+  //
+  // public RedirectUrlPageOnSuccessBean(String subFunction, String page) {
+  // super(subFunction, page);
+  // putParam("success", new String[] {""});
+  // }
+
+  public RedirectUrlPageOnSuccessBean(SplibGeneralController<?> ctrl, SplibUtil util) {
+    super(ctrl, util);
     putParam("success", new String[] {""});
   }
 
-  public RedirectUrlPageOnSuccessBean(String page) {
-    super(page);
+  public RedirectUrlPageOnSuccessBean(SplibGeneralController<?> ctrl, SplibUtil util, String page) {
+    super(ctrl, util, page);
     putParam("success", new String[] {""});
   }
 
-  public RedirectUrlPageOnSuccessBean(String subFunction, String page) {
-    super(subFunction, page);
+  public RedirectUrlPageOnSuccessBean(SplibGeneralController<?> ctrl, SplibUtil util, String subFunction, String page) {
+    super(ctrl, util, subFunction, page);
     putParam("success", new String[] {""});
   }
 

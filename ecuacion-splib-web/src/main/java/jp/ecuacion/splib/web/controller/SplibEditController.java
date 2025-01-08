@@ -23,6 +23,8 @@ import jp.ecuacion.splib.web.bean.RedirectUrlPathBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
+import jp.ecuacion.splib.web.util.SplibUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
@@ -40,6 +42,9 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
   private PageTemplatePatternEnum pageTemplatePattern;
 
   protected RedirectUrlPathBean redirectPathOnSuccess;
+  
+  @Autowired
+  private SplibUtil util;
 
   public SplibEditController(PageTemplatePatternEnum pageTemplatePattern,
       @Nonnull String function) {
@@ -54,7 +59,7 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
   }
 
   /** 処理成功時の表示画面のdefault。 */
-  public String getDefaultSubFunctionOnSuccess() {
+  public String getDefaultRedirectDestSubFunctionOnSuccess() {
     return pageTemplatePattern == PageTemplatePatternEnum.SINGLE ? "edit" : "searchList";
   }
 
@@ -81,7 +86,7 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
 
   private String pageCommon(Model model, E form, UserDetails loginUser, boolean isInsert)
       throws Exception {
-    prepare(model, loginUser, new PrepareSettings().noRedirect(), form);
+    prepare(model, loginUser, form);
 
     // redirect元でエラーがあった場合はデータの再取得は行わない
     MessagesBean messageBean =
@@ -100,13 +105,12 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
   @PostMapping(value = "action", params = "insertOrUpdate")
   public String edit(@Validated E form, BindingResult result, Model model,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    prepare(model, loginUser,
-        new PrepareSettings().addParam(form.isInsert() ? PARAM_INSERT : PARAM_UPDATE),
-        form.validate(result));
+    prepare(model, loginUser, form.validate(result));
+    addParamToParamListOnRedirectToSelf(form.isInsert() ? PARAM_INSERT : PARAM_UPDATE);
     getService().edit(form, loginUser);
 
     RedirectUrlBean redirectBean =
-        redirectPathOnSuccess == null ? new RedirectUrlPageOnSuccessBean() : redirectPathOnSuccess;
+        redirectPathOnSuccess == null ? new RedirectUrlPageOnSuccessBean(this, util) : redirectPathOnSuccess;
     redirectBean.putParam(SplibWebConstants.KEY_DATA_KIND, form.getDataKind());
     redirectBean.putParam(PARAM_UPDATE, form.getDataKind());
 
@@ -118,7 +122,7 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;
 
     String retunPageFunction = isSingle ? "edit" : "searchList";
-    RedirectUrlBean rtnBean = new RedirectUrlPageOnSuccessBean(retunPageFunction, "page")
+    RedirectUrlBean rtnBean = new RedirectUrlPageOnSuccessBean(this, util, retunPageFunction, "page")
         .noSuccessMessage().putParam(SplibWebConstants.KEY_DATA_KIND, editForm.getDataKind());
     if (isSingle) {
       rtnBean.putParam("showUpdateForm", (String) null);

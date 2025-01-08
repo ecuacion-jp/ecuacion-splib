@@ -15,17 +15,34 @@
  */
 package jp.ecuacion.splib.web.bean;
 
+import jp.ecuacion.splib.web.controller.SplibGeneralController;
+import jp.ecuacion.splib.web.util.SplibUtil;
+
 public class RedirectUrlPageOnAppExceptionBean extends RedirectUrlPageBean {
 
-  public RedirectUrlPageOnAppExceptionBean() {
-    super();
+  // public RedirectUrlPageOnAppExceptionBean() {
+  // super();
+  // }
+  //
+  // public RedirectUrlPageOnAppExceptionBean(String page) {
+  // super(page);
+  // }
+  //
+  // public RedirectUrlPageOnAppExceptionBean(String subFunction, String page) {
+  // super(subFunction, page);
+  // }
+
+  public RedirectUrlPageOnAppExceptionBean(SplibGeneralController<?> ctrl, SplibUtil util) {
+    super(ctrl, util);
   }
 
-  public RedirectUrlPageOnAppExceptionBean(String page) {
-    super(page);
+  public RedirectUrlPageOnAppExceptionBean(SplibGeneralController<?> ctrl, SplibUtil util, String page) {
+    super(ctrl, util, page);
   }
 
-  public RedirectUrlPageOnAppExceptionBean(String subFunction, String page) {
-    super(subFunction, page);
+  public RedirectUrlPageOnAppExceptionBean(SplibGeneralController<?> ctrl, SplibUtil util, String subFunction, String page) {
+    super(ctrl, util, subFunction, page);
   }
+  
+  
 }

@@ -167,7 +167,9 @@ public abstract class SplibExceptionHandler {
             exception.getMessageId(), exception.getMessageArgs()),
         exception.buttonIdToPressOnConfirm());
 
-    return common(getController(), loginUser);
+    // warningはsubmitが完了していないことから同じ画面に戻る処理なので、別ページへのredirectは発生しない
+    // PRGのためisRedirectはtrueとしておく
+    return common(getController(), loginUser, false, null);
   }
 
   /**
@@ -239,7 +241,7 @@ public abstract class SplibExceptionHandler {
 
     redirectBean =
         redirectBean == null ? getController().getRedirectUrlOnAppExceptionBean() : redirectBean;
-    return common(getController(), loginUser, redirectBean);
+    return common(getController(), loginUser, true, redirectBean);
   }
 
   /**
@@ -344,7 +346,9 @@ public abstract class SplibExceptionHandler {
       requestResult.setErrorMessage(message, itemId);
     }
 
-    return common(getController(), loginUser);
+    // redirect policy is the same as AppException's.
+    return common(getController(), loginUser, true,
+        getController().getRedirectUrlOnAppExceptionBean());
   }
 
   /*
@@ -512,17 +516,6 @@ public abstract class SplibExceptionHandler {
     return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
   }
 
-  private ModelAndView common(SplibGeneralController<?> ctrl, UserDetails loginUser)
-      throws Exception {
-    return common(ctrl, loginUser, ctrl.getPrepareSettings().isRedirect(),
-        ctrl.getRedirectUrlOnAppExceptionBean());
-  }
-
-  private ModelAndView common(SplibGeneralController<?> ctrl, UserDetails loginUser,
-      RedirectUrlBean redirectBean) throws Exception {
-    return common(ctrl, loginUser, true, redirectBean);
-  }
-
   private ModelAndView common(SplibGeneralController<?> ctrl, UserDetails loginUser,
       boolean isRedirect, RedirectUrlBean redirectBean) throws Exception {
 
@@ -540,8 +533,9 @@ public abstract class SplibExceptionHandler {
 
     } else {
       // redirectBean == nullの場合は自画面遷移、自画面遷移の場合はmodelの情報も保持する
+      List<String[]> paramList = ctrl.getParamListOnRedirectToSelf();
       String path = util.prepareForRedirectAndGetPath(redirectBean, redirectBean == null, ctrl,
-          request, getModel());
+          paramList, request, getModel());
 
       return new ModelAndView(path);
     }
