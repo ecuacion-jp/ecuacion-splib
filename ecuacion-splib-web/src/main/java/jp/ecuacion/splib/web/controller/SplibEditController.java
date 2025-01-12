@@ -17,9 +17,7 @@ package jp.ecuacion.splib.web.controller;
 
 import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.bean.MessagesBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPageOnSuccessBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPathBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
@@ -41,8 +39,8 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
 
   private PageTemplatePatternEnum pageTemplatePattern;
 
-  protected RedirectUrlPathBean redirectPathOnSuccess;
-  
+  protected ReturnUrlBean redirectOnSuccess;
+
   @Autowired
   private SplibUtil util;
 
@@ -59,7 +57,7 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
   }
 
   /** 処理成功時の表示画面のdefault。 */
-  public String getDefaultRedirectDestSubFunctionOnSuccess() {
+  public String getDefaultDestSubFunctionOnNormalEnd() {
     return pageTemplatePattern == PageTemplatePatternEnum.SINGLE ? "edit" : "searchList";
   }
 
@@ -109,12 +107,13 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
     addParamToParamListOnRedirectToSelf(form.isInsert() ? PARAM_INSERT : PARAM_UPDATE);
     getService().edit(form, loginUser);
 
-    RedirectUrlBean redirectBean =
-        redirectPathOnSuccess == null ? new RedirectUrlPageOnSuccessBean(this, util) : redirectPathOnSuccess;
+    ReturnUrlBean redirectBean =
+        redirectOnSuccess == null ? new ReturnUrlBean(this, util, true).showSuccessMessage()
+            : redirectOnSuccess;
     redirectBean.putParam(SplibWebConstants.KEY_DATA_KIND, form.getDataKind());
     redirectBean.putParam(PARAM_UPDATE, form.getDataKind());
 
-    return getReturnStringOnSuccess(redirectBean);
+    return redirectBean.getUrl();
   }
 
   @PostMapping(value = "action", params = "back")
@@ -122,13 +121,13 @@ public abstract class SplibEditController<E extends SplibEditForm, S extends Spl
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;
 
     String retunPageFunction = isSingle ? "edit" : "searchList";
-    RedirectUrlBean rtnBean = new RedirectUrlPageOnSuccessBean(this, util, retunPageFunction, "page")
-        .noSuccessMessage().putParam(SplibWebConstants.KEY_DATA_KIND, editForm.getDataKind());
+    ReturnUrlBean rtnBean = new ReturnUrlBean(this, util, retunPageFunction, "page")
+        .putParam(SplibWebConstants.KEY_DATA_KIND, editForm.getDataKind());
     if (isSingle) {
       rtnBean.putParam("showUpdateForm", (String) null);
     }
 
-    return getReturnStringOnSuccess(rtnBean);
+    return rtnBean.getUrl();
   }
 
   public static enum PageTemplatePatternEnum {

@@ -1050,7 +1050,9 @@
 			<th:block th:with="id=${recordName + '.' + fieldName}">
 				<div class="mb-4" th:classappend="${@optUtil.isWidthFull(options)} ? 'col-12' : (${@optUtil.isWidthHalf(options)} ? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
 					<div th:replace="~{bootstrap/components :: editComponentLabel(${itemName}, ${options})}"></div>
-					<input class="form-control" type="file" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}">
+					<input class="form-control" type="file" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" 
+							th:classappend="${responseMessages.isValid(id)}">
+					<div th:replace="~{bootstrap/components :: fieldMessages(${itemName}, '')}"></div>
 				</div>
 			</th:block>
 		</th:block>

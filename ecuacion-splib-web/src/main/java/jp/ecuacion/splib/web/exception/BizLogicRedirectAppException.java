@@ -16,30 +16,24 @@
 package jp.ecuacion.splib.web.exception;
 
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
-import jp.ecuacion.splib.web.bean.RedirectUrlBean;
 
 /** 
  * redirectを行いredirect先でエラーメッセージを表示するために使用するException。
  * redirect先にはErrorFieldはなし、またwebで使用する前提でありlocaleも不要のため
- * constructorは下記2種類のみとなる。
+ * constructorは下記のみとなる。
  */
 public class BizLogicRedirectAppException extends BizLogicAppException {
   private static final long serialVersionUID = 1L;
 
-  private RedirectUrlBean redirectUrlBean;
+  private String redirectPath;
 
-  public BizLogicRedirectAppException(RedirectUrlBean redirectUrlBean, String messageId) {
-    super(messageId);
-    this.redirectUrlBean = redirectUrlBean;
-  }
-
-  public BizLogicRedirectAppException(RedirectUrlBean redirectUrlBean, String messageId,
+  public BizLogicRedirectAppException(String redirectPath, String messageId,
       String... messageArgs) {
     super(messageId, messageArgs);
-    this.redirectUrlBean = redirectUrlBean;
+    this.redirectPath = redirectPath;
   }
 
-  public RedirectUrlBean getRedirectUrlBean() {
-    return redirectUrlBean;
+  public String getRedirectPath() {
+    return redirectPath;
   }
 }

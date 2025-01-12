@@ -41,7 +41,7 @@ import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.bean.MessagesBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.bean.SplibModelAttributes;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
@@ -184,7 +184,7 @@ public abstract class SplibExceptionHandler {
   public ModelAndView handleAppException(AppException exception,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
-    RedirectUrlBean redirectBean = null;
+    ReturnUrlBean redirectBean = null;
     MessagesBean requestResult =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
@@ -226,7 +226,8 @@ public abstract class SplibExceptionHandler {
         fields = modifiedFieldList.toArray(new String[modifiedFieldList.size()]);
 
         if (ex instanceof BizLogicRedirectAppException) {
-          redirectBean = ((BizLogicRedirectAppException) ex).getRedirectUrlBean();
+          String redirectPath = ((BizLogicRedirectAppException) ex).getRedirectPath();
+          redirectBean = new ReturnUrlBean(getController(), redirectPath);
         }
       }
 
@@ -517,7 +518,7 @@ public abstract class SplibExceptionHandler {
   }
 
   private ModelAndView common(SplibGeneralController<?> ctrl, UserDetails loginUser,
-      boolean isRedirect, RedirectUrlBean redirectBean) throws Exception {
+      boolean isRedirect, ReturnUrlBean redirectBean) throws Exception {
 
     SplibGeneralForm[] forms =
         (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
@@ -529,13 +530,11 @@ public abstract class SplibExceptionHandler {
 
     // redirectの有無で分岐
     if (!isRedirect) {
-      return new ModelAndView(ctrl.getDefaultHtmlFileName(), getModel().asMap());
+      return new ModelAndView(ctrl.getDefaultHtmlPageName(), getModel().asMap());
 
     } else {
       // redirectBean == nullの場合は自画面遷移、自画面遷移の場合はmodelの情報も保持する
-      List<String[]> paramList = ctrl.getParamListOnRedirectToSelf();
-      String path = util.prepareForRedirectAndGetPath(redirectBean, redirectBean == null, ctrl,
-          paramList, request, getModel());
+      String path = util.prepareForPageTransition(request, ctrl, redirectBean, getModel(), true);
 
       return new ModelAndView(path);
     }
