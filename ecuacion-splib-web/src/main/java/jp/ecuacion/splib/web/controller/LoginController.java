@@ -21,12 +21,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+/**
+ * Provides controller for login.
+ */
 @Controller
 @Scope("prototype")
 @RequestMapping("/public/login")
 public class LoginController
     extends SplibGeneral1FormController<LoginForm, SplibGeneral1FormDoNothingService<LoginForm>> {
 
+  /**
+   * Constructs a new instance.
+   */
   public LoginController() {
     super("login");
   }

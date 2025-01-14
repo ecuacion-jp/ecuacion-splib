@@ -18,11 +18,27 @@ package jp.ecuacion.splib.web.exception;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 
+
+
 /**
- * Notices that there's a validation error in the received form.
+ * Throws {@code FormInputValidationException}.
  * 
- * <p>This Exception stores the form because validation check have to be done again
- * to obtain the appropriate error messages.</p>
+ * <p>This method validates the form again to get the appropriate messages.</p>
+ * 
+ * <p>Originally, I would have left it to spring mvc's validation, 
+ * but the following two points are not acceptable.
+ * 
+ * <ol>
+ * <li>the sorting order of multiple error messages changes each time you run it.</li>
+ * <li>Validations such as @Size are not defined to ignore blank, 
+ *     so validations such as @Size will return "false" 
+ *     even if the value is blank and @NotEmpty is set to the variable.</li>
+ * </ol>
+ * 
+ * <p>About 1, spring mvc standard validation error messages 
+ *     are obtained from {@code #fields.errors} at thymeleaf.
+ *     I tried to sort the list from java, {@code bindingResult.getFieldErrors()}
+ *     is unmodifiable.</p>
  */
 public class FormInputValidationException extends AppException {
 

@@ -21,10 +21,10 @@ import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.jpa.service.SplibEditJpaService;
 
 /**
+ * Controls the edit feature.
  * 
- * 
- * @param <F>
- * @param <S>
+ * @param <F> SplibEditForm
+ * @param <S> SplibEditService
  */
 //@formatter:off
 public abstract class SplibEditJpaController 
@@ -33,9 +33,9 @@ public abstract class SplibEditJpaController
   //@formatter:on
 
   /**
+   * Construct a new instance with {@code function}.
    * 
-   * @param pageTemplatePattern
-   * @param function
+   * @param function function
    */
   public SplibEditJpaController(PageTemplatePatternEnum pageTemplatePattern,
       @Nonnull String function) {
@@ -43,10 +43,10 @@ public abstract class SplibEditJpaController
   }
 
   /**
+   * Construct a new instance with {@code function}, {@code settings}.
    * 
-   * @param pageTemplatePattern
-   * @param function
-   * @param settings
+   * @param function function
+   * @param settings settings
    */
   public SplibEditJpaController(PageTemplatePatternEnum pageTemplatePattern,
       @Nonnull String function, ControllerContext settings) {

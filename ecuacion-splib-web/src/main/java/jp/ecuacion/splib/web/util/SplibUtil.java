@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
-import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
@@ -143,13 +142,6 @@ public class SplibUtil {
     if (model != null) {
       // 自画面遷移の場合はmodelもredirect先で取得可にしておく
       contextMap.put(SplibWebConstants.KEY_MODEL, model);
-    }
-
-    // redirectBean
-    // redirectBeanがない場合は自画面遷移。この場合は他のmodelの情報も全て遷移先に渡す。
-    // 後続処理の簡便化のため、自画面遷移の場合のredirectBeanを生成しておく。
-    if (redirectBean == null) {
-      redirectBean = new ReturnUrlBean(ctrl, this, false);
     }
 
     // redirectBeanに今のuuidを追加設定しておく。

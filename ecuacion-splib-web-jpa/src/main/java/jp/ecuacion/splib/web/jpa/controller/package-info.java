@@ -15,6 +15,6 @@
  */
 
 /**
- * Provides controllerAdvices.
+ * Provides Controllers.
  */
-package jp.ecuacion.splib.web.advice;
+package jp.ecuacion.splib.web.jpa.controller;

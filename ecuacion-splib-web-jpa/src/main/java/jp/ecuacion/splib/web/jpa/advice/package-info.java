@@ -15,6 +15,6 @@
  */
 
 /**
- * Provides exception handlers.
+ * Provides controllerAdvices.
  */
-package jp.ecuacion.splib.web.exceptionhandler;
+package jp.ecuacion.splib.web.jpa.advice;

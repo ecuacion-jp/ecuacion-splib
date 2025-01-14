@@ -15,6 +15,6 @@
  */
 
 /**
- * Provides configs.
+ * Provides exception handlers.
  */
-package jp.ecuacion.splib.web.config;
+package jp.ecuacion.splib.web.jpa.exceptionhandler;

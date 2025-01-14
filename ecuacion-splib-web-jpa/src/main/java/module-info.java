@@ -21,7 +21,7 @@ module jp.ecuacion.splib.web.jpa {
   exports jp.ecuacion.splib.web.jpa.controller;
 
   requires jakarta.annotation;
-  requires jakarta.persistence;
+  requires transitive jakarta.persistence;
   requires jp.ecuacion.lib.core;
   requires jp.ecuacion.lib.jpa;
   requires transitive jp.ecuacion.splib.core;
@@ -34,9 +34,9 @@ module jp.ecuacion.splib.web.jpa {
   requires spring.core;
   requires spring.data.commons;
   requires spring.data.jpa;
-  requires spring.orm;
+  requires transitive spring.orm;
   requires transitive spring.security.core;
-  requires spring.tx;
+  requires transitive spring.tx;
   requires spring.web;
   requires spring.webmvc;
 }

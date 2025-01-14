@@ -18,15 +18,26 @@ package jp.ecuacion.splib.web.exception;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 
 /** 
- * redirectを行いredirect先でエラーメッセージを表示するために使用するException。
- * redirect先にはErrorFieldはなし、またwebで使用する前提でありlocaleも不要のため
- * constructorは下記のみとなる。
+ * Is an exception extending {@code BizLogicAppException}.
+ * 
+ * 
+ * 
+ * <p>This causes redirect to the other page and show error messages in it.<br>
+ * Since the page is transitioned, the error item is not supposed to exist.
+ * Therefore this exception doesn't have {@code AppErrorFields}.</p>
  */
 public class BizLogicRedirectAppException extends BizLogicAppException {
   private static final long serialVersionUID = 1L;
 
   private String redirectPath;
 
+  /**
+   * Constructs a new instance.
+   * 
+   * @param redirectPath redirectPath
+   * @param messageId messageId
+   * @param messageArgs messageArgs
+   */
   public BizLogicRedirectAppException(String redirectPath, String messageId,
       String... messageArgs) {
     super(messageId, messageArgs);

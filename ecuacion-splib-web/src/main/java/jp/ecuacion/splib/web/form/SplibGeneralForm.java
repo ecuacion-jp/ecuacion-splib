@@ -24,9 +24,9 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jp.ecuacion.lib.core.beanvalidation.bean.BeanValidationErrorInfoBean;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
 import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
-import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.springframework.validation.BindingResult;
@@ -222,17 +222,17 @@ public abstract class SplibGeneralForm {
   }
 
   /** NotEmptyエラーの有無・件数だけを知りたい場合で、localeを取得するのが面倒な際はこちらを使用。 */
-  public Set<SplibExceptionHandler.BeanValidationErrorInfoBean> validateNotEmpty(String loginState,
+  public Set<BeanValidationErrorInfoBean> validateNotEmpty(String loginState,
       RolesAndAuthoritiesBean bean) {
     return validateNotEmpty(Locale.getDefault(), loginState, bean);
   }
 
   /** NotEmptyエラーのメッセージを取得したい場合はこちらを使用。 */
-  public Set<SplibExceptionHandler.BeanValidationErrorInfoBean> validateNotEmpty(Locale locale,
-      String loginState, RolesAndAuthoritiesBean bean) {
+  public Set<BeanValidationErrorInfoBean> validateNotEmpty(Locale locale, String loginState,
+      RolesAndAuthoritiesBean bean) {
 
     final String validationClass = "jakarta.validation.constraints.NotEmpty";
-    Set<SplibExceptionHandler.BeanValidationErrorInfoBean> rtnSet = new HashSet<>();
+    Set<BeanValidationErrorInfoBean> rtnSet = new HashSet<>();
 
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
@@ -243,10 +243,11 @@ public abstract class SplibGeneralForm {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyField);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
-          rtnSet.add(new SplibExceptionHandler.BeanValidationErrorInfoBean(
-              ResourceBundle.getBundle("ValidationMessages", locale)
-                  .getString(validationClass + ".message"),
-              rootRecordFieldName + "." + notEmptyField, validationClass));
+          rtnSet.add(new BeanValidationErrorInfoBean(
+              ResourceBundle.getBundle("ValidationMessages", locale).getString(
+                  validationClass + ".message"),
+              rootRecordFieldName + "." + notEmptyField, validationClass,
+              this.getClass().getCanonicalName()));
         }
       }
     }
