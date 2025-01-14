@@ -19,10 +19,10 @@ import jp.ecuacion.splib.core.form.record.SplibRecord;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
- * Is called from {@link jp.ecuacion.splib.web.advice.SplibAccountControllerAdvice}. 
+ * Is called from {@link jp.ecuacion.splib.web.advice.SplibDataStoreDependentControllerAdvice}. 
  * Needed methods are defined as abstract methods.
  */
-public abstract class SplibAccountControllerAdviceService {
+public abstract class SplibDataStoreDependentControllerAdviceService {
   
   /**
    * Obtains logged-in account in {@code SplibRecord} data type from {@code UserDetails} data type.
