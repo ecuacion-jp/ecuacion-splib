@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.web.advice;
 
 import jp.ecuacion.splib.core.form.record.SplibRecord;
-import jp.ecuacion.splib.web.service.SplibAccountControllerAdviceService;
+import jp.ecuacion.splib.web.service.SplibDataStoreDependentControllerAdviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,10 +34,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  *     Use {@code jp.ecuacion.splib.web.jpa.advice.SplibJpaAccountControllerAdvice}
  *     in {@code ecuacion-splib-web-jpa}.</p>
  */
-public abstract class SplibAccountControllerAdvice {
+public abstract class SplibDataStoreDependentControllerAdvice {
 
   @Autowired
-  SplibAccountControllerAdviceService service;
+  SplibDataStoreDependentControllerAdviceService service;
 
   /**
    * Sets account info into a {@code Model}.
@@ -47,15 +47,14 @@ public abstract class SplibAccountControllerAdvice {
    */
   @ModelAttribute
   protected void setAccountInfo(Model model, @AuthenticationPrincipal UserDetails loginUser) {
-    // login前の場合は終了。後続処理はloginUserが存在しない場合は不可のため。
+
+    executeForAll();
+
+    // 未loginの場合は終了。systemAdmin roleが存在する場合はsystemAdmin扱いで処理
     if (loginUser == null) {
       return;
-    }
-
-    executeForBoth();
-
-    // systemAdmin roleが存在する場合はsystemAdmin扱いで処理
-    if (loginUser.getAuthorities().stream().map(e -> e.getAuthority())
+      
+    } else if (loginUser.getAuthorities().stream().map(e -> e.getAuthority())
         .filter(auth -> auth.startsWith("ROLE_ADMIN")).toList().size() > 0) {
 
       SplibRecord adminLoginAcc = service.getAdminLoginAcc(loginUser);
@@ -75,7 +74,7 @@ public abstract class SplibAccountControllerAdvice {
    * Additional procedure for both general accounts and admin accounts
    * can be define by overriding the method.
    */
-  protected void executeForBoth() {
+  protected void executeForAll() {
 
   }
 
