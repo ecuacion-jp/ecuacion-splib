@@ -21,6 +21,12 @@ import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Provides abstract edit service.
+ * 
+ * @param <F> SplibEditForm
+ * @param <E> AbstractEntity
+ */
 @Transactional(rollbackFor = Exception.class)
 public abstract class SplibEditJpaService<F extends SplibEditForm, E extends AbstractEntity>
     extends SplibEditService<F> implements SplibJpaServiceInterface<E> {

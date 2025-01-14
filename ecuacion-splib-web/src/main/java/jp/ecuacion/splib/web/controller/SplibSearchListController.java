@@ -17,14 +17,13 @@ package jp.ecuacion.splib.web.controller;
 
 import jakarta.annotation.Nonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.splib.web.bean.RedirectUrlBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPageOnAppExceptionBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPageOnSuccessBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.FormInputValidationException;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
+import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +31,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+/**
+ * Controls the search and listing of the search result.
+ * 
+ * @param <FST> SplibSearchForm
+ * @param <FLT> SplibListForm
+ * @param <S> SplibSearchListService
+ */
 //@formatter:off
 public abstract class SplibSearchListController<FST extends SplibSearchForm, 
     FLT extends SplibListForm<?>, S extends SplibSearchListService<FST, FLT>> 
@@ -40,73 +46,132 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
 
   /**
-   * 検索条件クリアの際に使用。 検索条件の削除の場合にしか使用しないので、＠Lazyをつけておくとより効率的なのだが、
-   * ＠LazyをつけるとSのAutowired自体は成功するものの、元のxxxFormでcastしようとするとエラーになってしまった
-   * （XxxSearchListService#getSpecsにて発生）のでLazyは削除。
+   * Is used when the search condition is cleared.
+   * 
+   * <p>It's used only when the search condition clears, it's better to add {@code ＠Lazy},
+   * but it occurs an error at the cast procedure in
+   * {@code jp.ecuacion.splib.web.jpa.service.SplibSearchListJpaService#getSpecs}.
+   * Maybe a bug of spring mvc.
+   * </p>
    */
   @Autowired
   private FST newSearchForm;
 
+  @Autowired
+  private SplibUtil util;
+
+  /**
+   * Construct a new instance with {@code function}.
+   * 
+   * @param function function
+   */
   public SplibSearchListController(@Nonnull String function) {
     this(function, new ControllerContext());
   }
 
+  /**
+   * Construct a new instance with {@code function}, {@code settings}.
+   * 
+   * @param function function
+   * @param settings settings
+   */
   public SplibSearchListController(@Nonnull String function, ControllerContext settings) {
     super(function, settings.subFunction("searchList"));
   }
 
   @Override
-  public String getDefaultSubFunctionOnSuccess() {
+  public String getDefaultDestSubFunctionOnNormalEnd() {
     return "searchList";
   }
 
-  /** 基本的にはSearch側の項目で使用すると想定されるため、overrideの引数としてはSearchForm側を渡しておく。 */
+  /**
+   * Overrides the parent method to add {@code getProperSearchForm} procedure.
+   */
   @Override
   public String submitOnChangeToRefresh(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     // 最新searchFormをsessionに保存
-    getProperSearchForm(model, searchForm);
+    searchForm = getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
-    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean("searchList", "page"));
+    return new ReturnUrlBean(this, util, "searchList", "page").showSuccessMessage().getUrl();
   }
 
-  /** listFormはparameterを受け取るわけではないが、instance生成のため引数に付加。 */
+  /**
+   * Overrides the parent method to add {@code getProperSearchForm, listForm.setDataKind() 
+   * and redirectUrlOnAppExceptionBean} procedures.
+   */
   @Override
   public String page(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     searchForm = getProperSearchForm(model, searchForm);
     listForm.setDataKind(searchForm.getDataKind());
-    redirectUrlOnAppExceptionBean = new RedirectUrlPageOnAppExceptionBean();
+    redirectUrlOnAppExceptionBean = new ReturnUrlBean(this, util, false);
 
-    prepare(model, loginUser, new PrepareSettings().noRedirect(), searchForm, listForm);
+    prepare(model, loginUser, searchForm, listForm);
     getService().page(searchForm, listForm, loginUser);
     getService().prepareForm(searchForm, listForm, loginUser);
 
-    return getReturnStringToShowPage();
+    return getDefaultHtmlPageName();
   }
 
-  /** 本来はpage()で直接受けたいが、1 methodに複数のGetMappingを設定できないため別メソッドとした。 */
+  /**
+   * Searches from the search conditions in {@code searchForm}.
+   * 
+   * <p>This method only redirects to {@code page} 
+   *     because the actual search procedure is implemented at {@code page} method.</p>
+   * 
+   * @param model model
+   * @param searchForm searchForm
+   * @param listForm listForm
+   * @param loginUser loginUser
+   * @return URL
+   * @throws Exception Exception
+   */
   @GetMapping(value = "action", params = "search")
   public String search(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     prepare(model, searchForm, listForm);
-    return prepareForRedirectOrForwardAndGetPath(
-        new RedirectUrlPageOnSuccessBean().noSuccessMessage(), model);
+    return redirectToSamePageTakingOverModel(model);
   }
 
-  /** 本来はpage()で直接受けたいが、1 methodに複数のGetMappingを設定できないため別メソッドとした。 */
+  /**
+   * Searches from the search conditions in {@code searchForm}.
+   * 
+   * <p>This method only redirects to {@code page} 
+   *     because the actual search procedure is implemented at {@code page} method.</p>
+   * 
+   * <p>This is exactly the same procedure as {@code search}, but there seems to be no way
+   *     to integrate these
+   *     because multiple {@code @GetMapping} cannot be added to a single method.</p>
+   *     
+   * @param model model
+   * @param searchForm searchForm
+   * @param listForm listForm
+   * @param loginUser loginUser
+   * @return URL
+   * @throws Exception Exception
+   */
   @GetMapping(value = "action", params = "action=searchAgain")
-  public String searchAgain(Model model, FST searchForm,
-      @AuthenticationPrincipal UserDetails loginUser, FLT listForm) throws Exception {
+  public String searchAgain(Model model, FST searchForm, FLT listForm,
+      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     prepare(model, searchForm, listForm);
-    return prepareForRedirectOrForwardAndGetPath(
-        new RedirectUrlPageOnSuccessBean().noSuccessMessage(), model);
+    return redirectToSamePageTakingOverModel(model);
   }
 
-  @SuppressWarnings({"unchecked"})
+  /**
+   * Returns proper search form.
+   * 
+   * <p>This feature stores the search conditions in {@code session}, 
+   *     so the search conditions are recorded 
+   *     even if you go to the other function pages and come back.</p>
+   * 
+   * @param model model
+   * @param searchForm searchForm
+   * @return proper searchForm
+   */
   protected FST getProperSearchForm(Model model, FST searchForm) {
 
     String formName = getFunction() + "SearchForm";
@@ -124,24 +189,35 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       }
 
     } else {
-      // その前に検索しているはずなので、引数のfがnullで、かつsessionにも情報がない、という場合はあり得ない。
+      // その前に検索しているはずなので、引数のsearchFormがnullで、かつsessionにも情報がない、という場合はあり得ない。
       if (request.getSession().getAttribute(formName) == null) {
-        throw new RuntimeException("f == null cannot be occurred.");
+        throw new RuntimeException("searchForm == null cannot be occurred.");
       }
     }
 
+    @SuppressWarnings("unchecked")
     FST formUsedForSearch =
         (FST) request.getSession().getAttribute(getSessionKey(formName, searchForm));
 
     return formUsedForSearch;
   }
 
-  /** fがnullの場合null Pointerが発生するためメソッド冒頭で定義することはできず、別メソッドとした。 */
+  /* fがnullの場合null Pointerが発生するためメソッド冒頭で定義することはできず、別メソッドとした。 */
   private String getSessionKey(String formName, FST searchForm) {
     return formName + (searchForm == null || searchForm.getDataKind() == null
         || searchForm.getDataKind().equals("") ? "" : "." + searchForm.getDataKind());
   }
 
+  /**
+   * Clears search conditions.
+   * 
+   * @param model model
+   * @param searchForm searchForm
+   * @param listForm listForm
+   * @param loginUser loginUser
+   * @return URL
+   * @throws Exception Exception
+   */
   @GetMapping(value = "action", params = "conditionClear")
   public String searchConditionClear(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
@@ -154,35 +230,63 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     request.getSession().setAttribute(sessionKey, newSearchForm);
 
     prepare(model, loginUser, searchForm, listForm);
-    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean().noSuccessMessage()
-        .putParam(SplibWebConstants.KEY_DATA_KIND, searchForm.getDataKind()));
+    return new ReturnUrlBean(this, util, true)
+        .putParam(SplibWebConstants.KEY_DATA_KIND, searchForm.getDataKind()).getUrl();
   }
 
+  /**
+   * Deletes the specified record.
+   * 
+   * @param model model
+   * @param searchForm searchForm
+   * @param listForm listForm
+   * @param loginUser loginUser
+   * @return URL
+   * @throws Exception Exception
+   */
   @PostMapping(value = "action", params = "delete")
   public String delete(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     prepare(model, loginUser, searchForm, listForm);
     getService().delete(listForm, loginUser);
 
-    return getReturnStringOnSuccess(new RedirectUrlPageOnSuccessBean()
-        .putParam(SplibWebConstants.KEY_DATA_KIND, listForm.getDataKind()));
+    return new ReturnUrlBean(this, util, true).showSuccessMessage()
+        .putParam(SplibWebConstants.KEY_DATA_KIND, listForm.getDataKind()).getUrl();
   }
 
+  /**
+   * Shows edit page in insert mode.
+   * 
+   * @param model model
+   * @param loginUser loginUser
+   * @return URL
+   * @throws FormInputValidationException FormInputValidationException
+   * @throws AppException AppException
+   */
   @PostMapping(value = "action", params = "showInsertForm")
   public String showInsertForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
       throws FormInputValidationException, AppException {
     prepare(model, loginUser);
-    RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean("edit", "page").noSuccessMessage()
-        .putParamMap(request.getParameterMap());
-    return getReturnStringOnSuccess(bean);
+    ReturnUrlBean bean =
+        new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
+    return bean.getUrl();
   }
 
+  /**
+   * Shows edit page in update mode.
+   * 
+   * @param model model
+   * @param loginUser loginUser
+   * @return URL
+   * @throws FormInputValidationException FormInputValidationException
+   * @throws AppException AppException
+   */
   @PostMapping(value = "action", params = "showUpdateForm")
   public String showUpdateForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
       throws FormInputValidationException, AppException {
     prepare(model, loginUser);
-    RedirectUrlBean bean = new RedirectUrlPageOnSuccessBean("edit", "page").noSuccessMessage()
-        .putParamMap(request.getParameterMap());
-    return getReturnStringOnSuccess(bean);
+    ReturnUrlBean bean =
+        new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
+    return bean.getUrl();
   }
 }

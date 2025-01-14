@@ -13,19 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.bean;
 
-public class RedirectUrlPathOnSuccessBean extends RedirectUrlPathBean
-    implements RedirectUrlOnSuccessInterface {
-
-  public RedirectUrlPathOnSuccessBean(String path) {
-    super(path);
-    putParam("success", new String[] {""});
-  }
-
-  /** method chain形式にしておく。 */
-  public RedirectUrlPathOnSuccessBean noSuccessMessage() {
-    removeParam("success");
-    return this;
-  }
-}
+/**
+ * Provides Controllers.
+ */
+package jp.ecuacion.splib.web.jpa.controller;

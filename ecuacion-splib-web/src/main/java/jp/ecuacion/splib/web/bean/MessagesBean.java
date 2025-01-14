@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Stores messages shown on pages.
+ */
 public class MessagesBean {
 
   /** 

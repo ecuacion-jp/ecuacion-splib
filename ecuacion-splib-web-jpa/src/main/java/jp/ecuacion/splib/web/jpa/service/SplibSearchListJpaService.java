@@ -31,6 +31,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Provides abstract search list service.
+ * 
+ * @param <FST> SplibEditForm
+ * @param <FLT> SplibEditForm
+ * @param <E> AbstractEntity
+ */
 //@formatter:off
 @Transactional(rollbackFor = Exception.class)
 public abstract class SplibSearchListJpaService<FST extends SplibSearchForm, 

@@ -19,6 +19,11 @@ import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+/**
+ * Provides a general service with no method.
+ * 
+ * <p>See {@link SplibGeneralDoNothingService}.</p>
+ */
 //@formatter:off
 @Service
 public class SplibGeneral2FormsDoNothingService

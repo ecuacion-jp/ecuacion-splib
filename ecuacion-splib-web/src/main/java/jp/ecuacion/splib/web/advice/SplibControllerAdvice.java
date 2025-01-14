@@ -73,32 +73,47 @@ public class SplibControllerAdvice {
   }
 
   private void recoverRequestParametersFromRedirectContextId(Model model) {
+
+    boolean takesOverContext = true;
+
     // messages, modelをredirect元から引き継いでいる場合はmodelに追加。
     String contextId = request.getParameter(SplibWebConstants.KEY_CONTEXT_ID);
-    if (contextId != null && !contextId.equals("")) {
-      @SuppressWarnings("unchecked")
-      Map<String, Object> contextMap = (Map<String, Object>) request.getSession()
-          .getAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
+    if (contextId == null || contextId.equals("")) {
+      takesOverContext = false;
+    }
 
-      // messageBean
-      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
-          contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
+    @SuppressWarnings("unchecked")
+    Map<String, Object> contextMap = (Map<String, Object>) request.getSession()
+        .getAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
+    // when contextId is appended to the URL
+    // maybe because of the reuse of the URL with contextId but no contextMap is saved.
+    if (contextMap == null) {
+      takesOverContext = false;
+    }
 
+    if (takesOverContext) {
       // model
       Map<String, Object> modelMapRedirectFrom =
           ((Model) contextMap.get(SplibWebConstants.KEY_MODEL)).asMap();
       modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
       model.addAllAttributes(modelMapRedirectFrom);
+
+      // messageBean
+      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
+          contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
+
+      // formをmodelから取得し設定変更
+      // validationは必要ならredirectの前に実施されているはずなので、再利用する際に再度validationを行う必要はない
+      model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
+          .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
+
+      // remove contextMap from session
+      request.getSession().removeAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
     }
 
-    // messagesBeanが引き継がれていない場合は、新規のmessagesBeanを設定しておく
-    if (!model.containsAttribute(SplibWebConstants.KEY_MESSAGES_BEAN)) {
+    // add new MessagesBean if null
+    if (model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN) == null) {
       model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
     }
-
-    // form。
-    // validationは必要ならredirectの前に実施されているはずなので、再利用する際に再度validationを行う必要はない
-    model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
-        .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
   }
 }

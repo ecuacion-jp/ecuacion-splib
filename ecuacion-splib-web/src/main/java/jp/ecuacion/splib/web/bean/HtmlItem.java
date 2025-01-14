@@ -19,18 +19,25 @@ import java.util.ArrayList;
 import java.util.List;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
-/** recordの中で定義され、record内の各属性のhtml上での表示・挙動を制御するための情報を保持。 */
+/**
+ * Stores attributes of each field which controls the behiviors of the field in a record.
+ */
 public class HtmlItem {
 
   /**
-   * fieldName。"accId", "accGroup.id"など、「acc.」などのrootRecordFieldNameは外した形で定義。
-   * そもそもrootRecordに定義するものなので、この形が自然だし効率的。
+   * Is a fieldName which the root record name plus dot (like (accGroup.) is removed.
+   * 
+   * <p>When you treat the field in the record belonging to the root record, 
+   * you need to define it like {@code childRecord.childFieldName}.</p>
    */
   protected String itemName;
 
   /**
-   * fieldNameに対するラベル表示を行うfield名を指定。"accName", "accGroup.name"などの形で定義。
-   * 尚、こちらも「acc.」などのrootRecordFieldNameは外した形で定義。 詳細はRecordInterface#getLabelItemName() を参照。
+   * Is a key to the label of the field.
+   * 
+   * <p>The root record name plus dot (like (accGroup.) is removed.<br>
+   *     See {@link jp.ecuacion.splib.web.form.record.RecordInterface#getLabelItemName(
+   *     String, String)}.</p>
    */
   protected String labelItemName;
 
@@ -50,7 +57,7 @@ public class HtmlItem {
     this.labelItemName = labelItemName;
     return this;
   }
-  
+
   public String getLabelItemName() {
     return labelItemName;
   }
@@ -74,6 +81,11 @@ public class HtmlItem {
     loginState, role, authority;
   }
 
+  /**
+   * 
+   * 
+   * @param <T>
+   */
   public static class AuthInfoContainer<T> {
     private List<AuthInfo<T>> list = new ArrayList<>();
     private T defaultValue;
@@ -136,7 +148,7 @@ public class HtmlItem {
     private AuthKindEnum authKind;
     private String authString;
     private T value;
-    
+
     public AuthInfo(AuthKindEnum authKind, String authString, T value) {
       this.authKind = authKind;
       this.authString = authString;

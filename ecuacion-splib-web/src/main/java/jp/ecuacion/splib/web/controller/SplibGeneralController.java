@@ -20,12 +20,11 @@ import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
-import jp.ecuacion.splib.web.bean.RedirectUrlBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPageBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPageOnSuccessBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPathBean;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
+import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.FormInputValidationException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
@@ -145,8 +144,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @return ControllerContext
      */
     @Nonnull
-    public ControllerContext subFunction(String subFunction) {
-      this.subFunction = subFunction;
+    public ControllerContext subFunction(@RequireNonnull String subFunction) {
+      this.subFunction = ObjectsUtil.paramRequireNonNull(subFunction);
       return this;
     }
 
@@ -189,9 +188,11 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      *     But if there are multiple controllers on one screen (= means "for one html file"),
      *     the subFunction of each controller and the postfix of the html file name 
      *     may be different.<br>
-     *     In that case, specify postfix with htmlFilePostfix.</p>
+     *     In that case, specify postfix with {@code htmlFilePostfix.}<br>
+     *     The filename would be {@code function + capitalize(htmlFilenamePostfix)}.</p>
      * 
-     * <p>It may be {@code null}. In that case {@link ControllerContext#getDefaultHtmlFileName()}
+     * <p>It may be {@code null}. 
+     *     In that case {@link SplibGeneralController#getDefaultHtmlPageName()}
      *     takes care.</p>
      *     
      * @return htmlFilenamePostfix
@@ -244,38 +245,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   /**
-   * 
-   */
-  public static class PrepareSettings {
-    List<String[]> paramList = new ArrayList<>();
-    boolean isRedirect = true;
-
-    /** GetMappingなどのparamsで使用する、parameterのkeyのみを使用する場合に使用。 */
-    public PrepareSettings addParam(String key) {
-      paramList.add(new String[] {key, ""});
-      return this;
-    }
-
-    public PrepareSettings addParam(String key, String value) {
-      paramList.add(new String[] {key, value});
-      return this;
-    }
-
-    public List<String[]> getParamList() {
-      return paramList;
-    }
-
-    public PrepareSettings noRedirect() {
-      isRedirect = false;
-      return this;
-    }
-
-    public boolean isRedirect() {
-      return isRedirect;
-    }
-  }
-
-  /**
    * Stores {@code ControllerContext}.
    */
   protected ControllerContext context;
@@ -288,17 +257,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   public static ControllerContext newContext() {
     return new ControllerContext();
   }
-
-  /**
-   * Stores {@code PrepareSettings}.
-   */
-  protected PrepareSettings prepareSettings;
-
-  public PrepareSettings getPrepareSettings() {
-    return prepareSettings;
-  }
-
-  protected RedirectUrlBean redirectUrlOnAppExceptionBean;
 
   protected RolesAndAuthoritiesBean rolesAndAuthoritiesBean;
 
@@ -388,8 +346,47 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     return context.rootRecordName();
   }
 
-  public RedirectUrlBean getRedirectUrlOnAppExceptionBean() {
+  /**
+   *  Is set If you want to redirect when {@code AppException} occurs.
+   *  
+   *  <p>It may be {@code null} if you don't want to redirect.</p>
+   *  
+   *  <p>{@code BizLogicRedirectAppException} redirect settings is priotized over this settings.</p>
+   */
+  protected ReturnUrlBean redirectUrlOnAppExceptionBean;
+
+  public ReturnUrlBean getRedirectUrlOnAppExceptionBean() {
     return redirectUrlOnAppExceptionBean;
+  }
+
+  /**
+   * Returns parameter list needed to add when the response is redirect to the original page.
+   * 
+   * <p>It can be used with the redirect by both normal end and abnormal end 
+   *     (= in the case that AppException is thrown).</p>
+   */
+  protected List<String[]> paramListOnRedirectToSelf = new ArrayList<>();
+
+  /**
+   * Adds html parameter with no value when the request redirects to the same page.
+   * 
+   * @param key key
+   */
+  protected void addParamToParamListOnRedirectToSelf(String key) {
+    paramListOnRedirectToSelf.add(new String[] {key, ""});
+  }
+
+  /**
+   * Adds html parameter when the request redirects to the same page.
+   * 
+   * @param key key
+   */
+  protected void addParamToParamListOnRedirectToSelf(String key, String value) {
+    paramListOnRedirectToSelf.add(new String[] {key, value});
+  }
+
+  public List<String[]> getParamListOnRedirectToSelf() {
+    return paramListOnRedirectToSelf;
   }
 
   /**
@@ -415,152 +412,181 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     model.addAttribute("rolesAndAuthorities", rolesAndAuthoritiesBean);
   }
 
-  /** メニューなどからURLを指定された際に表示する処理のreturnとして使用。htmlページのファイル名ルールを統一化する目的で使用。 */
-  protected String getReturnStringToShowPage() {
-    return getDefaultHtmlFileName();
+  /**
+   * Returns the redirect URL which redirects to the same page with success message.
+   * 
+   * <p>This is a utility method to use redirect easily 
+   *     without understanding {@code ReturnUrlBean}. 
+   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
+   *     
+   * @return URL
+   */
+  protected String getRedirectUrlOnSuccess() {
+    return new ReturnUrlBean(this, util).showSuccessMessage().getUrl();
   }
 
   /**
-   * メニューなどからURLを指定された際に表示する処理のreturnとして使用。
-   * 現時点では指定されたpageをそのまま返すだけなので意味はないのだが、今後の追加処理を見込んでmethod化しておく。 現時点では、これは1
-   * htmlファイルに対しcontroller、formが複数ある場合で、 かつcontrollerにはsubFunctionがあるがhtmlファイル名にはsubFunctionがつかない、
-   * という場合にやむなく使用するのみで、それ以外では使用想定はなし。
+   * Returns the redirect URL which redirects to the same page 
+   *     and takes over {@code model} to the transitioned page.
+   * 
+   * <p>This is a utility method to use redirect easily 
+   *     without understanding {@code ReturnUrlBean}. 
+   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
+   * 
+   * @param model model
+   * @return URL
    */
-  protected String getReturnStringToShowPage(String page) {
-    return page;
-  }
-
-  /** 処理が終わり、最終的にredirectする場合に使用。 */
-  protected String getReturnStringOnSuccess(RedirectUrlBean redirectUrlBean) {
-
-    if (redirectUrlBean instanceof RedirectUrlPageBean) {
-      return ((RedirectUrlPageBean) redirectUrlBean).getUrl(util.getLoginState(),
-          context.function(), getDefaultSubFunctionOnSuccess(), getDefaultPageOnSuccess());
-
-    } else if (redirectUrlBean instanceof RedirectUrlPathBean) {
-      return ((RedirectUrlPathBean) redirectUrlBean).getUrl();
-
-    } else {
-      throw new RuntimeException("RedirectUrlBeanが想定外の値です。" + redirectUrlBean);
-    }
+  public String redirectToSamePageTakingOverModel(Model model) {
+    return redirectToSamePageTakingOverModel(model, false);
   }
 
   /**
-   * 処理が終わり、最終的にredirectする場合に使用。 defaultPageへのredirectを簡便にするためのメソッド。
+   * Returns the redirect URL which redirects to the same page 
+   *     and takes over {@code model} to the transitioned page.
+   * 
+   * <p>This is a utility method to use redirect easily 
+   *     without understanding {@code ReturnUrlBean}. 
+   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
+   * 
+   * @param model model
+   * @param showsSuccessMessage showsSuccessMessage
+   * @return URL
    */
-  protected String getReturnStringOnSuccess() {
-    return new RedirectUrlPageOnSuccessBean().getUrl(util.getLoginState(), context.function(),
-        getDefaultSubFunctionOnSuccess(), getDefaultPageOnSuccess());
-  }
-
-  /**
-   * 個々のsplibUtilを直接呼び出しても良いのだが、記載を簡便化するため本クラスでメソッド化しておく。 modelは指定すれば引き継ぐ対象となる。引き継ぐ必要がない場合はnullを設定。
-   */
-  public String prepareForSuccessRedirectAndGetPath(Model model) {
-    return prepareForRedirectOrForwardAndGetPath(new RedirectUrlPageOnSuccessBean(), model);
-  }
-
-  /**
-   * 個々のsplibUtilを直接呼び出しても良いのだが、記載を簡便化するため本クラスでメソッド化しておく。 modelは指定すれば引き継ぐ対象となる。引き継ぐ必要がない場合はnullを設定。
-   */
-  public String prepareForSuccessRedirectAndGetPath(Model model, String subFunction, String page) {
-    return prepareForRedirectOrForwardAndGetPath(
-        new RedirectUrlPageOnSuccessBean(subFunction, page), model);
-  }
-
-  /**
-   * 個々のsplibUtilを直接呼び出しても良いのだが、記載を簡便化するため本クラスでメソッド化しておく。 modelは指定すれば引き継ぐ対象となる。引き継ぐ必要がない場合はnullを設定。
-   */
-  public String prepareForForwardAndGetPath(Model model) {
-    return prepareForRedirectOrForwardAndGetPath(new RedirectUrlPageBean(), model);
-  }
-
-  /**
-   * 個々のsplibUtilを直接呼び出しても良いのだが、記載を簡便化するため本クラスでメソッド化しておく。 modelは指定すれば引き継ぐ対象となる。引き継ぐ必要がない場合はnullを設定。
-   */
-  public String prepareForForwardAndGetPath(Model model, String subFunction, String page) {
-    RedirectUrlPageBean redirectBean =
-        (RedirectUrlPageBean) new RedirectUrlPageBean(subFunction, page).putParam("forwarded",
-            (String) null);
-    return prepareForRedirectOrForwardAndGetPath(redirectBean, model);
-  }
-
-  public String prepareForRedirectOrForwardAndGetPath(RedirectUrlPageBean redirectBean,
-      Model model) {
-    if (redirectBean.isForward()) {
-      redirectBean.putParamMap(request.getParameterMap());
+  public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage) {
+    ReturnUrlBean bean = new ReturnUrlBean(this, util);
+    if (showsSuccessMessage) {
+      bean.showSuccessMessage();
     }
 
-    return util.prepareForRedirectAndGetPath(redirectBean, model != null, this, request, model);
+    return util.prepareForPageTransition(request, this, bean, model, false);
   }
 
   /**
-   * validation errorなどが発生した際はredirectを通常しないので、ボタンを押した際の/.../action のパスがurlに残る。
-   * その画面のactionはpostで受けているのに、そのurlをbrowserのurlバーを指定してenterしてしまう（つまりgetで送信してしまう）ことがままある。
-   * システムエラーになるのはよくないので、その場合は404と同様の処理としてしまう。actionにparameterをつけないと全てここに来てしまうので注意。
+   * Receives {@code action} url with {@code GET} method.
+   * 
+   * <p>Accesses to the URL with {@code action} are supposed to be {@code POST} method.
+   *     But in some reasons {@code action} with {@code GET} method exist, 
+   *     mostly under the situation 
+   *     like the URL bar in browsers remains {@code action} URL and clicks it.<br>
+   *     In that situation it results in html 403, but it's not preferable 
+   *     so by this method 403 changes 404 and redirect to the default page.</p>
+   *     
+   * <p>Notice that {@code action} with {@code GET} is not recommended, but supported.
+   *     If you use with {@code GET} method, you have to add {@code params} to {@code @GetMapping}.
+   *     Otherwise this method robs the procedure.
+   *     </p>
    */
   @GetMapping(value = "action")
   public void throw404() throws NoResourceFoundException {
-    throw new NoResourceFoundException(HttpMethod.GET, "from SplibGeneralController");
+    throw new NoResourceFoundException(HttpMethod.GET, "from SplibGeneralController#throw404");
   }
 
   /**
    * Returns default html filename corresponding to the controller. 
-   * Basically {@code <function>.html}.
+   * 
+   * <p>Basically {@code <function>.html}.<br>
+   *     If {@code subFunction} is set, 
+   *     it becomes {@code <function> + capitalize(<subFuction>).html}.<br>
+   *     If {@code htmlFilenamePostfix} is set, 
+   *     it becomes  {@code <function> + capitalize(<htmlFilenamePostfix>).html}.<br>
+   *     (not {@code <function> + capitalize(<subFunction>)
+   *      + capitalize(<htmlFilenamePostfix>).html})</p>
    * 
    * @return html filename
    */
-  public String getDefaultHtmlFileName() {
+  public String getDefaultHtmlPageName() {
     return context.function()
         + StringUtils.capitalize(context.htmlFilenamePostfix() == null ? context.subFunction()
             : context.htmlFilenamePostfix());
   }
 
-  /** 処理成功時redirectをする場合のredirect先subFunctionのdefault。 */
-  public String getDefaultSubFunctionOnSuccess() {
+  /**
+   * Provides the default {@code subFunction} value as the part of the redirecting URL
+   * after the server procedure finished successfully.
+   * 
+   * <p>In this class {@code context.subFunction()} is set as the default return value,
+   *     but for instance in "edit" controller class, "searchList" is set 
+   *     because after insert or update a record, going back to the list screen 
+   *     seems to be normal.</p>
+   *     
+   * @return default subFunction value
+   */
+  public String getDefaultDestSubFunctionOnNormalEnd() {
     return context.subFunction();
-  }
-
-  /** 処理成功時redirectをする場合のredirect先subFunctionのdefault。 */
-  public String getDefaultSubFunctionOnAppException() {
-    return context.subFunction();
-  }
-
-  /** 処理成功時redirectをする場合のredirect先pageのdefault。 */
-  public String getDefaultPageOnSuccess() {
-    return "page";
-  }
-
-  /** 処理成功時redirectをする場合のredirect先pageのdefault。 */
-  public String getDefaultPageOnAppException() {
-    return "page";
-  }
-
-  public void prepare(Model model, SplibGeneralForm... forms)
-      throws FormInputValidationException, AppException {
-    prepare(model, null, new PrepareSettings(), forms);
-  }
-
-  public void prepare(Model model, PrepareSettings settings, SplibGeneralForm... forms)
-      throws FormInputValidationException, AppException {
-    prepare(model, null, settings, forms);
   }
 
   /**
-   * 現時点でloginUserを具体的に使用しているわけではないので、loginUserの引数がないmethodを呼んでも問題ないが、 未来のため一応実装しておく。
+   * Provides the default {@code subFunction} value as the part of the redirecting URL
+   * after the server procedure finished with error.
+   * 
+   * <p>In this class {@code context.subFunction()} is set as the default return value,
+   *     but for instance in "edit" controller class, "searchList" is set 
+   *     because after insert or update a record, going back to the list screen 
+   *     seems to be normal.</p>
+   *     
+   * @return default subFunction value
+   */
+  public String getDefaultDestSubFunctionOnAbnormalEnd() {
+    return context.subFunction();
+  }
+
+  /**
+   * Provides the default {@code subFunction} value as the part of the redirecting URL
+   * after the server procedure finished successfully.
+   * 
+   * <p>In this class {@code "page"} is set as the default return value.</p>
+   *     
+   * @return default subFunction value
+   */
+  public String getDefaultDestPageOnNormalEnd() {
+    return "page";
+  }
+
+  /**
+   * Provides the default {@code page} value as the part of the redirecting URL
+   * after the server procedure finished with error.
+   * 
+   * <p>In this class {@code "page"} is set as the default return value.</p>
+   *     
+   * @return default subFunction value
+   */
+  public String getDefaultDestPageOnAbnormalEnd() {
+    return "page";
+  }
+
+  /**
+   * Carries out the procedure that is needed 
+   * after the service procedure ended or the service throws exceptions.
+   * 
+   * <p>All the method with {@code @XxxMapping} 
+   *     needs to call this method at the first line of the method.<br>
+   * validation・BLチェック含めエラー発生なし、かつredirect、かつtransactionTokenCheck不要、の場合は厳密にはチェックは不要となる。
+   * が、最低でも引数なしのメソッドは呼ぶ（=transactionTokenCheckは実施）ルールとし、transactionTokenCheckが不要の場合は別途それを設定することとする
+   * </p>
+   * 
+   * @param model model
+   * @param forms forms
+   * @throws FormInputValidationException FormInputValidationException
+   * @throws AppException AppException
+   */
+  public void prepare(Model model, SplibGeneralForm... forms)
+      throws FormInputValidationException, AppException {
+    prepare(model, null, forms);
+  }
+
+  /**
+   * Carries out the procedure that is needed 
+   * after the service procedure ended or the service throws exceptions.
+   * エラー処理などに必要な処理を行う。 本処理は、@XxxMappingにより呼び出されるメソッド全てで呼び出す必要あり。
+   * 
+   * @param model model
+   * @param loginUser loginUser
+   * @param forms forms
+   * @throws FormInputValidationException FormInputValidationException
+   * @throws AppException AppException
    */
   public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms)
       throws FormInputValidationException, AppException {
-    prepare(model, loginUser, new PrepareSettings(), forms);
-  }
-
-  /**
-   * エラー処理などに必要な処理を行う。 本処理は、@XxxMappingにより呼び出されるメソッド全てで呼び出す必要あり。
-   * validation・BLチェック含めエラー発生なし、かつredirect、かつtransactionTokenCheck不要、の場合は厳密にはチェックは不要となる。
-   * が、最低でも引数なしのメソッドは呼ぶ（=transactionTokenCheckは実施）ルールとし、transactionTokenCheckが不要の場合は別途それを設定することとする
-   */
-  public void prepare(Model model, UserDetails loginUser, PrepareSettings settings,
-      SplibGeneralForm... forms) throws FormInputValidationException, AppException {
 
     // 全form共通処理
     for (SplibGeneralForm form : forms) {
@@ -579,8 +605,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     // エラー処理のためにmodelにcontrollerを格納
     model.addAttribute(SplibWebConstants.KEY_CONTROLLER, this);
 
-    // prepareSettingsはcontrollerに設定
-    this.prepareSettings = (settings == null) ? new PrepareSettings() : settings;
+    // // prepareSettingsはcontrollerに設定
+    // this.prepareSettings = (settings == null) ? new PrepareSettings() : settings;
 
     transactionTokenCheck();
 
@@ -593,14 +619,11 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   /**
-   * 以下を実施。 設定項目の値に従ってpulldownの選択肢を動的に変更したい場合など、敢えてvalidation checkをしたくない場面もあるので、 validation
-   * checkの要否を持たせている。
-   * <ul>
-   * <li>transactionToken check</li>
-   * <li>validation check</li>
-   * </ul>
+   * Provides token check feature.
+   * 
+   * <p>The token check is not executed when the html page doesn't have a token.</p>
    */
-  protected void transactionTokenCheck() throws BizLogicAppException {
+  private void transactionTokenCheck() throws BizLogicAppException {
     // forwardの場合は、forward前のrequest parameterも全て付加されてくるため、2回transactionCheckが発生しエラーとなる。
     // それを避けるため、forwardなら処理をスキップする。
     String forward = request.getParameter("forward");
@@ -626,6 +649,15 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     }
   }
 
+  /**
+   * Provides validation check feature.
+   * 
+   * @param form form
+   * @param result result
+   * @param loginState loginState
+   * @param bean bean
+   * @throws FormInputValidationException FormInputValidationException
+   */
   private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
       RolesAndAuthoritiesBean bean) throws FormInputValidationException {
     // input validation

@@ -19,6 +19,11 @@ import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * Provides abstract edit service.
+ * 
+ * @param <F> SplibEditForm
+ */
 public abstract class SplibEditService<F extends SplibEditForm>
     extends SplibGeneral1FormService<F> {
 
@@ -36,19 +41,47 @@ public abstract class SplibEditService<F extends SplibEditForm>
     }
   }
 
+  /**
+   * Shows insert page.
+   * 
+   * <p>The argument form is used 
+   *     to receive record id and version from the searchList Controller.</p>
+   * 
+   * @param form form
+   * @param loginUser loginUser
+   * @throws AppException AppException
+   */
   public abstract void getInsertPage(F form, UserDetails loginUser)
       throws AppException;
 
   /**
-   * 引数のformは、listから選択された行のidとversionを受け取るためのformとしてたまたまeditFormを使用しているのみ。
-   * そのidを元にレコード全体を取得したものを改めてeditFormとして戻す。
+   * Shows update page.
+   * 
+   * <p>The argument form is used 
+   *     to receive record id and version from the searchList Controller.</p>
+   * 
+   * @param form form
+   * @param loginUser loginUser
+   * @throws AppException AppException
    */
   public abstract void getUpdatePage(F form, UserDetails loginUser)
       throws Exception;
 
+  /**
+   * Edits (=inserts or updates) the data.
+   * 
+   * @param form form
+   * @param loginUser loginUser
+   * @throws Exception Exception
+   */
   public abstract void edit(F form, UserDetails loginUser) throws Exception;
 
-  /** edit時にinsertかupdateかを判別する方法。小さな処理だが共通化しておく。 */
+  /**
+   * Determines if the page is insert or update.
+   * 
+   * @param id id
+   * @return {@code true} when insert.
+   */
   protected boolean isInsert(String id) {
     return id == null || id.equals("");
   }

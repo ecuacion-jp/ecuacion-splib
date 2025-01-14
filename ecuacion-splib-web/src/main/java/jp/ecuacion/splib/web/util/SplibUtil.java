@@ -23,11 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
-import jp.ecuacion.splib.web.bean.MessagesBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPageBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPageOnAppExceptionBean;
-import jp.ecuacion.splib.web.bean.RedirectUrlPathBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,16 +112,19 @@ public class SplibUtil {
   }
 
   /**
+   * 基本的には、エラーが発生して自画面遷移するか、
+   * 処理成功ないし入力された情報を自画面で表示するが千位前画面で入力された内容をDBに格納しない場合に使用される。
+   * 後者は簡単なサンプルなどで使用するのがメインと思われ、本格業務システムでは使用されない想定。
    * 
-   * @param redirectBean
-   * @param takesOverModel
-   * @param ctrl
    * @param request
+   * @param ctrl
+   * @param redirectBean
    * @param model
+   * @param takeOverMessages
    * @return
    */
-  public String prepareForRedirectAndGetPath(RedirectUrlBean redirectBean, boolean takesOverModel,
-      SplibGeneralController<?> ctrl, HttpServletRequest request, Model model) {
+  public String prepareForPageTransition(HttpServletRequest request, SplibGeneralController<?> ctrl,
+      ReturnUrlBean redirectBean, Model model, boolean takeOverMessages) {
 
     // contextId and contextMap
     String contextId = UUID.randomUUID().toString();
@@ -134,44 +133,22 @@ public class SplibUtil {
         contextMap);
 
     // messagesBean
-    contextMap.put(SplibWebConstants.KEY_MESSAGES_BEAN,
-        model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
-
-    // model
-    if (takesOverModel) {
-      // 自画面遷移の場合はmodelもredirect先で取得可にしておく
-      contextMap.put(SplibWebConstants.KEY_MODEL, model);
+    if (takeOverMessages) {
+      contextMap.put(SplibWebConstants.KEY_MESSAGES_BEAN,
+          model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
     }
 
-    // redirectBean
-    // redirectBeanがない場合は自画面遷移。この場合は他のmodelの情報も全て遷移先に渡す。
-    // 後続処理の簡便化のため、自画面遷移の場合のredirectBeanを生成しておく。
-    if (redirectBean == null) {
-      redirectBean = new RedirectUrlPageOnAppExceptionBean();
+    // model
+    if (model != null) {
+      // 自画面遷移の場合はmodelもredirect先で取得可にしておく
+      contextMap.put(SplibWebConstants.KEY_MODEL, model);
     }
 
     // redirectBeanに今のuuidを追加設定しておく。
     redirectBean.putParam(SplibWebConstants.KEY_CONTEXT_ID, new String[] {contextId.toString()});
 
-    // Controller.PrepareSettingsのparameterを追加
-    for (String[] keyValue : ctrl.getPrepareSettings().getParamList()) {
-      redirectBean.putParam(keyValue[0], keyValue[1]);
-    }
-
-    // redirectを実施。
-    String path = null;
-    if (redirectBean instanceof RedirectUrlPageBean) {
-
-      path = ((RedirectUrlPageBean) redirectBean).getUrl(getLoginState(), ctrl.getFunction(),
-          ctrl.getDefaultSubFunctionOnAppException(), ctrl.getDefaultPageOnAppException());
-
-    } else if (redirectBean instanceof RedirectUrlPathBean) {
-      path = ((RedirectUrlPathBean) redirectBean).getUrl();
-
-    } else {
-      throw new RuntimeException("RedirectUrlBeanが想定外の値です。" + redirectBean);
-    }
-    return path;
+    // returns url
+    return redirectBean.getUrl();
   }
 
   /**
