@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
-import jp.ecuacion.splib.web.exception.internal.HtmlFileNotAllowedToOpenException;
-import jp.ecuacion.splib.web.exception.internal.HtmlFileNotFoundException;
+import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
+import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -32,43 +32,44 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * 処理をせず、htmlを表示するだけのcontrollerが必要な場合に使用する。 そのようなControllerが複数あると邪魔なのでそれらを集約する目的で使用。
- * ひとつのクラスの中に、本クラスの子クラスを複数内部クラスとして定義することで効率的に複数のページ移動を実現。
+ * Shows the page designated by {@code id} parameter of the url.
  * 
- * <p>
- * page=xxxとparameterで指定すれば、xxx.htmlを表示してくれるcontroller。セキュリティも考慮。
- * </p>
+ * <p>To ensure the security, needed validations are done. 
+ *     To secure the page which only logged-in users can see, this feature shows the page 
+ *     with {@code data-show-page-login-state} tag 
+ *     like [@code data-show-page-login-state="public"data-show-page-login-state="public"}
+ *     and shows the only page with specified loginState (public / account / admin) </p>
  * 
- * <p>
- * 権限で画面表示の制御を行う場合には本Controllerは使用不可かも。 （/public/showPage/page?page=xxx
- * をsecurityConfigに設定すればいけるかもしれないが未確認）
+ * <p>Basically this feature is assumed to use with GET access. <br>
+ *     But in some cases(*) this feature is used with POST access, 
+ *     so the method is also open to {@code POST}.
+ * 
+ * <p>(*) One of the cases is that 
+ *     in session timeout state login button or other post access button is pressed.<br>
+ *     In that case the accessed page was blocked 
+ *     because of the session timeout and request is redirected the url with this feature,
+ *     and if the original access is POST, 
+ *     the redirected access is also POST therefore the post access comes to this feature.
  * </p>
  */
 @Controller
 @Scope("prototype")
-@RequestMapping(
-    value = {"/public/showPage", "/public/adminShowPage", "/account/showPage", "/admin/showPage"})
+@RequestMapping(value = {"/public/show", "/public/adminShow", "/account/show", "/admin/show"})
 public class ShowPageController extends SplibBaseController {
 
   @Autowired
   private SplibUtil util;
 
   /**
-   * 表示したいpageをURLのparameterで指定することで表示するCnotroller。
+   * Shows the page designated by {@code id} parameter of the url.
    * 
-   * <p>
-   * 便利な反面、セキュリティガキになるところなので必要なチェック等は行う。 特に、未login状態からlogin後のpageが見えたりするのは問題なので、htmlタグに
-   * data-show-page-login-state="public"
-   * のように、この属性名で、かつloginStateが指定されたもの（複数ある場合はカンマ区切りで）にのみ閲覧が可能とする。
-   * </p>
-   * 
-   * <p>
-   * 基本はgetでの使用を想定。 Session Timeout状態で、ログインボタンや他のPOST系ボタンを押す場合、session timeoutで弾かれ
-   * 本ページにredirectされるが、そのredirectもPOSTで行われるため本処理にPOSTで入ってくることがある。 それを考慮しget/post両方を受け取る設定にしておく。
-   * </p>
+   * @param model model
+   * @param page page
+   * @return page
+   * @throws IOException IOException
    */
   @RequestMapping(value = "page", method = {RequestMethod.POST, RequestMethod.GET})
-  public String page(Model model, @RequestParam("page") String page) throws IOException {
+  public String page(Model model, @RequestParam("id") String page) throws IOException {
 
     // no checkだと脆弱性をつかれる可能性があるので、使用可能文字は限定しておく。
     String expression = "^[a-zA-Z0-9_]*$";
@@ -90,8 +91,8 @@ public class ShowPageController extends SplibBaseController {
     return page;
   }
 
-  /**
-   * htmlタグの中に"data-show-page-login-state属性があり、その値に現在のloginStateが存在することをチェックす流処理。
+  /*
+   * htmlタグの中に"data-show-page-login-state属性があり、その値に現在のloginStateが存在することをチェックする処理。
    * これだけのためにlibraryを追加しwarを重くするのは無駄なので、文字列操作で対応。
    */
   private void htmlTagAttributeCheck(String page, ClassPathResource resource) throws IOException {

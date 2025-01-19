@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.bean;
 
-public interface RedirectUrlOnSuccessInterface {
-  public RedirectUrlBean removeParam(String key);
-
-  /** method chain形式にしておく。 */
-  public default RedirectUrlOnSuccessInterface noSuccessMessage() {
-    removeParam("success");
-    return this;
-  }
-}
+/**
+ * Provides repositories for JPA.
+ */
+package jp.ecuacion.splib.jpa.repository;

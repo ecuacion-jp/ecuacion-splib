@@ -13,21 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.controller;
 
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-@Controller
-@Scope("prototype")
-@RequestMapping("/public/error")
-public class SystemErrorController extends SplibBaseController {
-
-  @GetMapping("action")
-  public String action() {
-    return "redirect:" + PropertyFileUtil.getApp("jp.ecuacion.splib.web.system-error.go-to-path");
-  }
-}
+/**
+ * Provides utilities for JPA features.
+ */
+package jp.ecuacion.splib.jpa.util;

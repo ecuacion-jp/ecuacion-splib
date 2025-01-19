@@ -13,19 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.exception.internal;
 
-public class HtmlFileNotAllowedToOpenException extends RuntimeException {
-
-  private static final long serialVersionUID = 1L;
-
-  private String fileName;
-
-  public HtmlFileNotAllowedToOpenException(String htmlFileName) {
-    this.fileName = htmlFileName;
-  }
-  
-  public String getFileName() {
-    return fileName;
-  }
-}
+/**
+ * Provides configs for JPA.
+ */
+package jp.ecuacion.splib.jpa.config;

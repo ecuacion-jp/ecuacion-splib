@@ -21,12 +21,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+/**
+ * Shows the prepared ecuacion config page.
+ */
 @Controller
 @Scope("prototype")
 @RequestMapping("/ecuacion/public/config")
 public class ConfigController
     extends SplibGeneral1FormController<ConfigForm, SplibGeneral1FormDoNothingService<ConfigForm>> {
 
+  /**
+   * Constructs a new instance.
+   */
   public ConfigController() {
     super("config");
   }

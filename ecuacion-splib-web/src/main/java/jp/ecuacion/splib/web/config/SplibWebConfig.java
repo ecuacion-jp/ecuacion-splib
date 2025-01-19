@@ -22,6 +22,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Provides configs for web.
+ * 
+ * <p>It also provides the feature to persist jsessionId to cookie to avoid jsessionId from url.</p>
+ */
 @Configuration
 @ComponentScan(basePackages = "jp.ecuacion.splib.core.config"
     + ",jp.ecuacion.splib.web.advice"
@@ -31,11 +36,11 @@ import org.springframework.context.annotation.Configuration;
   )
 public class SplibWebConfig {
 
-  /**
+  /*
    * 時々、URLが勝手に以下のように";" + jsessionIdが入り込み、";"が入ることでspring securityでエラーが発生しシステムエラーとなる。
    * 
    * <pre>
-   * 問題のURL: https://aws-instance-manager.ecuacion.jp/aws-instance-manager/public/showPage/page;jsessionid=D51E9ED564B7148E81EE82C4E33EC70A?notFound=&page=home
+   * 問題のURL: https://aws-instance-manager.ecuacion.jp/aws-instance-manager/public/show/page;jsessionid=D51E9ED564B7148E81EE82C4E33EC70A?notFound=&id=home
    * 例外message： org.springframework.security.web.firewall.RequestRejectedException: 
    * The request was rejected because the URL contained a potentially malicious String ";"
    * </pre>

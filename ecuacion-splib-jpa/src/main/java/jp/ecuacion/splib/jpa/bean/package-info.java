@@ -13,26 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.bean;
 
-public class RedirectUrlPathBean extends RedirectUrlBean {
-
-  private String path;
-
-  public RedirectUrlPathBean(String path) {
-    this.path = path;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public void setPath(String path) {
-    this.path = path;
-  }
-
-  public String getUrl() {
-    String urlPath =  getProtocol() + ":" + path + getParamsString();
-    return urlPath;
-  }
-}
+/**
+ * Provides beans for JPA features.
+ */
+package jp.ecuacion.splib.jpa.bean;

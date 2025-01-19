@@ -15,31 +15,25 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.splib.web.form.AdminLoginForm;
-import jp.ecuacion.splib.web.service.SplibGeneralDoNothingService;
+import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
+/**
+ * Provides controller for admin login.
+ */
 @Controller
 @Scope("prototype")
 @RequestMapping("/public/adminLogin")
-public class AdminLoginController extends SplibGeneralController<SplibGeneralDoNothingService> {
-
-  public AdminLoginController() {
-    super("adminLogin");
-  }
+public class AdminLoginController extends
+    SplibGeneral1FormController<AdminLoginForm, SplibGeneral1FormDoNothingService<AdminLoginForm>> {
 
   /**
-   * Session Timeout状態で、ログインボタンや他のPOST系ボタンを押す場合、session timeoutで弾かれ /public/login/accessDeined
-   * にredirectされるが、そのredirectもPOSTで行われるため 本処理にPOSTで入ってくることがある。それを考慮し@RequestMappingにしておく。
+   * Constructs a new instance.
    */
-  @RequestMapping(value = "page", method = {RequestMethod.POST, RequestMethod.GET})
-  public String page(Model model) throws BizLogicAppException {
-    model.addAttribute("adminLoginForm", new AdminLoginForm());
-    return "adminLogin";
+  public AdminLoginController() {
+    super("adminLogin");
   }
 }

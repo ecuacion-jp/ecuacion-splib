@@ -16,9 +16,7 @@
 package jp.ecuacion.splib.web.advice;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.SplibModelAttributes;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
@@ -30,31 +28,38 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+/**
+ * Provides common procedure that are supposed to be done before controllers are called.
+ */
 @ControllerAdvice
 public class SplibControllerAdvice {
-  public static final String REQUEST_KEY_MODEL = "REQUEST_KEY_MODEL";
 
   @Autowired
-  protected HttpServletRequest request;
+  private HttpServletRequest request;
 
   @Autowired
   private SplibModelAttributes modelAttr;
 
   @Autowired
-  SplibUtil util;
+  private SplibUtil util;
 
+  /**
+   * Sets objects to model and add model to request attribute.
+   * 
+   * <p>When the browser is redirected, 
+   *     this method also restores objects stored before the redirect.</p>
+   * 
+   * @param model model
+   */
   @ModelAttribute
-  public void setObjectsToModel(Model model) {
+  public void modelAttribute(Model model) {
 
     // modelをrequestに追加。exceptionHandlerでModelを使いたいのだが、
     // そこでmodelをDIで取得すると中身が空っぽのModelが取得されるため。
-    request.setAttribute(REQUEST_KEY_MODEL, model);
+    request.setAttribute(SplibWebConstants.KEY_MODEL, model);
 
     // redirect元から引き継がれたmodel, messagesを復元しmodelに追加
     recoverRequestParametersFromRedirectContextId(model);
-
-    // 今回の処理で呼ばれるcontrollerの処理の最後でredirectをする場合に使用されるためのcontextIdなどの準備
-    prepareRedirectContextId(model);
 
     // transactionToken
     model.addAttribute(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN,
@@ -68,81 +73,47 @@ public class SplibControllerAdvice {
   }
 
   private void recoverRequestParametersFromRedirectContextId(Model model) {
+
+    boolean takesOverContext = true;
+
     // messages, modelをredirect元から引き継いでいる場合はmodelに追加。
     String contextId = request.getParameter(SplibWebConstants.KEY_CONTEXT_ID);
-    if (contextId != null && !contextId.equals("")) {
-      // url parameterでmessagesBeanKeyUuidが渡された場合のみの処理。
-      // uuidは渡されたが、sessionが切れたなどでbeanMapが存在しない場合もあるため、beanMapが存在する際のみ実施
+    if (contextId == null || contextId.equals("")) {
+      takesOverContext = false;
+    }
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> contextMap = (Map<String, Object>) request.getSession()
+        .getAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
+    // when contextId is appended to the URL
+    // maybe because of the reuse of the URL with contextId but no contextMap is saved.
+    if (contextMap == null) {
+      takesOverContext = false;
+    }
+
+    if (takesOverContext) {
+      // model
+      Map<String, Object> modelMapRedirectFrom =
+          ((Model) contextMap.get(SplibWebConstants.KEY_MODEL)).asMap();
+      modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
+      model.addAllAttributes(modelMapRedirectFrom);
 
       // messageBean
-      @SuppressWarnings("unchecked")
-      Map<String, MessagesBean> messageBeanMap = (Map<String, MessagesBean>) request.getSession()
-          .getAttribute(SplibWebConstants.KEY_MESSAGES_MAP);
+      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
+          contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-      if (messageBeanMap != null && messageBeanMap.get(contextId) != null) {
-        model.addAttribute(MessagesBean.key, messageBeanMap.get(contextId));
+      // formをmodelから取得し設定変更
+      // validationは必要ならredirectの前に実施されているはずなので、再利用する際に再度validationを行う必要はない
+      model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
+          .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
 
-        // 一度使ったmessagesBeanKeyUuidに対するものは、二度とは使用しないためにmapから削除。他に残っているものがあればそれ模索するためclearする
-        messageBeanMap.clear();
-      }
-
-      // model
-      @SuppressWarnings("unchecked")
-      final Map<String, Model> modelMap = (HashMap<String, Model>) request.getSession()
-          .getAttribute(SplibWebConstants.KEY_MODEL_MAP);
-
-      if (modelMap != null && modelMap.get(contextId) != null) {
-        // 別途渡しているrequestResultと重複してしまうので、modelからrequestResultを除いておく
-        Map<String, Object> modelMapRedirectFrom = modelMap.get(contextId).asMap();
-        modelMapRedirectFrom.remove(MessagesBean.key);
-        model.addAllAttributes(modelMapRedirectFrom);
-
-        // 一度使ったmessagesBeanKeyUuidに対するものは、二度とは使用しないためにmapから削除。他に残っているものがあればそれ模索するためclearする
-        modelMap.clear();
-      }
+      // remove contextMap from session
+      request.getSession().removeAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
     }
 
-    // messagesBeanが引き継がれていない場合は、新規のmessagesBeanを設定しておく
-    if (!model.containsAttribute(MessagesBean.key)) {
-      model.addAttribute(MessagesBean.key, new MessagesBean());
+    // add new MessagesBean if null
+    if (model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN) == null) {
+      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
     }
-
-    // form。
-    // validationは必要ならredirectの前に実施されているはずなので、再利用する際に再度validationを行う必要はない
-    model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
-        .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
-  }
-
-  /** redirectされた先で必要情報を受け取れるようにするための準備。 */
-  private void prepareRedirectContextId(Model model) {
-    // contextId
-    String contextId = UUID.randomUUID().toString();
-    request.getSession().setAttribute(SplibWebConstants.KEY_CONTEXT_ID, contextId);
-
-    // messagesBean
-    @SuppressWarnings("unchecked")
-    Map<String, MessagesBean> messagesMap = (HashMap<String, MessagesBean>) request.getSession()
-        .getAttribute(SplibWebConstants.KEY_MESSAGES_MAP);
-    if (messagesMap == null) {
-      messagesMap = new HashMap<String, MessagesBean>();
-      request.getSession().setAttribute(SplibWebConstants.KEY_MESSAGES_MAP, messagesMap);
-    }
-
-    final MessagesBean requestResult = ((MessagesBean) model.getAttribute(MessagesBean.key));
-
-    // messagesBeanは常に設定
-    messagesMap.put(contextId.toString(), requestResult);
-
-    // modelMap
-    @SuppressWarnings("unchecked")
-    Map<String, Model> modelMap =
-        (HashMap<String, Model>) request.getSession().getAttribute(SplibWebConstants.KEY_MODEL_MAP);
-    if (modelMap == null) {
-      modelMap = new HashMap<String, Model>();
-      request.getSession().setAttribute(SplibWebConstants.KEY_MODEL_MAP, modelMap);
-    }
-
-    // modelはredirect先への引き継ぎ有無が場合によるためここではmodelMapへのmodel設定はしない
-
   }
 }

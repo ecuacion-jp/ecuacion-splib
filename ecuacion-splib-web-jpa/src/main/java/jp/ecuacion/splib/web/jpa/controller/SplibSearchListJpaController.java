@@ -18,9 +18,7 @@ package jp.ecuacion.splib.web.jpa.controller;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.controller.SplibSearchListController;
-import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.jpa.service.SplibSearchListJpaService;
@@ -28,6 +26,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 
+/**
+ * Controls the search and listing of the search result.
+ * 
+ * @param <FST> SplibSearchForm
+ * @param <FLT> SplibListForm
+ * @param <S> SplibSearchListService
+ */
 //@formatter:off
 public abstract class SplibSearchListJpaController
     <FST extends SplibSearchForm, FLT extends SplibListForm<?>, 
@@ -37,11 +42,22 @@ public abstract class SplibSearchListJpaController
 
   @PersistenceContext
   private EntityManager em;
-  
+
+  /**
+   * Construct a new instance with {@code function}.
+   * 
+   * @param function function
+   */
   public SplibSearchListJpaController(@Nonnull String function) {
     super(function);
   }
 
+  /**
+   * Construct a new instance with {@code function}, {@code settings}.
+   * 
+   * @param function function
+   * @param settings settings
+   */
   public SplibSearchListJpaController(@Nonnull String function, ControllerContext settings) {
     super(function, settings);
   }

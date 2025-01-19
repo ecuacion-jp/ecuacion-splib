@@ -13,19 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.bean;
+package jp.ecuacion.splib.web.exception;
 
-public class RedirectUrlPageOnAppExceptionBean extends RedirectUrlPageBean {
+/**
+ * Notices that the html page file specified by url parameter does not exist.
+ */
+public class HtmlFileNotFoundException extends RuntimeException {
 
-  public RedirectUrlPageOnAppExceptionBean() {
-    super();
+  private static final long serialVersionUID = 1L;
+
+  private String fileName;
+
+  /**
+   * Constructs a new instance.
+   * 
+   * @param htmlFileName htmlFileName
+   */
+  public HtmlFileNotFoundException(String htmlFileName) {
+    this.fileName = htmlFileName;
   }
-
-  public RedirectUrlPageOnAppExceptionBean(String page) {
-    super(page);
-  }
-
-  public RedirectUrlPageOnAppExceptionBean(String subFunction, String page) {
-    super(subFunction, page);
+  
+  public String getFileName() {
+    return fileName;
   }
 }

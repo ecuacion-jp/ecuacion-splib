@@ -20,8 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import jp.ecuacion.splib.web.bean.HtmlItem;
-import jp.ecuacion.splib.web.bean.HtmlItemNumber;
+import jp.ecuacion.splib.web.bean.HtmlField;
+import jp.ecuacion.splib.web.bean.HtmlFieldNumber;
+import jp.ecuacion.splib.web.util.SplibRecordUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
@@ -31,22 +32,21 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
  */
 public interface RecordInterface {
 
-  HtmlItem[] getHtmlItems();
+  HtmlField[] getHtmlFields();
 
-  default HtmlItem getHtmlItem(String itemName) {
-    return Arrays.asList(getHtmlItems()).stream()
-        .collect(Collectors.toMap(e -> e.getItemName(), e -> e)).get(itemName);
+  default HtmlField getHtmlField(String fieldId) {
+    return new SplibRecordUtil().getHtmlField(getHtmlFields(), fieldId);
   }
 
   default boolean needsCommas(String itemName) {
-    HtmlItem item = Arrays.asList(getHtmlItems()).stream()
-        .collect(Collectors.toMap(e -> e.getItemName(), e -> e)).get(itemName);
+    HtmlField item = Arrays.asList(getHtmlFields()).stream()
+        .collect(Collectors.toMap(e -> e.getId(), e -> e)).get(itemName);
 
-    if (item == null || !(item instanceof HtmlItemNumber)) {
+    if (item == null || !(item instanceof HtmlFieldNumber)) {
       return false;
     }
 
-    HtmlItemNumber numItem = (HtmlItemNumber) item;
+    HtmlFieldNumber numItem = (HtmlFieldNumber) item;
     return numItem.getNeedsCommas();
   }
 
@@ -69,7 +69,7 @@ public interface RecordInterface {
    * </p>
    */
   default String getLabelItemName(String rootRecordname, String itemName) {
-    HtmlItem[] htmlItems = getHtmlItems() == null ? new HtmlItem[] {} : getHtmlItems();
+    HtmlField[] htmlItems = getHtmlFields() == null ? new HtmlField[] {} : getHtmlFields();
 
     // rootRecordNameがaccの場合に、例外処理でエラーメッセージに項目名を出す際の処理は、itemNameが「acc.accId」となってしまう。
     // この場合でも対応できるように、itemNameの頭がrootRecordName + '.'の場合はそれを取り除く処理を行う。
@@ -78,8 +78,8 @@ public interface RecordInterface {
     }
 
     Map<String, String> labelNameMap =
-        Arrays.asList(htmlItems).stream().collect(Collectors.toMap(e -> e.getItemName(),
-            e -> e.getLabelItemName() == null ? e.getItemName() : e.getLabelItemName()));
+        Arrays.asList(htmlItems).stream().collect(Collectors.toMap(e -> e.getId(),
+            e -> e.getDisplayNameId() == null ? e.getId() : e.getDisplayNameId()));
     String labelItemName = labelNameMap.get(itemName);
 
     // htmlItems上で定義がない場合 /
@@ -94,13 +94,13 @@ public interface RecordInterface {
    * htmlItemsについて、個別機能のlistと共通のlistをmergeさせるために使用する。
    * あくまでutilレベルなので個別処理にしても良いのだが、極力個別コードを減らしたいので本クラスに保持する。
    */
-  default HtmlItem[] mergeHtmlItems(HtmlItem[] items1, HtmlItem[] items2) {
-    List<HtmlItem> list = new ArrayList<>(Arrays.asList(items1));
+  default HtmlField[] mergeHtmlItems(HtmlField[] items1, HtmlField[] items2) {
+    List<HtmlField> list = new ArrayList<>(Arrays.asList(items1));
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
-    List<String> item1Keys = Arrays.asList(items1).stream().map(e -> e.getItemName()).toList();
+    List<String> item1Keys = Arrays.asList(items1).stream().map(e -> e.getId()).toList();
 
-    for (String item2Key : Arrays.asList(items2).stream().map(e -> e.getItemName()).toList()) {
+    for (String item2Key : Arrays.asList(items2).stream().map(e -> e.getId()).toList()) {
       if (item1Keys.contains(item2Key)) {
         throw new RuntimeException(
             "'itemName' of HtmlItem[] duplicated with commonHtmlItems. key: " + item2Key);
@@ -109,7 +109,7 @@ public interface RecordInterface {
 
     list.addAll(Arrays.asList(items2));
 
-    return list.toArray(new HtmlItem[list.size()]);
+    return list.toArray(new HtmlField[list.size()]);
 
   }
 
@@ -117,10 +117,10 @@ public interface RecordInterface {
   default List<String> getNotEmptyFields(String loginState, RolesAndAuthoritiesBean bean) {
     List<String> list = new ArrayList<>();
 
-    HtmlItem[] htmlItems = getHtmlItems();
-    for (HtmlItem item : htmlItems) {
+    HtmlField[] htmlItems = getHtmlFields();
+    for (HtmlField item : htmlItems) {
       if (item.getIsNotEmpty(loginState, bean)) {
-        list.add(item.getItemName());
+        list.add(item.getId());
       }
     }
 

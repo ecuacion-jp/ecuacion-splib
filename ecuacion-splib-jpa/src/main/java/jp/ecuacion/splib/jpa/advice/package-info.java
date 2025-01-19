@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.jpa.bean;
 
-public class SplibSoftDeleteAdviceInfoBean {
-  private static ThreadLocal<Object> thGroupId = new ThreadLocal<>();
-
-  public static Object getGroupId() {
-    return thGroupId.get();
-  }
-
-  public static void setGroupId(Object groupId) {
-    thGroupId.set(groupId);
-  }
-}
+/**
+ * Provides advices for JPA features.
+ */
+package jp.ecuacion.splib.jpa.advice;

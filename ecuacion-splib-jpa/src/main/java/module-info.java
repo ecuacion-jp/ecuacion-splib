@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 module jp.ecuacion.splib.jpa {
-	exports jp.ecuacion.splib.jpa.repository;
+  exports jp.ecuacion.splib.jpa.advice;
+  exports jp.ecuacion.splib.jpa.bean;
+  exports jp.ecuacion.splib.jpa.config;
+  exports jp.ecuacion.splib.jpa.repository;
+  exports jp.ecuacion.splib.jpa.util;
 	
   requires spring.context;
   requires spring.beans;
@@ -29,4 +33,5 @@ module jp.ecuacion.splib.jpa {
   requires spring.data.jpa;
   requires jp.ecuacion.lib.core;
   requires org.hibernate.orm.core;
+  requires transitive org.aspectj.weaver;
 }

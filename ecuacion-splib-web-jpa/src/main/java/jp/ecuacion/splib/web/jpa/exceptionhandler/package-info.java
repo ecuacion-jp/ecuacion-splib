@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.bean;
 
-public class RedirectUrlPathOnAppExceptionBean extends RedirectUrlPathBean {
-
-  public RedirectUrlPathOnAppExceptionBean(String path) {
-    super(path);
-  }
-}
+/**
+ * Provides exception handlers.
+ */
+package jp.ecuacion.splib.web.jpa.exceptionhandler;

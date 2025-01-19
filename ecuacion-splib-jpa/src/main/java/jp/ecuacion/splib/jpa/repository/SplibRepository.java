@@ -21,13 +21,36 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 
+/**
+ * Provides epository methods needed for soft delete.
+ * 
+ * @param <T> The entity class
+ * @param <I> The data type of the surrogate key, like {@code Long}.
+ */
 @NoRepositoryBean
 public interface SplibRepository<T, I> extends JpaRepository<T, I> {
   
+  /**
+   * Is used to physical-delete soft-deleted records.
+   * 
+   * @param entity entity
+   * @return Optional of the entity.
+   */
   Optional<T> findByIdAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") T entity);
 
+  /**
+   * Is used to physical-delete soft-deleted records.
+   * 
+   * @param entity entity
+   * @return Optional of the entity.
+   */
   Optional<T> findByNaturalKeyAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") T entity);
 
+  /**
+   * Is used to physical-delete soft-deleted records.
+   * 
+   * @param entity entity
+   */
   @Modifying
   void deleteByIdAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") T entity);
 

@@ -15,158 +15,90 @@
  */
 package jp.ecuacion.splib.web.service;
 
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
-import java.nio.file.StandardOpenOption;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import jp.ecuacion.lib.core.exception.checked.AppWarningException;
+import jp.ecuacion.lib.core.annotation.RequireNonnull;
+import jp.ecuacion.lib.core.exception.checked.AppExceptionFields;
+import jp.ecuacion.lib.core.logging.DetailLogger;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
+import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * Is the service abstract class for general page of the page template.
+ */
 public abstract class SplibGeneralService {
 
   @Autowired
   private HttpServletRequest request;
 
-  /* ------- */
-  /* warning */
-  /* ------- */
+  private DetailLogger detailLog = new DetailLogger(this);
 
-  protected void throwWarning(Set<String> confirmedWarningMessageSet, Locale locale, String msgId)
-      throws AppWarningException {
-    if (!confirmedWarningMessageSet.contains(msgId)) {
-      throw new AppWarningException(locale, msgId);
-    }
-  }
-
-  /**  */
-  protected void throwWarning(Set<String> confirmedWarningMessageSet, Locale locale,
-      String buttonName, String msgId, String... params) throws AppWarningException {
-    if (!confirmedWarningMessageSet.contains(msgId)) {
-      throw new AppWarningException(locale, buttonName, null, msgId, params);
-    }
-  }
-
-  /* ---------------------- */
-  /* exclusive lock by file */
-  /* ---------------------- */
-
-  /**
-   * lock fileの最終更新時刻を取得。楽観的排他制御を行うために使用。
-   *
-   * @return ファイルの更新時刻を文字列形式で保持。
-   *         yyyy-mm-dd-hh-mi-ss.SSSの形式とし、timezoneが違う場所での処理でも問題にならないよう、常にUTCでの時刻とする。
-   */
-  protected String getLockFileVersion(File lockFile) throws IOException {
-    // ディレクトリが存在しなければ作成
-    lockFile.getParentFile().mkdirs();
-
-    // ファイルが存在しなければ作成
-    if (!lockFile.exists()) {
-      lockFile.createNewFile();
-    }
-
-    return Instant.ofEpochMilli(lockFile.lastModified()).atOffset(ZoneOffset.ofHours(0))
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS"));
-  }
-
-  /**
-   * lock fileによる悲観的排他制御を実施したい場合に使用できるutility method。
+  /** 
+   * Provides the warning feature.
    * 
-   * <p>
-   * lockFileとして使用するpathを指定したFileオブジェクトを渡せば、あとは諸々やってくれる。 exclusiveLockActivatedByLockFile()
-   * は、abstractにして実装必須にすると面倒（fileによるロックの頻度は高くない）なので、
-   * 本クラスにて処理なしの通常メソッドとして実装しておき、使用する場合はそれをoverride、とする。
-   * </p>
-   *
-   * @param version ファイルの更新時刻を文字列形式で保持。getLockFileVersion(File lockFile)の戻り値の形式。
+   * <p>By calling this method you can use the warning feature, 
+   *     which means that the warning message is shown on the message box, 
+   *     and by pressing OK button the warning is ignored at the next time.</p>
+   *     
+   * @param confirmedWarningMessageSet This is obtained from 
+   *     {@code form.getConfirmedWarningMessageSet()}.
+   * @param locale locale
+   * @param buttonIdToPressOnConfirm buttonIdToPressOnConfirm, may be {@code null}.
+   *     See {@link jp.ecuacion.splib.web.exception.WebAppWarningException}.
+   * @param fields fields
+   * @param msgId msgId
+   * @param params params
+   * @throws WebAppWarningException WebAppWarningException
    */
-  protected void fileLock(File lockFile, String version, SplibGeneralForm form) throws Exception {
-    FileLock lockedObject = null;
-    try (FileChannel channel =
-        FileChannel.open(lockFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);) {
+  protected void throwWarning(@RequireNonnull Set<String> confirmedWarningMessageSet,
+      @RequireNonnull Locale locale, @Nullable String buttonIdToPressOnConfirm,
+      @Nullable AppExceptionFields fields, @RequireNonnull String msgId,
+      @RequireNonnull String... params) throws WebAppWarningException {
 
-      // ファイルロックを試行。例外発生ではなくlockedObjectがnullの場合は、ロック取得に失敗したことになる場合もあるらしい
-      lockedObject = channel.tryLock();
-      if (lockedObject == null) {
-        throw new OverlappingFileLockException();
-      }
-
-      // 画面表示時のtimestampとの差異比較
-      String fileTimestamp = getLockFileVersion(lockFile);
-      if (!version.equals(fileTimestamp)) {
-        throw new OverlappingFileLockException();
-      }
-
-      // ここまででロックを獲得できたので、ロックを獲得できた場合に実行したい内容を記載。
-      exclusiveLockActivatedByLockFile(lockFile, form);
-
-      // 特に使用はしないのだが、lockFileを更新する目的でtimestampの文字列を書き込んでおく。
-      ByteBuffer src = ByteBuffer.allocate(30);
-      byte[] bytes = LocalDateTime.now().toString().getBytes();
-      src.put(bytes);
-      src.position(0);
-
-      channel.write(src);
-
-      lockedObject.release();
-
-    } catch (IOException | OverlappingFileLockException ex) {
-      throw new OverlappingFileLockException();
+    if (!ObjectsUtil.paramRequireNonNull(confirmedWarningMessageSet).contains(msgId)) {
+      throw new WebAppWarningException(locale, msgId, params).fields(fields)
+          .buttonIdToPressOnConfirm(buttonIdToPressOnConfirm);
     }
   }
 
-  /**
-   * ロックを獲得できた場合に実行したい内容を記載。 file lockを使用する場合は本メソッドをoverride。
-   * 子クラスで実装必須になると面倒（ファイルロック使用時以外は使用しないので）なことからabstractにはしない。
-   */
-  protected void exclusiveLockActivatedByLockFile(File lockFile, SplibGeneralForm form)
-      throws Exception {
-
-  }
-
-  /* ------ */
-  /* record */
-  /* ------ */
+  // /**
+  // * record内のlocalDate項目（String）をLocalDate形式で取得。
+  // */
+  // protected LocalDate localDate(String date) {
+  // return (date == null || date.equals("")) ? null
+  // : LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+  // }
 
   /**
-   * record内のlocalDate項目（String）をLocalDate形式で取得。
-   */
-  protected LocalDate localDate(String date) {
-    return (date == null || date.equals("")) ? null
-        : LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-  }
-
-  /**
-   * offsetはlogin画面でのonload時に呼ばれるため、login画面を開いた状態で放置した場合は値がnullでエラーになる。
+   * Obtains {@code DatetimeFormatParameters} instance.
+   * 
+   * <p>It's often used to construct a record.</p>
    */
   public DatetimeFormatParameters getParams() {
     return new SplibUtil().getParams(request);
   }
 
-  /** SplibGeneralServivceでは、メソッドは定義しておくものの中身は実装しない。 */
+  /** 
+   * Puts data needed to display a page.
+   * 
+   * <p>It's called from controllers and {@code SplibExceptionHandler} 
+   *     right before showing a page.<br>
+   *     In SplibGeneralService no procedures are defined in it. <br>
+   *     It's not an abstract method because the implementation of this method is not mandatory.</p>
+   *     
+   * @param allFormList a list of forms
+   * @param loginUser UserDetails
+   */
   public void prepareForm(List<SplibGeneralForm> allFormList, UserDetails loginUser) {
-    System.out
-        .println("prepareForm(List<SplibGeneralForm> allFormList, UserDetails loginUser) called.");
+    detailLog
+        .debug("prepareForm(List<SplibGeneralForm> allFormList, UserDetails loginUser) called.");
   }
-
-  /* ----- */
-  /* other */
-  /* ----- */
-
 }

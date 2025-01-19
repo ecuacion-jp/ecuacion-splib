@@ -24,6 +24,27 @@ import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * Provides abstract search list service.
+ * 
+ * <p>In searching and list the results there are 3 procedures.</p>
+ * 
+ * <ol>
+ * <li>To obtain the number of all the records adopting to the search conditions.</li>
+ * <li>To obtain the the sorted records adopting to the search conditions 
+ *     and the page number currently showing</li>
+ * <li>To set the data for optimistic exclusive control</li>
+ * </ol>
+ * 
+ * <p>In the case that storage has the function of data sorting and filtering (like DB),
+ *     you should use those functions to ease the procedure.
+ *     but in the case that storage doesn't have them, you need to sorting and filtering 
+ *     in java code. In that case {@code getSortedList} sorts the data, 
+ *     and {@code getFilteredList} filters them.</p>
+ * 
+ * @param <FST> SplibSearchForm
+ * @param <FLT> SplibListForm
+ */
 //@formatter:off
 public abstract class SplibSearchListService
     <FST extends SplibSearchForm, FLT extends SplibListForm<?>>
@@ -31,24 +52,34 @@ public abstract class SplibSearchListService
   //@formatter:on
 
   /**
-   * 以下の3つの処理を行う。
+   * Deletes the record.
    * 
-   * <p>
-   * 1.検索条件適用結果の全件数取得と設定<br>
-   * 2.ページ番号を踏まえた表示対象レコードデータの取得と設定<br>
-   * 3.楽観的排他制御のための情報設定<br>
-   * </p>
-   * DBのように、外部でフィルタができる仕組みがある場合は1.と2.を別処理にできるが、
-   * フィルタ含めてjava内で実施する場合は1.のフィルタ実施のために全件取得、1.で取得・フィルタした結果のlistを2.で使う形となる。
+   * @param listForm listForm
+   * @param loginUser loginUser
+   * @throws Exception Exception
    */
-
   public abstract void delete(FLT listForm, UserDetails loginUser) throws Exception;
 
+  /**
+   * Sorts the list.
+   * 
+   * @param listToSort listToSort
+   * @param searchForm searchForm
+   * @return List
+   */
   protected List<? extends SplibRecord> getSortedList(List<? extends SplibRecord> listToSort,
       SplibSearchForm searchForm) {
     return getSortedList(listToSort, searchForm, new String[] {});
   }
 
+  /**
+   * Sorts the list.
+   * 
+   * @param listToSort listToSort
+   * @param searchForm searchForm
+   * @param needsNumberSortItems needsNumberSortItems
+   * @return List
+   */
   protected List<? extends SplibRecord> getSortedList(List<? extends SplibRecord> listToSort,
       SplibSearchForm searchForm, String[] needsNumberSortItems) {
 
@@ -73,6 +104,13 @@ public abstract class SplibSearchListService
     }
   }
 
+  /**
+   * Filters list.
+   * 
+   * @param sortedList sortedList
+   * @param seForm seForm
+   * @return list
+   */
   protected List<? extends SplibRecord> getFilteredList(List<? extends SplibRecord> sortedList,
       SplibSearchForm seForm) {
 

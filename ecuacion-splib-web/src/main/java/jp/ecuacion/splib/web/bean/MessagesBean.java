@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Stores messages shown on pages.
+ */
 public class MessagesBean {
-  public static final String key = "responseMessages";
 
   /** 
    * DBを使用する場合は、通常データ更新などの後処理の際はredirectしそのURLの中に?successを混ぜることで処理成功メッセージを出す。

@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.jpa.exceptionhandler;
 
-import java.nio.channels.OverlappingFileLockException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -25,15 +24,32 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 
-/** SplibExceptionHandlerNoJpaに、jpa独自の例外処理を追加したクラス。JPAを使用している場合はこちらを継承。 */
+/**
+ * Provides JPA related exception handling 
+ * in addition to the handling within {@code SplibExceptionHandler}.
+ * 
+ * <p>Use this class when the app uses JPA.</p>
+ */
 public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
 
   /**
-   * 楽観的排他制御の処理。 画面表示〜ボタン押下の間にレコード更新された場合は、手動でチェックなので直接BizLogicAppExceptionを投げても良いのだが、
-   * 複数sessionで同一レコードを同時更新した場合（service内の処理内でのselectからupdateの間に別sessionがselect〜updateを完了）は
-   * JPAが自動でObjectOptimisticLockingFailureExceptionを投げてくるので、それも同様に処理できるよう楽観的排他制御エラーは
-   * ObjectOptimisticLockingFailureExceptionで統一しておく。
-   * 尚、jpa以外でも、jdbcやfileでのlockでも同様の事象があるので全て統一しObjectOptimisticLockingFailureExceptionを使用するものとする。
+   * Catches {@code ObjectOptimisticLockingFailureException} 
+   * and treats the optimistic exclusive controls.
+   * 
+   * <p>Optimistic exclusive control causes an exception when a record is updated 
+   *     in the interval between pressing the button and actually updating the record (A).<br>
+   *     But usually optimistic exclusive control is also needed when a record is updated 
+   *     in the interval between displaying the screen and pressing the button (B), 
+   *     and in the interval between displaying the record in the list page 
+   *     and displaying the detail page by selecting the record in the list page (C).</p>
+   *  
+   *  <p>(A) is implemented by JPA, and(A) throws
+   *      {@code ObjectOptimisticLockingFailureException}.<br>
+   *      (A) automatically works so app developer don't have to cares about it.
+   *      On the other hand (B) and (C) is not implemented by JPA, 
+   *      so it's implemented in {@code ecuacion-splib}.<br>
+   *      But in {@code ecuacion-splib} (B) and (C) 
+   *      also throws {@code ObjectOptimisticLockingFailureException} for integrated handling.</p>
    */
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
   public ModelAndView handleObjectOptimisticLockingFailureException(
@@ -42,6 +58,14 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
     return super.handleOptimisticLockingFailureException(null, loginUser);
   }
 
+  /**
+   * Catches {@code PessimisticLockingFailureException}.
+   * 
+   * @param exception exception
+   * @param loginUser loginUser
+   * @return ModelAndView
+   * @throws Exception Exception
+   */
   @ExceptionHandler({PessimisticLockingFailureException.class})
   public ModelAndView handlePessimisticLockingFailureException(
       PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser)

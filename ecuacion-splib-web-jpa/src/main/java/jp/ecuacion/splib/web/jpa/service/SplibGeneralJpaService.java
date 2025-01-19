@@ -19,6 +19,11 @@ import jp.ecuacion.lib.jpa.entity.AbstractEntity;
 import jp.ecuacion.splib.web.service.SplibGeneralService;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Is the service abstract class for general page of the page template with JPA.
+ * 
+ * @param <E> entity
+ */
 @Transactional(rollbackFor = Exception.class)
 public abstract class SplibGeneralJpaService<E extends AbstractEntity> extends SplibGeneralService
     implements SplibJpaServiceInterface<E> {

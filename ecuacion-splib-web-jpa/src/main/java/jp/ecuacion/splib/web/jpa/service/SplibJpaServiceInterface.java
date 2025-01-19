@@ -22,14 +22,28 @@ import jp.ecuacion.lib.jpa.entity.AbstractEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+/**
+ * Is used for optimistic locking procedure with JPA.
+ * 
+ * @param <E> entity
+ */
 public interface SplibJpaServiceInterface<E extends AbstractEntity> {
 
-  /** findAndOptimisticLockingCheck() にて使用。selectのためのrepositoryを取得。 */
+  /**
+   * Is used for {@code findAndOptimisticLockingCheck()}.
+   * 
+   * <p>It obtains the repository for select record from database.
+   *     See {@link #findAndOptimisticLockingCheck(String, String...)}.</p>
+   * 
+   * @return repository
+   */
   public abstract SplibRepository<E, Long> getRepositoryForOptimisticLocking();
 
   /**
-   * findAndOptimisticLockingCheck()にて使用。楽観的排他制御のためのversionを取得。
-   * {@link #findAndOptimisticLockingCheck(String, String...)}を参照
+   * Is used for {@code findAndOptimisticLockingCheck()}.
+   * 
+   * <p>It obtains the versions for optimistic exclusive control.
+   *     See {@link #findAndOptimisticLockingCheck(String, String...)}.</p>
    */
   public abstract String[] getVersionsForOptimisticLocking(E e);
 

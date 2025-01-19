@@ -19,6 +19,11 @@ import java.util.List;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * Is the abstract general service with 1 Form.
+ * 
+ * @param <F> SplibGeneralForm
+ */
 public abstract class SplibGeneral1FormService<F extends SplibGeneralForm>
     extends SplibGeneralService {
 
@@ -33,7 +38,26 @@ public abstract class SplibGeneral1FormService<F extends SplibGeneralForm>
     prepareForm((F) form, loginUser);
   }
 
+  /**
+   * Prepares form.
+   * 
+   * <p>This is called in addition to showing normal pages,
+   *     after occuring {@code AppException} 
+   *     and right before showing the same page with error messages.<br>
+   *     In this case the input values are stored in {@code Model}, 
+   *     but the other values like selections of dropdowns are not.<br>
+   *     This method prepares those data.</p>
+   * 
+   * @param form form
+   * @param loginUser loginUser
+   */
   public abstract void prepareForm(F form, UserDetails loginUser);
 
+  /**
+   * Prepares form for showing page.
+   * 
+   * @param form form
+   * @param loginUser loginUser
+   */
   public abstract void page(F form, UserDetails loginUser) throws Exception;
 }

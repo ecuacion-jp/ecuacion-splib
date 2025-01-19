@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.bean;
+package jp.ecuacion.splib.web.exception;
 
-public class RedirectUrlPathOnSuccessBean extends RedirectUrlPathBean
-    implements RedirectUrlOnSuccessInterface {
+/**
+ * Notices that the html page file specified by url parameter 
+ * does not have the needed option at the html tqg.
+ */
+public class HtmlFileNotAllowedToOpenException extends RuntimeException {
 
-  public RedirectUrlPathOnSuccessBean(String path) {
-    super(path);
-    putParam("success", new String[] {""});
+  private static final long serialVersionUID = 1L;
+
+  private String fileName;
+
+  /**
+   * Constructs a new instance.
+   * 
+   * @param htmlFileName htmlFileName
+   */
+  public HtmlFileNotAllowedToOpenException(String htmlFileName) {
+    this.fileName = htmlFileName;
   }
-
-  /** method chain形式にしておく。 */
-  public RedirectUrlPathOnSuccessBean noSuccessMessage() {
-    removeParam("success");
-    return this;
+  
+  public String getFileName() {
+    return fileName;
   }
 }
