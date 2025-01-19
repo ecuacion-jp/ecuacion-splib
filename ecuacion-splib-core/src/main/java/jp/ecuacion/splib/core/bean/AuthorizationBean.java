@@ -88,10 +88,10 @@ public class AuthorizationBean {
       if (rolesOrAuthorities[i].equals(addedRoleOrAuthority)) {
         return rolesOrAuthorities;
       }
-      
+
       rtnArr[i] = rolesOrAuthorities[i];
     }
-    
+
     rtnArr[rolesOrAuthorities.length] = addedRoleOrAuthority;
     return rtnArr;
   }
