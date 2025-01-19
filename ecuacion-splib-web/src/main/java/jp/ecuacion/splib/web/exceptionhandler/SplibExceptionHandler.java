@@ -1,17 +1,15 @@
 /*
  * Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package jp.ecuacion.splib.web.exceptionhandler;
 
@@ -46,7 +44,7 @@ import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.bean.HtmlItem;
+import jp.ecuacion.splib.web.bean.HtmlField;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.bean.SplibModelAttributes;
@@ -58,7 +56,7 @@ import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
 import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
 import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.form.record.RecordInterface;
+import jp.ecuacion.splib.web.util.SplibRecordUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +78,9 @@ public abstract class SplibExceptionHandler {
   private DetailLogger detailLog = new DetailLogger(this);
 
   @Autowired
+  SplibRecordUtil recUtil;
+
+  @Autowired
   HttpServletRequest request;
 
   @Autowired
@@ -99,6 +100,16 @@ public abstract class SplibExceptionHandler {
   @Nonnull
   protected SplibGeneralController<?> getController() {
     return (SplibGeneralController<?>) getModel().getAttribute(SplibWebConstants.KEY_CONTROLLER);
+  }
+
+  /**
+   * Returns the forms from which the exception throws.
+   * 
+   * @return SplibGeneralController
+   */
+  @Nonnull
+  private SplibGeneralForm[] getForms() {
+    return ((SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS));
   }
 
   /**
@@ -257,77 +268,54 @@ public abstract class SplibExceptionHandler {
     // exList内のexceptionを一つずつ処理
     for (SingleAppException saex : exList) {
 
-      // format of each itemName: "record.field" or "record.childRecord[.grandChildRecord...].field"
-      String[] itemNames = null;
-      // SplibBaseWithRecordController の子でない場合は、そもそもrecord, fieldの定義がlibrary内で確立されていないので処理対象外とする。
-      if (saex instanceof BizLogicAppException) {
-        BizLogicAppException ex = (BizLogicAppException) saex;
-        itemNames =
-            (ex.getErrorFields() == null) ? new String[] {} : ex.getErrorFields().getFields();
+      // 自画面のメッセージ欄に表示するか否かで分岐
+      if (saex instanceof BizLogicRedirectAppException) {
+        String redirectPath = ((BizLogicRedirectAppException) saex).getRedirectPath();
+        redirectBean = new ReturnUrlBean(getController(), redirectPath);
 
-        // itemNameは、html側としてはrootRecordNameから始まる必要があるが、java側からすると毎回書くのは面倒なので、
-        // field名のみを記載することを推奨とする。
-        // その場合、htmlと整合を取るためにここでrootRecordNameを追加しておく
-        List<String> modifiedItemNameList = new ArrayList<>();
-        String prefix = getController().getRootRecordName() + ".";
-        for (String field : itemNames) {
-          modifiedItemNameList.add(field.startsWith(prefix) ? field : (prefix + field));
+      } else {
+        String[] itemIds = null;
+
+        // SplibBaseWithRecordController の子でない場合は、そもそもrecord, fieldの定義がlibrary内で確立されていないので処理対象外とする。
+        if (saex instanceof BizLogicAppException) {
+          BizLogicAppException ex = (BizLogicAppException) saex;
+          String rootRecordIdPlusDot = getController().getRootRecordName() + ".";
+
+          List<String> itemIdList = Arrays
+              .asList(
+                  ex.getErrorFields() == null ? new String[] {} : ex.getErrorFields().getFields())
+              .stream().map(fieldId -> fieldId.startsWith(rootRecordIdPlusDot) ? fieldId
+                  : (rootRecordIdPlusDot + fieldId))
+              .toList();
+          itemIds = itemIdList.toArray(new String[itemIdList.size()]);
+
+        } else if (saex instanceof BeanValidationAppException) {
+          itemIds = new String[] {((BeanValidationAppException) saex)
+              .getBeanValidationErrorInfoBean().getPropertyPath()};
         }
 
-        itemNames = modifiedItemNameList.toArray(new String[modifiedItemNameList.size()]);
+        String message =
+            new ExceptionUtil().getAppExceptionMessageList(saex, request.getLocale()).get(0);
 
-        if (ex instanceof BizLogicRedirectAppException) {
-          String redirectPath = ((BizLogicRedirectAppException) ex).getRedirectPath();
-          redirectBean = new ReturnUrlBean(getController(), redirectPath);
+        List<String> displayNameIdList = new ArrayList<>();
+        // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
+        // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
+        for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
+          HtmlField field =
+              recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
+          displayNameIdList.add(field.getDisplayNameId());
         }
 
-      } else if (saex instanceof BeanValidationAppException) {
-        BeanValidationErrorInfoBean bean =
-            ((BeanValidationAppException) saex).getBeanValidationErrorInfoBean();
-        // String itemName = cv.getPropertyPath().toString();
-        // String recordName = itemName.substring(0, itemName.indexOf("."));
-        itemNames = new String[] {bean.getItemName()};
+        message =
+            addFieldNames(message, displayNameIdList.toArray(new String[displayNameIdList.size()]));
+
+        requestResult.setErrorMessage(message, itemIds);
       }
-
-      String message =
-          new ExceptionUtil().getAppExceptionMessageList(saex, request.getLocale()).get(0);
-
-      String str = null;
-      
-      List<String> labelItemNameList = new ArrayList<>();
-      // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
-      // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
-      for (String itemName : itemNames) {
-        labelItemNameList.add(getHtmlItem(itemName).getLabelItemName());
-      }
-
-      String[] labelItemNames = labelItemNameList.toArray(new String[labelItemNameList.size()]);
-      message = addFieldNames(message, labelItemNames);
-
-      requestResult.setErrorMessage(message, itemNames);
     }
 
     redirectBean =
         redirectBean == null ? getController().getRedirectUrlOnAppExceptionBean() : redirectBean;
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
-  }
-
-  private HtmlItem getHtmlItem(String itemName) {
-    // 複数のformへの対応は別途実施
-    SplibGeneralForm form =
-        ((SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS))[0];
-
-    String rootRecordName = getController().getRootRecordName();
-
-    HtmlItem htmlItem = null;
-    for (HtmlItem item : ((RecordInterface) form.getRootRecord(rootRecordName)).getHtmlItems()) {
-      if (itemName.equals(rootRecordName + "." + item.getItemName())) {
-        htmlItem = item;
-        break;
-      }
-    }
-
-    return htmlItem;
   }
 
   private List<BeanValidationAppException> getBeanValidationAppExceptionList(
@@ -338,12 +326,6 @@ public abstract class SplibExceptionHandler {
 
     for (ConstraintViolation<?> cv : new BeanValidationUtil().validate(exception.getForm(),
         request.getLocale())) {
-      String itemId = cv.getPropertyPath().toString();
-      String itemName = itemId;
-      String recordName = itemName.substring(0, itemName.indexOf("."));
-      itemName = ((RecordInterface) exception.getForm().getRootRecord(recordName))
-          .getLabelItemName(recordName, itemName);
-
       errorList.add(new BeanValidationErrorInfoBean(cv));
     }
 
@@ -377,17 +359,6 @@ public abstract class SplibExceptionHandler {
           （ちなみに、ボタンのnameがappzzzなど、appから始まるがappとは異なる文字列であれば、この問題は発生しない）
           """;
       throw new RuntimeException(msg);
-    }
-
-    for (BeanValidationErrorInfoBean bean : errorList) {
-      // String message = bean.getMessage();
-      String itemId = bean.getPropertyPath().toString();
-
-      String itemName = itemId;
-      String recordName = itemName.substring(0, itemName.indexOf("."));
-//      itemName = ((RecordInterface) exception.getForm().getRootRecord(recordName))
-//          .getLabelItemName(recordName, itemName);
-      bean.setItemName(itemName);
     }
 
     return errorList.stream().map(bean -> new BeanValidationAppException(bean)).toList();

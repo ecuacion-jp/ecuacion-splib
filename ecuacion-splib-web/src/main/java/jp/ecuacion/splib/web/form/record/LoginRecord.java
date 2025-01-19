@@ -16,13 +16,13 @@
 package jp.ecuacion.splib.web.form.record;
 
 import jp.ecuacion.splib.core.form.record.SplibRecord;
-import jp.ecuacion.splib.web.bean.HtmlItem;
+import jp.ecuacion.splib.web.bean.HtmlField;
 
 public class LoginRecord extends SplibRecord implements RecordInterface {
 
   @Override
-  public HtmlItem[] getHtmlItems() {
-    return new HtmlItem[] {};
+  public HtmlField[] getHtmlFields() {
+    return new HtmlField[] {};
   }
 
   private String username;
