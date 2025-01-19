@@ -15,31 +15,31 @@
  */
 package jp.ecuacion.splib.web.bean;
 
-public class HtmlItemNumber extends HtmlItem {
+public class HtmlFieldNumber extends HtmlField {
 
   /** 文字列項目の場合のみ使用可。検索項目の文字列検索での大文字・小文字の区別を指定。 */
   protected boolean needsCommas;
 
-  public HtmlItemNumber(String itemName) {
+  public HtmlFieldNumber(String itemName) {
     super(itemName);
   }
 
   @Override
-  public HtmlItemNumber labelItemName(String labelItemName) {
-    return (HtmlItemNumber) super.labelItemName(labelItemName);
+  public HtmlFieldNumber displayNameId(String labelItemName) {
+    return (HtmlFieldNumber) super.displayNameId(labelItemName);
   }
 
   @Override
-  public HtmlItemNumber isNotEmpty(boolean isNotEmpty) {
-    return (HtmlItemNumber) super.isNotEmpty(isNotEmpty);
+  public HtmlFieldNumber isNotEmpty(boolean isNotEmpty) {
+    return (HtmlFieldNumber) super.isNotEmpty(isNotEmpty);
   }
 
   @Override
-  public HtmlItemNumber isNotEmpty(AuthKindEnum authKind, String authString, boolean isNotEmpty) {
-    return (HtmlItemNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
+  public HtmlFieldNumber isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString, boolean isNotEmpty) {
+    return (HtmlFieldNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
-  public HtmlItemNumber needsCommas(boolean needsCommas) {
+  public HtmlFieldNumber needsCommas(boolean needsCommas) {
     this.needsCommas = needsCommas;
     return this;
   }

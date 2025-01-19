@@ -20,23 +20,23 @@ import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
-import jp.ecuacion.splib.web.bean.HtmlItem;
-import jp.ecuacion.splib.web.bean.HtmlItemString;
+import jp.ecuacion.splib.web.bean.HtmlField;
+import jp.ecuacion.splib.web.bean.HtmlFieldString;
 
 public interface SearchRecordInterface {
 
-  HtmlItem[] getHtmlItems();
+  HtmlField[] getHtmlFields();
 
   /** 項目ごとのsearch patternを返す。全項目を設定する必要はなく、検索で使用する項目のみで良い。 */
   default Map<String, StringMatchingConditionBean> getSearchPatterns() {
     Map<String, StringMatchingConditionBean> map = new HashMap<>();
 
-    HtmlItem[] htmlItems = getHtmlItems();
-    for (HtmlItem item : htmlItems) {
-      if (item instanceof HtmlItemString
-          && ((HtmlItemString) item).getStringSearchPatternEnum() != null) {
-        HtmlItemString itemStr = (HtmlItemString) item;
-        map.put(item.getItemName(), new StringMatchingConditionBean(
+    HtmlField[] htmlItems = getHtmlFields();
+    for (HtmlField item : htmlItems) {
+      if (item instanceof HtmlFieldString
+          && ((HtmlFieldString) item).getStringSearchPatternEnum() != null) {
+        HtmlFieldString itemStr = (HtmlFieldString) item;
+        map.put(item.getId(), new StringMatchingConditionBean(
             itemStr.getStringSearchPatternEnum(), itemStr.isIgnoresCase()));
       }
     }
