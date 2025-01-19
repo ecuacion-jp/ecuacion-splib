@@ -20,13 +20,13 @@ public class HtmlFieldNumber extends HtmlField {
   /** 文字列項目の場合のみ使用可。検索項目の文字列検索での大文字・小文字の区別を指定。 */
   protected boolean needsCommas;
 
-  public HtmlFieldNumber(String itemName) {
-    super(itemName);
+  public HtmlFieldNumber(String id) {
+    super(id);
   }
 
   @Override
-  public HtmlFieldNumber displayNameId(String labelItemName) {
-    return (HtmlFieldNumber) super.displayNameId(labelItemName);
+  public HtmlFieldNumber displayNameId(String displayNameId) {
+    return (HtmlFieldNumber) super.displayNameId(displayNameId);
   }
 
   @Override
@@ -35,7 +35,8 @@ public class HtmlFieldNumber extends HtmlField {
   }
 
   @Override
-  public HtmlFieldNumber isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString, boolean isNotEmpty) {
+  public HtmlFieldNumber isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+      boolean isNotEmpty) {
     return (HtmlFieldNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
@@ -43,7 +44,7 @@ public class HtmlFieldNumber extends HtmlField {
     this.needsCommas = needsCommas;
     return this;
   }
-  
+
   public boolean getNeedsCommas() {
     return needsCommas;
   }

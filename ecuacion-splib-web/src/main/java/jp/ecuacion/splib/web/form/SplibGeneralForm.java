@@ -177,7 +177,7 @@ public abstract class SplibGeneralForm {
     return getRootRecord(field);
   }
 
-  /** getLabelItemName() ではfieldも別途使用するため、fieldの二回取得は無駄なのでfieldを引数にするメソッドも作っておく。 */
+  /** getDisplayName() ではfieldも別途使用するため、fieldの二回取得は無駄なのでfieldを引数にするメソッドも作っておく。 */
   protected Object getRootRecord(Field rootRecordField) {
     rootRecordField.setAccessible(true);
 

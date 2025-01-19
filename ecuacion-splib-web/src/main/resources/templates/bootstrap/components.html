@@ -354,7 +354,7 @@
 				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
 			<th:block th:with="labelRecordName=${#strings.contains(recordName, '.') ? #strings.substring(recordName, #strings.indexOf(recordName, '.') + 1) : recordName}">
 				<label th:for="${id}" class="form-label text-dark" 
-						th:with="labelFieldName=*{__${rootRecordName}__.getLabelItemName('__${rootRecordName}__', '__${itemName}__')}">
+						th:with="labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemName}__')}">
 					[[#{__${labelFieldName}__}]] [[${postfix}]]
 				</label>
 			</th:block>
@@ -590,7 +590,7 @@
 	<div th:fragment="thCustomizable(itemName, position, options)" th:remove="tag">
 		<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
-			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getLabelItemName('__${rootRecordName}__', '__${itemName}__')}">
+			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemName}__')}">
 				<th:block th:if="${@optUtil.hasThSortable(options)}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
 							style="cursor: pointer" th:text="#{__${labelFieldName}__}" 
@@ -815,10 +815,10 @@
 		<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
 			<th:block th:with="id=${recordName + '.' + fieldName},
-					labelItemName=*{__${rootRecordName}__.getLabelItemName('__${rootRecordName}__', '__${itemName}__')}">
+					displayName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemName}__')}">
 					<!--/* isPrincipalStringは、#authentication.principalが、loginしている場合は複数項目を格納するbeanなのに、loginしていない場合はStringといういやらしい仕様なので、String可動化をチェックしている */-->
 				<label th:for="${id}" class="form-label text-dark" th:with="isPrincipalString=${#authentication.principal.class.name == 'java.lang.String'}">
-					[[${@msgUtil.get(#locale, '__${labelItemName}__')}]]<span class="text-danger" th:if="*{__${rootRecordName}__.isNotEmpty('__${itemName}__', '__${loginState}__', '__${isPrincipalString ? '' : #authentication.principal.authorities}__')}">&nbsp;*</span>
+					[[${@msgUtil.get(#locale, '__${displayName}__')}]]<span class="text-danger" th:if="*{__${rootRecordName}__.isNotEmpty('__${itemName}__', '__${loginState}__', '__${isPrincipalString ? '' : #authentication.principal.authorities}__')}">&nbsp;*</span>
 				</label>
 		</th:block>
 	</div>
@@ -1020,7 +1020,7 @@
 			<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
 				<th:block th:with="id=${recordName + '.' + fieldName},value=*{__${recordName + '.' + fieldName}__},
-						labelFieldName=*{__${rootRecordName}__.getLabelItemName('__${rootRecordName}__', '__${itemName}__')}">
+						labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemName}__')}">
 					<!--/* selectにはreadonlyが存在しないため、disabledを使用 */-->
 					<th:block th:if="${@optUtil.isReadOnly(options)}">
 						<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}">
