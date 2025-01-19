@@ -68,46 +68,46 @@ public interface RecordInterface {
    * relationがある場合を含めて、各componentのitemNameに指定する文字列は、必ずHtmlItemに指定したitemNameと同一となる。
    * </p>
    */
-  default String getLabelItemName(String rootRecordname, String itemName) {
-    HtmlField[] htmlItems = getHtmlFields() == null ? new HtmlField[] {} : getHtmlFields();
+  default String getDisplayName(String rootRecordId, String fieldId) {
+    HtmlField[] htmlFields = getHtmlFields() == null ? new HtmlField[] {} : getHtmlFields();
 
     // rootRecordNameがaccの場合に、例外処理でエラーメッセージに項目名を出す際の処理は、itemNameが「acc.accId」となってしまう。
     // この場合でも対応できるように、itemNameの頭がrootRecordName + '.'の場合はそれを取り除く処理を行う。
-    if (itemName.startsWith(rootRecordname + ".")) {
-      itemName = itemName.substring((rootRecordname + ".").length());
+    if (fieldId.startsWith(rootRecordId + ".")) {
+      fieldId = fieldId.substring((rootRecordId + ".").length());
     }
 
-    Map<String, String> labelNameMap =
-        Arrays.asList(htmlItems).stream().collect(Collectors.toMap(e -> e.getId(),
+    Map<String, String> displayNameIdMap =
+        Arrays.asList(htmlFields).stream().collect(Collectors.toMap(e -> e.getId(),
             e -> e.getDisplayNameId() == null ? e.getId() : e.getDisplayNameId()));
-    String labelItemName = labelNameMap.get(itemName);
+    String displayNameId = displayNameIdMap.get(fieldId);
 
     // htmlItems上で定義がない場合 /
     // htmlItems上でlabelItemNameが未定義の場合はlabelItemNameがnullになるが、その場合はもとのfieldNameの値を入れておく
-    labelItemName = labelItemName == null ? itemName : labelItemName;
+    displayNameId = displayNameId == null ? fieldId : displayNameId;
 
     // htmlItems上、関連を使用している場合はaccGroup.nameのようにfieldName自体にentityNameを含む場合があるので考慮
-    return labelItemName.contains(".") ? labelItemName : rootRecordname + "." + labelItemName;
+    return displayNameId.contains(".") ? displayNameId : rootRecordId + "." + displayNameId;
   }
 
   /**
    * htmlItemsについて、個別機能のlistと共通のlistをmergeさせるために使用する。
    * あくまでutilレベルなので個別処理にしても良いのだが、極力個別コードを減らしたいので本クラスに保持する。
    */
-  default HtmlField[] mergeHtmlItems(HtmlField[] items1, HtmlField[] items2) {
-    List<HtmlField> list = new ArrayList<>(Arrays.asList(items1));
+  default HtmlField[] mergeHtmlFields(HtmlField[] fields1, HtmlField[] fields2) {
+    List<HtmlField> list = new ArrayList<>(Arrays.asList(fields1));
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
-    List<String> item1Keys = Arrays.asList(items1).stream().map(e -> e.getId()).toList();
+    List<String> field1IdList = Arrays.asList(fields1).stream().map(e -> e.getId()).toList();
 
-    for (String item2Key : Arrays.asList(items2).stream().map(e -> e.getId()).toList()) {
-      if (item1Keys.contains(item2Key)) {
+    for (String field2Id : Arrays.asList(fields2).stream().map(e -> e.getId()).toList()) {
+      if (field1IdList.contains(field2Id)) {
         throw new RuntimeException(
-            "'itemName' of HtmlItem[] duplicated with commonHtmlItems. key: " + item2Key);
+            "'id' of HtmlField[] duplicated with commonHtmlFields. key: " + field2Id);
       }
     }
 
-    list.addAll(Arrays.asList(items2));
+    list.addAll(Arrays.asList(fields2));
 
     return list.toArray(new HtmlField[list.size()]);
 
@@ -117,10 +117,10 @@ public interface RecordInterface {
   default List<String> getNotEmptyFields(String loginState, RolesAndAuthoritiesBean bean) {
     List<String> list = new ArrayList<>();
 
-    HtmlField[] htmlItems = getHtmlFields();
-    for (HtmlField item : htmlItems) {
-      if (item.getIsNotEmpty(loginState, bean)) {
-        list.add(item.getId());
+    HtmlField[] htmlFields = getHtmlFields();
+    for (HtmlField field : htmlFields) {
+      if (field.getIsNotEmpty(loginState, bean)) {
+        list.add(field.getId());
       }
     }
 

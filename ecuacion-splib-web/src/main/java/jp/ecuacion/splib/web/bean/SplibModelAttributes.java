@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.bean;
 
 import java.util.HashMap;
 import java.util.Map;
+import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.ui.Model;
 
 /** modelAttribute. */
@@ -41,6 +42,8 @@ public class SplibModelAttributes extends HashMap<String, Object> {
   private String navbarBgColorAccount;
 
   private String navbarBgColorAdmin;
+  
+  private String bodyBgColor = "#ffffff";
 
   private boolean showsMessagesLinkedToItemsAtTheTop = true;
 
@@ -111,6 +114,14 @@ public class SplibModelAttributes extends HashMap<String, Object> {
     this.navbarBgColorAdmin = navbarBgColorAdmin;
   }
 
+  public String getBodyBgColor() {
+    return bodyBgColor;
+  }
+
+  public void setBodyBgColor(String bodyBgColor) {
+    this.bodyBgColor = bodyBgColor;
+  }
+
   public boolean isShowsMessagesLinkedToItemsAtTheTop() {
     return showsMessagesLinkedToItemsAtTheTop;
   }
@@ -135,6 +146,7 @@ public class SplibModelAttributes extends HashMap<String, Object> {
     model.addAttribute("navbarBgColorPublic", navbarBgColorPublic);
     model.addAttribute("navbarBgColorAccount", navbarBgColorAccount);
     model.addAttribute("navbarBgColorAdmin", navbarBgColorAdmin);
+    model.addAttribute("bodyBgColor", bodyBgColor);
     model.addAttribute("showsMessagesLinkedToItemsAtTheTop", showsMessagesLinkedToItemsAtTheTop);
     model.addAttribute("showsMessagesLinkedToItemsAtEachField",
         showsMessagesLinkedToItemsAtEachField);

@@ -33,7 +33,8 @@
 	<script th:src="@{/js/splib-web.js}"></script>
 	<title th:text="${headTitle == null || headTitle == '' ? title : headTitle}"></title>
 </head>
-<body>
+<body th:style="'background-color: ' + ${bodyBgColor}">
+<!--/*   */-->
 	<div class="content-wrapper"
 			th:with="navbarBgColor=${
 						(loginState == 'public' || loginState == 'ecuacion-public') && navbarBgColorPublic != null ? navbarBgColorPublic : 
