@@ -28,8 +28,8 @@ public class HtmlFieldString extends HtmlField {
   }
 
   @Override
-  public HtmlFieldString displayNameId(String labelItemName) {
-    return (HtmlFieldString) super.displayNameId(labelItemName);
+  public HtmlFieldString displayNameId(String displayNameId) {
+    return (HtmlFieldString) super.displayNameId(displayNameId);
   }
 
   @Override
@@ -38,7 +38,8 @@ public class HtmlFieldString extends HtmlField {
   }
 
   @Override
-  public HtmlFieldString isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString, boolean isNotEmpty) {
+  public HtmlFieldString isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+      boolean isNotEmpty) {
     return (HtmlFieldString) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
