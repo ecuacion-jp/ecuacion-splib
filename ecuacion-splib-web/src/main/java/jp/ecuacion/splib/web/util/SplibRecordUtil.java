@@ -39,7 +39,7 @@ public class SplibRecordUtil {
    */
   public HtmlField getHtmlField(SplibGeneralForm form, String rootRecordId, String itemId) {
     if (!itemId.startsWith(rootRecordId + ".")) {
-      throw new RuntimeException("itemId: " + itemId + "does not start with rootRecordId: "
+      throw new RuntimeException("itemId: " + itemId + " does not start with rootRecordId: "
           + rootRecordId + " plus dot(.).");
     }
 
