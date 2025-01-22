@@ -125,27 +125,20 @@ public abstract class SplibExceptionHandler {
   }
 
   /*
-   * "{0}"がmessageに含まれる場合はitemNameで置き換える。
-   */
-  @Nonnull
-  private String addFieldName(@RequireNonnull String message, @RequireNonnull String itemName) {
-    return addFieldNames(message, new String[] {itemName});
-  }
-
-  /*
    * "{0}"がmessageに含まれる場合はitemName（複数項目ある場合は複数項目）で置き換える。
    */
   @Nonnull
-  private String addFieldNames(@RequireNonnull String message, @RequireNonnull String[] itemNames) {
+  private String addItemDisplayNames(@RequireNonnull String message, @Nonnull String... itemIds) {
     if (message.contains("{0}")) {
-      message = MessageFormat.format(message, getItemNames(itemNames));
+      message =
+          MessageFormat.format(message, getItemDisplayNames(ObjectsUtil.paramSizeNonZero(itemIds)));
     }
 
     return message;
   }
 
   @Nonnull
-  private String getItemNames(@RequireNonnull String[] itemNames) {
+  private String getItemDisplayNames(@RequireNonnull String[] itemIds) {
     StringBuilder sb = new StringBuilder();
     final String prependParenthesis = PropertyFileUtil.getMsg(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.itemName.prependParenthesis");
@@ -155,11 +148,11 @@ public abstract class SplibExceptionHandler {
         "jp.ecuacion.splib.web.common.message.itemName.separator");
 
     boolean is1stTime = true;
-    for (String itemName : ObjectsUtil.paramRequireNonNull(itemNames)) {
+    for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
 
       // itemNameがmessages.propertiesにあったらそれに置き換える
-      if (PropertyFileUtil.hasFieldName(itemName)) {
-        itemName = PropertyFileUtil.getFieldName(request.getLocale(), itemName);
+      if (PropertyFileUtil.hasFieldName(itemId)) {
+        itemId = PropertyFileUtil.getFieldName(request.getLocale(), itemId);
       }
 
       if (is1stTime) {
@@ -169,7 +162,7 @@ public abstract class SplibExceptionHandler {
         sb.append(separator);
       }
 
-      sb.append(prependParenthesis + itemName + appendParenthesis);
+      sb.append(prependParenthesis + itemId + appendParenthesis);
     }
 
     return sb.toString();
@@ -277,11 +270,11 @@ public abstract class SplibExceptionHandler {
 
       } else {
         String[] itemIds = null;
+        String rootRecordIdPlusDot = getController().getRootRecordName() + ".";
 
         // SplibBaseWithRecordController の子でない場合は、そもそもrecord, fieldの定義がlibrary内で確立されていないので処理対象外とする。
         if (saex instanceof BizLogicAppException) {
           BizLogicAppException ex = (BizLogicAppException) saex;
-          String rootRecordIdPlusDot = getController().getRootRecordName() + ".";
 
           List<String> itemIdList = Arrays
               .asList(
@@ -292,8 +285,13 @@ public abstract class SplibExceptionHandler {
           itemIds = itemIdList.toArray(new String[itemIdList.size()]);
 
         } else if (saex instanceof BeanValidationAppException) {
-          itemIds = new String[] {((BeanValidationAppException) saex)
-              .getBeanValidationErrorInfoBean().getPropertyPath()};
+          String id = ((BeanValidationAppException) saex).getBeanValidationErrorInfoBean()
+              .getPropertyPath();
+
+          // propertyPathは、formをvalidateしていれば"recordId.fieldId"の形になるが、recored /
+          // entityをvalidateした場合は"fieldId"となる。
+          // いずれの場合も救えるように、fieldIdだったらrootRecordIdを追加しitemIdの形にしておく
+          itemIds = new String[] {id.contains(".") ? id : rootRecordIdPlusDot + id};
         }
 
         String message =
@@ -305,11 +303,13 @@ public abstract class SplibExceptionHandler {
         for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
           HtmlField field =
               recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
-          displayNameIdList.add(field.getDisplayNameId());
+          displayNameIdList.add(field.getDisplayNameId() == null
+              ? getController().getRootRecordName() + "." + field.getId()
+              : field.getDisplayNameId());
         }
 
-        message =
-            addFieldNames(message, displayNameIdList.toArray(new String[displayNameIdList.size()]));
+        message = addItemDisplayNames(message,
+            displayNameIdList.toArray(new String[displayNameIdList.size()]));
 
         requestResult.setErrorMessage(message, itemIds);
       }
