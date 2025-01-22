@@ -291,7 +291,7 @@ public abstract class SplibExceptionHandler {
           // propertyPathは、formをvalidateしていれば"recordId.fieldId"の形になるが、recored /
           // entityをvalidateした場合は"fieldId"となる。
           // いずれの場合も救えるように、fieldIdだったらrootRecordIdを追加しitemIdの形にしておく
-          itemIds = new String[] {id.contains(".") ? id : rootRecordIdPlusDot + id};
+          itemIds = id.contains(".") ? new String[] {id} : new String[] {};
         }
 
         String message =
