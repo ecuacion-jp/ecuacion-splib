@@ -21,7 +21,7 @@
 	<groupId>jp.ecuacion.splib</groupId>
 	<artifactId>ecuacion-splib-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.7</version>
+	<version>3.0.8</version>
 	<organization>
 		<name>ecuacion.jp</name>
 	</organization>
@@ -44,7 +44,7 @@
 		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp</remote-location.javadoc>
 		<checkstyle.config.site>https://ecuacion-jp.github.io/config/common/checkstyle</checkstyle.config.site>
-		<ecuacion-splib.version>3.0.7</ecuacion-splib.version>
+		<ecuacion-splib.version>3.0.8</ecuacion-splib.version>
 		<ecuacion-lib.version>14.0.10</ecuacion-lib.version>
 		<ecuacion-util.version>4.1.0</ecuacion-util.version>
 	</properties>
