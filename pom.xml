@@ -21,7 +21,7 @@
 	<groupId>jp.ecuacion.splib</groupId>
 	<artifactId>ecuacion-splib-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.8</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<organization>
 		<name>ecuacion.jp</name>
 	</organization>
@@ -44,9 +44,9 @@
 		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp</remote-location.javadoc>
 		<checkstyle.config.site>https://ecuacion-jp.github.io/config/common/checkstyle</checkstyle.config.site>
-		<ecuacion-splib.version>3.0.8</ecuacion-splib.version>
-		<ecuacion-lib.version>14.0.10</ecuacion-lib.version>
-		<ecuacion-util.version>4.1.0</ecuacion-util.version>
+		<ecuacion-splib.version>0.0.1-SNAPSHOT</ecuacion-splib.version>
+		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
+		<ecuacion-util.version>0.0.1-SNAPSHOT</ecuacion-util.version>
 	</properties>
 	<distributionManagement>
 		<!-- ビルドサーバでのみ使用。作成されたjarのdeploy先 -->
@@ -229,6 +229,10 @@
 						<violationSeverity>info</violationSeverity>
 						<configLocation>${checkstyle.config.site}/google_checks.xml</configLocation>
 						<propertiesLocation>${checkstyle.config.site}/checkstyle-for-libs-and-utils.properties</propertiesLocation>
+						<sourceDirectories>
+							<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+							<sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+						</sourceDirectories>
 					</configuration>
 					<executions>
 						<execution>

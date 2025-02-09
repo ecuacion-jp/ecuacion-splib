@@ -599,7 +599,7 @@
 		 		</th:block>
 		 		<th:block th:if="${!@optUtil.hasThSortable(options)}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
-							th:text="#{__${labelFieldName}__}"</th>
+							th:text="#{__${labelFieldName}__}"></th>
 		 		</th:block>
 	 	</th:block>
 	</div>
@@ -976,7 +976,7 @@
 								th:value="${itemId}">
 							<label class="form-check-label text-dark" th:for="${itemId}" th:text="${itemLabel}"></label>
 							<th:block th:if="${@optUtil.isReadOnly(itemOptions)}">
-								<input type="hidden" th:name="${id}" th:value="${itemId}"
+								<input type="hidden" th:name="${id}" th:value="${itemId}">
 							</th:block>
 						</th:block>
 					</div>
