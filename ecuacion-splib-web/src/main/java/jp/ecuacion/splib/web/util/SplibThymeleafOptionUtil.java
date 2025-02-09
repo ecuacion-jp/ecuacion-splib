@@ -71,11 +71,12 @@ public class SplibThymeleafOptionUtil {
 
     boolean multiple = fieldNameList.size() > 1;
 
-    StringBuilder fieldNames = new StringBuilder();
+    StringBuilder fieldNameSb = new StringBuilder();
     for (String str : fieldNameList) {
-      fieldNames.append(", " + str);
+      fieldNameSb.append(", " + str);
     }
-    fieldNames.append((multiple ? "（" : "") + fieldNames.substring(2) + (multiple ? "）" : ""));
+    String fieldNames =
+        (multiple ? "（" : "") + fieldNameSb.toString().substring(2) + (multiple ? "）" : "");
 
     return PropertyFileUtil.getMsg(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.deleteConfirmation",
