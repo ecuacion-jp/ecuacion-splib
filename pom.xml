@@ -309,10 +309,12 @@
 				<version>${ecuacion-lib.version}</version>
 			</dependency>
 
-			<!-- ecuacion-util -->
+			<!-- ecuacion-util-import -->
 			<dependency>
+				<type>pom</type>
+				<scope>import</scope>
 				<groupId>jp.ecuacion.util</groupId>
-				<artifactId>ecuacion-util-poi</artifactId>
+				<artifactId>ecuacion-util-parent</artifactId>
 				<version>${ecuacion-util.version}</version>
 			</dependency>
 			
