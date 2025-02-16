@@ -30,7 +30,7 @@ public class SplibThymeleafMessageUtil {
 
   public String get(Locale locale, String id) {
     boolean hasMsg = PropertyFileUtil.hasMsg(id);
-    boolean hasField = PropertyFileUtil.hasFieldName(id);
+    boolean hasField = PropertyFileUtil.hasItemName(id);
 
     // 両方に存在する場合はエラー
     if (hasMsg && hasField) {
@@ -49,7 +49,7 @@ public class SplibThymeleafMessageUtil {
       return PropertyFileUtil.getMsg(locale, id);
 
     } else {
-      return PropertyFileUtil.getFieldName(locale, id);
+      return PropertyFileUtil.getItemName(locale, id);
     }
     
     
