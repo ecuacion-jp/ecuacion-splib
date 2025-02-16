@@ -151,8 +151,8 @@ public abstract class SplibExceptionHandler {
     for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
 
       // itemNameがmessages.propertiesにあったらそれに置き換える
-      if (PropertyFileUtil.hasFieldName(itemId)) {
-        itemId = PropertyFileUtil.getFieldName(request.getLocale(), itemId);
+      if (PropertyFileUtil.hasItemName(itemId)) {
+        itemId = PropertyFileUtil.getItemName(request.getLocale(), itemId);
       }
 
       if (is1stTime) {

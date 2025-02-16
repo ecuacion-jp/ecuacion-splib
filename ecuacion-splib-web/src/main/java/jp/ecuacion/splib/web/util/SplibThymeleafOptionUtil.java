@@ -57,16 +57,16 @@ public class SplibThymeleafOptionUtil {
       }
 
       // 指定されたfieldが実はSystemCommonEntityに定義されている場合を救っておく。
-      if (!PropertyFileUtil.hasFieldName(item)) {
+      if (!PropertyFileUtil.hasItemName(item)) {
         String field = item.contains(".") ? item.substring(item.lastIndexOf(".") + 1) : item;
         String commonItem = "SystemCommonEntity." + field;
-        if (PropertyFileUtil.hasFieldName(commonItem)) {
+        if (PropertyFileUtil.hasItemName(commonItem)) {
           item = commonItem;
         }
       }
 
       fieldNameList
-          .add(PropertyFileUtil.getFieldName(request.getLocale(), rootRecordName + "." + item));
+          .add(PropertyFileUtil.getItemName(request.getLocale(), rootRecordName + "." + item));
     }
 
     boolean multiple = fieldNameList.size() > 1;
