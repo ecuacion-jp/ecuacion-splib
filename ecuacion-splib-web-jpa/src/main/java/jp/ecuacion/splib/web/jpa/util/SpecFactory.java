@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.jpa.util;
 
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,23 +32,21 @@ import org.springframework.data.jpa.domain.Specification;
 public class SpecFactory<T extends AbstractEntity> {
 
   /**
-   * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。 Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意。
-   * 関連を使用していない項目に対して使用。
+   * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意。
+   * fieldは"name", "parentRecord.id", "parentRecord.childRecord.id"など関連のrecordを含めて記載可能。
    */
   public Specification<T> equals(String field, Object value) {
-    return equals(null, field, value);
-  }
 
-  /**
-   * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意。
-   * entityは通常はnull、関連を使用しておりentity内のfieldとして保持している項目に対して、そのfieldにもつentity classに対しては値を指定。
-   * その際、引数のentityは"accGroup"のように指定。
-   */
-  public Specification<T> equals(String entity, String field, Object value) {
     return (root, query, cb) -> {
-      Expression<?> criteriaField = entity == null ? root.get(field) : root.get(entity).get(field);
+      // entityの"."の区切り分ループ
+      String[] entities = field.split("\\.");
+      Path<?> path = root;
+      for (int i = 0; i < entities.length; i++) {
+        path = path.get(entities[i]);
+      }
+
       return (value == null || (value instanceof String && ((String) value).equals("")) ? null
-          : cb.equal(criteriaField, value));
+          : cb.equal(path, value));
     };
   }
 
@@ -208,8 +207,8 @@ public class SpecFactory<T extends AbstractEntity> {
   public List<Specification<T>> addStringSearchConditions(SplibRecord rec) {
     List<Specification<T>> list = new ArrayList<>();
 
-    for (Map.Entry<String, StringMatchingConditionBean> entry 
-        : ((SearchRecordInterface) rec).getSearchPatterns().entrySet()) {
+    for (Map.Entry<String, StringMatchingConditionBean> entry : ((SearchRecordInterface) rec)
+        .getSearchPatterns().entrySet()) {
       String key = entry.getKey();
       String entity = key.contains(".") ? key.substring(0, key.indexOf(".")) : null;
       String field = key.contains(".") ? key.substring(key.indexOf(".") + 1) : key;
