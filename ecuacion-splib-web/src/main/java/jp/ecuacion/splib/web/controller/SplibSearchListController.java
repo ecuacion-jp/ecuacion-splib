@@ -94,7 +94,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     searchForm = getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
-    return new ReturnUrlBean(this, util, "searchList", "page").showSuccessMessage().getUrl();
+    return new ReturnUrlBean(this, util, "searchList", "page").getUrl();
   }
 
   /**
