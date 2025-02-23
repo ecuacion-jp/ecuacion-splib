@@ -173,20 +173,6 @@
 	<!--/* 
 		### message表示用components.
 	 */-->
-
-	<!--/* ログイン画面用messages */-->
-	<!-- Deprecated. It's integrated to messages(options). -->
-	<!-- 
-	<div th:fragment="loginMessages(options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: freeSpace(~{::free-space-login-messages}, '')}"></div>
-		<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
-			<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
-			<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
-			<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
-			<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
-		</div></th:block>
-	</div>
-	 -->
 	 
 	<!--/* messages */-->
 	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
@@ -208,9 +194,33 @@
 				<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
 					<!--/* itemに紐づくエラーメッセージをtopに表示する場合 */-->
 					<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
-						<ul class="all-error-messages-list-ul">
-							<li class="all-error-messages-list-li" style="white-space: pre-wrap" th:each="message : *{errorMessages}">[[${message}]]</li>
-						</ul>
+						<div class="all-error-messages-list-ul">
+							<table th:each="message : *{errorMessages}">
+								<tr>
+									<td style="vertical-align:top"><div style="margin-left: 10px; margin-right: 10px;">- </div></td>
+									<td colspan="2"><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[
+											${#strings.contains(message, #strings.unescapeJava('\n\n')) ? 
+											#strings.substring(message, 0, #strings.indexOf(message, #strings.unescapeJava('\n\n'))) : message}]]</div></td>
+								</tr>
+								<!--/* 
+									subMessage feature.
+									See the following for error reasons:\n\nreason1: xxx\nreason2: xxx
+									-> 
+									- See the following for error reasons:
+									  - reason1: xxx
+									  - reason2: xxx
+								 */-->
+								<th:block th:if="${#strings.contains(message, #strings.unescapeJava('\n\n'))}">
+									<th:block th:each="subMessage : ${#strings.arraySplit(#strings.substring(message, #strings.indexOf(message, #strings.unescapeJava('\n\n'))), #strings.unescapeJava('\n'))}">
+										<tr>
+											<td></td>
+											<td style="vertical-align:top; width: 15px"><div style="margin-right: 10px">- </div></td>
+											<td><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[${subMessage}]]</div></td>
+										</tr>
+									</th:block>
+								</th:block>
+							</table>
+						</div>
 					</th:block>
 					<!--/* itemに紐づくエラーメッセージを個別itemの箇所に表示する場合 */-->
 					<th:block th:if="${showsMessagesLinkedToItemsAtEachField}">
