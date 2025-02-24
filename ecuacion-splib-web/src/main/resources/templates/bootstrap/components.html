@@ -218,9 +218,9 @@
 
 	<!--/* message表示用内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
 	<div th:fragment="displayMessages(errorMessages)" th:remove="tag">
-		<table th:each="message : ${errorMessages}">
+		<table th:each="message : ${errorMessages}" style="width: 100%;">
 			<tr>
-				<td style="vertical-align:top"><div style="margin-left: 10px; margin-right: 10px;">- </div></td>
+				<td style="vertical-align:top; width: 20px"><div style="margin-left: 10px; margin-right: 10px;">- </div></td>
 				<td colspan="2"><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[
 						${#strings.contains(message, #strings.unescapeJava('\n\n')) ? 
 						#strings.substring(message, 0, #strings.indexOf(message, #strings.unescapeJava('\n\n'))) : message}]]</div></td>
@@ -237,7 +237,7 @@
 				<th:block th:each="subMessage : ${#strings.arraySplit(#strings.substring(message, #strings.indexOf(message, #strings.unescapeJava('\n\n'))), #strings.unescapeJava('\n'))}">
 					<tr>
 						<td></td>
-						<td style="vertical-align:top; width: 15px"><div style="margin-right: 10px">- </div></td>
+						<td style="vertical-align:top; width: 10px"><div style="margin-right: 10px">- </div></td>
 						<td><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[${subMessage}]]</div></td>
 					</tr>
 				</th:block>
