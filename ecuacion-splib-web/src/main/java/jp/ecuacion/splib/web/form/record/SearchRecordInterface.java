@@ -36,8 +36,8 @@ public interface SearchRecordInterface {
       if (item instanceof HtmlFieldString
           && ((HtmlFieldString) item).getStringSearchPatternEnum() != null) {
         HtmlFieldString itemStr = (HtmlFieldString) item;
-        map.put(item.getId(), new StringMatchingConditionBean(
-            itemStr.getStringSearchPatternEnum(), itemStr.isIgnoresCase()));
+        map.put(item.getId(), new StringMatchingConditionBean(itemStr.getStringSearchPatternEnum(),
+            itemStr.isIgnoresCase()));
       }
     }
 
@@ -52,8 +52,8 @@ public interface SearchRecordInterface {
           + "' to the getHtmlItems() in 'xxxSearchRecord or it's parent Record.");
     }
 
-    String commentMessageId =
-        new StringUtil().getLowerCamelFromSnakeOrNullIfInputIsNull(bean.getStringSearchPatternEnum().toString());
+    String commentMessageId = new StringUtil()
+        .getLowerCamelFromSnakeOrNullIfInputIsNull(bean.getStringSearchPatternEnum().toString());
 
     return PropertyFileUtil.getMsg(locale,
         "jp.ecuacion.splib.web.common.label.searchPattern." + commentMessageId + "Match");
