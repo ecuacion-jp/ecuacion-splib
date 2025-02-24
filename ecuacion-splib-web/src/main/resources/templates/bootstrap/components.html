@@ -195,31 +195,7 @@
 					<!--/* itemに紐づくエラーメッセージをtopに表示する場合 */-->
 					<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
 						<div class="all-error-messages-list-ul">
-							<table th:each="message : *{errorMessages}">
-								<tr>
-									<td style="vertical-align:top"><div style="margin-left: 10px; margin-right: 10px;">- </div></td>
-									<td colspan="2"><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[
-											${#strings.contains(message, #strings.unescapeJava('\n\n')) ? 
-											#strings.substring(message, 0, #strings.indexOf(message, #strings.unescapeJava('\n\n'))) : message}]]</div></td>
-								</tr>
-								<!--/* 
-									subMessage feature.
-									See the following for error reasons:\n\nreason1: xxx\nreason2: xxx
-									-> 
-									- See the following for error reasons:
-									  - reason1: xxx
-									  - reason2: xxx
-								 */-->
-								<th:block th:if="${#strings.contains(message, #strings.unescapeJava('\n\n'))}">
-									<th:block th:each="subMessage : ${#strings.arraySplit(#strings.substring(message, #strings.indexOf(message, #strings.unescapeJava('\n\n'))), #strings.unescapeJava('\n'))}">
-										<tr>
-											<td></td>
-											<td style="vertical-align:top; width: 15px"><div style="margin-right: 10px">- </div></td>
-											<td><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[${subMessage}]]</div></td>
-										</tr>
-									</th:block>
-								</th:block>
-							</table>
+							<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessages})}"></div>
 						</div>
 					</th:block>
 					<!--/* itemに紐づくエラーメッセージを個別itemの箇所に表示する場合 */-->
@@ -227,11 +203,11 @@
 						<ul class="all-error-messages-list-ul">
 							<!--/* itemに紐づかないエラーの表示 */-->
 							<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
-								<li class="all-error-messages-list-li" style="white-space: pre-wrap" th:each="message : *{errorMessagesNotLinkedToItems}">[[${message}]]</li>
+								<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessagesNotLinkedToItems})}"></div>
 							</th:block>
 							<!--/* itemに紐づくエラーが存在することを示すメッセージの表示 */-->
 							<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
-								<li class="all-error-messages-list-li" style="white-space: pre-wrap" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')}"></li>
+								<div th:replace="~{bootstrap/components :: displayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
 							</th:block>
 						</ul>
 					</th:block>
@@ -240,6 +216,41 @@
 		</div>
 	</div>
 
+	<!--/* message表示用内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
+	<div th:fragment="displayMessages(errorMessages)" th:remove="tag">
+		<table th:each="message : ${errorMessages}">
+			<tr>
+				<td style="vertical-align:top"><div style="margin-left: 10px; margin-right: 10px;">- </div></td>
+				<td colspan="2"><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[
+						${#strings.contains(message, #strings.unescapeJava('\n\n')) ? 
+						#strings.substring(message, 0, #strings.indexOf(message, #strings.unescapeJava('\n\n'))) : message}]]</div></td>
+			</tr>
+			<!--/* 
+				subMessage feature.
+				See the following for error reasons:\n\nreason1: xxx\nreason2: xxx
+				-> 
+				- See the following for error reasons:
+				  - reason1: xxx
+				  - reason2: xxx
+			 */-->
+			<th:block th:if="${#strings.contains(message, #strings.unescapeJava('\n\n'))}">
+				<th:block th:each="subMessage : ${#strings.arraySplit(#strings.substring(message, #strings.indexOf(message, #strings.unescapeJava('\n\n'))), #strings.unescapeJava('\n'))}">
+					<tr>
+						<td></td>
+						<td style="vertical-align:top; width: 15px"><div style="margin-right: 10px">- </div></td>
+						<td><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[${subMessage}]]</div></td>
+					</tr>
+				</th:block>
+			</th:block>
+		</table>
+	</div>
+	
+	
+	
+	
+	
+				
+						
 	<div th:fragment="warnMessage(options)" th:remove="tag">
 		<div th:object="${responseMessages}">
 			<th:block th:if="*{warnMessage != null}">
