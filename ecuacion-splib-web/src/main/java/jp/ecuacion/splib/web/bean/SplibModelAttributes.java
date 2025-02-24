@@ -17,7 +17,6 @@ package jp.ecuacion.splib.web.bean;
 
 import java.util.HashMap;
 import java.util.Map;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.ui.Model;
 
 /** modelAttribute. */

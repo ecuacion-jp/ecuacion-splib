@@ -72,7 +72,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
- * Provides exception handler.
+ * Provides an exception handler.
  */
 public abstract class SplibExceptionHandler {
 
@@ -458,13 +458,14 @@ public abstract class SplibExceptionHandler {
    * @return redirect URL
    */
   @ExceptionHandler({HttpRequestMethodNotSupportedException.class})
-  public @Nonnull String handleHttpRequestMethodNotSupportedException(
+  public @Nonnull ModelAndView handleHttpRequestMethodNotSupportedException(
       @Nonnull HttpRequestMethodNotSupportedException exception) {
 
     logUtil.logError(exception, request.getLocale());
     actionOnThrowable.execute(exception);
 
-    return "redirect:/" + PropertyFileUtil.getApp("jp.ecuacion.splib.web.system-error.go-to-path");
+    return new ModelAndView(
+        "redirect:/" + PropertyFileUtil.getApp("jp.ecuacion.splib.web.system-error.go-to-path"));
   }
 
   /**

@@ -75,6 +75,7 @@ public class SplibThymeleafOptionUtil {
     for (String str : fieldNameList) {
       fieldNameSb.append(", " + str);
     }
+
     String fieldNames =
         (multiple ? "（" : "") + fieldNameSb.toString().substring(2) + (multiple ? "）" : "");
 
