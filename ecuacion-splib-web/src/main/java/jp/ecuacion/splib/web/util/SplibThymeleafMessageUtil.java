@@ -35,8 +35,8 @@ public class SplibThymeleafMessageUtil {
     // 両方に存在する場合はエラー
     if (hasMsg && hasField) {
       String msg =
-          "Key '" + id + "' has both in 'messages.properties' and 'field_names.properties'. "
-              + "One of keys must be changed. (key : " + id + ")";
+          "Key '" + id + "' has both in 'messages.properties' and 'item_names.properties'. "
+              + "One of keys must be removed. (key : " + id + ")";
       throw new RuntimeException(msg);
     }
     
