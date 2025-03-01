@@ -326,8 +326,7 @@ public abstract class SplibExceptionHandler {
     // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
     List<BeanValidationErrorInfoBean> errorList = new ArrayList<>();
 
-    for (ConstraintViolation<?> cv : new BeanValidationUtil().validate(exception.getForm(),
-        request.getLocale())) {
+    for (ConstraintViolation<?> cv : new BeanValidationUtil().validate(exception.getForm())) {
       errorList.add(new BeanValidationErrorInfoBean(cv));
     }
 
