@@ -27,20 +27,36 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
 /**
- * record自体はweb, batchなどの種類によらず一定の形でcode-generatorから出力される。
- * が、一方で、webの場合に追加されていて欲しい機能もあるため、それをinterfaceの形でまとめておく。 webで使用するrecordは皆これを実装する形とする。
+ * Has features related web environment.
  */
 public interface RecordInterface {
 
+  /**
+   * Returns htmlFields.
+   * 
+   * @return HtmlField[]
+   */
   HtmlField[] getHtmlFields();
 
+  /**
+   * Returns htmlField in respond to the specified fieldId.
+   * 
+   * @param fieldId fieldId
+   * @return HtmlField
+   */
   default HtmlField getHtmlField(String fieldId) {
     return new SplibRecordUtil().getHtmlField(getHtmlFields(), fieldId);
   }
 
-  default boolean needsCommas(String itemName) {
+  /**
+   * Returns whether the itemId needs comma.
+   * 
+   * @param itemId itemId
+   * @return boolean
+   */
+  default boolean needsCommas(String itemId) {
     HtmlField item = Arrays.asList(getHtmlFields()).stream()
-        .collect(Collectors.toMap(e -> e.getId(), e -> e)).get(itemName);
+        .collect(Collectors.toMap(e -> e.getId(), e -> e)).get(itemId);
 
     if (item == null || !(item instanceof HtmlFieldNumber)) {
       return false;
@@ -51,21 +67,18 @@ public interface RecordInterface {
   }
 
   /**
-   * labelFieldNameを返す。
+   * labelFieldNameを返す.
    * HtmlItemに指定したfieldNameをitemNameに指定すると、field_name.propertiesで解決できる形のitemNameが取得できる。
    * 
-   * <p>
-   * HtmlItem上の(itemName, labelItemname)は、rootRecord配下の属性の場合("id", "name")のように属性名単体で定義されているが、
+   * <p>HtmlItem上の(itemName, labelItemname)は、rootRecord配下の属性の場合("id", "name")のように属性名単体で定義されているが、
    * getLabelItemName()にはrootRecordNameの引数も渡しており、戻り値は"acc.accName"のようにそのままfield名として取得できる仕様としている。
    * </p>
    * 
-   * <p>
-   * relationがある場合は、("accGroup.id", "accGroup.name")のようにHtmlItem上設定される。
+   * <p>relationがある場合は、("accGroup.id", "accGroup.name")のようにHtmlItem上設定される。
    * この場合、戻り値に"acc."を付加するとfield_names.propertiesで解決できないので"acc."の付加はしない。
    * </p>
    * 
-   * <p>
-   * relationがある場合を含めて、各componentのitemNameに指定する文字列は、必ずHtmlItemに指定したitemNameと同一となる。
+   * <p>relationがある場合を含めて、各componentのitemNameに指定する文字列は、必ずHtmlItemに指定したitemNameと同一となる。
    * </p>
    */
   default String getDisplayName(String rootRecordId, String fieldId) {
@@ -91,7 +104,7 @@ public interface RecordInterface {
   }
 
   /**
-   * htmlItemsについて、個別機能のlistと共通のlistをmergeさせるために使用する。
+   * htmlItemsについて、個別機能のlistと共通のlistをmergeさせるために使用する.
    * あくまでutilレベルなので個別処理にしても良いのだが、極力個別コードを減らしたいので本クラスに保持する。
    */
   default HtmlField[] mergeHtmlFields(HtmlField[] fields1, HtmlField[] fields2) {
@@ -113,7 +126,13 @@ public interface RecordInterface {
 
   }
 
-
+  /**
+   * Obtrains NotEmpty fields.
+   * 
+   * @param loginState loginState
+   * @param bean bean
+   * @return {@code List<String>}
+   */
   default List<String> getNotEmptyFields(String loginState, RolesAndAuthoritiesBean bean) {
     List<String> list = new ArrayList<>();
 
@@ -127,9 +146,17 @@ public interface RecordInterface {
     return list;
   }
 
-  default boolean isNotEmpty(String fieldName, String loginState, String rolesOrAuthoritiesString) {
+  /**
+   * Returns whether isNotEmpty or not.
+   * 
+   * @param fieldId fieldId
+   * @param loginState loginState
+   * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
+   * @return boolean
+   */
+  default boolean isNotEmpty(String fieldId, String loginState, String rolesOrAuthoritiesString) {
     SplibSecurityUtil.RolesAndAuthoritiesBean bean =
         new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
-    return getNotEmptyFields(loginState, bean).contains(fieldName);
+    return getNotEmptyFields(loginState, bean).contains(fieldId);
   }
 }

@@ -15,9 +15,12 @@
  */
 package jp.ecuacion.splib.web.form;
 
+/**
+ * Stores data for edit.
+ */
 public abstract class SplibEditForm extends SplibGeneralForm {
 
-  /** insertかupdateかを保持。 */
+  /** Stores whetherr insert or update. */
   protected Boolean isInsert;
 
   public Boolean isInsert() {

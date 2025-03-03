@@ -23,11 +23,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
- * web serviceでの使用における、認証が不要なアクセスにて使用する/api/public/** について規定。
+ * Provides security config for rest.
  */
 public abstract class SplibRestSecurityConfig {
 
-  /** apiとしてはfree accessなので、apiの中では一番順番の低い8番。（9番は後述の通り/api全般に対しての定義なのでそれよりは前の8）。 */
+  /**
+   * Provides SecurityFilterChain.
+   * 
+   * @param http http
+   * @return SecurityFilterChain
+   * @throws Exception Exception
+   */
   @Order(8)
   @Bean
   SecurityFilterChain filterChainForApiPublic(HttpSecurity http) throws Exception {
@@ -43,7 +49,13 @@ public abstract class SplibRestSecurityConfig {
     return http.build();
   }
 
-  /** /apiで始まるが、/api/public/などでない場合、エラーなのだが、一応apiとしてのエラーを返しておくのが親切なので定義しておく。 */
+  /**
+   * Provides SecurityFilterChain.
+   * 
+   * @param http http
+   * @return SecurityFilterChain
+   * @throws Exception Exception
+   */
   @Order(9)
   @Bean
   SecurityFilterChain filterChainForApi(HttpSecurity http) throws Exception {

@@ -18,12 +18,17 @@ package jp.ecuacion.splib.rest.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Provides config controller.
+ */
 @RestController
 public class ConfigController {
 
-  // @Autowired
-  // private HttpServletRequest request;
-
+  /**
+   * Provides config response.
+   *
+   * @throws Exception Exception
+   */
   @GetMapping("/api/public/ecuacion/config")
   public void config() throws Exception {
     System.out.println("test");

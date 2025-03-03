@@ -50,9 +50,10 @@ public abstract class SplibRecord {
   }
 
   /**
+   * Gets value.
    * 
-   * @param itemName
-   * @return
+   * @param itemName itemName
+   * @return Object
    */
   public Object getValue(String itemName) {
     Object rtn = null;
@@ -94,9 +95,10 @@ public abstract class SplibRecord {
   }
 
   /**
+   * Gets string length.
    * 
-   * @param itemName
-   * @return
+   * @param itemName itemName
+   * @return Integer
    */
   public Integer getStringLength(String itemName) {
     return stringLengthMap.get(itemName);

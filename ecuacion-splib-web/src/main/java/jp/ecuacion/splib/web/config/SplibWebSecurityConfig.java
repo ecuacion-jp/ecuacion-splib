@@ -32,8 +32,9 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
  * Provides the abstract SecurityConfig class.
  * 
  * <p>Since using this class is not mandatory in the library, 
- *     this class is abstract and no annotations to be recognized as it.
- *     If you use this, create the class which extends this and has class annotations: 
+ *     it's abstract and It has no annotations to be recognized as it.
+ *     If you want to use this, create a new class 
+ *     which extends it and put class annotations on the new class: 
  *     {@code Configuration} and {@code EnableWebSecurity}.</p>
  */
 public abstract class SplibWebSecurityConfig {
@@ -46,7 +47,7 @@ public abstract class SplibWebSecurityConfig {
   private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
   /**
-   * Returns the url when the login proceduree successfully ended.
+   * Returns the url when the login procedure successfully ended.
    */
   protected abstract String getDefaultSuccessUrl();
 

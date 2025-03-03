@@ -30,17 +30,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
+/**
+ * Provides utility methods for splib-web.
+ */
 @Component
 public class SplibUtil {
 
   @Autowired
   HttpServletRequest request;
 
-  /** contextPathを取得するために使用。 */
   @Autowired
   private ServletContext servletContext;
 
-  /** offsetはlogin画面でのonload時に呼ばれるため、login画面を開いた状態で放置した場合は値がnullでエラーになる。 */
+  /**
+   * Returns DatetimeFormatParameters.
+   */
   public DatetimeFormatParameters getParams(HttpServletRequest request) {
     DatetimeFormatParameters params = new DatetimeFormatParameters();
     String strOffset = (String) request.getSession().getAttribute("zoneOffset");
@@ -62,6 +66,11 @@ public class SplibUtil {
   /* url related */
   /* ----------- */
 
+  /**
+   * Gets loginState.
+   * 
+   * @return String
+   */
   public String getLoginState() {
     String urlPathWithContextPath = request.getRequestURI();
     String contextPath = servletContext.getContextPath();
@@ -112,16 +121,14 @@ public class SplibUtil {
   }
 
   /**
-   * 基本的には、エラーが発生して自画面遷移するか、
-   * 処理成功ないし入力された情報を自画面で表示するが千位前画面で入力された内容をDBに格納しない場合に使用される。
-   * 後者は簡単なサンプルなどで使用するのがメインと思われ、本格業務システムでは使用されない想定。
+   * Prepares for page transition and returns url.
    * 
-   * @param request
-   * @param ctrl
-   * @param redirectBean
-   * @param model
-   * @param takeOverMessages
-   * @return
+   * @param request request
+   * @param ctrl ctrl
+   * @param redirectBean redirectBean
+   * @param model model
+   * @param takeOverMessages takeOverMessages
+   * @return String
    */
   public String prepareForPageTransition(HttpServletRequest request, SplibGeneralController<?> ctrl,
       ReturnUrlBean redirectBean, Model model, boolean takeOverMessages) {
@@ -152,22 +159,18 @@ public class SplibUtil {
   }
 
   /**
-   * ログイン状態を指定。 public=loginなし、account=一般ユーザログイン、admin=管理者／サービス提供側のログイン、を想定。
+   * Designates login state.
    * 
-   * <p>
-   * 以下の用途で使用。
-   * </p>
+   * <p>public=no login, account=user login, admin=service provider or administrator login.</p>
+   * 
+   * <p>It's used the following.</p>
    * <ul>
-   * <li>URLの一部に入る。https://domain/contextPath/xxx/.... のxxx部分。
-   * <li>navBarの種類を指定。loginStateにより全く異なるメニューのnavBarを表示することが可能。
+   * <li>As a part of url: xxx of {@code https://domain/contextPath/xxx/....}.
+   * <li>Specifies the kind of navBar. Totally different navBar can be shown by each loginState.
    * </ul>
    */
   public static enum LoginStateEnum {
 
-    /**
-     * loginStateと言う意味では、本当はpublicよりnoneなどの方がわかりやすいのだが、
-     * この名称がそのままhttps://domain/contextPath/xxx/....のxxx部分に載り、urlにnoneがあるのも違和感あるのでpublicとした。
-     */
     PUBLIC("public"),
 
     ACCOUNT("account"),
@@ -175,7 +178,9 @@ public class SplibUtil {
     ADMIN("admin"),
 
     /**
-     * config画面など、ecuacionとして共通で持たせる画面に使用するpath。 urlの一部になる際はecuacion/publicの形となる
+     * It's the path for common for ecuacion libraries like config.
+     * 
+     * <p>As url it becumes {@code ecuacion/public}.
      */
     ECUACION_PUBLIC("ecuacion-public");
 

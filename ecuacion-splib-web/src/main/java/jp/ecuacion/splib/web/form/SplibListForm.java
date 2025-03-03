@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
 
+/**
+ * Stores data for list.
+ */
 public class SplibListForm<T extends SplibRecord> extends SplibGeneralForm {
   private List<T> recList = new ArrayList<>();
 
@@ -26,7 +29,12 @@ public class SplibListForm<T extends SplibRecord> extends SplibGeneralForm {
     return recList;
   }
 
-  /** pipeline処理のため自分をreturnしておく。 */
+  /**
+   * Sets record list and returns this for method chain.
+   * 
+   * @param recList recList
+   * @return {@code SplibListForm<T>}
+   */
   public SplibListForm<T> setRecList(List<T> recList) {
     this.recList = recList;
     return this;

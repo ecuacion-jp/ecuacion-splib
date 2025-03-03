@@ -15,11 +15,21 @@
  */
 package jp.ecuacion.splib.web.bean;
 
+/**
+ * Is used for number field.
+ */
 public class HtmlFieldNumber extends HtmlField {
 
-  /** 文字列項目の場合のみ使用可。検索項目の文字列検索での大文字・小文字の区別を指定。 */
+  /**
+   * Determins whether commas are used or not.
+   */
   protected boolean needsCommas;
 
+  /**
+   * Constructs a new instance.
+   * 
+   * @param id id
+   */
   public HtmlFieldNumber(String id) {
     super(id);
   }
@@ -40,6 +50,12 @@ public class HtmlFieldNumber extends HtmlField {
     return (HtmlFieldNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
+  /**
+   * Returns needsCommas.
+   * 
+   * @param needsCommas needsCommas
+   * @return HtmlFieldNumber
+   */
   public HtmlFieldNumber needsCommas(boolean needsCommas) {
     this.needsCommas = needsCommas;
     return this;

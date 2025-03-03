@@ -18,6 +18,9 @@ package jp.ecuacion.splib.web.form;
 import jakarta.validation.Valid;
 import jp.ecuacion.splib.web.form.record.LoginRecord;
 
+/**
+ * Stores data for adminLogin.
+ */
 public class AdminLoginForm extends SplibGeneralForm {
   
   @Valid

@@ -48,6 +48,7 @@ import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.bean.HtmlField;
 import jp.ecuacion.splib.web.bean.MessagesBean;
+import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.bean.SplibModelAttributes;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
@@ -213,10 +214,10 @@ public abstract class SplibExceptionHandler {
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
     Objects.requireNonNull(requestResult);
-    requestResult.setWarnMessage(
+    requestResult.setWarnMessage(new WarnMessageBean(
         exception.getMessageId(), PropertyFileUtil.getMsg(request.getLocale(),
             exception.getMessageId(), exception.getMessageArgs()),
-        exception.buttonIdToPressOnConfirm());
+        exception.buttonIdToPressOnConfirm()));
 
     // warningはsubmitが完了していないことから同じ画面に戻る処理なので、別ページへのredirectは発生しない
     // PRGのためisRedirectはtrueとしておく
@@ -326,8 +327,7 @@ public abstract class SplibExceptionHandler {
     // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
     List<BeanValidationErrorInfoBean> errorList = new ArrayList<>();
 
-    for (ConstraintViolation<?> cv : new BeanValidationUtil().validate(exception.getForm(),
-        request.getLocale())) {
+    for (ConstraintViolation<?> cv : new BeanValidationUtil().validate(exception.getForm())) {
       errorList.add(new BeanValidationErrorInfoBean(cv));
     }
 

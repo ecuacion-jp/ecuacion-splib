@@ -18,6 +18,9 @@ package jp.ecuacion.splib.web.form.record;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
 import jp.ecuacion.splib.web.bean.HtmlField;
 
+/**
+ * Is a record for loginController.
+ */
 public class LoginRecord extends SplibRecord implements RecordInterface {
 
   @Override
@@ -44,10 +47,18 @@ public class LoginRecord extends SplibRecord implements RecordInterface {
     this.password = password;
   }
 
+  /**
+   * username length.
+   * 
+   * @return long
+   */
   public long usernameLength() {
     return 20;
   }
 
+  /**
+   * password length.
+   */
   public long passwordLength() {
     return 20;
   }

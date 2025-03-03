@@ -18,6 +18,9 @@ package jp.ecuacion.splib.rest.config;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Provides config.
+ */
 @Configuration
 @ComponentScan(basePackages = "jp.ecuacion.splib.core.config"
     + ",jp.ecuacion.splib.rest.advice"

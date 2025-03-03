@@ -18,10 +18,18 @@ package jp.ecuacion.splib.web.bean;
 import jp.ecuacion.splib.web.form.record.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.form.record.StringMatchingConditionBean.StringMatchingPatternEnum;
 
+/**
+ * Is used for string field.
+ */
 public class HtmlFieldString extends HtmlField {
 
   protected StringMatchingConditionBean matchingCondition;
 
+  /**
+   * Constructs a new instance.
+   * 
+   * @param itemName itemName
+   */
   public HtmlFieldString(String itemName) {
     super(itemName);
     this.matchingCondition = new StringMatchingConditionBean();
@@ -43,6 +51,13 @@ public class HtmlFieldString extends HtmlField {
     return (HtmlFieldString) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
+  /**
+   * Offers the string search pattern.
+   * 
+   * @param stringMatchingPattern stringMatchingPattern
+   * @param ignoresCase ignoresCase
+   * @return HtmlFieldString
+   */
   public HtmlFieldString stringMatchingCondition(StringMatchingPatternEnum stringMatchingPattern,
       boolean ignoresCase) {
     this.matchingCondition = new StringMatchingConditionBean(stringMatchingPattern, ignoresCase);

@@ -18,28 +18,28 @@ package jp.ecuacion.splib.core.container;
 import java.time.ZoneOffset;
 
 /**
- * 
+ * Provides DatetimeFormatParameters.
  */
 public class DatetimeFormatParameters {
 
   private ZoneOffset zoneOffset;
 
-  /** 現在dateTimeという型はlibrary上ないが、本来timestampとは異なる意味合いのはずなので念のため保持しておく。 */
   private String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
   private String timestampFormat = "yyyy-MM-dd HH:mm:ss.SSSSSS XXX"; 
   private String dateFormat = "yyyy-MM-dd";
   private String timeFormat = "HH:mm:ss";
 
   /**
-   * 
+   * Constructs a new instance.
    */
   public DatetimeFormatParameters() {
 
   }
 
   /**
+   * Constructs a new instance.
    * 
-   * @param zoneOffset
+   * @param zoneOffset zoneOffset
    */
   public DatetimeFormatParameters(ZoneOffset zoneOffset) {
     this.zoneOffset = zoneOffset;
@@ -54,8 +54,9 @@ public class DatetimeFormatParameters {
   }
 
   /**
-   * javascriptのDateオブジェクトのgetTimezoneOffset() メソッドにて取得される値を引数に渡す形でのoffset指定。 UTC+0900（日本）だと -9(時間)
-   × 60(分) = -540 という値。 これを「ZoneOffset.ofHours(9)」の形で保持。
+   * javascriptのDateオブジェクトのgetTimezoneOffset() メソッドにて取得される値を引数に渡す形でのoffset指定.
+   * 
+   *  <p>UTC+0900（日本）だと -9(時間) 60(分) = -540 という値。 これを「ZoneOffset.ofHours(9)」の形で保持。</p>
    */
   public void setZoneOffsetWithJsMinutes(int minutes) {
     int hour = -1 * minutes / 60;

@@ -20,14 +20,21 @@ import java.util.Arrays;
 import java.util.List;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * Provides utilities on spring security.
+ */
 public class SplibSecurityUtil {
-  
-  /** 空のbeanを生成。role、authorityが存在しない状態で生成される。 */
+
+  /**
+   * Returns a new instance with no roles or authorities.
+   */
   public RolesAndAuthoritiesBean getRolesAndAuthoritiesBean() {
     return createRolesAndAuthoritiesBean(new ArrayList<>());
   }
-  
-  /** UserDetailsからbeanを生成。 */
+
+  /**
+   * Returns RolesAndAuthoritiesBean from userDetails.
+   */
   public RolesAndAuthoritiesBean getRolesAndAuthoritiesBean(UserDetails userDetails) {
     if (userDetails == null) {
       return getRolesAndAuthoritiesBean();
@@ -38,19 +45,23 @@ public class SplibSecurityUtil {
     }
   }
 
-  /** thymeleafで#authentication.principal.authorities にて取得した文字列からbeanを生成。 */
+  /**
+   * Returns bean from #authentication.principal.authorities in thymeleaf.
+   */
   public RolesAndAuthoritiesBean getRolesAndAuthoritiesBean(String rolesOrAuthoritiesString) {
     rolesOrAuthoritiesString =
         rolesOrAuthoritiesString.replace("[", "").replace("]", "").replace(" ", "");
-    
+
     return createRolesAndAuthoritiesBean(Arrays.asList(rolesOrAuthoritiesString.split(",")));
   }
-  
-  /**role / authority を、stringのlistの形にしたものを引数に渡してRolesAndAuthoritiesBeanを返す。 */
+
+  /**
+   * Returns RolesAndAuthoritiesBean from string list of role / authority.
+   */
   private RolesAndAuthoritiesBean createRolesAndAuthoritiesBean(List<String> list) {
     List<String> roleList = new ArrayList<>();
     List<String> authorityList = new ArrayList<>();
-    
+
     for (String authorityOrRole : list) {
       if (authorityOrRole.startsWith("ROLE_")) {
         roleList.add(authorityOrRole.substring(5));
@@ -63,10 +74,19 @@ public class SplibSecurityUtil {
     return new RolesAndAuthoritiesBean(roleList, authorityList);
   }
 
+  /**
+   * Stores info on roles and authorities.
+   */
   public static class RolesAndAuthoritiesBean {
     private List<String> roleList;
     private List<String> authorityList;
 
+    /**
+     * Constructs a new instance.
+     * 
+     * @param roleList roleList
+     * @param authorityList authorityList
+     */
     public RolesAndAuthoritiesBean(List<String> roleList, List<String> authorityList) {
       this.roleList = roleList;
       this.authorityList = authorityList;

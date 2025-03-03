@@ -25,7 +25,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Provides configs for web.
  * 
- * <p>It also provides the feature to persist jsessionId to cookie to avoid jsessionId from url.</p>
+ * <p>It also provides the feature to persist jsessionId to cookie 
+ *     to avoid jsessionId from emerging in url.</p>
  */
 @Configuration
 @ComponentScan(basePackages = "jp.ecuacion.splib.core.config"
@@ -37,16 +38,18 @@ import org.springframework.context.annotation.Configuration;
 public class SplibWebConfig {
 
   /*
-   * 時々、URLが勝手に以下のように";" + jsessionIdが入り込み、";"が入ることでspring securityでエラーが発生しシステムエラーとなる。
+   * Sometimes ";" + jsessionId summgles into urls, spring detects unknown character ";"
+   * and it causes a system error.
    * 
    * <pre>
-   * 問題のURL: https://aws-instance-manager.ecuacion.jp/aws-instance-manager/public/show/page;jsessionid=D51E9ED564B7148E81EE82C4E33EC70A?notFound=&id=home
-   * 例外message： org.springframework.security.web.firewall.RequestRejectedException: 
-   * The request was rejected because the URL contained a potentially malicious String ";"
+   * problematic url sample:  https://aws-instance-manager.ecuacion.jp/aws-instance-manager/public/show/page;jsessionid=D51E9ED564B7148E81EE82C4E33EC70A?notFound=&id=home
+   * exceprtion kind and its message： 
+   * - org.springframework.security.web.firewall.RequestRejectedException: 
+   * - The request was rejected because the URL contained a potentially malicious String ";"
    * </pre>
    * 
    * <p>
-   * これを避けるため、以下の対応をとる。
+   * To avoid the incident above we introduce the following.
    * https://code-kakikaki.com/springboot-url-jsessionid/
    * </p>
    */

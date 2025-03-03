@@ -19,14 +19,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
- * thymeleaf側から呼ばれる想定のクラス。thymeleaf上で必要となる文字列処理を実施。
+ * thymeleaf側から呼ばれる想定のクラス。thymeleaf上で必要となる文字列処理を実施.
  */
 @Component("strUtil")
 public class SplibThymeleafStringUtil {
   
   /** 
-   * acc -> getAccList, acc.name -> getAcc_NameListに変更。
-   * "_"はrelation使用時のrepositoryの使用方法に準じた。
+   * acc -> getAccList, acc.name -> getAcc_NameListに変更.
+   * 
+   * <p>"_"はrelation使用時のrepositoryの使用方法に準じた。</p>
    */
   public String selectListMethodName(String itemName) {
     // "."で区切ったリストを作り、そのそれぞれの先頭をcapitalizeし、その後でリストの文字列を"_"を間に入れて結合。
