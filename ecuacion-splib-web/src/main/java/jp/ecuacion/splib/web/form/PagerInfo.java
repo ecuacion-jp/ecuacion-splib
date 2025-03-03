@@ -16,26 +16,36 @@
 package jp.ecuacion.splib.web.form;
 
 /** 
- * Pagerを構成する1セルの情報が1PageInfo。
+ * Consists of a cell which is a part of a pager structure.
  */
 public class PagerInfo {
 
-  /** セルに表示する文字列。"Next"など。 */
+  /** The string displaying on the cell, like "Next". */
   private String displayString;
   
-  /** そのセルの状態を、bootstrapで使用する文字列でそのまま表現。"", "active", "disabled" のいずれか。 */
+  /**
+   * Stores the status of the cell with the format of the string used in bootstrap.
+   * 
+   * <p>The values are either "active" or "disabled".</p>
+   */
   private String status;
   
-  /** リンクを押した時に飛ぶ先のページ番号。 */
+  /**
+   * The page number to which the page transitions by pressing a link.
+   */
   private String goToPage;
-  
-  /** disabledのセルを生成する際に使用するconstructor. */
+
+  /**
+   * Constructs a new instance with disable cell.
+   */
   public PagerInfo(String displayString) {
     this.displayString = displayString;
     this.status = "disabled";
   }
   
-  /** clickableセルを生成する際に使用するconstructor. */
+  /**
+   * Constructs a new instance with clickable cell.
+   */
   public PagerInfo(String displayString, boolean isActive, int goToPage) {
     this.displayString = displayString;
     this.status = (isActive) ? "active" : "";

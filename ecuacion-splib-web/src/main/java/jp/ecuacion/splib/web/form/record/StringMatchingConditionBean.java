@@ -15,24 +15,36 @@
  */
 package jp.ecuacion.splib.web.form.record;
 
+/**
+ * Stores string match condition for search function.
+ */
 public class StringMatchingConditionBean {
 
-  /** 検索項目の文字列検索パターンを示す。 */
+  /** Stores the search pattern of a string. */
   private StringMatchingPatternEnum stringSearchPatternEnum;
 
-  /** 検索項目の文字列検索での大文字・小文字の区別を指定。 */
+  /** Stores whether cases of a string is distinguished. */
   private boolean ignoresCase;
 
+  /**
+   * Constructs a new instance.
+   */
   public StringMatchingConditionBean() {
     this.stringSearchPatternEnum = StringMatchingPatternEnum.PARTIAL;
     this.ignoresCase = true;
   }
 
+  /**
+   * Constructs a new instance.
+   */
   public StringMatchingConditionBean(StringMatchingPatternEnum stringSearchPatternEnum) {
     this.stringSearchPatternEnum = stringSearchPatternEnum;
     this.ignoresCase = true;
   }
 
+  /**
+   * Constructs a new instance.
+   */
   public StringMatchingConditionBean(StringMatchingPatternEnum stringSearchPatternEnum,
       boolean ignoresCase) {
     this.stringSearchPatternEnum = stringSearchPatternEnum;
@@ -47,6 +59,9 @@ public class StringMatchingConditionBean {
     return ignoresCase;
   }
 
+  /**
+   * Has string match patterns.
+   */
   public static enum StringMatchingPatternEnum {
     EXACT, PARTIAL, PREFIX, POSTFIX
   }

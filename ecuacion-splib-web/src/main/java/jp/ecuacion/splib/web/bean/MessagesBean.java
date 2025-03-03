@@ -28,17 +28,19 @@ import java.util.stream.Collectors;
 public class MessagesBean {
 
   /** 
-   * DBを使用する場合は、通常データ更新などの後処理の際はredirectしそのURLの中に?successを混ぜることで処理成功メッセージを出す。
-   * が、DBを使用せずserverで処理した結果をformに詰めそれを画面で表示したい場合、redirectするとformの情報が消えるため画面に表示できない。
-   * その場合はredirectは使用せずreturnとしてhtmlファイル名を指定して画面表示するのだが、その場合にもredirectと同様にsuccessメッセージを出したい。
-   * その場合に、本flagをtrueに設定することでメッセージが標示される。
+   * Shows the message which describes the procedure has been done successfully.
+   * 
+   * <p>When the PRG (Post Redirect Get), showing success messages are realized 
+   *     by add url parameter {@code ?success}.<br>
+   *     This library assumes that all the transition with messages uses PRG,
+   *     but this function leaves for some cases.</p>
    */
   private boolean needsSuccessMessage = false;
 
   private WarnMessageBean warnMessage;
 
   /**
-   * spring mvc標準のbean validationのエラー処理を使用しない場合に使用する。 並び順を保持するためにListを使用。
+   * Stores error messages. The data type is {@code List} because the order matters.
    */
   private List<ErrorMessageBean> errorMessageList = new ArrayList<>();
 
@@ -70,24 +72,18 @@ public class MessagesBean {
     this.warnMessage = warnMessage;
   }
 
-  public void setWarnMessage(String messageId, String message) {
-    this.warnMessage = new WarnMessageBean(messageId, message);
-  }
-
-  public void setWarnMessage(String messageId, String message, String buttonName) {
-    this.warnMessage = new WarnMessageBean(messageId, message, buttonName);
-  }
-
-  public void setErrorMessage(String message) {
-    errorMessageList.add(new ErrorMessageBean(message));
-  }
-
-  public void setErrorMessage(String message, String... itemName) {
-    errorMessageList.add(new ErrorMessageBean(message, itemName));
+  /**
+   * Sets error message.
+   * 
+   * @param message message
+   * @param itemIds itemIds
+   */
+  public void setErrorMessage(String message, String... itemIds) {
+    errorMessageList.add(new ErrorMessageBean(message, itemIds));
   }
 
   /**
-   * 全てのエラーを取得。
+   * Obtains all the errors.
    */
   public List<String> getErrorMessages() {
     List<String> rtnList = new ArrayList<>();
@@ -100,14 +96,14 @@ public class MessagesBean {
   }
 
   /**
-   * 指定されたitemに対する全てのエラーを取得。
+   * Obtains all the messages related to the specified itemId.
    */
-  public List<String> getErrorMessages(String itemName) {
-    return getErrorMessageList(itemName);
+  public List<String> getErrorMessages(String itemId) {
+    return getErrorMessageList(itemId);
   }
 
   /**
-   * item指定のある全てのエラーを取得。
+   * Obtains all the messages with itemId specified.
    */
   public List<String> getErrorMessagesLinkedToItems() {
     return errorMessageList.stream().filter(e -> e.getItemNameSet().size() > 0)
@@ -115,21 +111,27 @@ public class MessagesBean {
   }
 
   /**
-   * item指定のない全てのエラーを取得。
+   * Obtains all the messages without itemId specified.
    */
   public List<String> getErrorMessagesNotLinkedToItems() {
     return errorMessageList.stream().filter(e -> e.getItemNameSet().size() == 0)
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
 
-  public String isValid(String itemName) {
-    return (getErrorMessageList(itemName).size() > 0) ? "is-invalid" : "";
+  /**
+   * Returns invalid class string if the item is invalid.
+   * 
+   * @param itemId itemId
+   * @return String
+   */
+  public String isValid(String itemId) {
+    return (getErrorMessageList(itemId).size() > 0) ? "is-invalid" : "";
   }
 
   /**
-   * エラーメッセージとそのメッセージが指す項目をペアで持つ。 bean validationのような単純にメッセージと項目が1:1となる場合ばかりではなく、
-   * 相関チェックだと一つのエラーで複数の項目が対象となったり、対象項目が存在しないエラーなどもある。
-   * それらを網羅して保持できるため、一つのメッセージと、0以上の項目をセットで保持できるbeanとする。
+   * Stores the pair of error messages and itemIds.
+   * 
+   * <p>The pair can be (message : itemId) = 1:1, 1:0, 1:n.</p>
    */
   static class ErrorMessageBean {
     private String message;
@@ -155,15 +157,31 @@ public class MessagesBean {
     }
   }
 
+  /**
+   * Stores a warn message.
+   */
   public static class WarnMessageBean {
     private String messageId;
     private String message;
     private String buttonName;
 
+    /**
+     * Constructs a new instance.
+     * 
+     * @param messageId messageId
+     * @param message message
+     */
     public WarnMessageBean(String messageId, String message) {
       this(messageId, message, null);
     }
 
+    /**
+     * Constructs a new instance.
+     * 
+     * @param messageId messageId
+     * @param message message
+     * @param buttonName buttonIdToPressOnConfirm
+     */
     public WarnMessageBean(String messageId, String message, String buttonName) {
       this.messageId = messageId;
       this.message = message;

@@ -29,10 +29,15 @@ import jp.ecuacion.splib.web.form.record.StringMatchingConditionBean.StringMatch
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
+/**
+ * Provides Spec factory.
+ * 
+ * @param <T> Entity
+ */
 public class SpecFactory<T extends AbstractEntity> {
 
   /**
-   * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意。
+   * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意.
    * fieldは"name", "parentRecord.id", "parentRecord.childRecord.id"など関連のrecordを含めて記載可能。
    */
   public Specification<T> equals(String field, Object value) {
@@ -50,10 +55,24 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * Returns Specification for stringEqualsIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEqualsIgnoringCase(String field, String value) {
     return stringEqualsIgnoringCase(null, field, value);
   }
 
+  /**
+   * Returns Specification for stringEqualsIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEqualsIgnoringCase(String entity, String field, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField =
@@ -63,10 +82,24 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * Returns Specification for stringEquals.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEquals(String field, String value, boolean ignoresCase) {
     return stringEquals(null, field, value, ignoresCase);
   }
 
+  /**
+   * Returns Specification for stringEquals.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEquals(String entity, String field, String value,
       boolean ignoresCase) {
     return (root, query, cb) -> {
@@ -80,10 +113,24 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * Returns Specification for stringNotEquals.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringNotEquals(String field, String value) {
     return stringNotEquals(null, field, value);
   }
 
+  /**
+   * Returns Specification for stringNotEquals.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringNotEquals(String entity, String field, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField =
@@ -94,10 +141,24 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * Returns Specification for stringContains.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringContains(String field, String value) {
     return stringContains(null, field, value, false);
   }
 
+  /**
+   * Returns Specification for stringContains.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringContains(String entity, String field, String value) {
     return stringContains(entity, field, value, false);
   }
@@ -107,52 +168,136 @@ public class SpecFactory<T extends AbstractEntity> {
     return stringSearchPattern(entity, field, value, "%" + value + "%", ignoresCase);
   }
 
+  /**
+   * Returns Specification for stringContainsIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringContainsIgnoringCase(String field, String value) {
     return stringContains(null, field, value, true);
   }
 
+  /**
+   * Returns Specification for stringContainsIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringContainsIgnoringCase(String entity, String field, String value) {
     return stringContains(entity, field, value, true);
   }
 
+  /**
+   * Returns Specification for stringStartsWith.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringStartsWith(String field, String value) {
     return stringStartsWith(null, field, value, false);
   }
 
+  /**
+   * Returns Specification for stringStartsWith.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringStartsWith(String entity, String field, String value) {
     return stringStartsWith(entity, field, value, false);
   }
 
+  /**
+   * Returns Specification for stringStartsWith.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   private Specification<T> stringStartsWith(String entity, String field, String value,
       boolean ignoresCase) {
     return stringSearchPattern(entity, field, value, value + "%", ignoresCase);
   }
 
+  /**
+   * Returns Specification for stringStartsWithIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringStartsWithIgnoringCase(String field, String value) {
     return stringStartsWith(null, field, value, true);
   }
 
+  /**
+   * Returns Specification for stringStartsWithIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringStartsWithIgnoringCase(String entity, String field, String value) {
     return stringStartsWith(entity, field, value, true);
   }
 
+  /**
+   * Returns Specification for stringStartsWithIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEndsWith(String field, String value) {
     return stringEndsWith(null, field, value, false);
   }
 
+  /**
+   * Returns Specification for stringEndsWith.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEndsWith(String entity, String field, String value) {
     return stringEndsWith(entity, field, value, false);
   }
 
+  /**
+   * Returns Specification for stringEndsWith.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   private Specification<T> stringEndsWith(String entity, String field, String value,
       boolean ignoresCase) {
     return stringSearchPattern(entity, field, value, "%" + value, ignoresCase);
   }
 
+  /**
+   * Returns Specification for stringEndsWithIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEndsWithIgnoringCase(String field, String value) {
     return stringEndsWith(null, field, value, true);
   }
 
+  /**
+   * Returns Specification for stringEndsWithIgnoringCase.
+   * 
+   * @param field field
+   * @param value value
+   * @return {@code Specification<T>}
+   */
   public Specification<T> stringEndsWithIgnoringCase(String entity, String field, String value) {
     return stringEndsWith(entity, field, value, true);
   }
@@ -174,10 +319,24 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * Returns Specification for localDateEqualToOrLessThan.
+   * 
+   * @param field field
+   * @param date date
+   * @return {@code Specification<T>}
+   */
   public Specification<T> localDateEqualToOrLessThan(String field, LocalDate date) {
     return localDateEqualToOrLessThan(null, field, date);
   }
 
+  /**
+   * Returns Specification for localDateEqualToOrLessThan.
+   * 
+   * @param field field
+   * @param date date
+   * @return {@code Specification<T>}
+   */
   public Specification<T> localDateEqualToOrLessThan(String entity, String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       Expression<LocalDate> criteriaField =
@@ -187,6 +346,13 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * Returns Specification for localDateEqualToOrLessThan.
+   * 
+   * @param field field
+   * @param date date
+   * @return {@code Specification<T>}
+   */
   public Specification<T> localDateEqualToOrGreaterThan(String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       return cb.or(cb.equal(root.get(field).as(LocalDate.class), date),
@@ -194,6 +360,13 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * Returns Specification for localDateEqualToOrGreaterThan.
+   * 
+   * @param field field
+   * @param date date
+   * @return {@code Specification<T>}
+   */
   public Specification<T> localDateEqualToOrGreaterThan(String entity, String field,
       LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
@@ -204,6 +377,12 @@ public class SpecFactory<T extends AbstractEntity> {
     };
   }
 
+  /**
+   * add all the search conditions with string values.
+   * 
+   * @param rec rec
+   * @return {@code List<Specification<T>>}
+   */
   public List<Specification<T>> addStringSearchConditions(SplibRecord rec) {
     List<Specification<T>> list = new ArrayList<>();
 

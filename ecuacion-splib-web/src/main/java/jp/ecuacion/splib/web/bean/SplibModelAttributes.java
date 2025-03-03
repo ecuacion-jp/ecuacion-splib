@@ -19,18 +19,17 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.ui.Model;
 
-/** modelAttribute. */
+/** Stores app-common modelAttributes. */
 public class SplibModelAttributes extends HashMap<String, Object> {
 
   private static final long serialVersionUID = 1L;
 
-  // optionalだがlibrary側で対応が入っているものはあらかじめ本classないで管理しておく
-
   private boolean bsBgGradient = true;
 
   /**
-   * 基本はlight(default) / dark の2種類しか設定しないと思われるが、
-   * カラーモードを追加することもbootstrapとしては可能なので、内部的にはカラーモード名を持つ形とする。 通常使うものでもないのでdefaultでlightとしておく。
+   * Sets if the dark mode is adapted to the app.
+   * 
+   * <p>It's not yet implemented.</p>
    */
   private boolean bsDarkMode = false;
 
@@ -49,9 +48,10 @@ public class SplibModelAttributes extends HashMap<String, Object> {
   private boolean showsMessagesLinkedToItemsAtEachField = false;
 
   /**
-   * library側で対応は入っていないがapp共通で登録したいmodelAttributeはここに登録。
-   * SystemCommonControllerに@ModelAttributeで登録してもいいのだが、library側で対応している項目はここに定義しているので
-   * それ以外も併せて本クラスで一限管理することとする。
+   * Stores app-common modelAttributes which are not supported by the library.
+   * 
+   * <p>You can also set {@code @ModelAttribute} in {@code SystemCommonController}, 
+   *     but it's easier to understand by integrating app-common modelAttributes here.</p>
    */
   private Map<String, Object> appCommonModelAttributeMap = new HashMap<>();
 
@@ -60,7 +60,9 @@ public class SplibModelAttributes extends HashMap<String, Object> {
     return appCommonModelAttributeMap;
   }
 
-  /** 追加は、mapをgetするのではなく、わかりやすくkey, valueを引数に渡す形で登録。 */
+  /** 
+   * Adds model attributes.
+   */
   public void addAppCommonModelAttribute(String key, Object value) {
     this.appCommonModelAttributeMap.put(key, value);
   }
@@ -138,6 +140,11 @@ public class SplibModelAttributes extends HashMap<String, Object> {
     this.showsMessagesLinkedToItemsAtEachField = showsMessagesLinkedToItemsAtEachField;
   }
 
+  /**
+   * Adds all attributes to the argument model.
+   * 
+   * @param model model
+   */
   public void addAllToModel(Model model) {
     model.addAttribute("bsBgGradient", bsBgGradient);
     model.addAttribute("bsDarkMode", bsDarkMode);

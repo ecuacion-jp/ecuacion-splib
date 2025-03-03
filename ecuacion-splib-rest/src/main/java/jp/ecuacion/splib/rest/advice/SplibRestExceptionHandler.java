@@ -26,9 +26,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+/**
+ * Provides ExceptionHandler.
+ */
 @RestControllerAdvice
 public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
 
+  /**
+   * Handles HttpStatusException.
+   * 
+   * @param exception exception
+   * @param request request
+   * @return {@code ResponseEntity<?>}
+   */
   @ExceptionHandler(HttpStatusException.class)
   public ResponseEntity<?> handleHttpStatusException(HttpStatusException exception,
       WebRequest request) {
@@ -36,6 +46,12 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
         exception.getHttpStatus());
   }
 
+  /**
+   * Handles Throwable.
+   * 
+   * @param exception exception 
+   * @return ErrorResponse
+   */
   @ExceptionHandler(Throwable.class)
   public ErrorResponse handleThrowable(Throwable exception) {
 

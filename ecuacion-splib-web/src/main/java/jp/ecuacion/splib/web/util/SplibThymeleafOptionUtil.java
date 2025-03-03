@@ -24,24 +24,32 @@ import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.stereotype.Component;
 
 /**
- * thymeleaf側から呼ばれる想定のクラス。 html componentsで使用されるoptionsを解析する。
- * optionsはcsv形式で、複数のoptional属性を受け入れる。'readonly,required'など。
- * また、値付きのパラメータも受け入れ可能とするため、a=bの形（'readonly,a=b,required'など）の形も可とする。
- * readonlyなどのパラメータがないものはMapのkeyにのみ設定（valueはnull）とし、bのような値はvalueに入れることとする。
+ * Analyzes options specified with html components.
+ * 
+ * <p>It's called from thymeleaf.<br>
+ *     Options are in the format of csv and receives multiple optional attributes.
+ *     It's written like 'readonly,required'.<br>
+ *     It also receives key value parameter like 'readonly,a=b,required'.</p>
  */
 @Component("optUtil")
 public class SplibThymeleafOptionUtil {
 
   private HttpServletRequest request;
 
+  /**
+   * Constructs a new instance.
+   * 
+   * @param request request
+   */
   public SplibThymeleafOptionUtil(HttpServletRequest request) {
     this.request = request;
   }
 
   /**
-   * 削除ボタン押下時のメッセージ文字列を生成。
-   * itemDisplayedOnDeleteには、通常は一つのitemを指定するが、"itemA,itemB"のように複数の項目を指定することも可能。 （natural
-   * keyが複数の項目からなる場合に使用） その場合は、(itemA, itemB) : (1, 2) のように括弧で括った形で表現
+   * Provides message string shown when the delete button pressed.
+   * 
+   * <p>itemDisplayedOnDeleteには、通常は一つのitemを指定するが、"itemA,itemB"のように複数の項目を指定することも可能。 （natural
+   * keyが複数の項目からなる場合に使用） その場合は、(itemA, itemB) : (1, 2) のように括弧で括った形で表現</p>
    */
   public String getDeleteConfirmMessage(String rootRecordName, String itemDisplayedOnDelete) {
     List<String> fieldNameList = new ArrayList<>();
@@ -113,7 +121,9 @@ public class SplibThymeleafOptionUtil {
     return rtnMap;
   }
 
-  /** keyの存在チェック。keyがあれば処理するパターンのoptionはこれのみの使用で処理分岐可能。 */
+  /**
+   * Returns if specified key exists in options.
+   */
   public boolean hasKey(String options, String key) {
     return optionMap(options).containsKey(key.toLowerCase());
   }
@@ -131,62 +141,133 @@ public class SplibThymeleafOptionUtil {
     }
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain readonly.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean isReadOnly(String options) {
     return hasKey(options, "readonly");
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain disabled.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean isDisabled(String options) {
     return hasKey(options, "disabled");
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain deleted.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean isDeleted(String options) {
     return hasKey(options, "deleted");
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain forSwitch.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean isForSwitch(String options) {
     return hasKey(options, "forSwitch");
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain noEmptyOption.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean needsEmptyOption(String options) {
     return !hasKey(options, "noEmptyOption");
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain onClickJs.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean needsOnclickJs(String options) {
     return hasKey(options, "onClickJs");
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain linkUrl.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean hasLinkUrl(String options) {
     return hasKey(options, "linkUrl");
   }
 
+  /**
+   * Returns linkUrl.
+   * 
+   * @param options options
+   * @return linkUrl
+   */
   public String getLinkUrl(String options) {
     return getValue(options, "linkUrl");
   }
 
+
+  /**
+   * Returns rows with default value 1.
+   * 
+   * @param options options
+   * @return linkUrl
+   */
   public String rows(String options) {
     return defaultIfKeyNotExist(options, "rows", "1");
   }
 
+  /**
+   * Returns cols with default value 1.
+   * 
+   * @param options options
+   * @return linkUrl
+   */
   public String cols(String options) {
     return defaultIfKeyNotExist(options, "cols", "1");
   }
 
-  @Deprecated
+  /**
+   * Returns whether the options contain thSortable.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean hasThSortable(String options) {
     return hasKey(options, "thSortable");
   }
 
+  /**
+   * Returns whether the options contain full.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean isWidthFull(String options) {
     return widthCheck(options, "full");
   }
 
+  /**
+   * Returns whether the options contain half.
+   * 
+   * @param options options
+   * @return boolean
+   */
   public boolean isWidthHalf(String options) {
     return widthCheck(options, "half");
   }

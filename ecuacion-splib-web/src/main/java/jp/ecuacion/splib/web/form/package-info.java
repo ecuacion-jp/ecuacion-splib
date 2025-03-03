@@ -13,22 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.util;
-
-import org.springframework.stereotype.Component;
 
 /**
- * Is used when you want to occur a system erro from thymeleaf.
+ * Provides forms.
  */
-@Component("exUtil")
-public class SplibThymeleafExceptionUtil {
-
-  /**
-   * Causes a system error.
-   * 
-   * @param message message
-   */
-  public void systemError(String message) {
-    throw new RuntimeException("An error occured while thymeleaf constructs an html : " + message);
-  }
-}
+package jp.ecuacion.splib.web.form;

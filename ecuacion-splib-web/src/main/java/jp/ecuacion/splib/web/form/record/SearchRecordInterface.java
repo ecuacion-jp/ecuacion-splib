@@ -23,11 +23,12 @@ import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.bean.HtmlField;
 import jp.ecuacion.splib.web.bean.HtmlFieldString;
 
-public interface SearchRecordInterface {
+/**
+ * Has features related web environment and search function.
+ */
+public interface SearchRecordInterface extends RecordInterface {
 
-  HtmlField[] getHtmlFields();
-
-  /** 項目ごとのsearch patternを返す。全項目を設定する必要はなく、検索で使用する項目のみで良い。 */
+  /** 項目ごとのsearch patternを返す。全項目を設定する必要はなく、検索で使用する項目のみで良い. */
   default Map<String, StringMatchingConditionBean> getSearchPatterns() {
     Map<String, StringMatchingConditionBean> map = new HashMap<>();
 
@@ -44,6 +45,13 @@ public interface SearchRecordInterface {
     return map;
   }
 
+  /**
+   * Gets SearchPatternComment.
+   * 
+   * @param locale locale
+   * @param fieldName fieldName
+   * @return String
+   */
   default String getSearchPatternComment(Locale locale, String fieldName) {
     StringMatchingConditionBean bean = getSearchPatterns().get(fieldName);
     if (bean == null) {
