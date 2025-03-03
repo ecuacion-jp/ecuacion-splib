@@ -24,7 +24,8 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
  * Stores attributes of each html component which controls the behiviors of it in html pages.
  * 
  * <p>It is named with "field" 
- *     because it's name is defined in the "field" format like {@code "mailAddress"}.</p>
+ *     because it's name is defined in the "field" format 
+ *     like {@code mailAddress}, not like {@code acc.mailAddress}.</p>
  */
 public class HtmlField {
 
@@ -43,7 +44,7 @@ public class HtmlField {
   /**
    * Is an ID to the display name of the field.
    * 
-   * <p>The display name can be obtained by referring {@code field_names.properties} with it.</p>
+   * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
    */
   protected String displayNameId;
 
@@ -74,39 +75,70 @@ public class HtmlField {
     return id;
   }
 
+  /**
+   * Sets {@code displayNameId} and returns this for method chain.
+   * 
+   * @param displayNameId displayNameId
+   * @return HtmlField
+   */
   public HtmlField displayNameId(String displayNameId) {
     this.displayNameId = displayNameId;
     return this;
   }
 
   /**
-   * Returns {@code displayNameId} value if it's not {@code null}, 
-   *     and 
+   * Returns {@code displayNameId} value.
    * 
-   * @return
+   * <p>Its value is {@code null} means the item's original itemId is equal to displayNameId.</p>
+   * 
+   * @return displayNameId
    */
   public String getDisplayNameId() {
     return displayNameId;
   }
 
+  /**
+   * Sets isNotEmpty.
+   * 
+   * <p>Set {@code true} when you want to the item is required.</p>
+   * 
+   * @param isNotEmpty isNotEmpty
+   * @return HtmlField
+   */
   public HtmlField isNotEmpty(boolean isNotEmpty) {
     this.isNotEmpty.setDefaultValue(isNotEmpty);
     return this;
   }
 
-  /** 複数登録する場合は、登録順序に意味がある。先に登録されたものから順に検証し、当てはまればその値を使用する。 */
+  /**
+   * Sets isNotEmpty with the conditions of {@code HtmlFieldConditionKeyEnum}, {@code authString}.
+   * 
+   * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
+   * 
+   * @param authKind authKind
+   * @param authString authString
+   * @param isNotEmpty isNotEmpty
+   * @return HtmlField
+   */
   public HtmlField isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     this.isNotEmpty.add(new HtmlFieldCondition<Boolean>(authKind, authString, isNotEmpty));
     return this;
   }
 
+  /**
+   * Obtains isNotEmpty.
+   * 
+   * @param loginState loginState
+   * @param bean bean
+   * @return boolean
+   */
   public boolean getIsNotEmpty(String loginState, RolesAndAuthoritiesBean bean) {
     return isNotEmpty.getValue(loginState, bean);
   }
 
   /**
-   * 
+   * Is the condition which decides isNotEmpty or not.
    */
   public static enum HtmlFieldConditionKeyEnum {
     LOGIN_STATE, ROLE, AUTHORITY, KEYWORD;
@@ -131,10 +163,20 @@ public class HtmlField {
     private List<HtmlFieldCondition<T>> list = new ArrayList<>();
     private T defaultValue;
 
+    /**
+     * Returns the defaultValue.
+     * 
+     * @param defaultValue defaultValue
+     */
     public HtmlFieldConditionContainer(T defaultValue) {
       this.defaultValue = defaultValue;
     }
 
+    /**
+     * adds condition.
+     * 
+     * @param authInfo authInfo
+     */
     public void add(HtmlFieldCondition<T> authInfo) {
       getList().add(authInfo);
     }
@@ -155,6 +197,13 @@ public class HtmlField {
       this.defaultValue = defaultValue;
     }
 
+    /**
+     * Returns value.
+     * 
+     * @param loginState loginState
+     * @param bean bean
+     * @return T
+     */
     public T getValue(String loginState, RolesAndAuthoritiesBean bean) {
       if (list == null) {
         list = new ArrayList<>();

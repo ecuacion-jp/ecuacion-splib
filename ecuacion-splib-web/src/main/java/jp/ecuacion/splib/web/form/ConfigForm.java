@@ -17,6 +17,9 @@ package jp.ecuacion.splib.web.form;
 
 import jp.ecuacion.splib.web.form.record.ConfigRecord;
 
+/**
+ * Stores data for config.
+ */
 public class ConfigForm extends SplibGeneralForm {
   
   private ConfigRecord config = new ConfigRecord();

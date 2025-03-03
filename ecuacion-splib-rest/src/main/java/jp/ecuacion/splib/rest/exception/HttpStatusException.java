@@ -17,12 +17,20 @@ package jp.ecuacion.splib.rest.exception;
 
 import org.springframework.http.HttpStatus;
 
+/**
+ * Provides HttpStatusException.
+ */
 public class HttpStatusException extends Exception {
 
   private static final long serialVersionUID = 1L;
   
   private HttpStatus httpStatus;
   
+  /**
+   * Constructs a new instance.
+   * 
+   * @param httpStatus httpStatus
+   */
   public HttpStatusException(HttpStatus httpStatus) { 
     this.httpStatus = httpStatus;
   }

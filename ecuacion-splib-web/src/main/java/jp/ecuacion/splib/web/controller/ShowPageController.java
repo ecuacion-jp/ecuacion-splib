@@ -34,11 +34,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 /**
  * Shows the page designated by {@code id} parameter of the url.
  * 
- * <p>To ensure the security, needed validations are done. 
+ * <p>To ensure the authentication and security, needed validations are done. 
  *     To secure the page which only logged-in users can see, this feature shows the page 
  *     with {@code data-show-page-login-state} tag 
- *     like [@code data-show-page-login-state="public"data-show-page-login-state="public"}
- *     and shows the only page with specified loginState (public / account / admin) </p>
+ *     like [@code data-show-page-login-state="public"}
+ *     and shows the page with specified loginState (public / account / admin) </p>
  * 
  * <p>Basically this feature is assumed to use with GET access. <br>
  *     But in some cases(*) this feature is used with POST access, 

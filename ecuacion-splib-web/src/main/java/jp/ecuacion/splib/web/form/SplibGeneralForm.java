@@ -31,18 +31,33 @@ import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.springframework.validation.BindingResult;
 
+/**
+ * Stores data for generalController.
+ */
 public abstract class SplibGeneralForm {
 
+  /**
+   * Stores common info.
+   */
   public static class PrepareSettings {
 
-    /** defaultはvalidationなし。 */
     private boolean validates = false;
     private BindingResult bindingResult;
 
+    /**
+     * Returns whether validation is executed or not.
+     * 
+     * @return boolean
+     */
     public boolean validates() {
       return validates;
     }
 
+    /**
+     * Returns bindingResult.
+     * 
+     * @return bindingResult
+     */
     public BindingResult bindingResult() {
       return bindingResult;
     }
@@ -54,30 +69,32 @@ public abstract class SplibGeneralForm {
     return prepareSettings;
   }
 
-  /** prepare method内でのvalidation要否判断に使用。 */
+  /**
+   * Sets validates = true and bindingResult, and returns this for method chain.
+   */
   public SplibGeneralForm validate(BindingResult bindingResult) {
     prepareSettings.validates = true;
     prepareSettings.bindingResult = bindingResult;
     return this;
   }
 
-  /** prepare method内でのvalidation要否判断に使用。 */
+  /**
+   * Sets vavlidates = false and returns this for method chain.
+   */
   public SplibGeneralForm noValidate() {
     prepareSettings.validates = false;
     return this;
   }
 
   /**
-   * 一つの機能の実装を複数メニューで使い回す場合に使用するメニュー名。
+   * 一つの機能の実装を複数メニューで使い回す場合に使用するメニュー名.
    * 
-   * <p>
-   * 使い回しをしない通常機能は、放置しnull（実際にはhtml側でhiddenを持っているのでそれがsubmitされ空文字になる）のままでよい。
+   * <p>使い回しをしない通常機能は、放置しnull（実際にはhtml側でhiddenを持っているのでそれがsubmitされ空文字になる）のままでよい。
    * searchFormはsessionにformを保持し検索条件を保持するが、複数メニューで使い回す場合は
    * そのメニュー別に検索条件を保持するのが望ましいため、このdataKindもsession保存時のキーとする。
    * </p>
    * 
-   * <p>
-   * 現行設計ではdataKindをrequestで持ち回る形を採用している。 sessionに持たせた方が実装が楽と思われる部分もありながら、navBarから他のメニューを選択された時には
+   * <p>現行設計ではdataKindをrequestで持ち回る形を採用している。 sessionに持たせた方が実装が楽と思われる部分もありながら、navBarから他のメニューを選択された時には
    * sessionに保管されたdataKindではなくrequestの方のdataKindを採用する、あたりをうまく回す必要があり、
    * その意味ではsessionに持たせるよりrequestで持ち回る方がわかりやすい（dataKindが空ならシステムエラーになるので）ことから
    * まずはrequestで持ち回り、の実装方式としておく。 ※PRGを使用しGETでのアクセスを可としている中で、個々のURLをコピって使用しても使用可能とする意味でも、
@@ -88,8 +105,9 @@ public abstract class SplibGeneralForm {
 
   /**
    * warningを返した際に、それに対してOKした場合は、OKしたという履歴を残さないとまた再度同じチェックに引っかかりワーニングを出してしまう。
-   * それを防ぐため、一度OKしたwarningは、messageIdを本fieldに保管することで避ける。
-   * 複数のwarnに対する情報を保持できるよう、本項目はcsv形式とする。（対応するhiddenにjavascript側で","とメッセージIDを追加）
+   * それを防ぐため、一度OKしたwarningは、messageIdを本fieldに保管することで避ける.
+   * 
+   * <p>複数のwarnに対する情報を保持できるよう、本項目はcsv形式とする。（対応するhiddenにjavascript側で","とメッセージIDを追加）</p>
    */
   protected String confirmedWarnings;
 
@@ -111,14 +129,16 @@ public abstract class SplibGeneralForm {
     this.controllerContext = controllerContext;
   }
 
-  /** 引数は、"acc"のような形で渡される想定。 */
+  /**
+   * Obtains record.
+   */
   public SplibRecord get(String itemName) throws IllegalArgumentException, IllegalAccessException,
       NoSuchFieldException, SecurityException {
     return (SplibRecord) this.getClass().getField(itemName).get(this);
   }
 
   /**
-   * form配下に存在するrecordを全て取得。 戻り値のmapのkeyはfield名。
+   * form配下に存在するrecordを全て取得。 戻り値のmapのkeyはfield名.
    */
   public List<Field> getRootRecordFields() {
     // form内に保持しているrecordを取得。
@@ -146,38 +166,18 @@ public abstract class SplibGeneralForm {
     }
   }
 
-  /** form配下にrecordが1つしかない前提で使用されるメソッド。deprecatedにしたいのだが、状況確認中。 */
-  @Deprecated
-  public Field getRootRecordField() {
-    List<Field> checkList = getRootRecordFields();
-
-    if (checkList.size() == 0) {
-      throw new RuntimeException(
-          "SplibRecord field not found in form: " + this.getClass().getName());
-
-    } else if (checkList.size() > 1) {
-      throw new RuntimeException(
-          "Multiple SplibRecord field found in form: " + this.getClass().getName());
-
-    } else {
-      return checkList.get(0);
-    }
-  }
-
-  /** formからrecordを取得する処理。 */
-  @Deprecated
-  public Object getRootRecord() {
-    return getRootRecord(getRootRecordField());
-  }
-
-  /** formからrecordを取得する処理。 */
+  /**
+   * Gets root record.
+   */
   public Object getRootRecord(String recordName) {
     Field field = getRootRecordFields().stream().collect(Collectors.toMap(f -> f.getName(), f -> f))
         .get(recordName);
     return getRootRecord(field);
   }
 
-  /** getDisplayName() ではfieldも別途使用するため、fieldの二回取得は無駄なのでfieldを引数にするメソッドも作っておく。 */
+  /**
+   * Gets root record.
+   */
   protected Object getRootRecord(Field rootRecordField) {
     rootRecordField.setAccessible(true);
 
@@ -197,10 +197,20 @@ public abstract class SplibGeneralForm {
     return confirmedWarnings;
   }
 
+  /**
+   * Returns boolean whether specified messageId is contained.
+   * 
+   * @param messageId messageId
+   * @return boolean
+   */
   public boolean containsConfirmedWarning(String messageId) {
     return getConfirmedWarningMessageSet().size() > 0;
   }
 
+  /**
+   * Returns already confirmed message ID set.
+   * @return {@code Set<String>}
+   */
   public Set<String> getConfirmedWarningMessageSet() {
     Set<String> rtnSet = new HashSet<>();
 
@@ -216,18 +226,24 @@ public abstract class SplibGeneralForm {
     this.confirmedWarnings = confirmedWarnings;
   }
 
-  /** EditFormのメソッドを呼び出すことで、その中の全てのNotEmpty Checkを実施。 */
+  /**
+   * Has a notEmpty error.
+   */
   public boolean hasNotEmptyError(String loginState, RolesAndAuthoritiesBean bean) {
     return validateNotEmpty(loginState, bean).size() > 0;
   }
 
-  /** NotEmptyエラーの有無・件数だけを知りたい場合で、localeを取得するのが面倒な際はこちらを使用。 */
+  /**
+   * Validates notEmpty.
+   */
   public Set<BeanValidationErrorInfoBean> validateNotEmpty(String loginState,
       RolesAndAuthoritiesBean bean) {
     return validateNotEmpty(Locale.getDefault(), loginState, bean);
   }
 
-  /** NotEmptyエラーのメッセージを取得したい場合はこちらを使用。 */
+  /**
+   * Validates notEmpty.
+   */
   public Set<BeanValidationErrorInfoBean> validateNotEmpty(Locale locale, String loginState,
       RolesAndAuthoritiesBean bean) {
 

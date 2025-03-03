@@ -16,24 +16,27 @@
 package jp.ecuacion.splib.core.bean;
 
 /** 
- * urlパターンと、そのurlパターンに合致する先にアクセスするのに必要なroleないしAuthorityを設定するためのbean。
- * web関連で使用するものだが、webでもrestでも使用するためcoreにて保持。 
+ * Stores url pattern for accessibility for roles and authorities.
+ * 
+ * <p>It's for web-related modules only, but is also used by multiple modules (web, rest)
+ *     so it's placed in {@code ecuacion-lib-core}. 
  */
 public class AuthorizationBean {
   private String[] requestMatchers;
   private String[] rolesOrAuthorities;
 
   /**
-   * 
+   * Constructs a new instance.
    */
   public AuthorizationBean() {
 
   }
 
   /**
+   * Constructs a new instance.
    * 
-   * @param requestMatchers
-   * @param roleOrAuthority
+   * @param requestMatchers requestMatchers
+   * @param roleOrAuthority roleOrAuthority
    */
   public AuthorizationBean(String requestMatchers, String roleOrAuthority) {
     this.requestMatchers = new String[] {requestMatchers};
@@ -41,9 +44,10 @@ public class AuthorizationBean {
   }
 
   /**
+   * Constructs a new instance.
    * 
-   * @param requestMatchers
-   * @param roleOrAuthority
+   * @param requestMatchers requestMatchers
+   * @param roleOrAuthority roleOrAuthority
    */
   public AuthorizationBean(String[] requestMatchers, String roleOrAuthority) {
     this.rolesOrAuthorities = new String[] {roleOrAuthority};
@@ -51,9 +55,10 @@ public class AuthorizationBean {
   }
 
   /**
+   * Constructs a new instance.
    * 
-   * @param requestMatchers
-   * @param roleOrAuthority
+   * @param requestMatchers requestMatchers
+   * @param roleOrAuthority roleOrAuthority
    */
   public AuthorizationBean(String[] requestMatchers, String[] roleOrAuthority) {
     this.rolesOrAuthorities = roleOrAuthority;
@@ -77,9 +82,10 @@ public class AuthorizationBean {
   }
 
   /**
+   * Adds the argument role or authority and returns the array.
    * 
-   * @param addedRoleOrAuthority
-   * @return
+   * @param addedRoleOrAuthority addedRoleOrAuthority
+   * @return String[]
    */
   public String[] addAndGetRolesOrAuthorities(String addedRoleOrAuthority) {
     String[] rtnArr = new String[rolesOrAuthorities.length + 1];

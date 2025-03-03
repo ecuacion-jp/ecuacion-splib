@@ -25,13 +25,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
+/**
+ * Stores data for search.
+ */
 public abstract class SplibSearchForm extends SplibGeneralForm {
   public static final String DIRECTION_ASC = "asc";
   public static final String DIRECTION_DESC = "desc";
 
   /**
-   * 検索・一覧表示画面で、検索条件を指定して検索した際の検索条件は保管しておきたい。 一方で、メニューのリンクなど、検索条件を載せない形で画面にアクセスした際は、
-   * その検索条件を保管するのではなく保存済みの検索条件で検索したい。 この分岐を本フラグで対応。
+   * 検索・一覧表示画面で、検索条件を指定して検索した際の検索条件は保管しておきたい.
+   * 
+   *  <p>一方で、メニューのリンクなど、検索条件を載せない形で画面にアクセスした際は、
+   * その検索条件を保管するのではなく保存済みの検索条件で検索したい。 この分岐を本フラグで対応。</p>
    */
   private boolean requestFromSearchForm;
 
@@ -41,19 +46,27 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   protected Integer page;
   protected Integer recordsInScreen;
 
-  /** pagerを作成するのに必要となるため、serviceから受け取りpager作成時に使用。 */
+  /** pagerを作成するのに必要となるため、serviceから受け取りpager作成時に使用. */
   protected Integer numberOfRecords;
 
   // protected Locale locale;
 
+  /**
+   * Gets getDefaultSortItem.
+   * 
+   * @return String
+   */
   @Nonnull
   protected abstract String getDefaultSortItem();
 
-  /** こちらはdefaultで設定をしておくが個別form毎に変更が可能。 */
+  /** こちらはdefaultで設定をしておくが個別form毎に変更が可能. */
   protected String getDefaultDirection() {
     return DIRECTION_ASC;
   }
 
+  /**
+   * Constructs a new instance.
+   */
   public SplibSearchForm() {
     // default値
     this.sortItem = getDefaultSortItem();
@@ -74,6 +87,11 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     return sortItem;
   }
 
+  /**
+   * Gets SortItemWithDefault.
+   * 
+   * @return String
+   */
   @Nonnull
   public String getSortItemWithDefault() {
     String rtn = (sortItem == null) ? getDefaultSortItem() : sortItem;
@@ -97,6 +115,12 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     this.direction = direction;
   }
 
+  /**
+   * Returns next direction.
+   * 
+   * @param sortItem sortItem
+   * @return String
+   */
   public String nextDirection(String sortItem) {
     if (this.sortItem != null && this.sortItem.equals(sortItem)
         && getDirection().equals(DIRECTION_ASC)) {
@@ -125,16 +149,17 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
 
   /**
    * 値のセットはsetNumberOfRecordsAndAdjustCurrentPageNumger()を使用する前提であり、
-   * これでない方法でnumberOfRecordsを設定すると処理が正しく動かないためあえて通常のsetterは削除した。
+   * これでない方法でnumberOfRecordsを設定すると処理が正しく動かないためあえて通常のsetterは削除した.
    */
   public Integer getNumberOfRecords() {
     return numberOfRecords;
   }
 
-  // public void setLocale(Locale locale) {
-  // this.locale = locale;
-  // }
-
+  /**
+   * Sets number of records and adjust current page number.
+   * 
+   * @param numberOfRecords numberOfRecords
+   */
   public void setNumberOfRecordsAndAdjustCurrentPageNumger(Long numberOfRecords) {
     this.numberOfRecords = numberOfRecords.intValue();
 
@@ -143,7 +168,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   /**
-   * 最終ページを超えた状態だと変になるので、件数が存在する最終ページより後のページを示している場合は最終ページに変更。
+   * 最終ページを超えた状態だと変になるので、件数が存在する最終ページより後のページを示している場合は最終ページに変更.
    */
   private void changePageIfThePageNumberExceedsTheLast() {
 
@@ -167,10 +192,9 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   /**
-   * pagerを作成するためのPagerInfoのリストを生成。
+   * pagerを作成するためのPagerInfoのリストを生成.
    * 
-   * <p>
-   * Pager作成のルールは以下。<br>
+   * <p>Pager作成のルールは以下。<br>
    * </p>
    * <ul>
    * <li>レコード件数が0件及び、現在のrecordsInScreen以下の場合はpagerを表示しない</li>
@@ -271,7 +295,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   /**
-   * 画面上の件数表示で使用。「6-10 / 15」：全15件のうち6-1件目を表示、と出文字列全体をここで生成。
+   * Is used for search result records display like "6-10 / 15".
    */
   public String getLinesInScreen() {
     // ゼロ件の場合

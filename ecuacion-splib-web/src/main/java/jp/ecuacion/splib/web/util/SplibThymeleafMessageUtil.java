@@ -20,14 +20,26 @@ import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.stereotype.Component;
 
 /**
- * thymeleaf側から呼ばれる想定のクラス。localeを加味したメッセージ表示を実施。
- * 裏ではPropertyFileUtilを呼び出しているのみ。PropertyFileUtilの機能が使える分#{...} より協力。 ただし、#{...}で問題ない部分はそれを使っても問題なし。
+ * Provides localized messages called from thymeleaf.
+ * 
+ * <p>This calls {@code PropertyFileUtil}. 
+ *     The existence of the class doesn't prevent you to use #{...}.</p>
  */
 @Component("msgUtil")
 public class SplibThymeleafMessageUtil {
 
+  /**
+   * Constructs a new instance.
+   */
   public SplibThymeleafMessageUtil() {}
 
+  /**
+   * Gets message or itemName from the specified id.
+   * 
+   * @param locale locale
+   * @param id id
+   * @return String
+   */
   public String get(Locale locale, String id) {
     boolean hasMsg = PropertyFileUtil.hasMsg(id);
     boolean hasField = PropertyFileUtil.hasItemName(id);

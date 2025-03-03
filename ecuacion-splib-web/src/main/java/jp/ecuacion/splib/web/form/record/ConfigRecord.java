@@ -20,6 +20,9 @@ import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
 import jp.ecuacion.splib.web.bean.HtmlField;
 
+/**
+ * Is a record for configController.
+ */
 public class ConfigRecord extends SplibRecord implements RecordInterface {
   private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 

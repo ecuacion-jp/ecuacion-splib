@@ -19,14 +19,25 @@ import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.stereotype.Component;
 
 /**
- * thymeleaf側から呼ばれる想定のクラス。localeを加味したメッセージ表示を実施。
- * 裏ではPropertyFileUtilを呼び出しているのみ。PropertyFileUtilの機能が使える分#{...} より協力。 ただし、#{...}で問題ない部分はそれを使っても問題なし。
+ * thymeleaf側から呼ばれる想定のクラス。localeを加味したメッセージ表示を実施.
+ * 
+ * <p>裏ではPropertyFileUtilを呼び出しているのみ。PropertyFileUtilの機能が使える分#{...} より協力。 
+ *     ただし、#{...}で問題ない部分はそれを使っても問題なし。</p>
  */
 @Component("propUtil")
 public class SplibThymeleafPropertiesUtil {
 
+  /**
+   * Constructs a new instance.
+   */
   public SplibThymeleafPropertiesUtil() {}
 
+  /**
+   * Returns value from id.
+   * 
+   * @param id id
+   * @return String
+   */
   public String get(String id) {
     return PropertyFileUtil.getApp(id);
   }
