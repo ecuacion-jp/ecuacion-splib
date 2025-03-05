@@ -93,7 +93,6 @@
 		</dependency>
 
 		<!-- ecuacion-splib -->
-		<!-- jpaは標準にはしない。 -->
 		<dependency>
 			<groupId>jp.ecuacion.splib</groupId>
 			<artifactId>ecuacion-splib-core</artifactId>

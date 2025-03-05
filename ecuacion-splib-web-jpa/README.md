@@ -1,8 +1,8 @@
-# ecuacion-splib-web
+# ecuacion-splib-web-jpa
 
 ## What is it?
 
-`ecuacion-splib-batch` is a `spring boot` based web related libraries.
+`ecuacion-splib-batch` is a `spring boot` based web and JPA related libraries.
 
 It is designed to release created war into `tomcat`.
 
@@ -14,7 +14,14 @@ It is designed to release created war into `tomcat`.
 
 ### Automatically Loaded Libraries
 
+- `jp.ecuacion.lib:ecuacion-splib-web`
+- `jp.ecuacion.lib:ecuacion-splib-jpa`
+
+(modules depending on `ecuacion-splib-web`)
 - `jp.ecuacion.lib:ecuacion-splib-core`
+
+(modules depending on `ecuacion-splib-jpa`)
+- `jp.ecuacion.lib:ecuacion-lib-jpa`
 
 (modules depending on `ecuacion-splib-core`)
 - `jp.ecuacion.lib:ecuacion-lib-core`
@@ -27,12 +34,16 @@ It is designed to release created war into `tomcat`.
 
 ### Automatically Loaded Libraries
 
+(modules depending on `ecuacion-splib-web`)
 - `org.springframework.boot:spring-boot-starter-web`
 - `org.springframework.boot:spring-boot-starter-security`
 - `org.springframework.data:spring-data-commons`
 - `org.springframework.boot:spring-boot-starter-thymeleaf`
 - `nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect`
 - `org.thymeleaf.extras:thymeleaf-extras-springsecurity6`
+
+(modules depending on `ecuacion-splib-jpa`)
+- `org.springframework.boot:spring-boot-starter-data-jpa`
 
 (modules depending on `ecuacion-splib-core`)
 - `org.springframework.boot:spring-boot-starter-validation`
@@ -49,7 +60,7 @@ It is designed to release created war into `tomcat`.
 
 ## Documentation
 
-- [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-web/)
+- [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-web-jpa/)
 
 ## introduction
 
@@ -59,35 +70,7 @@ The description of dependent `ecuacion` modules is as follows.
 ```xml
 <dependency>
     <groupId>jp.ecuacion.splib</groupId>
-    <artifactId>ecuacion-splib-web</artifactId>
+    <artifactId>ecuacion-splib-web-jpa</artifactId>
     <!-- No version tag needed since ecuacion-splib-parent has dependencyManagement versions. -->
 </dependency>
-```
-
-## system template
-
-### warning
-
-### ShowPageController
-
-- /public/show/page?id="xxx"でxxx.htmlを表示可能
-- セキュリティの観点から、htmlタグにdata-show-page-login-state="public"が指定されたhtmlファイルのみ、そのloginStateにて閲覧可能。
-
-### show config
-
-- /ecuacion/public/config/page で、用意されたページが表示される
-
-### show error
-
-- error画面の表示とそこからログイン画面など次の画面に行く処理
-- defaultの404（
-### default 404.html
-
-
-### PCのzoneOffsetを取得
-
-		<div th:replace="~{bootstrap/components :: sendZoneOffset('')}"></div>
-		htmlで以下を呼ぶだけで、sessionの"zoneOffset" attribute に格納される。
-```html
-<div th:replace="~{bootstrap/components :: sendZoneOffset('')}"></div>
 ```
