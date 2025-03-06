@@ -77,28 +77,10 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		
-		<!-- jakarta ee-->
-		<dependency>
-			<groupId>jakarta.validation</groupId>
-			<artifactId>jakarta.validation-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.annotation</groupId>
-			<artifactId>jakarta.annotation-api</artifactId>
-		</dependency>
-		
 		<!-- ecuacion-lib -->
 		<dependency>
 			<groupId>jp.ecuacion.lib</groupId>
 			<artifactId>ecuacion-lib-core</artifactId>
-		</dependency>
-
-		<!-- other -->
-
-		<!-- apache commons -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
 		</dependency>
 
 	</dependencies>

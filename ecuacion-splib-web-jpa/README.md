@@ -1,8 +1,10 @@
-# ecuacion-splib-batch
+# ecuacion-splib-web-jpa
 
 ## What is it?
 
-`ecuacion-splib-batch` is a `spring boot` based batch related libraries.
+`ecuacion-splib-web-jpa` is a `spring boot` based web and JPA related libraries.
+
+It is designed to release created war into `tomcat`.
 
 ## System Requirements
 
@@ -12,7 +14,14 @@
 
 ### Automatically Loaded Libraries
 
+- `jp.ecuacion.lib:ecuacion-splib-web`
+- `jp.ecuacion.lib:ecuacion-splib-jpa`
+
+(modules depending on `ecuacion-splib-web`)
 - `jp.ecuacion.lib:ecuacion-splib-core`
+
+(modules depending on `ecuacion-splib-jpa`)
+- `jp.ecuacion.lib:ecuacion-lib-jpa`
 
 (modules depending on `ecuacion-splib-core`)
 - `jp.ecuacion.lib:ecuacion-lib-core`
@@ -25,8 +34,16 @@
 
 ### Automatically Loaded Libraries
 
-- `org.springframework.boot:spring-boot-starter-batch`
-- `org.springframework.boot:spring-boot-starter-aop`
+(modules depending on `ecuacion-splib-web`)
+- `org.springframework.boot:spring-boot-starter-web`
+- `org.springframework.boot:spring-boot-starter-security`
+- `org.springframework.data:spring-data-commons`
+- `org.springframework.boot:spring-boot-starter-thymeleaf`
+- `nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect`
+- `org.thymeleaf.extras:thymeleaf-extras-springsecurity6`
+
+(modules depending on `ecuacion-splib-jpa`)
+- `org.springframework.boot:spring-boot-starter-data-jpa`
 
 (modules depending on `ecuacion-splib-core`)
 - `org.springframework.boot:spring-boot-starter-validation`
@@ -43,9 +60,9 @@
 
 ## Documentation
 
-- [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-batch/)
+- [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-web-jpa/)
 
-## Introduction
+## introduction
 
 Check [Introduction](https://github.com/ecuacion-jp/ecuacion-splib) part of `README` in `ecuacion-splib`.  
 The description of dependent `ecuacion` modules is as follows.
@@ -53,7 +70,7 @@ The description of dependent `ecuacion` modules is as follows.
 ```xml
 <dependency>
     <groupId>jp.ecuacion.splib</groupId>
-    <artifactId>ecuacion-splib-batch</artifactId>
+    <artifactId>ecuacion-splib-web-jpa</artifactId>
     <!-- No version tag needed since ecuacion-splib-parent has dependencyManagement versions. -->
 </dependency>
 ```
