@@ -45,7 +45,7 @@
 
 - [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-batch/)
 
-## introduction
+## Introduction
 
 Check [Introduction](https://github.com/ecuacion-jp/ecuacion-splib) part of `README` in `ecuacion-splib`.  
 The description of dependent `ecuacion` modules is as follows.

@@ -2,7 +2,7 @@
 
 ## What is it?
 
-`ecuacion-splib-batch` is a `spring boot` based web and JPA related libraries.
+`ecuacion-splib-web-jpa` is a `spring boot` based web and JPA related libraries.
 
 It is designed to release created war into `tomcat`.
 

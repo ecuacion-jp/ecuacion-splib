@@ -2,7 +2,7 @@
 
 ## What is it?
 
-`ecuacion-splib-batch` is a `spring boot` based REST related libraries.
+`ecuacion-splib-rest` is a `spring boot` based REST related libraries.
 
 It is designed to release created war into `tomcat`.
 

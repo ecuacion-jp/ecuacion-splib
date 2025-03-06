@@ -45,7 +45,7 @@
 
 - [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-jpa/)
 
-## introduction
+## Introduction
 
 Check [Introduction](https://github.com/ecuacion-jp/ecuacion-splib) part of `README` in `ecuacion-splib`.  
 The description of dependent `ecuacion` modules is as follows.
@@ -58,28 +58,23 @@ The description of dependent `ecuacion` modules is as follows.
 </dependency>
 ```
 
-## constraint
+## Features
 
-1. When you use native queries (spring `@query` with `native = true` or standard JPA native query), 
-  `soft delete` and `group` features are not suppoted. If you have to use them, filter those records manually because standard JPA, especially `entityManager#find()` is not supported by Hibernate's `@Filter` feature.
+### Group
 
-## features
-
-### group
-
-#### description
+#### Description
 
 `Group` is the feature that accounts in a same group share the data, 
 but accounts can't see the data belonging to other groups.
 
-#### requirements
+#### Requirements
 
 1. filtering the data of other groups
 
 1. administrators can access data of any group.
 
 
-#### implementations
+#### Implementations
 
 - `requirement 1.` is realized by (not JPA's, but) Hibernate's `@Filter`.  
 
@@ -92,7 +87,7 @@ but accounts can't see the data belonging to other groups.
 
 - With web app `SplibAccountControllerAdvice` supports to enable the `@Filter`.
   
-#### how to use
+#### How To Use
 
 - Define `@FilterDef` and `@Filter` in `Entity`.
 
@@ -115,11 +110,16 @@ public class AppAccountControllerAdvice extends SplibJpaAccountControllerAdvice 
 }
 ```
 
-### soft delete
+#### Constraint
 
-#### description
+- When you use native queries (spring `@query` with `native = true` or standard JPA native query), 
+  `group` feature is not suppoted. If you have to use them, filter those records manually because standard JPA, especially `entityManager#find()` is not supported by Hibernate's `@Filter` feature.
 
-`Soft delete` is the feature that 
+### Soft Delete
+
+#### Description
+
+`Soft Delete` is the feature that 
 the "deleted" mark is set to the soft-delete column instead of physically delete it
 when they are deleted by user operations.
 
@@ -130,7 +130,7 @@ it can be used for investigations of bugs or recoverying the deleted data
 The point is, in the business view the record is definitely deleted.  
 So users cannot see the deleted records or recover the deleted data by themselves.
 
-#### requirements
+#### Requirements
 
 1. excluding soft-deleted records from search results
 
@@ -138,7 +138,7 @@ So users cannot see the deleted records or recover the deleted data by themselve
 when inserting a new record with the same unique key as soft-deleted one
 
 
-#### implementations
+#### Implementations
 
 - `requirement 1.` is realized by (not JPA's, but) Hibernate's `@Filter`.  
   (We did not use `@Where` because there's no way to disable it. 
@@ -162,7 +162,7 @@ when inserting a new record with the same unique key as soft-deleted one
 
 - With web app `SplibAccountControllerAdvice` supports to enable the `@Filter`.
 
-#### how to use
+#### How To Use
 
 - Define `@FilterDef` and `@Filter` in `Entity`.
 
@@ -210,3 +210,8 @@ public class AppAccountControllerAdvice extends SplibJpaAccountControllerAdvice 
   void deleteByIdAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") Acc entity);
 }
 ```
+
+#### Constraint
+
+- When you use native queries (spring `@query` with `native = true` or standard JPA native query), 
+  `Soft Delete` feature is not suppoted. If you have to use them, filter those records manually because standard JPA, especially `entityManager#find()` is not supported by Hibernate's `@Filter` feature.

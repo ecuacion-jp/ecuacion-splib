@@ -2,7 +2,7 @@
 
 ## What is it?
 
-`ecuacion-splib-batch` is a `spring boot` based web related libraries.
+`ecuacion-splib-web` is a `spring boot` based web related libraries.
 
 It is designed to release created war into `tomcat`.
 
@@ -51,7 +51,7 @@ It is designed to release created war into `tomcat`.
 
 - [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-web/)
 
-## introduction
+## Introduction
 
 Check [Introduction](https://github.com/ecuacion-jp/ecuacion-splib) part of `README` in `ecuacion-splib`.  
 The description of dependent `ecuacion` modules is as follows.
@@ -64,30 +64,3 @@ The description of dependent `ecuacion` modules is as follows.
 </dependency>
 ```
 
-## system template
-
-### warning
-
-### ShowPageController
-
-- /public/show/page?id="xxx"でxxx.htmlを表示可能
-- セキュリティの観点から、htmlタグにdata-show-page-login-state="public"が指定されたhtmlファイルのみ、そのloginStateにて閲覧可能。
-
-### show config
-
-- /ecuacion/public/config/page で、用意されたページが表示される
-
-### show error
-
-- error画面の表示とそこからログイン画面など次の画面に行く処理
-- defaultの404（
-### default 404.html
-
-
-### PCのzoneOffsetを取得
-
-		<div th:replace="~{bootstrap/components :: sendZoneOffset('')}"></div>
-		htmlで以下を呼ぶだけで、sessionの"zoneOffset" attribute に格納される。
-```html
-<div th:replace="~{bootstrap/components :: sendZoneOffset('')}"></div>
-```
