@@ -47,7 +47,21 @@
 		<ecuacion-splib.version>0.0.1-SNAPSHOT</ecuacion-splib.version>
 		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
 		<ecuacion-util.version>0.0.1-SNAPSHOT</ecuacion-util.version>
+		<!-- 3rd party module versions -->
+		<org.apache.maven.plugins.maven-war-plugin.version>3.2.2</org.apache.maven.plugins.maven-war-plugin.version>
+		<org.apache.maven.wagon.version>3.5.3</org.apache.maven.wagon.version>
+		<org.codehaus.mojo.exec-maven-plugin.version>3.1.0</org.codehaus.mojo.exec-maven-plugin.version>
+		<org.apache.maven.plugins.maven-source-plugin.version>3.3.1</org.apache.maven.plugins.maven-source-plugin.version>
+		<org.apache.maven.plugins.maven-javadoc-plugin.version>3.11.2</org.apache.maven.plugins.maven-javadoc-plugin.version>
+		<org.codehaus.mojo.wagon-maven-plugin.version>2.0.2</org.codehaus.mojo.wagon-maven-plugin.version>
+		<com.mycila.license-maven-plugin.version>4.6</com.mycila.license-maven-plugin.version>
+		<org.apache.maven.plugins.maven-checkstyle-plugin.version>3.6.0</org.apache.maven.plugins.maven-checkstyle-plugin.version>
+		<com.puppycrawl.tools.checkstyle.version>10.21.4</com.puppycrawl.tools.checkstyle.version>
+		<com.github.spotbugs.spotbugs-maven-plugin.version>4.8.6.4</com.github.spotbugs.spotbugs-maven-plugin.version>
+		<com.github.spotbugs.spotbugs.version>4.8.6</com.github.spotbugs.spotbugs.version>
+		<org.apache.maven.plugins.maven-enforcer-plugin.version>3.5.0</org.apache.maven.plugins.maven-enforcer-plugin.version>
 	</properties>
+	
 	<distributionManagement>
 		<!-- ビルドサーバでのみ使用。作成されたjarのdeploy先 -->
 		<repository>
@@ -63,12 +77,12 @@
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ssh</artifactId>
-				<version>3.5.3</version>
+				<version>${org.apache.maven.wagon.version}</version>
 			</extension>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ssh-external</artifactId>
-				<version>3.5.3</version>
+				<version>${org.apache.maven.wagon.version}</version>
 			</extension>
 		</extensions>
 		
@@ -80,7 +94,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.2.2</version>
+					<version>${org.apache.maven.plugins.maven-war-plugin.version}</version>
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
 					</configuration>
@@ -89,9 +103,9 @@
 				<!-- pom.xmlからproject.versionを取得しsrc/main/resources/version.propertiesに格納する処理で必要 -->
 				<!-- warのprojectのみで使用 -->
 				<plugin>
-					<artifactId>exec-maven-plugin</artifactId>
 					<groupId>org.codehaus.mojo</groupId>
-					<version>3.1.0</version>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>${org.codehaus.mojo.exec-maven-plugin.version}</version>
 					<executions>
 						<execution>
 							<!-- eclipseのm2e pluginが処理できないためm2eは無視するようタグ埋め込み -->
@@ -112,7 +126,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>${org.apache.maven.plugins.maven-source-plugin.version}</version>
 					<executions>
 						<execution>
 							<phase>package</phase>
@@ -127,7 +141,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.11.1</version>
+					<version>${org.apache.maven.plugins.maven-javadoc-plugin.version}</version>
 					<configuration>
 						<show>protected</show>
 						<encoding>UTF-8</encoding>
@@ -159,7 +173,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>wagon-maven-plugin</artifactId>
-					<version>2.0.2</version>
+					<version>${org.codehaus.mojo.wagon-maven-plugin.version}</version>
 					<configuration>
 						<fromFile>${project.build.directory}/${project.build.finalName}-javadoc.jar</fromFile>
 						<url>${remote-location.javadoc}/work</url>
@@ -180,7 +194,7 @@
 				<plugin>
 					<groupId>com.mycila</groupId>
 					<artifactId>license-maven-plugin</artifactId>
-					<version>4.6</version>
+					<version>${com.mycila.license-maven-plugin.version}</version>
 					<executions>
 					<execution>
 						<id>license</id>
@@ -215,12 +229,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>${org.apache.maven.plugins.maven-checkstyle-plugin.version}</version>
 					<dependencies>
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.20.1</version>
+							<version>${com.puppycrawl.tools.checkstyle.version}</version>
 						</dependency>
 					</dependencies>
 					<configuration>
@@ -249,12 +263,12 @@
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
 					<artifactId>spotbugs-maven-plugin</artifactId>
-					<version>4.8.6.4</version>
+					<version>${com.github.spotbugs.spotbugs-maven-plugin.version}</version>
 					<dependencies>
 						<dependency>
 							<groupId>com.github.spotbugs</groupId>
 							<artifactId>spotbugs</artifactId>
-							<version>4.8.6</version>
+							<version>${com.github.spotbugs.spotbugs.version}</version>
 						</dependency>
 					</dependencies>
 					<executions>
