@@ -20,6 +20,8 @@ module jp.ecuacion.splib.core {
   exports jp.ecuacion.splib.core.container;
   exports jp.ecuacion.splib.core.exceptionhandler;
   exports jp.ecuacion.splib.core.form.record;
+  
+  opens jp.ecuacion.splib.core.config to spring.core;
 
   requires jakarta.annotation;
   requires spring.beans;
