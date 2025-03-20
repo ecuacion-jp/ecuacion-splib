@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.unchecked.RuntimeAppException;
+import jp.ecuacion.lib.core.exception.unchecked.UncheckedAppException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -77,10 +77,10 @@ public class SplibExceptionHandler implements ExceptionHandler {
 
     // appExceptionの場合、特にMultipleAppExceptionで複数のメッセージがある場合、
     // 一覧で見えないとわかりにくいので改めて一覧表示しておく。
-    if (throwable instanceof AppException || throwable instanceof RuntimeAppException) {
+    if (throwable instanceof AppException || throwable instanceof UncheckedAppException) {
       AppException appEx = null;
-      if (throwable instanceof RuntimeAppException) {
-        appEx = ((AppException) ((RuntimeAppException) throwable).getCause());
+      if (throwable instanceof UncheckedAppException) {
+        appEx = ((AppException) ((UncheckedAppException) throwable).getCause());
 
       } else {
         appEx = (AppException) throwable;
