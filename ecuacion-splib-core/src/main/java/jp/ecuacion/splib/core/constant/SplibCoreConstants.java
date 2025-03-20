@@ -21,6 +21,7 @@ package jp.ecuacion.splib.core.constant;
 public class SplibCoreConstants {
   
   /** splibのパッケージ共通部分. */
-  public static final String STR_SPLIB_PKG = "jp.ecuacion.splib";
+  public static final String PKG_PARENT = "jp.ecuacion.splib";
+  public static final String PKG = "jp.ecuacion.splib.core";
 
 }
