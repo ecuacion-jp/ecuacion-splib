@@ -24,7 +24,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
-import jp.ecuacion.lib.core.beanvalidation.bean.BeanValidationErrorInfoBean;
+import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
 import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
@@ -236,7 +236,7 @@ public abstract class SplibGeneralForm {
   /**
    * Validates notEmpty.
    */
-  public Set<BeanValidationErrorInfoBean> validateNotEmpty(String loginState,
+  public Set<ConstraintViolationBean> validateNotEmpty(String loginState,
       RolesAndAuthoritiesBean bean) {
     return validateNotEmpty(Locale.getDefault(), loginState, bean);
   }
@@ -244,11 +244,11 @@ public abstract class SplibGeneralForm {
   /**
    * Validates notEmpty.
    */
-  public Set<BeanValidationErrorInfoBean> validateNotEmpty(Locale locale, String loginState,
+  public Set<ConstraintViolationBean> validateNotEmpty(Locale locale, String loginState,
       RolesAndAuthoritiesBean bean) {
 
     final String validationClass = "jakarta.validation.constraints.NotEmpty";
-    Set<BeanValidationErrorInfoBean> rtnSet = new HashSet<>();
+    Set<ConstraintViolationBean> rtnSet = new HashSet<>();
 
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
@@ -259,7 +259,7 @@ public abstract class SplibGeneralForm {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyField);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
-          rtnSet.add(new BeanValidationErrorInfoBean(
+          rtnSet.add(new ConstraintViolationBean(
               ResourceBundle.getBundle("ValidationMessages", locale).getString(
                   validationClass + ".message"),
               rootRecordFieldName + "." + notEmptyField, validationClass,

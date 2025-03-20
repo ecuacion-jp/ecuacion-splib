@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.jpa.advice;
 
 import java.util.Optional;
-import jp.ecuacion.lib.jpa.entity.AbstractEntity;
+import jp.ecuacion.lib.jpa.entity.LibEntity;
 import jp.ecuacion.splib.jpa.bean.SplibControllerAdviceInfoBean;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
@@ -44,8 +44,8 @@ public abstract class SplibSoftDeleteAdvice {
   @SuppressWarnings("unchecked")
   @Before("execution(* *..*.base.repository.*.save(..))")
   public void onBeforeSave(JoinPoint joinPoint) {
-    beforeAdvice((AbstractEntity) joinPoint.getArgs()[0],
-        (SplibRepository<AbstractEntity, ?>) joinPoint.getThis());
+    beforeAdvice((LibEntity) joinPoint.getArgs()[0],
+        (SplibRepository<LibEntity, ?>) joinPoint.getThis());
   }
   
   /*
@@ -55,7 +55,7 @@ public abstract class SplibSoftDeleteAdvice {
    * relationにより子テーブルとの関連が存在する場合にはそれらも含めて処理できること、を満たすため、
    * これらの処理は、削除フラグ・グループのfilter設定をoffにした状態で実施する前提とする。
    */
-  private void beforeAdvice(AbstractEntity entity, SplibRepository<AbstractEntity, ?> repo) {
+  private void beforeAdvice(LibEntity entity, SplibRepository<LibEntity, ?> repo) {
 
     // springっぽくないのだが、@BeanなどでうまくできなかったのでThreadLocalを使用して値を取得
     Object groupId = SplibControllerAdviceInfoBean.getGroupId();
@@ -67,11 +67,11 @@ public abstract class SplibSoftDeleteAdvice {
     filterUtil.enableAllFilters(groupId);
   }
   
-  private void physicalDeleteSoftDeletedRecords(AbstractEntity entity,
-      SplibRepository<AbstractEntity, ?> repo) {
+  private void physicalDeleteSoftDeletedRecords(LibEntity entity,
+      SplibRepository<LibEntity, ?> repo) {
     if (entity.hasSoftDeleteField()) {
       // 同一IDで削除済みのレコード存在チェック。あれば削除。（surrogate key strategyでは発生する場面は考えにくいが）
-      Optional<AbstractEntity> result = repo.findByIdAndSoftDeleteFieldTrueFromAllGroups(entity);
+      Optional<LibEntity> result = repo.findByIdAndSoftDeleteFieldTrueFromAllGroups(entity);
       if (result.isPresent()) {
         
         repo.delete(result.get());
