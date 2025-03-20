@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
  */
 @Aspect
 @Component
-public  class SplibBatchAdvice {
+public class SplibBatchAdvice {
 
   private static ThreadLocal<String> currentJob = new ThreadLocal<>();
 

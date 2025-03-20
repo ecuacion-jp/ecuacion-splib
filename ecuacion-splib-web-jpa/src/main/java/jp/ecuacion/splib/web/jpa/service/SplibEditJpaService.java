@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
-import jp.ecuacion.lib.jpa.entity.AbstractEntity;
+import jp.ecuacion.lib.jpa.entity.LibEntity;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @param <E> AbstractEntity
  */
 @Transactional(rollbackFor = Exception.class)
-public abstract class SplibEditJpaService<F extends SplibEditForm, E extends AbstractEntity>
+public abstract class SplibEditJpaService<F extends SplibEditForm, E extends LibEntity>
     extends SplibEditService<F> implements SplibJpaServiceInterface<E> {
 
   protected EntityManager em;

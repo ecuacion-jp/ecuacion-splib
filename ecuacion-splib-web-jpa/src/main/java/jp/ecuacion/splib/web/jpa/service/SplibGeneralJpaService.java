@@ -15,7 +15,7 @@
  */
 package jp.ecuacion.splib.web.jpa.service;
 
-import jp.ecuacion.lib.jpa.entity.AbstractEntity;
+import jp.ecuacion.lib.jpa.entity.LibEntity;
 import jp.ecuacion.splib.web.service.SplibGeneralService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @param <E> entity
  */
 @Transactional(rollbackFor = Exception.class)
-public abstract class SplibGeneralJpaService<E extends AbstractEntity> extends SplibGeneralService
+public abstract class SplibGeneralJpaService<E extends LibEntity> extends SplibGeneralService
     implements SplibJpaServiceInterface<E> {
 
 }

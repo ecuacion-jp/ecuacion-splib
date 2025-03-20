@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 module jp.ecuacion.splib.batch {
+  exports jp.ecuacion.splib.batch.advice;
+  exports jp.ecuacion.splib.batch.config;
   exports jp.ecuacion.splib.batch.exceptionhandler;
+  exports jp.ecuacion.splib.batch.listener to spring.beans;
+
+  opens jp.ecuacion.splib.batch.config to spring.core;
+  opens jp.ecuacion.splib.batch.exceptionhandler to spring.core;
 
   requires transitive spring.batch.infrastructure;
   requires spring.context;

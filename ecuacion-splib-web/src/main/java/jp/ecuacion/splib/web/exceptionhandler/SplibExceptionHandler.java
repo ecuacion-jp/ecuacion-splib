@@ -32,19 +32,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
-import jp.ecuacion.lib.core.beanvalidation.bean.BeanValidationErrorInfoBean;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.AppWarningException;
-import jp.ecuacion.lib.core.exception.checked.BeanValidationAppException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
+import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
+import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.logging.DetailLogger;
-import jp.ecuacion.lib.core.util.BeanValidationUtil;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.ValidationUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.bean.HtmlField;
 import jp.ecuacion.splib.web.bean.MessagesBean;
@@ -253,7 +253,7 @@ public abstract class SplibExceptionHandler {
       }
 
     } else if (exception instanceof FormInputValidationException) {
-      List<BeanValidationAppException> list =
+      List<ValidationAppException> list =
           getBeanValidationAppExceptionList((FormInputValidationException) exception, loginUser);
       exList.addAll(list);
 
@@ -285,8 +285,8 @@ public abstract class SplibExceptionHandler {
               .toList();
           itemIds = itemIdList.toArray(new String[itemIdList.size()]);
 
-        } else if (saex instanceof BeanValidationAppException) {
-          String id = ((BeanValidationAppException) saex).getBeanValidationErrorInfoBean()
+        } else if (saex instanceof ValidationAppException) {
+          String id = ((ValidationAppException) saex).getBeanValidationErrorInfoBean()
               .getPropertyPath();
 
           // propertyPathは、formをvalidateしていれば"recordId.fieldId"の形になるが、recored /
@@ -321,14 +321,14 @@ public abstract class SplibExceptionHandler {
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
   }
 
-  private List<BeanValidationAppException> getBeanValidationAppExceptionList(
+  private List<ValidationAppException> getBeanValidationAppExceptionList(
       FormInputValidationException exception, UserDetails loginUser) {
 
     // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
-    List<BeanValidationErrorInfoBean> errorList = new ArrayList<>();
+    List<ConstraintViolationBean> errorList = new ArrayList<>();
 
-    for (ConstraintViolation<?> cv : new BeanValidationUtil().validate(exception.getForm())) {
-      errorList.add(new BeanValidationErrorInfoBean(cv));
+    for (ConstraintViolation<?> cv : new ValidationUtil().validate(exception.getForm())) {
+      errorList.add(new ConstraintViolationBean(cv));
     }
 
     // NotEmptyのチェック結果を追加
@@ -363,23 +363,23 @@ public abstract class SplibExceptionHandler {
       throw new RuntimeException(msg);
     }
 
-    return errorList.stream().map(bean -> new BeanValidationAppException(bean)).toList();
+    return errorList.stream().map(bean -> new ValidationAppException(bean)).toList();
   }
 
   /*
    * bean validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
    * 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
    */
-  private void removeDuplicatedValidators(List<BeanValidationErrorInfoBean> cvList) {
+  private void removeDuplicatedValidators(List<ConstraintViolationBean> cvList) {
 
     // 一度、field名をkey, valueをsetとしcvを複数格納するmapを作成し、そのkeyに2件以上validatorが存在しかつNotEmptyが存在する場合は
     // NotEmpty以外を間引く、というロジックとする
-    Map<String, Set<BeanValidationErrorInfoBean>> duplicateCheckMap = new HashMap<>();
+    Map<String, Set<ConstraintViolationBean>> duplicateCheckMap = new HashMap<>();
 
     // 後続処理のため、NotEmptyを保持するkeyを保持しておく
     Set<String> keySetWithNotEmpty = new HashSet<>();
 
-    for (BeanValidationErrorInfoBean cv : cvList) {
+    for (ConstraintViolationBean cv : cvList) {
       String key = cv.getPropertyPath().toString();
       if (duplicateCheckMap.get(key) == null) {
         duplicateCheckMap.put(key, new HashSet<>());
@@ -395,7 +395,7 @@ public abstract class SplibExceptionHandler {
 
     // duplicateCheckMapで、keySetWithNotEmptyに含まれるkeyのvalueは、NotEmpty以外を取り除く
     for (String key : keySetWithNotEmpty) {
-      for (BeanValidationErrorInfoBean cv : duplicateCheckMap.get(key)) {
+      for (ConstraintViolationBean cv : duplicateCheckMap.get(key)) {
         if (!isNotEmptyValidator(cv)) {
           cvList.remove(cv);
         }
@@ -403,15 +403,15 @@ public abstract class SplibExceptionHandler {
     }
   }
 
-  private boolean isNotEmptyValidator(BeanValidationErrorInfoBean cv) {
+  private boolean isNotEmptyValidator(ConstraintViolationBean cv) {
     String validatorClass = cv.getValidatorClass();
     return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
   }
 
-  private Comparator<BeanValidationErrorInfoBean> getComparator() {
+  private Comparator<ConstraintViolationBean> getComparator() {
     return new Comparator<>() {
       @Override
-      public int compare(BeanValidationErrorInfoBean f1, BeanValidationErrorInfoBean f2) {
+      public int compare(ConstraintViolationBean f1, ConstraintViolationBean f2) {
         // 項目名で比較
         int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
         if (result != 0) {
