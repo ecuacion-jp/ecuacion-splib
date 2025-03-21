@@ -50,7 +50,6 @@ It is designed to release created war into `tomcat`.
 
 (modules depending on `ecuacion-lib-core`)
 - `org.apache.commons:commons-lang3`
-- `org.apache.commons:commons-exec` (@Deprecated. It will be removed in the future release)
 
 ### Manual Load Needed Libraries
 
