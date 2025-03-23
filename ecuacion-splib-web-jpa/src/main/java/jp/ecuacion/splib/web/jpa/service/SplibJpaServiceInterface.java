@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.jpa.service;
 import java.util.Optional;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
-import jp.ecuacion.lib.jpa.entity.LibEntity;
+import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
@@ -27,7 +27,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
  * 
  * @param <E> entity
  */
-public interface SplibJpaServiceInterface<E extends LibEntity> {
+public interface SplibJpaServiceInterface<E extends EclibEntity> {
 
   /**
    * Is used for {@code findAndOptimisticLockingCheck()}.
