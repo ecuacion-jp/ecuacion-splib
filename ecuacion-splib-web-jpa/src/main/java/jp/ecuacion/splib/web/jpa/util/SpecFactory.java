@@ -21,7 +21,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import jp.ecuacion.lib.jpa.entity.LibEntity;
+import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
 import jp.ecuacion.splib.web.form.record.SearchRecordInterface;
 import jp.ecuacion.splib.web.form.record.StringMatchingConditionBean;
@@ -34,7 +34,7 @@ import org.springframework.data.jpa.domain.Specification;
  * 
  * @param <T> Entity
  */
-public class SpecFactory<T extends LibEntity> {
+public class SpecFactory<T extends EclibEntity> {
 
   /**
    * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意.

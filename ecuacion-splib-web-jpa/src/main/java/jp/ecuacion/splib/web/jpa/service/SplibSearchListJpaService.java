@@ -19,7 +19,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import jp.ecuacion.lib.jpa.entity.LibEntity;
+import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
@@ -41,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 //@formatter:off
 @Transactional(rollbackFor = Exception.class)
 public abstract class SplibSearchListJpaService<FST extends SplibSearchForm, 
-    FLT extends SplibListForm<?>, E extends LibEntity>
+    FLT extends SplibListForm<?>, E extends EclibEntity>
     extends SplibSearchListService<FST, FLT> implements SplibJpaServiceInterface<E> {
   //@formatter:on
 
