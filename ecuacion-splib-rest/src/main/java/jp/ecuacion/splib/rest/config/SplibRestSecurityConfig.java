@@ -42,6 +42,7 @@ public abstract class SplibRestSecurityConfig {
     http.securityMatcher("/api/public/**");
 
     http.httpBasic(basic -> basic.disable());
+    http.csrf(csrf -> csrf.disable());
 
     http.authorizeHttpRequests(requests -> requests
         .requestMatchers(new AntPathRequestMatcher("/api/public/**")).permitAll());

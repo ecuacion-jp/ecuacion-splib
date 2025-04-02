@@ -286,8 +286,8 @@ public abstract class SplibExceptionHandler {
           itemIds = itemIdList.toArray(new String[itemIdList.size()]);
 
         } else if (saex instanceof ValidationAppException) {
-          String id = ((ValidationAppException) saex).getBeanValidationErrorInfoBean()
-              .getPropertyPath();
+          String id =
+              ((ValidationAppException) saex).getBeanValidationErrorInfoBean().getPropertyPath();
 
           // propertyPathは、formをvalidateしていれば"recordId.fieldId"の形になるが、recored /
           // entityをvalidateした場合は"fieldId"となる。
@@ -298,19 +298,23 @@ public abstract class SplibExceptionHandler {
         String message =
             new ExceptionUtil().getAppExceptionMessageList(saex, request.getLocale()).get(0);
 
-        List<String> displayNameIdList = new ArrayList<>();
-        // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
-        // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
-        for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
-          HtmlField field =
-              recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
-          displayNameIdList.add(field.getDisplayNameId() == null
-              ? getController().getRootRecordName() + "." + field.getId()
-              : field.getDisplayNameId());
-        }
+        if (saex instanceof ValidationAppException) {
+          // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
+          // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
+          // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
+          // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
+          List<String> displayNameIdList = new ArrayList<>();
+          for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
+            HtmlField field =
+                recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
+            displayNameIdList.add(field.getDisplayNameId() == null
+                ? getController().getRootRecordName() + "." + field.getId()
+                : field.getDisplayNameId());
+          }
 
-        message = addItemDisplayNames(message,
-            displayNameIdList.toArray(new String[displayNameIdList.size()]));
+          message = addItemDisplayNames(message,
+              displayNameIdList.toArray(new String[displayNameIdList.size()]));
+        }
 
         requestResult.setErrorMessage(message, itemIds);
       }
