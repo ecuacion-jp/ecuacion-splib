@@ -34,4 +34,5 @@ module jp.ecuacion.splib.batch {
   requires org.slf4j;
   requires org.aspectj.weaver;
   requires spring.tx;
+  requires spring.boot;
 }
