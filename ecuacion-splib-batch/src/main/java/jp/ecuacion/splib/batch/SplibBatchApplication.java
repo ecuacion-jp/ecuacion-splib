@@ -5,8 +5,15 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Provides default BatchApplication.
+ * 
+ * <p>We want it to be {@code abstract} to clarify 
+ *    that this class is supposed to be extended to use.<br>
+ *    But it's not allowed by spring. The following error message obtained.<br>
+ *    {@code BeanCreationException: Error creating bean with name 'splibBatchApplication': 
+ *    Failed to instantiate [jp.ecuacion.splib.batch.SplibBatchApplication]: 
+ *    Is it an abstract class?}</p>
  */
-public abstract class SplibBatchApplication {
+public class SplibBatchApplication {
 
   /**
    * Is the main method of the spring batch.
