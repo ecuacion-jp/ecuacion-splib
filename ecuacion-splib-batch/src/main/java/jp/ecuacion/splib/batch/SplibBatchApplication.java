@@ -7,8 +7,13 @@ import org.springframework.context.ConfigurableApplicationContext;
  * Provides default BatchApplication.
  */
 public abstract class SplibBatchApplication {
+
+  /**
+   * Is the main method of the spring batch.
+   */
   public static void main(String[] args) throws Exception {
-    ConfigurableApplicationContext context = SpringApplication.run(SplibBatchApplication.class, args);
+    ConfigurableApplicationContext context =
+        SpringApplication.run(SplibBatchApplication.class, args);
     System.exit(SpringApplication.exit(context, () -> 0));
   }
 }
