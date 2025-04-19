@@ -23,9 +23,8 @@ public class SplibBatchApplication {
    *     So you need to implement main mathod in the BatchApplication class in your each app
    *     and call {@code SplibBatchApplication.main(args)} in it.</p>
    */
-  public static void main(String[] args) {
-    ConfigurableApplicationContext context =
-        SpringApplication.run(SplibBatchApplication.class, args);
+  public static void main(Class<?> cls, String[] args) {
+    ConfigurableApplicationContext context = SpringApplication.run(cls, args);
     System.exit(SpringApplication.exit(context, () -> 0));
   }
 }
