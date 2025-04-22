@@ -18,13 +18,14 @@ package jp.ecuacion.splib.web.form;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
+import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
 import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
@@ -260,8 +261,8 @@ public abstract class SplibGeneralForm {
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
           rtnSet.add(new ConstraintViolationBean(
-              ResourceBundle.getBundle("ValidationMessages", locale).getString(
-                  validationClass + ".message"),
+              PropertyFileUtil.getValidationMessage(locale, validationClass + ".message",
+                  new HashMap<>()),
               rootRecordFieldName + "." + notEmptyField, validationClass,
               this.getClass().getCanonicalName()));
         }
