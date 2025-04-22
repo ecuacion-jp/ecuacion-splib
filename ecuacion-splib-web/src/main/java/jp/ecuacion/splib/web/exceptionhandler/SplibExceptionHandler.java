@@ -287,7 +287,7 @@ public abstract class SplibExceptionHandler {
 
         } else if (saex instanceof ValidationAppException) {
           String id =
-              ((ValidationAppException) saex).getBeanValidationErrorInfoBean().getPropertyPath();
+              ((ValidationAppException) saex).getConstraintViolationBean().getPropertyPath();
 
           // propertyPathは、formをvalidateしていれば"recordId.fieldId"の形になるが、recored /
           // entityをvalidateした場合は"fieldId"となる。
