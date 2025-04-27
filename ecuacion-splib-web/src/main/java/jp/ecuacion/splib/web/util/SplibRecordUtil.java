@@ -21,6 +21,7 @@ import jp.ecuacion.splib.web.bean.HtmlField;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
 import org.springframework.stereotype.Component;
+import org.thymeleaf.util.StringUtils;
 
 /**
  * Provides utility methods on records and fields.
@@ -38,7 +39,7 @@ public class SplibRecordUtil {
    * @return HtmlField
    */
   public HtmlField getHtmlField(SplibGeneralForm form, String rootRecordId, String itemId) {
-    if (!itemId.startsWith(rootRecordId + ".")) {
+    if (!StringUtils.capitalize(itemId).startsWith(StringUtils.capitalize(rootRecordId) + ".")) {
       throw new RuntimeException("itemId: " + itemId + " does not start with rootRecordId: "
           + rootRecordId + " plus dot(.).");
     }
