@@ -263,8 +263,8 @@ public abstract class SplibGeneralForm {
           rtnSet.add(new ConstraintViolationBean(
               PropertyFileUtil.getValidationMessage(locale, validationClass + ".message",
                   new HashMap<>()),
-              rootRecordFieldName + "." + notEmptyField, validationClass,
-              this.getClass().getCanonicalName()));
+              validationClass, this.getClass().getCanonicalName(),
+              rootRecordFieldName + "." + notEmptyField));
         }
       }
     }
