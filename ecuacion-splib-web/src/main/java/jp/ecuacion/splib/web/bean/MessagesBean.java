@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Stores messages shown on pages.
@@ -145,7 +146,8 @@ public class MessagesBean {
     public ErrorMessageBean(String message, String... itemName) {
       this.message = message;
       this.itemNameSet =
-          new HashSet<String>(Arrays.asList(itemName == null ? new String[] {} : itemName));
+          new HashSet<String>(Arrays.asList(itemName == null ? new String[] {} : itemName).stream()
+              .map(itemId -> StringUtils.uncapitalize(itemId)).toList());
     }
 
     public String getMessage() {

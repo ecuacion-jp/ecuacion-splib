@@ -62,6 +62,7 @@ import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibRecordUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -280,19 +281,14 @@ public abstract class SplibExceptionHandler {
           List<String> itemIdList = Arrays
               .asList(
                   ex.getErrorFields() == null ? new String[] {} : ex.getErrorFields().getFields())
-              .stream().map(fieldId -> fieldId.startsWith(rootRecordIdPlusDot) ? fieldId
+              .stream()
+              .map(fieldId -> fieldId.startsWith(rootRecordIdPlusDot) ? fieldId
                   : (rootRecordIdPlusDot + fieldId))
-              .toList();
+              .map(itemId -> StringUtils.uncapitalize(itemId)).toList();
           itemIds = itemIdList.toArray(new String[itemIdList.size()]);
 
         } else if (saex instanceof ValidationAppException) {
-          String id =
-              ((ValidationAppException) saex).getConstraintViolationBean().getPropertyPath();
-
-          // propertyPathは、formをvalidateしていれば"recordId.fieldId"の形になるが、recored /
-          // entityをvalidateした場合は"fieldId"となる。
-          // いずれの場合も救えるように、fieldIdだったらrootRecordIdを追加しitemIdの形にしておく
-          itemIds = id.contains(".") ? new String[] {id} : new String[] {};
+          itemIds = ((ValidationAppException) saex).getConstraintViolationBean().getItemIds();
         }
 
         String message =
