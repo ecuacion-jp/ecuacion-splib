@@ -16,7 +16,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class SplibBatchApplication {
 
   /**
-   * Is the main method of the spring batch.
+   * Has what needs to be done as the main method of the spring batch.
    * 
    * <p>java command doesn't seem to start 
    *     by calling the main method in the parent class of the class specified.<br>
