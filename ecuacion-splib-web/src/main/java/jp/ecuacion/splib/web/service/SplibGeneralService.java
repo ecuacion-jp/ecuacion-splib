@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
-import jp.ecuacion.lib.core.exception.checked.AppExceptionFields;
+import jp.ecuacion.lib.core.exception.checked.AppExceptionItemIds;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
@@ -60,11 +60,11 @@ public abstract class SplibGeneralService {
    */
   protected void throwWarning(@RequireNonnull Set<String> confirmedWarningMessageSet,
       @RequireNonnull Locale locale, @Nullable String buttonIdToPressOnConfirm,
-      @Nullable AppExceptionFields fields, @RequireNonnull String msgId,
+      @Nullable AppExceptionItemIds fields, @RequireNonnull String msgId,
       @RequireNonnull String... params) throws WebAppWarningException {
 
     if (!ObjectsUtil.paramRequireNonNull(confirmedWarningMessageSet).contains(msgId)) {
-      throw new WebAppWarningException(locale, msgId, params).fields(fields)
+      throw new WebAppWarningException(locale, msgId, params).itemIds(fields)
           .buttonIdToPressOnConfirm(buttonIdToPressOnConfirm);
     }
   }
