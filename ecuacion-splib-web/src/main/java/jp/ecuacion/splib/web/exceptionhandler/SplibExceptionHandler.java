@@ -280,7 +280,7 @@ public abstract class SplibExceptionHandler {
 
           List<String> itemIdList = Arrays
               .asList(
-                  ex.getErrorFields() == null ? new String[] {} : ex.getErrorFields().getFields())
+                  ex.getItemIds() == null ? new String[] {} : ex.getItemIds().getItemIds())
               .stream()
               .map(fieldId -> fieldId.startsWith(rootRecordIdPlusDot) ? fieldId
                   : (rootRecordIdPlusDot + fieldId))

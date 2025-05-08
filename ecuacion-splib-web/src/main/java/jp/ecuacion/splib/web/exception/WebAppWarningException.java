@@ -19,7 +19,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.util.Locale;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
-import jp.ecuacion.lib.core.exception.checked.AppExceptionFields;
+import jp.ecuacion.lib.core.exception.checked.AppExceptionItemIds;
 import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 
 /**
@@ -60,13 +60,13 @@ public class WebAppWarningException extends AppWarningException {
   }
 
   @Override
-  public @Nonnull WebAppWarningException fields(@Nullable AppExceptionFields fields) {
-    return (WebAppWarningException) super.fields(fields);
+  public @Nonnull WebAppWarningException itemIds(@Nullable AppExceptionItemIds fields) {
+    return (WebAppWarningException) super.itemIds(fields);
   }
 
   @Override
-  public @Nonnull AppExceptionFields fields() {
-    return fields;
+  public @Nonnull AppExceptionItemIds itemIds() {
+    return itemIds;
   }
 
   /**
