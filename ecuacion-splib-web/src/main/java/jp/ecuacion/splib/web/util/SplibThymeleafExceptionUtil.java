@@ -29,6 +29,6 @@ public class SplibThymeleafExceptionUtil {
    * @param message message
    */
   public void systemError(String message) {
-    throw new RuntimeException("An error occured while thymeleaf constructs an html : " + message);
+    throw new RuntimeException("An error occurred while thymeleaf constructs an html : " + message);
   }
 }

@@ -78,7 +78,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  */
 public abstract class SplibExceptionHandler {
 
-  private LogUtil logUtil = new LogUtil(this);
   private DetailLogger detailLog = new DetailLogger(this);
 
   @Autowired
@@ -279,8 +278,7 @@ public abstract class SplibExceptionHandler {
           BizLogicAppException ex = (BizLogicAppException) saex;
 
           List<String> itemIdList = Arrays
-              .asList(
-                  ex.getItemIds() == null ? new String[] {} : ex.getItemIds().getItemIds())
+              .asList(ex.getItemIds() == null ? new String[] {} : ex.getItemIds().getItemIds())
               .stream()
               .map(fieldId -> fieldId.startsWith(rootRecordIdPlusDot) ? fieldId
                   : (rootRecordIdPlusDot + fieldId))
@@ -291,8 +289,7 @@ public abstract class SplibExceptionHandler {
           itemIds = ((ValidationAppException) saex).getConstraintViolationBean().getItemIds();
         }
 
-        String message =
-            new ExceptionUtil().getAppExceptionMessageList(saex, request.getLocale()).get(0);
+        String message = ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale()).get(0);
 
         if (saex instanceof ValidationAppException) {
           // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
@@ -327,7 +324,7 @@ public abstract class SplibExceptionHandler {
     // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
     List<ConstraintViolationBean> errorList = new ArrayList<>();
 
-    for (ConstraintViolation<?> cv : new ValidationUtil().validate(exception.getForm())) {
+    for (ConstraintViolation<?> cv : ValidationUtil.validate(exception.getForm())) {
       errorList.add(new ConstraintViolationBean(cv));
     }
 
@@ -340,7 +337,7 @@ public abstract class SplibExceptionHandler {
     // 並び順を指定。今後項目名指定することも想定するが、一旦は並び順が固定されれば満足なので単純に並べる
     errorList = errorList.stream().sorted(getComparator()).collect(Collectors.toList());
 
-    // bean validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
+    // Jakarta validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
     // 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
     removeDuplicatedValidators(errorList);
 
@@ -367,7 +364,7 @@ public abstract class SplibExceptionHandler {
   }
 
   /*
-   * bean validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
+   * Jakarta validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
    * 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
    */
   private void removeDuplicatedValidators(List<ConstraintViolationBean> cvList) {
@@ -461,7 +458,7 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleHttpRequestMethodNotSupportedException(
       @Nonnull HttpRequestMethodNotSupportedException exception) {
 
-    logUtil.logError(exception, request.getLocale());
+    LogUtil.logSystemError(detailLog, exception);
     actionOnThrowable.execute(exception);
 
     return new ModelAndView(
@@ -535,7 +532,7 @@ public abstract class SplibExceptionHandler {
   @ExceptionHandler({Throwable.class})
   public @Nonnull ModelAndView handleThrowable(@Nonnull Throwable exception, @Nonnull Model model) {
 
-    logUtil.logError(exception, request.getLocale());
+    LogUtil.logSystemError(detailLog, exception);
 
     // 個別appの処理。mail送信など。
     actionOnThrowable.execute(exception);

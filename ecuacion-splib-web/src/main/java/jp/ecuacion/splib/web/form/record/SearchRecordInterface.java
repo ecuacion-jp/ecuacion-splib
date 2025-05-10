@@ -60,8 +60,8 @@ public interface SearchRecordInterface extends RecordInterface {
           + "' to the getHtmlItems() in 'xxxSearchRecord or it's parent Record.");
     }
 
-    String commentMessageId = new StringUtil()
-        .getLowerCamelFromSnakeOrNullIfInputIsNull(bean.getStringSearchPatternEnum().toString());
+    String commentMessageId = StringUtil
+        .getLowerCamelFromSnake(bean.getStringSearchPatternEnum().toString());
 
     return PropertyFileUtil.getMsg(locale,
         "jp.ecuacion.splib.web.common.label.searchPattern." + commentMessageId + "Match");
