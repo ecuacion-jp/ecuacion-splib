@@ -70,7 +70,7 @@ public class SplibErrorController implements ErrorController {
 
     // 404などを含めexceptionがない場合でも本methodは呼ばれてしまい、その場合はexceptionは存在しないので、存在する場合のみ例外をログ出力
     if (exception != null) {
-      new LogUtil(this).logError(exception);
+      LogUtil.logSystemError(new DetailLogger(this), exception);
 
     } else {
       detailLogger.info("SplibErrorController#errorHtml called. httpStatus = " + statusCode);

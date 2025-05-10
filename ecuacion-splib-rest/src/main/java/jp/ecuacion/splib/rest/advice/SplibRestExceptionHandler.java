@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.rest.advice;
 
+import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.splib.rest.exception.HttpStatusException;
 import org.springframework.http.HttpStatusCode;
@@ -55,7 +56,8 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(Throwable.class)
   public ErrorResponse handleThrowable(Throwable exception) {
 
-    new LogUtil(this).logError(exception);
+    LogUtil.logSystemError(new DetailLogger(this), exception);
+
     return ErrorResponse.create(exception, HttpStatusCode.valueOf(501), "Internal Server Error...");
   }
 }
