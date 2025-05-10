@@ -45,13 +45,10 @@ public class SplibExceptionHandler implements ExceptionHandler {
   @Autowired(required = false)
   private SplibExceptionHandlerAction action;
 
-  private LogUtil logUtil = new LogUtil(this);
-  private ExceptionUtil exUtil = new ExceptionUtil();
-
   private DetailLogger detailLog = new DetailLogger(this);
 
   private static final String NOT_FOUND_MSG_TMPL =
-      "(The classname of {0} is null because the error occured outside {0}"
+      "(The classname of {0} is null because the error occurred outside {0}"
           + "or the advice to register current {0} is not implemented.)";
 
   @Override
@@ -64,14 +61,14 @@ public class SplibExceptionHandler implements ExceptionHandler {
     sb.append(formatMsg("step", SplibBatchAdvice.getCurrentStep(), false));
     sb.append(formatMsg("tasklet or chunk", SplibBatchAdvice.getCurrentTaskletOrChunk(), false));
 
-    logUtil.logError(throwable, sb.toString());
+    LogUtil.logSystemError(detailLog, throwable);
 
     if (action != null) {
       try {
         action.execute(throwable);
 
       } catch (Throwable th) {
-        logUtil.logError(th);
+        LogUtil.logSystemError(detailLog, th);
       }
     }
 
@@ -86,7 +83,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
         appEx = (AppException) throwable;
       }
 
-      List<String> msgList = exUtil.getAppExceptionMessageList(appEx, Locale.getDefault());
+      List<String> msgList = ExceptionUtil.getAppExceptionMessageList(appEx, Locale.getDefault());
       detailLog.info("==========");
       detailLog.info("[AppException メッセージ一覧]");
       msgList.stream().forEach(msg -> detailLog.info(msg));
