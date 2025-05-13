@@ -901,7 +901,7 @@
 		</div>
 	</div>
 
-	<!--/* 内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="editComponentInputDateTime(itemName, type, options)" th:remove="tag">
 		<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
@@ -914,23 +914,29 @@
 				</th:block>
 		</th:block>	
 	</div>
-
-	<!--/* textbox(date) */-->
-	<div th:fragment="inputDate(itemName, options)" th:remove="tag">
+	
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<div th:fragment="inputDateTimeCommon(itemName, type, options)" th:remove="tag">
 		<div class="mb-4" th:classappend="${@optUtil.isWidthFull(options)} ? 'col-12' : (${@optUtil.isWidthHalf(options)} ? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
 			<div th:replace="~{bootstrap/components :: editComponentLabel(${itemName}, ${options})}"></div>
-			<div th:replace="~{bootstrap/components :: editComponentInputDateTime(${itemName}, 'date', ${options})}"></div>
+			<div th:replace="~{bootstrap/components :: editComponentInputDateTime(${itemName}, ${type}, ${options})}"></div>
 			<div th:replace="~{bootstrap/components :: fieldMessages(${itemName}, '')}"></div>
 		</div>
 	</div>
 
+	<!--/* textbox(month) */-->
+	<div th:fragment="inputYearMonth(itemName, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: inputDateTimeCommon(${itemName}, 'month', ${options})}"></div>
+	</div>
+
+	<!--/* textbox(date) */-->
+	<div th:fragment="inputDate(itemName, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: inputDateTimeCommon(${itemName}, 'date', ${options})}"></div>
+	</div>
+
 	<!--/* textbox(time) */-->
 	<div th:fragment="inputTime(itemName, options)" th:remove="tag">
-		<div class="mb-4" th:classappend="${@optUtil.isWidthFull(options)} ? 'col-12' : (${@optUtil.isWidthHalf(options)} ? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
-			<div th:replace="~{bootstrap/components :: editComponentLabel(${itemName}, ${options})}"></div>
-			<div th:replace="~{bootstrap/components :: editComponentInputDateTime(${itemName}, 'time', ${options})}"></div>
-			<div th:replace="~{bootstrap/components :: fieldMessages(${itemName}, '')}"></div>
-		</div>
+		<div th:replace="~{bootstrap/components :: inputDateTimeCommon(${itemName}, 'time', ${options})}"></div>
 	</div>
 
 	<!--/* textarea */-->
