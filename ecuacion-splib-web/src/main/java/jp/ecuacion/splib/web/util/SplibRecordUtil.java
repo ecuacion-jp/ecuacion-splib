@@ -75,7 +75,7 @@ public class SplibRecordUtil {
    */
   public HtmlItem getHtmlField(HtmlItem[] htmlFields, String fieldId) {
     HtmlItem field = Arrays.asList(htmlFields).stream()
-        .collect(Collectors.toMap(e -> e.getId(), e -> e)).get(fieldId);
+        .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e)).get(fieldId);
 
     return field == null ? new HtmlItem(fieldId) : field;
   }

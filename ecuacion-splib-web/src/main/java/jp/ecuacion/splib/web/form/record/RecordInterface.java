@@ -56,7 +56,7 @@ public interface RecordInterface {
    */
   default boolean needsCommas(String itemId) {
     HtmlItem item = Arrays.asList(getHtmlFields()).stream()
-        .collect(Collectors.toMap(e -> e.getId(), e -> e)).get(itemId);
+        .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e)).get(itemId);
 
     if (item == null || !(item instanceof HtmlItemNumber)) {
       return false;
@@ -90,9 +90,10 @@ public interface RecordInterface {
       fieldId = fieldId.substring((rootRecordId + ".").length());
     }
 
-    Map<String, String> displayNameIdMap =
-        Arrays.asList(htmlFields).stream().collect(Collectors.toMap(e -> e.getId(),
-            e -> e.getDisplayNameId() == null ? e.getId() : e.getDisplayNameId()));
+    Map<String, String> displayNameIdMap = Arrays.asList(htmlFields).stream()
+        .collect(Collectors.toMap(e -> e.getItemIdField(),
+            e -> e.getItemIdFieldForName() == null ? e.getItemIdField()
+                : e.getItemIdFieldForName()));
     String displayNameId = displayNameIdMap.get(fieldId);
 
     // htmlItems上で定義がない場合 /
@@ -111,9 +112,10 @@ public interface RecordInterface {
     List<HtmlItem> list = new ArrayList<>(Arrays.asList(fields1));
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
-    List<String> field1IdList = Arrays.asList(fields1).stream().map(e -> e.getId()).toList();
+    List<String> field1IdList =
+        Arrays.asList(fields1).stream().map(e -> e.getItemIdField()).toList();
 
-    for (String field2Id : Arrays.asList(fields2).stream().map(e -> e.getId()).toList()) {
+    for (String field2Id : Arrays.asList(fields2).stream().map(e -> e.getItemIdField()).toList()) {
       if (field1IdList.contains(field2Id)) {
         throw new RuntimeException(
             "'id' of HtmlField[] duplicated with commonHtmlFields. key: " + field2Id);
@@ -139,7 +141,7 @@ public interface RecordInterface {
     HtmlItem[] htmlFields = getHtmlFields();
     for (HtmlItem field : htmlFields) {
       if (field.getIsNotEmpty(loginState, bean)) {
-        list.add(field.getId());
+        list.add(field.getItemIdField());
       }
     }
 

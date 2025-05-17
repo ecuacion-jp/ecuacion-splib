@@ -296,17 +296,17 @@ public abstract class SplibExceptionHandler {
           // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
           // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
           // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
-          List<String> displayNameIdList = new ArrayList<>();
+          List<String> itemIdForNameList = new ArrayList<>();
           for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
             HtmlItem field =
                 recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
-            displayNameIdList.add(field.getDisplayNameId() == null
-                ? getController().getRootRecordName() + "." + field.getId()
-                : field.getDisplayNameId());
+            itemIdForNameList.add(field.getItemIdFieldForName() == null
+                ? getController().getRootRecordName() + "." + field.getItemIdField()
+                : field.getItemIdFieldForName());
           }
 
           message = addItemDisplayNames(message,
-              displayNameIdList.toArray(new String[displayNameIdList.size()]));
+              itemIdForNameList.toArray(new String[itemIdForNameList.size()]));
         }
 
         requestResult.setErrorMessage(message, itemIds);
