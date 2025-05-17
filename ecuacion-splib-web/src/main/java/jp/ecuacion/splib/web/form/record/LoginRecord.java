@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.web.form.record;
 
 import jp.ecuacion.splib.core.form.record.SplibRecord;
-import jp.ecuacion.splib.web.bean.HtmlField;
+import jp.ecuacion.splib.web.bean.HtmlItem;
 
 /**
  * Is a record for loginController.
@@ -24,8 +24,8 @@ import jp.ecuacion.splib.web.bean.HtmlField;
 public class LoginRecord extends SplibRecord implements RecordInterface {
 
   @Override
-  public HtmlField[] getHtmlFields() {
-    return new HtmlField[] {};
+  public HtmlItem[] getHtmlFields() {
+    return new HtmlItem[] {};
   }
 
   private String username;

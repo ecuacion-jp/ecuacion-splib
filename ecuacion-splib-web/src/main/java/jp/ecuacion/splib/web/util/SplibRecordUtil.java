@@ -17,7 +17,7 @@ package jp.ecuacion.splib.web.util;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import jp.ecuacion.splib.web.bean.HtmlField;
+import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
 import org.springframework.stereotype.Component;
@@ -38,7 +38,7 @@ public class SplibRecordUtil {
    * @param itemId itemId
    * @return HtmlField
    */
-  public HtmlField getHtmlField(SplibGeneralForm form, String rootRecordId, String itemId) {
+  public HtmlItem getHtmlField(SplibGeneralForm form, String rootRecordId, String itemId) {
     if (!StringUtils.capitalize(itemId).startsWith(StringUtils.capitalize(rootRecordId) + ".")) {
       throw new RuntimeException("itemId: " + itemId + " does not start with rootRecordId: "
           + rootRecordId + " plus dot(.).");
@@ -62,7 +62,7 @@ public class SplibRecordUtil {
    * @param itemId itemId
    * @return HtmlField
    */
-  public HtmlField getHtmlField(SplibGeneralForm[] forms, String rootRecordId, String itemId) {
+  public HtmlItem getHtmlField(SplibGeneralForm[] forms, String rootRecordId, String itemId) {
     return getHtmlField(forms[0], rootRecordId, itemId);
   }
 
@@ -73,10 +73,10 @@ public class SplibRecordUtil {
    * @param fieldId fieldId
    * @return HtmlField
    */
-  public HtmlField getHtmlField(HtmlField[] htmlFields, String fieldId) {
-    HtmlField field = Arrays.asList(htmlFields).stream()
+  public HtmlItem getHtmlField(HtmlItem[] htmlFields, String fieldId) {
+    HtmlItem field = Arrays.asList(htmlFields).stream()
         .collect(Collectors.toMap(e -> e.getId(), e -> e)).get(fieldId);
 
-    return field == null ? new HtmlField(fieldId) : field;
+    return field == null ? new HtmlItem(fieldId) : field;
   }
 }

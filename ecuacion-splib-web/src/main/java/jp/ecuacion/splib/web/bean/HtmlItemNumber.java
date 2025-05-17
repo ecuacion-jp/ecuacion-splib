@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.bean;
 /**
  * Is used for number field.
  */
-public class HtmlFieldNumber extends HtmlField {
+public class HtmlItemNumber extends HtmlItem {
 
   /**
    * Determins whether commas are used or not.
@@ -30,24 +30,24 @@ public class HtmlFieldNumber extends HtmlField {
    * 
    * @param id id
    */
-  public HtmlFieldNumber(String id) {
+  public HtmlItemNumber(String id) {
     super(id);
   }
 
   @Override
-  public HtmlFieldNumber displayNameId(String displayNameId) {
-    return (HtmlFieldNumber) super.displayNameId(displayNameId);
+  public HtmlItemNumber displayNameId(String displayNameId) {
+    return (HtmlItemNumber) super.displayNameId(displayNameId);
   }
 
   @Override
-  public HtmlFieldNumber isNotEmpty(boolean isNotEmpty) {
-    return (HtmlFieldNumber) super.isNotEmpty(isNotEmpty);
+  public HtmlItemNumber isNotEmpty(boolean isNotEmpty) {
+    return (HtmlItemNumber) super.isNotEmpty(isNotEmpty);
   }
 
   @Override
-  public HtmlFieldNumber isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItemNumber isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
-    return (HtmlFieldNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
+    return (HtmlItemNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
   /**
@@ -56,7 +56,7 @@ public class HtmlFieldNumber extends HtmlField {
    * @param needsCommas needsCommas
    * @return HtmlFieldNumber
    */
-  public HtmlFieldNumber needsCommas(boolean needsCommas) {
+  public HtmlItemNumber needsCommas(boolean needsCommas) {
     this.needsCommas = needsCommas;
     return this;
   }

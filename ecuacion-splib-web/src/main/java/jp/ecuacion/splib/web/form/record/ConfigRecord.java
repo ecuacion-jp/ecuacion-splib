@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.form.record;
 import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
-import jp.ecuacion.splib.web.bean.HtmlField;
+import jp.ecuacion.splib.web.bean.HtmlItem;
 
 /**
  * Is a record for configController.
@@ -27,8 +27,8 @@ public class ConfigRecord extends SplibRecord implements RecordInterface {
   private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 
   @Override
-  public HtmlField[] getHtmlFields() {
-    return new HtmlField[] {};
+  public HtmlItem[] getHtmlFields() {
+    return new HtmlItem[] {};
   }
 
   public String getAppVersion() {

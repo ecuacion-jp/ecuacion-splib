@@ -46,7 +46,7 @@ import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.core.util.ValidationUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.bean.HtmlField;
+import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
@@ -298,7 +298,7 @@ public abstract class SplibExceptionHandler {
           // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
           List<String> displayNameIdList = new ArrayList<>();
           for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
-            HtmlField field =
+            HtmlItem field =
                 recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
             displayNameIdList.add(field.getDisplayNameId() == null
                 ? getController().getRootRecordName() + "." + field.getId()
