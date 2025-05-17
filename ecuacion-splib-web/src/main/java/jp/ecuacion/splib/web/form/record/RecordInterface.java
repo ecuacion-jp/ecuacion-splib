@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import jp.ecuacion.splib.web.bean.HtmlField;
-import jp.ecuacion.splib.web.bean.HtmlFieldNumber;
+import jp.ecuacion.splib.web.bean.HtmlItem;
+import jp.ecuacion.splib.web.bean.HtmlItemNumber;
 import jp.ecuacion.splib.web.util.SplibRecordUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
@@ -36,7 +36,7 @@ public interface RecordInterface {
    * 
    * @return HtmlField[]
    */
-  HtmlField[] getHtmlFields();
+  HtmlItem[] getHtmlFields();
 
   /**
    * Returns htmlField in respond to the specified fieldId.
@@ -44,7 +44,7 @@ public interface RecordInterface {
    * @param fieldId fieldId
    * @return HtmlField
    */
-  default HtmlField getHtmlField(String fieldId) {
+  default HtmlItem getHtmlField(String fieldId) {
     return new SplibRecordUtil().getHtmlField(getHtmlFields(), fieldId);
   }
 
@@ -55,14 +55,14 @@ public interface RecordInterface {
    * @return boolean
    */
   default boolean needsCommas(String itemId) {
-    HtmlField item = Arrays.asList(getHtmlFields()).stream()
+    HtmlItem item = Arrays.asList(getHtmlFields()).stream()
         .collect(Collectors.toMap(e -> e.getId(), e -> e)).get(itemId);
 
-    if (item == null || !(item instanceof HtmlFieldNumber)) {
+    if (item == null || !(item instanceof HtmlItemNumber)) {
       return false;
     }
 
-    HtmlFieldNumber numItem = (HtmlFieldNumber) item;
+    HtmlItemNumber numItem = (HtmlItemNumber) item;
     return numItem.getNeedsCommas();
   }
 
@@ -82,7 +82,7 @@ public interface RecordInterface {
    * </p>
    */
   default String getDisplayName(String rootRecordId, String fieldId) {
-    HtmlField[] htmlFields = getHtmlFields() == null ? new HtmlField[] {} : getHtmlFields();
+    HtmlItem[] htmlFields = getHtmlFields() == null ? new HtmlItem[] {} : getHtmlFields();
 
     // rootRecordNameがaccの場合に、例外処理でエラーメッセージに項目名を出す際の処理は、itemNameが「acc.accId」となってしまう。
     // この場合でも対応できるように、itemNameの頭がrootRecordName + '.'の場合はそれを取り除く処理を行う。
@@ -107,8 +107,8 @@ public interface RecordInterface {
    * htmlItemsについて、個別機能のlistと共通のlistをmergeさせるために使用する.
    * あくまでutilレベルなので個別処理にしても良いのだが、極力個別コードを減らしたいので本クラスに保持する。
    */
-  default HtmlField[] mergeHtmlFields(HtmlField[] fields1, HtmlField[] fields2) {
-    List<HtmlField> list = new ArrayList<>(Arrays.asList(fields1));
+  default HtmlItem[] mergeHtmlFields(HtmlItem[] fields1, HtmlItem[] fields2) {
+    List<HtmlItem> list = new ArrayList<>(Arrays.asList(fields1));
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
     List<String> field1IdList = Arrays.asList(fields1).stream().map(e -> e.getId()).toList();
@@ -122,7 +122,7 @@ public interface RecordInterface {
 
     list.addAll(Arrays.asList(fields2));
 
-    return list.toArray(new HtmlField[list.size()]);
+    return list.toArray(new HtmlItem[list.size()]);
 
   }
 
@@ -136,8 +136,8 @@ public interface RecordInterface {
   default List<String> getNotEmptyFields(String loginState, RolesAndAuthoritiesBean bean) {
     List<String> list = new ArrayList<>();
 
-    HtmlField[] htmlFields = getHtmlFields();
-    for (HtmlField field : htmlFields) {
+    HtmlItem[] htmlFields = getHtmlFields();
+    for (HtmlItem field : htmlFields) {
       if (field.getIsNotEmpty(loginState, bean)) {
         list.add(field.getId());
       }

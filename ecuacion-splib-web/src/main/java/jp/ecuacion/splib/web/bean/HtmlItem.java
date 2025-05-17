@@ -27,7 +27,7 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
  *     because it's name is defined in the "field" format 
  *     like {@code mailAddress}, not like {@code acc.mailAddress}.</p>
  */
-public class HtmlField {
+public class HtmlItem {
 
   /**
    * Is an ID which the root record name plus dot (like {@code "acc."}) is removed
@@ -39,7 +39,7 @@ public class HtmlField {
    * <p>It is required if you construct this class.</p>
    */
   @Nonnull
-  protected String id;
+  protected String itemIdField;
 
   /**
    * Is an ID to the display name of the field.
@@ -67,12 +67,12 @@ public class HtmlField {
    * 
    * @param id fieldId
    */
-  public HtmlField(String id) {
-    this.id = id;
+  public HtmlItem(String id) {
+    this.itemIdField = id;
   }
 
   public String getId() {
-    return id;
+    return itemIdField;
   }
 
   /**
@@ -81,7 +81,7 @@ public class HtmlField {
    * @param displayNameId displayNameId
    * @return HtmlField
    */
-  public HtmlField displayNameId(String displayNameId) {
+  public HtmlItem displayNameId(String displayNameId) {
     this.displayNameId = displayNameId;
     return this;
   }
@@ -105,7 +105,7 @@ public class HtmlField {
    * @param isNotEmpty isNotEmpty
    * @return HtmlField
    */
-  public HtmlField isNotEmpty(boolean isNotEmpty) {
+  public HtmlItem isNotEmpty(boolean isNotEmpty) {
     this.isNotEmpty.setDefaultValue(isNotEmpty);
     return this;
   }
@@ -120,7 +120,7 @@ public class HtmlField {
    * @param isNotEmpty isNotEmpty
    * @return HtmlField
    */
-  public HtmlField isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItem isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     this.isNotEmpty.add(new HtmlFieldCondition<Boolean>(authKind, authString, isNotEmpty));
     return this;

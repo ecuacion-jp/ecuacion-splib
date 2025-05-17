@@ -21,7 +21,7 @@ import jp.ecuacion.splib.web.form.record.StringMatchingConditionBean.StringMatch
 /**
  * Is used for string field.
  */
-public class HtmlFieldString extends HtmlField {
+public class HtmlItemString extends HtmlItem {
 
   protected StringMatchingConditionBean matchingCondition;
 
@@ -30,25 +30,25 @@ public class HtmlFieldString extends HtmlField {
    * 
    * @param itemName itemName
    */
-  public HtmlFieldString(String itemName) {
+  public HtmlItemString(String itemName) {
     super(itemName);
     this.matchingCondition = new StringMatchingConditionBean();
   }
 
   @Override
-  public HtmlFieldString displayNameId(String displayNameId) {
-    return (HtmlFieldString) super.displayNameId(displayNameId);
+  public HtmlItemString displayNameId(String displayNameId) {
+    return (HtmlItemString) super.displayNameId(displayNameId);
   }
 
   @Override
-  public HtmlFieldString isNotEmpty(boolean isNotEmpty) {
-    return (HtmlFieldString) super.isNotEmpty(isNotEmpty);
+  public HtmlItemString isNotEmpty(boolean isNotEmpty) {
+    return (HtmlItemString) super.isNotEmpty(isNotEmpty);
   }
 
   @Override
-  public HtmlFieldString isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItemString isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
-    return (HtmlFieldString) super.isNotEmpty(authKind, authString, isNotEmpty);
+    return (HtmlItemString) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
   /**
@@ -58,7 +58,7 @@ public class HtmlFieldString extends HtmlField {
    * @param ignoresCase ignoresCase
    * @return HtmlFieldString
    */
-  public HtmlFieldString stringMatchingCondition(StringMatchingPatternEnum stringMatchingPattern,
+  public HtmlItemString stringMatchingCondition(StringMatchingPatternEnum stringMatchingPattern,
       boolean ignoresCase) {
     this.matchingCondition = new StringMatchingConditionBean(stringMatchingPattern, ignoresCase);
     return this;

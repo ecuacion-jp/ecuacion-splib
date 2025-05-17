@@ -20,8 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
-import jp.ecuacion.splib.web.bean.HtmlField;
-import jp.ecuacion.splib.web.bean.HtmlFieldString;
+import jp.ecuacion.splib.web.bean.HtmlItem;
+import jp.ecuacion.splib.web.bean.HtmlItemString;
 
 /**
  * Has features related web environment and search function.
@@ -32,11 +32,11 @@ public interface SearchRecordInterface extends RecordInterface {
   default Map<String, StringMatchingConditionBean> getSearchPatterns() {
     Map<String, StringMatchingConditionBean> map = new HashMap<>();
 
-    HtmlField[] htmlItems = getHtmlFields();
-    for (HtmlField item : htmlItems) {
-      if (item instanceof HtmlFieldString
-          && ((HtmlFieldString) item).getStringSearchPatternEnum() != null) {
-        HtmlFieldString itemStr = (HtmlFieldString) item;
+    HtmlItem[] htmlItems = getHtmlFields();
+    for (HtmlItem item : htmlItems) {
+      if (item instanceof HtmlItemString
+          && ((HtmlItemString) item).getStringSearchPatternEnum() != null) {
+        HtmlItemString itemStr = (HtmlItemString) item;
         map.put(item.getId(), new StringMatchingConditionBean(itemStr.getStringSearchPatternEnum(),
             itemStr.isIgnoresCase()));
       }
