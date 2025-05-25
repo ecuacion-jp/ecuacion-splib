@@ -41,29 +41,23 @@ public class SplibThymeleafMessageUtil {
    * @return String
    */
   public String get(Locale locale, String id) {
-    boolean hasMsg = PropertyFileUtil.hasMsg(id);
-    boolean hasField = PropertyFileUtil.hasItemName(id);
+    boolean hasMsg = PropertyFileUtil.hasMessage(id);
+    boolean hasItem = PropertyFileUtil.hasItemName(id);
 
     // 両方に存在する場合はエラー
-    if (hasMsg && hasField) {
+    if (hasMsg && hasItem) {
       String msg =
           "Key '" + id + "' has both in 'messages.properties' and 'item_names.properties'. "
               + "One of keys must be removed. (key : " + id + ")";
       throw new RuntimeException(msg);
     }
-    
-    if (!hasMsg && !hasField) {
-      // message側のエラーメッセージを返す
-      return PropertyFileUtil.getMsg(locale, id);
-    }
 
+    // Even when hasMsg == false && hasItem = false, Exception doesn't emerge.
     if (hasMsg) {
-      return PropertyFileUtil.getMsg(locale, id);
+      return PropertyFileUtil.getMessage(locale, id);
 
     } else {
       return PropertyFileUtil.getItemName(locale, id);
     }
-    
-    
   }
 }
