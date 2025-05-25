@@ -63,7 +63,7 @@ public interface SearchRecordInterface extends RecordInterface {
     String commentMessageId =
         StringUtil.getLowerCamelFromSnake(bean.getStringSearchPatternEnum().toString());
 
-    return PropertyFileUtil.getMsg(locale,
+    return PropertyFileUtil.getMessage(locale,
         "jp.ecuacion.splib.web.common.label.searchPattern." + commentMessageId + "Match");
   }
 }

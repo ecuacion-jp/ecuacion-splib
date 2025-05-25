@@ -44,8 +44,8 @@ public class ConfigRecord extends SplibRecord implements RecordInterface {
   }
 
   private String getCodeGeneratorRelatedValue(String key) {
-    boolean hasValue = PropertyFileUtil.hasApp(key);
-    return hasValue ? PropertyFileUtil.getApp(key) : codeGeneratorNotUsedMesssage;
+    boolean hasValue = PropertyFileUtil.hasApplication(key);
+    return hasValue ? PropertyFileUtil.getApplication(key) : codeGeneratorNotUsedMesssage;
   }
 
 }

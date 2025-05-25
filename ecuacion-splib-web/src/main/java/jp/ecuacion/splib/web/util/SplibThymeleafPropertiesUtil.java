@@ -39,6 +39,6 @@ public class SplibThymeleafPropertiesUtil {
    * @return String
    */
   public String get(String id) {
-    return PropertyFileUtil.getApp(id);
+    return PropertyFileUtil.getApplication(id);
   }
 }
