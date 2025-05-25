@@ -55,7 +55,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
   public void handleException(RepeatContext context, @RequireNonnull Throwable throwable)
       throws Throwable {
 
-    throwable = ObjectsUtil.paramRequireNonNull(throwable);
+    throwable = ObjectsUtil.requireNonNull(throwable);
     StringBuilder sb = new StringBuilder();
     sb.append(formatMsg("job", SplibBatchAdvice.getCurrentJob(), true));
     sb.append(formatMsg("step", SplibBatchAdvice.getCurrentStep(), false));

@@ -63,7 +63,7 @@ public abstract class SplibGeneralService {
       @Nullable AppExceptionItemIds fields, @RequireNonnull String msgId,
       @RequireNonnull String... params) throws WebAppWarningException {
 
-    if (!ObjectsUtil.paramRequireNonNull(confirmedWarningMessageSet).contains(msgId)) {
+    if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
       throw new WebAppWarningException(locale, msgId, params).itemIds(fields)
           .buttonIdToPressOnConfirm(buttonIdToPressOnConfirm);
     }

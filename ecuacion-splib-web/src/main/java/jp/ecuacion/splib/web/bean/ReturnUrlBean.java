@@ -78,7 +78,7 @@ public class ReturnUrlBean {
    */
   public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
       @RequireNonnull SplibUtil util, boolean isNormalEnd) {
-    this(ObjectsUtil.paramRequireNonNull(controller), util, isNormalEnd,
+    this(ObjectsUtil.requireNonNull(controller), util, isNormalEnd,
         isNormalEnd ? controller.getDefaultDestPageOnNormalEnd()
             : controller.getDefaultDestPageOnAbnormalEnd());
   }
@@ -110,7 +110,7 @@ public class ReturnUrlBean {
    */
   public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
       @RequireNonnull SplibUtil util, boolean isNormalEnd, @RequireNonnull String page) {
-    this(ObjectsUtil.paramRequireNonNull(controller), util,
+    this(ObjectsUtil.requireNonNull(controller), util,
         isNormalEnd ? controller.getDefaultDestSubFunctionOnNormalEnd()
             : controller.getDefaultDestSubFunctionOnAbnormalEnd(),
         page);
@@ -127,9 +127,9 @@ public class ReturnUrlBean {
   public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
       @RequireNonnull SplibUtil util, @RequireNonnull String subFunction,
       @RequireNonnull String page) {
-    path = getPathFromParams(ObjectsUtil.paramRequireNonNull(controller),
-        ObjectsUtil.paramRequireNonNull(util).getLoginState(),
-        ObjectsUtil.paramRequireNonNull(subFunction), ObjectsUtil.paramRequireNonNull(page));
+    path = getPathFromParams(ObjectsUtil.requireNonNull(controller),
+        ObjectsUtil.requireNonNull(util).getLoginState(),
+        ObjectsUtil.requireNonNull(subFunction), ObjectsUtil.requireNonNull(page));
 
     putParamList(controller.getParamListOnRedirectToSelf());
   }
@@ -142,7 +142,7 @@ public class ReturnUrlBean {
    */
   public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
       @RequireNonnull String path) {
-    this.path = ObjectsUtil.paramRequireNonNull(path);
+    this.path = ObjectsUtil.requireNonNull(path);
 
     putParamList(controller.getParamListOnRedirectToSelf());
   }
