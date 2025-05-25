@@ -145,7 +145,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      */
     @Nonnull
     public ControllerContext subFunction(@RequireNonnull String subFunction) {
-      this.subFunction = ObjectsUtil.paramRequireNonNull(subFunction);
+      this.subFunction = ObjectsUtil.requireNonNull(subFunction);
       return this;
     }
 

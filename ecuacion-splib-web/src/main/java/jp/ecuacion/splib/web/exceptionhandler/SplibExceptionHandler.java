@@ -46,7 +46,7 @@ import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.core.util.ValidationUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.bean.HtmlField;
+import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
@@ -131,8 +131,8 @@ public abstract class SplibExceptionHandler {
   @Nonnull
   private String addItemDisplayNames(@RequireNonnull String message, @Nonnull String... itemIds) {
     if (message.contains("{0}")) {
-      message =
-          MessageFormat.format(message, getItemDisplayNames(ObjectsUtil.paramSizeNonZero(itemIds)));
+      message = MessageFormat.format(message,
+          getItemDisplayNames(ObjectsUtil.requireSizeNonZero(itemIds)));
     }
 
     return message;
@@ -141,15 +141,15 @@ public abstract class SplibExceptionHandler {
   @Nonnull
   private String getItemDisplayNames(@RequireNonnull String[] itemIds) {
     StringBuilder sb = new StringBuilder();
-    final String prependParenthesis = PropertyFileUtil.getMsg(request.getLocale(),
+    final String prependParenthesis = PropertyFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.itemName.prependParenthesis");
-    final String appendParenthesis = PropertyFileUtil.getMsg(request.getLocale(),
+    final String appendParenthesis = PropertyFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.itemName.appendParenthesis");
-    final String separator = PropertyFileUtil.getMsg(request.getLocale(),
+    final String separator = PropertyFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.itemName.separator");
 
     boolean is1stTime = true;
-    for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
+    for (String itemId : ObjectsUtil.requireNonNull(itemIds)) {
 
       // itemNameがmessages.propertiesにあったらそれに置き換える
       if (PropertyFileUtil.hasItemName(itemId)) {
@@ -215,7 +215,7 @@ public abstract class SplibExceptionHandler {
 
     Objects.requireNonNull(requestResult);
     requestResult.setWarnMessage(new WarnMessageBean(
-        exception.getMessageId(), PropertyFileUtil.getMsg(request.getLocale(),
+        exception.getMessageId(), PropertyFileUtil.getMessage(request.getLocale(),
             exception.getMessageId(), exception.getMessageArgs()),
         exception.buttonIdToPressOnConfirm()));
 
@@ -296,17 +296,17 @@ public abstract class SplibExceptionHandler {
           // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
           // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
           // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
-          List<String> displayNameIdList = new ArrayList<>();
-          for (String itemId : ObjectsUtil.paramRequireNonNull(itemIds)) {
-            HtmlField field =
+          List<String> itemIdForNameList = new ArrayList<>();
+          for (String itemId : ObjectsUtil.requireNonNull(itemIds)) {
+            HtmlItem field =
                 recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
-            displayNameIdList.add(field.getDisplayNameId() == null
-                ? getController().getRootRecordName() + "." + field.getId()
-                : field.getDisplayNameId());
+            itemIdForNameList.add(field.getItemIdFieldForName() == null
+                ? getController().getRootRecordName() + "." + field.getItemIdField()
+                : field.getItemIdFieldForName());
           }
 
           message = addItemDisplayNames(message,
-              displayNameIdList.toArray(new String[displayNameIdList.size()]));
+              itemIdForNameList.toArray(new String[itemIdForNameList.size()]));
         }
 
         requestResult.setErrorMessage(message, itemIds);
@@ -461,8 +461,8 @@ public abstract class SplibExceptionHandler {
     LogUtil.logSystemError(detailLog, exception);
     actionOnThrowable.execute(exception);
 
-    return new ModelAndView(
-        "redirect:/" + PropertyFileUtil.getApp("jp.ecuacion.splib.web.system-error.go-to-path"));
+    return new ModelAndView("redirect:/"
+        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
   }
 
   /**

@@ -54,8 +54,7 @@ public class SplibErrorController implements ErrorController {
       Model model) {
 
     // requestに設定されているmodelを追加登録（画面描画のためのparameterもあるので）
-    model.addAllAttributes(
-        ((Model) request.getAttribute(SplibWebConstants.KEY_MODEL)).asMap());
+    model.addAllAttributes(((Model) request.getAttribute(SplibWebConstants.KEY_MODEL)).asMap());
 
     final Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
     final Exception exception = (Exception) request.getAttribute("jakarta.servlet.error.exception");
@@ -88,6 +87,7 @@ public class SplibErrorController implements ErrorController {
    */
   @GetMapping("action")
   public String action() {
-    return "redirect:" + PropertyFileUtil.getApp("jp.ecuacion.splib.web.system-error.go-to-path");
+    return "redirect:"
+        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path");
   }
 }

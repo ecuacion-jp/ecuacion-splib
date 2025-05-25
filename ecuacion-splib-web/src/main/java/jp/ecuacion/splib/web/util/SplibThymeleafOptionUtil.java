@@ -87,7 +87,7 @@ public class SplibThymeleafOptionUtil {
     String fieldNames =
         (multiple ? "（" : "") + fieldNameSb.toString().substring(2) + (multiple ? "）" : "");
 
-    return PropertyFileUtil.getMsg(request.getLocale(),
+    return PropertyFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.deleteConfirmation",
         new String[] {fieldNames.toString()});
   }
