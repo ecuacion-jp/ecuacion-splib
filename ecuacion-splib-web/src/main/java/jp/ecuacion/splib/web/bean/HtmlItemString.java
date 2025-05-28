@@ -46,7 +46,7 @@ public class HtmlItemString extends HtmlItem {
   }
 
   @Override
-  public HtmlItemString isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItemString isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     return (HtmlItemString) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
@@ -56,7 +56,7 @@ public class HtmlItemString extends HtmlItem {
    * 
    * @param stringMatchingPattern stringMatchingPattern
    * @param ignoresCase ignoresCase
-   * @return HtmlFieldString
+   * @return HtmlItemString
    */
   public HtmlItemString stringMatchingCondition(StringMatchingPatternEnum stringMatchingPattern,
       boolean ignoresCase) {

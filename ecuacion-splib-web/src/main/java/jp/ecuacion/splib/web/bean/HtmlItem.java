@@ -79,7 +79,7 @@ public class HtmlItem {
    * Sets {@code itemIdFieldForName} and returns this for method chain.
    * 
    * @param itemIdFieldForName itemIdFieldForName
-   * @return HtmlField
+   * @return HtmlItem
    */
   public HtmlItem itemIdFieldForName(String itemIdFieldForName) {
     this.itemIdFieldForName = itemIdFieldForName;
@@ -104,7 +104,7 @@ public class HtmlItem {
    * <p>Set {@code true} when you want to the item is required.</p>
    * 
    * @param isNotEmpty isNotEmpty
-   * @return HtmlField
+   * @return HtmlItem
    */
   public HtmlItem isNotEmpty(boolean isNotEmpty) {
     this.isNotEmpty.setDefaultValue(isNotEmpty);
@@ -112,16 +112,16 @@ public class HtmlItem {
   }
 
   /**
-   * Sets isNotEmpty with the conditions of {@code HtmlFieldConditionKeyEnum}, {@code authString}.
+   * Sets isNotEmpty with the conditions of {@code HtmlItemConditionKeyEnum}, {@code authString}.
    * 
    * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
    * 
    * @param authKind authKind
    * @param authString authString
    * @param isNotEmpty isNotEmpty
-   * @return HtmlField
+   * @return HtmlItem
    */
-  public HtmlItem isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItem isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     this.isNotEmpty.add(new HtmlItemCondition<Boolean>(authKind, authString, isNotEmpty));
     return this;
@@ -141,7 +141,7 @@ public class HtmlItem {
   /**
    * Is the condition which decides isNotEmpty or not.
    */
-  public static enum HtmlFieldConditionKeyEnum {
+  public static enum HtmlItemConditionKeyEnum {
     LOGIN_STATE, ROLE, AUTHORITY, KEYWORD;
   }
 
@@ -149,13 +149,13 @@ public class HtmlItem {
    * Stores multiple HtmlItem conditions.
    * 
    * <p>Conditions are stored in {@code List}, so the order matters.<br>
-   *     If you set {@code new HtmlField("name").setXxx(KEYWORD, "update", "A")
+   *     If you set {@code new HtmlItem("name").setXxx(KEYWORD, "update", "A")
    *     .setXxx(ROLE, "admin", "B").setXxx("X")} 
    *     and parameters have keyword update and role "admin",
    *     the resultant value becomes "A".<br>
    *     .setXxx("C") sets the default value so even if you set as follows
    *     and you give a parameter keyword "update", the resultant value is "A".<br>
-   *     {@code new HtmlField("name").setXxx("X").setXxx(KEYWORD, "update", "A")} 
+   *     {@code new HtmlItem("name").setXxx("X").setXxx(KEYWORD, "update", "A")} 
    *     </p>
    * 
    * @param <T> data type of the value
@@ -211,22 +211,22 @@ public class HtmlItem {
       }
 
       for (HtmlItemCondition<T> info : list) {
-        if (info.getConditionKey() == HtmlFieldConditionKeyEnum.LOGIN_STATE) {
+        if (info.getConditionKey() == HtmlItemConditionKeyEnum.LOGIN_STATE) {
           if (info.getConditionValue().equals(loginState)) {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlFieldConditionKeyEnum.ROLE) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.ROLE) {
           if (bean.getRoleList().contains(info.getConditionValue())) {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlFieldConditionKeyEnum.AUTHORITY) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.AUTHORITY) {
           if (bean.getAuthorityList().contains(info.getConditionValue())) {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlFieldConditionKeyEnum.KEYWORD) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.KEYWORD) {
           if (bean.getAuthorityList().contains(info.getConditionValue())) {
             return info.getValue();
           }
@@ -246,7 +246,7 @@ public class HtmlItem {
    * @param <T> data type of the value
    */
   public static class HtmlItemCondition<T> {
-    private HtmlFieldConditionKeyEnum conditionKey;
+    private HtmlItemConditionKeyEnum conditionKey;
     private String conditionValue;
     private T value;
 
@@ -257,14 +257,14 @@ public class HtmlItem {
      * @param conditionValue conditionValue
      * @param value value
      */
-    public HtmlItemCondition(HtmlFieldConditionKeyEnum conditionKey, String conditionValue,
+    public HtmlItemCondition(HtmlItemConditionKeyEnum conditionKey, String conditionValue,
         T value) {
       this.conditionKey = conditionKey;
       this.conditionValue = conditionValue;
       this.value = value;
     }
 
-    public HtmlFieldConditionKeyEnum getConditionKey() {
+    public HtmlItemConditionKeyEnum getConditionKey() {
       return conditionKey;
     }
 

@@ -45,7 +45,7 @@ public class HtmlItemNumber extends HtmlItem {
   }
 
   @Override
-  public HtmlItemNumber isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItemNumber isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     return (HtmlItemNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
@@ -54,7 +54,7 @@ public class HtmlItemNumber extends HtmlItem {
    * Returns needsCommas.
    * 
    * @param needsCommas needsCommas
-   * @return HtmlFieldNumber
+   * @return HtmlItemNumber
    */
   public HtmlItemNumber needsCommas(boolean needsCommas) {
     this.needsCommas = needsCommas;

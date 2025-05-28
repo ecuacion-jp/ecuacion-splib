@@ -299,7 +299,7 @@ public abstract class SplibExceptionHandler {
           List<String> itemIdForNameList = new ArrayList<>();
           for (String itemId : ObjectsUtil.requireNonNull(itemIds)) {
             HtmlItem field =
-                recUtil.getHtmlField(getForms(), getController().getRootRecordName(), itemId);
+                recUtil.getHtmlItem(getForms(), getController().getRootRecordName(), itemId);
             itemIdForNameList.add(field.getItemIdFieldForName() == null
                 ? getController().getRootRecordName() + "." + field.getItemIdField()
                 : field.getItemIdFieldForName());

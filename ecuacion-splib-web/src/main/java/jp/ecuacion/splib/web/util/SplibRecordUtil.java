@@ -30,15 +30,15 @@ import org.thymeleaf.util.StringUtils;
 public class SplibRecordUtil {
 
   /**
-   * Returns {@code HtmlField} 
+   * Returns {@code HtmlItem} 
    *     from {@code SplibGeneralForm}, {@code rootRecordId} and {@code fieldId}. 
    * 
    * @param form form
    * @param rootRecordId rootRecordId
    * @param itemId itemId
-   * @return HtmlField
+   * @return HtmlItem
    */
-  public HtmlItem getHtmlField(SplibGeneralForm form, String rootRecordId, String itemId) {
+  public HtmlItem getHtmlItem(SplibGeneralForm form, String rootRecordId, String itemId) {
     if (!StringUtils.capitalize(itemId).startsWith(StringUtils.capitalize(rootRecordId) + ".")) {
       throw new RuntimeException("itemId: " + itemId + " does not start with rootRecordId: "
           + rootRecordId + " plus dot(.).");
@@ -46,12 +46,12 @@ public class SplibRecordUtil {
 
     String fieldId = itemId.substring((rootRecordId + ".").length());
 
-    return getHtmlField(((RecordInterface) form.getRootRecord(rootRecordId)).getHtmlFields(),
+    return getHtmlItem(((RecordInterface) form.getRootRecord(rootRecordId)).getHtmlItems(),
         fieldId);
   }
 
   /**
-   * Returns {@code HtmlField} 
+   * Returns {@code HtmlItem} 
    *     from {@code SplibGeneralForm}, {@code rootRecordId} and {@code fieldId}. 
    * 
    * <p>Actually more accurate code is needed in the future 
@@ -60,21 +60,21 @@ public class SplibRecordUtil {
    * @param forms forms
    * @param rootRecordId rootRecordId
    * @param itemId itemId
-   * @return HtmlField
+   * @return HtmlItem
    */
-  public HtmlItem getHtmlField(SplibGeneralForm[] forms, String rootRecordId, String itemId) {
-    return getHtmlField(forms[0], rootRecordId, itemId);
+  public HtmlItem getHtmlItem(SplibGeneralForm[] forms, String rootRecordId, String itemId) {
+    return getHtmlItem(forms[0], rootRecordId, itemId);
   }
 
   /**
-   * Returns {@code HtmlField} from {@code HtmlField[]} and {@code fieldId}. 
+   * Returns {@code HtmlItem} from {@code HtmlItem[]} and {@code fieldId}. 
    * 
-   * @param htmlFields htmlFields
+   * @param htmlItems htmlItems
    * @param fieldId fieldId
-   * @return HtmlField
+   * @return HtmlItem
    */
-  public HtmlItem getHtmlField(HtmlItem[] htmlFields, String fieldId) {
-    HtmlItem field = Arrays.asList(htmlFields).stream()
+  public HtmlItem getHtmlItem(HtmlItem[] htmlItems, String fieldId) {
+    HtmlItem field = Arrays.asList(htmlItems).stream()
         .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e)).get(fieldId);
 
     return field == null ? new HtmlItem(fieldId) : field;

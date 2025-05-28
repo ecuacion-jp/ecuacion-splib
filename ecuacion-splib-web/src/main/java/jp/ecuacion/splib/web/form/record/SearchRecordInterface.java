@@ -32,7 +32,7 @@ public interface SearchRecordInterface extends RecordInterface {
   default Map<String, StringMatchingConditionBean> getSearchPatterns() {
     Map<String, StringMatchingConditionBean> map = new HashMap<>();
 
-    HtmlItem[] htmlItems = getHtmlFields();
+    HtmlItem[] htmlItems = getHtmlItems();
     for (HtmlItem item : htmlItems) {
       if (item instanceof HtmlItemString
           && ((HtmlItemString) item).getStringSearchPatternEnum() != null) {
