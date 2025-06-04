@@ -28,7 +28,7 @@ public class SplibWebConstants {
 
   public static final String KEY_CONTEXT_ID = "contextId";
   public static final String KEY_CONTEXT_MAP_PREFIX = "contextId-";
-  public static final String KEY_MESSAGES_BEAN = "responseMessages";
+  public static final String KEY_MESSAGES_BEAN = "messagesBean";
   public static final String KEY_MODEL = "model";
   
 }

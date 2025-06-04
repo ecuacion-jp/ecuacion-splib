@@ -199,11 +199,11 @@ public abstract class SplibExceptionHandler {
   @ExceptionHandler({AppWarningException.class})
   public @Nonnull ModelAndView handleAppWarningException(@Nonnull WebAppWarningException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    MessagesBean requestResult =
+    MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-    Objects.requireNonNull(requestResult);
-    requestResult.setWarnMessage(new WarnMessageBean(
+    Objects.requireNonNull(messagesBean);
+    messagesBean.setWarnMessage(new WarnMessageBean(
         exception.getMessageId(), PropertyFileUtil.getMessage(request.getLocale(),
             exception.getMessageId(), exception.getMessageArgs()),
         exception.buttonIdToPressOnConfirm()));
@@ -226,7 +226,7 @@ public abstract class SplibExceptionHandler {
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     ReturnUrlBean redirectBean = null;
-    MessagesBean requestResult =
+    MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
     // MultipleAppExceptionも考慮し例外を複数持つ
@@ -293,7 +293,7 @@ public abstract class SplibExceptionHandler {
               itemIdForNameList.toArray(new String[itemIdForNameList.size()]));
         }
 
-        requestResult.setErrorMessage(message, itemIds);
+        messagesBean.setErrorMessage(message, itemIds);
       }
     }
 
