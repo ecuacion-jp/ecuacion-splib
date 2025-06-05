@@ -15,7 +15,7 @@
  */
 package jp.ecuacion.splib.web.exception;
 
-import jp.ecuacion.lib.core.exception.checked.SingleAppException;
+import jp.ecuacion.lib.core.exception.checked.AppException;
 
 /** 
  * Is an exception extending {@code BizLogicAppException}.
@@ -26,7 +26,7 @@ import jp.ecuacion.lib.core.exception.checked.SingleAppException;
  * Since the page is transitioned, the error item is not supposed to exist.
  * Therefore this exception doesn't have {@code AppErrorFields}.</p>
  */
-public class BizLogicRedirectAppException extends SingleAppException {
+public class BizLogicRedirectAppException extends AppException {
   private static final long serialVersionUID = 1L;
 
   private String redirectPath;
@@ -58,4 +58,10 @@ public class BizLogicRedirectAppException extends SingleAppException {
   public String[] getMessageArgs() {
     return messageArgs;
   }
+
+  // // Never called
+  // @Override
+  // public String[] getPropertyPaths() {
+  // return new String[] {};
+  // }
 }

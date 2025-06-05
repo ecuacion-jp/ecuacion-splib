@@ -21,28 +21,34 @@ import java.util.List;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
 /**
- * Stores attributes of each html component which controls the behiviors of it in html pages.
+ * Stores attributes of each html component which controls the behaviors of it in html pages.
  * 
- * <p>It is named with "field" 
- *     because it's name is defined in the "field" format 
- *     like {@code mailAddress}, not like {@code acc.mailAddress}.</p>
+ * <p>{@code HtmlItem} is a kind of "item". See <a href="https://github.com/ecuacion-jp/ecuacion-jp.github.io/blob/main/documentation/common/naming-convention.md">naming-convention.md</a>
+ *     So its ID should consist of itemIdClass and itemIdField.<br>
+ *     It complies the rule, but {@code itemIdClass} can be empty.
+ *     When it's empty, {@code mainRootRecord} in {@Form} is used as itemIdClass as default.</p>
+ *     
+ * <p>Actually itemId cannot designate a unique location. 
+ *     There can be multiple location as a relation or relation of relation.
+ *     To have a way to pinpoint the location of the form, it also has {@code propertyPath}.
+ *     It can be empty for normal use, but you can make differences when you want.</p>
  */
 public class HtmlItem {
 
   /**
+   * propertyPath.
+   */
+  protected String propertyPath;
+
+  /**
    * Is an ID which the root record name plus dot (like {@code "acc."}) is removed
    * from the itemId.
-   * 
-   * <p>When you treat the field in the record belonging to the root record, 
-   * you need to define it like {@code childRecord.childFieldName}.</p>
-   * 
-   * <p>It is required if you construct this class.</p>
    */
   @Nonnull
   protected String itemIdField;
 
   /**
-   * Is an ID to the display name of the field.
+   * Is an itemIdField used to display the name of the item.
    * 
    * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
    */
@@ -65,10 +71,26 @@ public class HtmlItem {
   /**
    * Constructs a new instance with {@code ID}.
    * 
-   * @param itemIdField itemIdField
+   * <p>Generally propertyPath starts with a rootRecord 
+   *     (a record field name which is directly defined in a form)
+   *     and should be like {@code user.name} or {@code user.dept.name}.
+   *     It is allowed that you can omit the top rootRecord part 
+   *     when {@code user} is the mainRootRecord, 
+   *     which means {@code name} or {@code dept.name} is also okay.
+   *     When creating html htmlItems are searched with propertyPath,
+   *     and if nothing found, 
+   *     mainRootRecord is automatically added to the top of propertyPath and search again.</p>
+   * 
+   * @param propertyPath propertyPath, maybe without top mainRootRecord part.
+   *     (when "user" is mainRootRecord, both user.name and name are accepted)
    */
-  public HtmlItem(String itemIdField) {
-    this.itemIdField = itemIdField;
+  public HtmlItem(String propertyPath) {
+    this.propertyPath = propertyPath;
+    this.itemIdField = propertyPath;
+  }
+  
+  public String getPropertyPath() {
+    return propertyPath;
   }
 
   public String getItemIdField() {

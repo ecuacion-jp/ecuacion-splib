@@ -229,50 +229,48 @@ public abstract class SplibExceptionHandler {
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-    // MultipleAppExceptionも考慮し例外を複数持つ
-    List<SingleAppException> exList = new ArrayList<>();
-    if (exception instanceof MultipleAppException) {
-      for (SingleAppException appEx : ((MultipleAppException) exception).getList()) {
-        exList.add(appEx);
-      }
-
-      // 結果exListがゼロの場合はシステムエラーとして処理。
-      if (exList.size() == 0) {
-        throw new RuntimeException("No exception included in MultipleAppException.");
-      }
+    // BizLogicRedirectAppException
+    if (exception instanceof BizLogicRedirectAppException) {
+      String redirectPath = ((BizLogicRedirectAppException) exception).getRedirectPath();
+      redirectBean = new ReturnUrlBean(getController(), redirectPath);
 
     } else {
-      exList.add((SingleAppException) exception);
-    }
+      // other than BizLogicRedirectAppException
 
-    // exList内のexceptionを一つずつ処理
-    for (SingleAppException saex : exList) {
+      // MultipleAppExceptionも考慮し例外を複数持つ
+      List<SingleAppException> exList = new ArrayList<>();
 
-      // 自画面のメッセージ欄に表示するか否かで分岐
-      if (saex instanceof BizLogicRedirectAppException) {
-        String redirectPath = ((BizLogicRedirectAppException) saex).getRedirectPath();
-        redirectBean = new ReturnUrlBean(getController(), redirectPath);
-
-      } else {
-        String[] itemIds = null;
-        String rootRecordIdPlusDot = getController().getRootRecordName() + ".";
-
-        // SplibBaseWithRecordController の子でない場合は、そもそもrecord, fieldの定義がlibrary内で確立されていないので処理対象外とする。
-        if (saex instanceof BizLogicAppException) {
-          BizLogicAppException ex = (BizLogicAppException) saex;
-
-          List<String> itemIdList = Arrays
-              .asList(ex.getItemIds() == null ? new String[] {} : ex.getItemIds().getItemIds())
-              .stream()
-              .map(fieldId -> fieldId.startsWith(rootRecordIdPlusDot) ? fieldId
-                  : (rootRecordIdPlusDot + fieldId))
-              .map(itemId -> StringUtils.uncapitalize(itemId)).toList();
-          itemIds = itemIdList.toArray(new String[itemIdList.size()]);
-
-        } else if (saex instanceof ValidationAppException) {
-          itemIds = ((ValidationAppException) saex).getConstraintViolationBean().getItemIds();
+      if (exception instanceof MultipleAppException) {
+        for (SingleAppException appEx : ((MultipleAppException) exception).getList()) {
+          exList.add(appEx);
         }
 
+        // 結果exListがゼロの場合はシステムエラーとして処理。
+        if (exList.size() == 0) {
+          throw new RuntimeException("No exception included in MultipleAppException.");
+        }
+
+      } else {
+        exList.add((SingleAppException) exception);
+      }
+
+      // exList内のexceptionを一つずつ処理
+      for (SingleAppException saex : exList) {
+
+        // propertyPaths
+        List<String> propertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
+            .map(itemId -> StringUtils.uncapitalize(itemId)).toList();
+
+        // Add rootRecord plus dot(.) if BizLogicAppException
+        if (saex instanceof BizLogicAppException && propertyPathList.size() > 0
+            && !propertyPathList.get(0).startsWith(getController().getRootRecordName() + ".")) {
+          propertyPathList = propertyPathList.stream()
+              .map(path -> getController().getRootRecordName() + "." + path).toList();
+        }
+
+        String[] propertyPaths = propertyPathList.toArray(new String[propertyPathList.size()]);
+
+        // message
         String message = ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale()).get(0);
 
         if (saex instanceof ValidationAppException) {
@@ -281,9 +279,9 @@ public abstract class SplibExceptionHandler {
           // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
           // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
           List<String> itemIdForNameList = new ArrayList<>();
-          for (String itemId : ObjectsUtil.requireNonNull(itemIds)) {
+          for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
             HtmlItem field =
-                recUtil.getHtmlItem(getForms(), getController().getRootRecordName(), itemId);
+                recUtil.getHtmlItem(getForms(), getController().getRootRecordName(), propertyPath);
             itemIdForNameList.add(field.getItemIdFieldForName() == null
                 ? getController().getRootRecordName() + "." + field.getItemIdField()
                 : field.getItemIdFieldForName());
@@ -293,7 +291,7 @@ public abstract class SplibExceptionHandler {
               itemIdForNameList.toArray(new String[itemIdForNameList.size()]));
         }
 
-        messagesBean.setErrorMessage(message, itemIds);
+        messagesBean.setErrorMessage(message, propertyPaths);
       }
     }
 

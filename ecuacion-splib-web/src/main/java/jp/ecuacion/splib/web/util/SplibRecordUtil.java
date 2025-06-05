@@ -16,12 +16,12 @@
 package jp.ecuacion.splib.web.util;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.StringUtils;
 
 /**
  * Provides utility methods on records and fields.
@@ -34,20 +34,19 @@ public class SplibRecordUtil {
    *     from {@code SplibGeneralForm}, {@code rootRecordId} and {@code fieldId}. 
    * 
    * @param form form
-   * @param rootRecordId rootRecordId
-   * @param itemId itemId
+   * @param rootRecordName rootRecordName
+   * @param itemPropertyPath propertyPath
    * @return HtmlItem
    */
-  public HtmlItem getHtmlItem(SplibGeneralForm form, String rootRecordId, String itemId) {
-    if (!StringUtils.capitalize(itemId).startsWith(StringUtils.capitalize(rootRecordId) + ".")) {
-      throw new RuntimeException("itemId: " + itemId + " does not start with rootRecordId: "
-          + rootRecordId + " plus dot(.).");
-    }
+  public HtmlItem getHtmlItem(SplibGeneralForm form, String rootRecordName,
+      String itemPropertyPath) {
+    // if (!StringUtils.capitalize(itemId).startsWith(StringUtils.capitalize(rootRecordId) + ".")) {
+    // throw new RuntimeException("itemId: " + itemId + " does not start with rootRecordId: "
+    // + rootRecordId + " plus dot(.).");
+    // }
 
-    String fieldId = itemId.substring((rootRecordId + ".").length());
-
-    return getHtmlItem(((RecordInterface) form.getRootRecord(rootRecordId)).getHtmlItems(),
-        fieldId);
+    return getHtmlItem(((RecordInterface) form.getRootRecord(rootRecordName)).getHtmlItems(),
+        rootRecordName, itemPropertyPath);
   }
 
   /**
@@ -70,13 +69,21 @@ public class SplibRecordUtil {
    * Returns {@code HtmlItem} from {@code HtmlItem[]} and {@code fieldId}. 
    * 
    * @param htmlItems htmlItems
-   * @param fieldId fieldId
+   * @param itemPropertyPath itemPropertyPath
    * @return HtmlItem
    */
-  public HtmlItem getHtmlItem(HtmlItem[] htmlItems, String fieldId) {
-    HtmlItem field = Arrays.asList(htmlItems).stream()
-        .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e)).get(fieldId);
+  public HtmlItem getHtmlItem(HtmlItem[] htmlItems, String rootRecordName,
+      String itemPropertyPath) {
+    Map<String, HtmlItem> map = Arrays.asList(htmlItems).stream()
+        .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e));
 
-    return field == null ? new HtmlItem(fieldId) : field;
+    HtmlItem field = map.get(itemPropertyPath);
+
+    // Try with itemPropertyPathWithoutRootRecord
+    if (field == null && itemPropertyPath.startsWith(rootRecordName)) {
+      field = map.get(itemPropertyPath.substring(rootRecordName.length() + 1));
+    }
+
+    return field == null ? new HtmlItem(itemPropertyPath) : field;
   }
 }

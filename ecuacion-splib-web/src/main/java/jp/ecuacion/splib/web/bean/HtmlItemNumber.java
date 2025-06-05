@@ -28,10 +28,11 @@ public class HtmlItemNumber extends HtmlItem {
   /**
    * Constructs a new instance.
    * 
-   * @param id id
+   * @see HtmlItem
+   * @param propertyPath propertyPath
    */
-  public HtmlItemNumber(String id) {
-    super(id);
+  public HtmlItemNumber(String propertyPath) {
+    super(propertyPath);
   }
 
   @Override

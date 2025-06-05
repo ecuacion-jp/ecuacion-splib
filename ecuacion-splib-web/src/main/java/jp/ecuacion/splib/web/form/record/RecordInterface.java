@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.HtmlItemNumber;
-import jp.ecuacion.splib.web.util.SplibRecordUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
@@ -38,15 +37,15 @@ public interface RecordInterface {
    */
   HtmlItem[] getHtmlItems();
 
-  /**
-   * Returns HtmlItem in respond to the specified fieldId.
-   * 
-   * @param fieldId fieldId
-   * @return HtmlItem
-   */
-  default HtmlItem getHtmlItem(String fieldId) {
-    return new SplibRecordUtil().getHtmlItem(getHtmlItems(), fieldId);
-  }
+  // /**
+  // * Returns HtmlItem in respond to the specified fieldId.
+  // *
+  // * @param fieldId fieldId
+  // * @return HtmlItem
+  // */
+  // default HtmlItem getHtmlItem(String fieldId) {
+  // return new SplibRecordUtil().getHtmlItem(getHtmlItems(), fieldId);
+  // }
 
   /**
    * Returns whether the itemId needs comma.

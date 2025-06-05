@@ -817,7 +817,7 @@
 				itemIdClass=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : rootRecordName}">
 			<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemId=${itemIdClass + '.' + propertyPathField}">
 				<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
-						inputId=${htmlFormName} + '.' + ${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : propertyPath}">
+						inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
 					<div class="mb-4" th:classappend="${@optUtil.isWidthFull(options)} ? 'col-12' : (${@optUtil.isWidthHalf(options)} ? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
 
 						<!--/* label */-->
@@ -849,7 +849,7 @@
 		<div th:replace="~{bootstrap/components :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::inputTextInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="inputTextInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<input th:type="${type}" th:id="${inputId}" th:name="${propertyPath}" th:value="${inputValue}"
+			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
 					th:maxlength="${@optUtil.isReadOnly(options) || type == 'hidden'} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
 					th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
 					th:readonly="${@optUtil.isReadOnly(options)}">
@@ -871,7 +871,7 @@
 
 		<th:block th:if="false"><div th:fragment="inputNumberInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
 			<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${propertyPathWithoutRootRecord}__')}">
-				<input th:type="text" th:id="${inputId}" th:name="${propertyPath}"
+				<input th:type="text" th:id="${inputId}" th:name="${inputName}"
 						th:value="${(needsCommas && @strUtil.isNumberFormat(inputValue)) ? #numbers.formatDecimal(#strings.replace(inputValue, ',', ''), 1, 'COMMA', 0, 'POINT') : inputValue}"
 						th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
 						class="text-end"
@@ -891,7 +891,7 @@
 		<div th:replace="~{bootstrap/components :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::inputDateTimeInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="inputDateTimeInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<input th:type="${type}" th:id="${inputId}" th:name="${propertyPath}" th:value="${inputValue}"
+			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
 				th:readonly="${@optUtil.isReadOnly(options)}">
 		</div></th:block>
@@ -917,7 +917,7 @@
  		<div th:replace="~{bootstrap/components :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::inputTextAreaInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="inputTextAreaInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<textarea th:id="${inputId}" th:name="${propertyPath}" th:text="${inputValue}"
+			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
 				th:maxlength="*{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}" 
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
 				th:readonly="${@optUtil.isReadOnly(options)}" rows="3">
@@ -932,10 +932,10 @@
 		<th:block th:if="false"><div th:fragment="inputSwitchInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
 			<div class="form-check form-switch mt-2">
 				<th:block th:if="${@optUtil.isReadOnly(options)}">
-					<input type="hidden" th:id="${inputId}" th:name="${propertyPath}" th:value="${inputValue}">
+					<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
 				</th:block>
 				<div>
-					<input type="hidden" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}" value="off">
+					<input type="hidden" th:name="${@optUtil.isReadOnly(options) ? '' : inputName}" value="off">
 					<input th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
 						class="form-check-input align-bottom mb-1" type="checkbox" 
 						th:checked="${inputValue}"
