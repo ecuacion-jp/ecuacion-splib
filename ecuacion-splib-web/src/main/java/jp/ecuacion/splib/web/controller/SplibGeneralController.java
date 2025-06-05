@@ -17,16 +17,26 @@ package jp.ecuacion.splib.web.controller;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.validation.ConstraintViolation;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
+import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
+import jp.ecuacion.lib.core.exception.checked.SingleAppException;
+import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
+import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
+import jp.ecuacion.lib.core.util.ValidationUtil;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.exception.FormInputValidationException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
@@ -569,8 +579,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @throws FormInputValidationException FormInputValidationException
    * @throws AppException AppException
    */
-  public void prepare(Model model, SplibGeneralForm... forms)
-      throws FormInputValidationException, AppException {
+  public void prepare(Model model, SplibGeneralForm... forms) throws AppException {
     prepare(model, null, forms);
   }
 
@@ -582,11 +591,10 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param model model
    * @param loginUser loginUser
    * @param forms forms
-   * @throws FormInputValidationException FormInputValidationException
    * @throws AppException AppException
    */
   public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms)
-      throws FormInputValidationException, AppException {
+      throws AppException {
 
     // 全form共通処理
     for (SplibGeneralForm form : forms) {
@@ -657,15 +665,130 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param loginState loginState
    * @param bean bean
    * @throws FormInputValidationException FormInputValidationException
+   * @throws MultipleAppException MultipleAppException
    */
   private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
-      RolesAndAuthoritiesBean bean) throws FormInputValidationException {
+      RolesAndAuthoritiesBean bean) throws MultipleAppException {
     // input validation
     boolean hasNotEmptyError = false;
     hasNotEmptyError = form.hasNotEmptyError(loginState, bean);
 
+    List<SingleAppException> exList = new ArrayList<>();
     if (hasNotEmptyError || (result != null && result.hasErrors())) {
-      throw new FormInputValidationException(form);
+      List<ValidationAppException> list = getBeanValidationAppExceptionList(form, bean);
+      exList.addAll(list);
+
+      throw new MultipleAppException(exList);
     }
+  }
+
+  private List<ValidationAppException> getBeanValidationAppExceptionList(SplibGeneralForm form,
+      RolesAndAuthoritiesBean bean) {
+
+    // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
+    List<ConstraintViolationBean> errorList = new ArrayList<>();
+
+    for (ConstraintViolation<?> cv : ValidationUtil.validate(form)) {
+      errorList.add(new ConstraintViolationBean(cv));
+    }
+
+    // NotEmptyのチェック結果を追加
+    errorList.addAll(form.validateNotEmpty(request.getLocale(), util.getLoginState(), bean).stream()
+        .collect(Collectors.toList()));
+
+    // 並び順を指定。今後項目名指定することも想定するが、一旦は並び順が固定されれば満足なので単純に並べる
+    errorList = errorList.stream().sorted(getComparator()).collect(Collectors.toList());
+
+    // Jakarta validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
+    // 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
+    removeDuplicatedValidators(errorList);
+
+    // ここでerrorList.size() == 0のパターンが発生。
+    // spring側のvalidationではresultにエラー内容が格納されたが自分でvalidateしなおすとエラー検知できない、というパターン。
+    // systemErrorとしておく
+    if (errorList.size() == 0) {
+      String msg = """
+          SplibExceptionHandler#handleInputValidationExceptionに来ているのにerrorListにエラー項目が存在しません。
+          rootRecoordNameと同一のnameを持ったsubmitボタンを押した場合に発生する模様。
+          （例：rootRecordNameをappとした場合、以下のようなボタンを作成する場合に発生）
+          <div th:replace="~{bootstrap/components :: commonPrimaryButton('app', ...)}"></div>
+
+          textなどの情報は、GETでいうと、request paramの中で"app.desc=..."のように記載されるが、そのparameterの中で
+          spring mvcだとボタン名が"app="と出る。
+          このボタン名に対する"app="を、"app"のキーワードがあるためformへのmapping対象だとspringが勘違いするために、
+          mappingをトライしエラーが発生しているのかも。
+          （ちなみに、ボタンのnameがappzzzなど、appから始まるがappとは異なる文字列であれば、この問題は発生しない）
+          """;
+      throw new RuntimeException(msg);
+    }
+
+    return errorList.stream().map(b -> new ValidationAppException(b)).toList();
+  }
+
+  /*
+   * Jakarta validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
+   * 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
+   */
+  private void removeDuplicatedValidators(List<ConstraintViolationBean> cvList) {
+
+    // 一度、field名をkey, valueをsetとしcvを複数格納するmapを作成し、そのkeyに2件以上validatorが存在しかつNotEmptyが存在する場合は
+    // NotEmpty以外を間引く、というロジックとする
+    Map<String, Set<ConstraintViolationBean>> duplicateCheckMap = new HashMap<>();
+
+    // 後続処理のため、NotEmptyを保持するkeyを保持しておく
+    Set<String> keySetWithNotEmpty = new HashSet<>();
+
+    for (ConstraintViolationBean cv : cvList) {
+      String key = cv.getPropertyPath().toString();
+      if (duplicateCheckMap.get(key) == null) {
+        duplicateCheckMap.put(key, new HashSet<>());
+      }
+
+      duplicateCheckMap.get(key).add(cv);
+
+      // NotEmptyの場合はkeySetWithNotEmptyに追加
+      if (isNotEmptyValidator(cv)) {
+        keySetWithNotEmpty.add(key);
+      }
+    }
+
+    // duplicateCheckMapで、keySetWithNotEmptyに含まれるkeyのvalueは、NotEmpty以外を取り除く
+    for (String key : keySetWithNotEmpty) {
+      for (ConstraintViolationBean cv : duplicateCheckMap.get(key)) {
+        if (!isNotEmptyValidator(cv)) {
+          cvList.remove(cv);
+        }
+      }
+    }
+  }
+
+  private boolean isNotEmptyValidator(ConstraintViolationBean cv) {
+    String validatorClass = cv.getValidatorClass();
+    return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
+  }
+
+  private Comparator<ConstraintViolationBean> getComparator() {
+    return new Comparator<>() {
+      @Override
+      public int compare(ConstraintViolationBean f1, ConstraintViolationBean f2) {
+        // 項目名で比較
+        int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
+        if (result != 0) {
+          return result;
+        }
+
+        // 項目名が同じ場合はmessageTemplate(実質はvalidator種別）で比較
+        result = f1.getValidatorClass().compareTo(f2.getValidatorClass());
+        if (result != 0) {
+          return result;
+        }
+
+        // validator種別も同じ場合は、@Patternのみと考えられる。
+        // Patternの場合はregxpにより並び順が固定されるのでそれを含む文字列で比較
+        String s1 = f1.getAnnotationDescriptionString();
+        String s2 = f2.getAnnotationDescriptionString();
+        return s1.compareTo(s2);
+      }
+    };
   }
 }

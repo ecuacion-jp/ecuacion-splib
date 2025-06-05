@@ -27,7 +27,7 @@ public class ConfigRecord extends SplibRecord implements RecordInterface {
   private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 
   @Override
-  public HtmlItem[] getHtmlFields() {
+  public HtmlItem[] getHtmlItems() {
     return new HtmlItem[] {};
   }
 

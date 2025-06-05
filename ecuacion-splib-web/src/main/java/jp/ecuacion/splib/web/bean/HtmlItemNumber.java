@@ -28,10 +28,11 @@ public class HtmlItemNumber extends HtmlItem {
   /**
    * Constructs a new instance.
    * 
-   * @param id id
+   * @see HtmlItem
+   * @param propertyPath propertyPath
    */
-  public HtmlItemNumber(String id) {
-    super(id);
+  public HtmlItemNumber(String propertyPath) {
+    super(propertyPath);
   }
 
   @Override
@@ -45,7 +46,7 @@ public class HtmlItemNumber extends HtmlItem {
   }
 
   @Override
-  public HtmlItemNumber isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItemNumber isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     return (HtmlItemNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
@@ -54,7 +55,7 @@ public class HtmlItemNumber extends HtmlItem {
    * Returns needsCommas.
    * 
    * @param needsCommas needsCommas
-   * @return HtmlFieldNumber
+   * @return HtmlItemNumber
    */
   public HtmlItemNumber needsCommas(boolean needsCommas) {
     this.needsCommas = needsCommas;
