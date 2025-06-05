@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.HtmlItemNumber;
-import jp.ecuacion.splib.web.util.SplibRecordUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
@@ -32,21 +31,21 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 public interface RecordInterface {
 
   /**
-   * Returns htmlFields.
+   * Returns HtmlItem.
    * 
-   * @return HtmlField[]
+   * @return HtmlItem[]
    */
-  HtmlItem[] getHtmlFields();
+  HtmlItem[] getHtmlItems();
 
-  /**
-   * Returns htmlField in respond to the specified fieldId.
-   * 
-   * @param fieldId fieldId
-   * @return HtmlField
-   */
-  default HtmlItem getHtmlField(String fieldId) {
-    return new SplibRecordUtil().getHtmlField(getHtmlFields(), fieldId);
-  }
+  // /**
+  // * Returns HtmlItem in respond to the specified fieldId.
+  // *
+  // * @param fieldId fieldId
+  // * @return HtmlItem
+  // */
+  // default HtmlItem getHtmlItem(String fieldId) {
+  // return new SplibRecordUtil().getHtmlItem(getHtmlItems(), fieldId);
+  // }
 
   /**
    * Returns whether the itemId needs comma.
@@ -55,7 +54,7 @@ public interface RecordInterface {
    * @return boolean
    */
   default boolean needsCommas(String itemId) {
-    HtmlItem item = Arrays.asList(getHtmlFields()).stream()
+    HtmlItem item = Arrays.asList(getHtmlItems()).stream()
         .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e)).get(itemId);
 
     if (item == null || !(item instanceof HtmlItemNumber)) {
@@ -82,7 +81,7 @@ public interface RecordInterface {
    * </p>
    */
   default String getDisplayName(String rootRecordId, String fieldId) {
-    HtmlItem[] htmlFields = getHtmlFields() == null ? new HtmlItem[] {} : getHtmlFields();
+    HtmlItem[] htmlItems = getHtmlItems() == null ? new HtmlItem[] {} : getHtmlItems();
 
     // rootRecordNameがaccの場合に、例外処理でエラーメッセージに項目名を出す際の処理は、itemNameが「acc.accId」となってしまう。
     // この場合でも対応できるように、itemNameの頭がrootRecordName + '.'の場合はそれを取り除く処理を行う。
@@ -90,7 +89,7 @@ public interface RecordInterface {
       fieldId = fieldId.substring((rootRecordId + ".").length());
     }
 
-    Map<String, String> displayNameIdMap = Arrays.asList(htmlFields).stream()
+    Map<String, String> displayNameIdMap = Arrays.asList(htmlItems).stream()
         .collect(Collectors.toMap(e -> e.getItemIdField(),
             e -> e.getItemIdFieldForName() == null ? e.getItemIdField()
                 : e.getItemIdFieldForName()));
@@ -108,7 +107,7 @@ public interface RecordInterface {
    * htmlItemsについて、個別機能のlistと共通のlistをmergeさせるために使用する.
    * あくまでutilレベルなので個別処理にしても良いのだが、極力個別コードを減らしたいので本クラスに保持する。
    */
-  default HtmlItem[] mergeHtmlFields(HtmlItem[] fields1, HtmlItem[] fields2) {
+  default HtmlItem[] mergeHtmlItems(HtmlItem[] fields1, HtmlItem[] fields2) {
     List<HtmlItem> list = new ArrayList<>(Arrays.asList(fields1));
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
@@ -118,7 +117,7 @@ public interface RecordInterface {
     for (String field2Id : Arrays.asList(fields2).stream().map(e -> e.getItemIdField()).toList()) {
       if (field1IdList.contains(field2Id)) {
         throw new RuntimeException(
-            "'id' of HtmlField[] duplicated with commonHtmlFields. key: " + field2Id);
+            "'id' of HtmlItem[] duplicated with commonHtmlItems. key: " + field2Id);
       }
     }
 
@@ -138,8 +137,8 @@ public interface RecordInterface {
   default List<String> getNotEmptyFields(String loginState, RolesAndAuthoritiesBean bean) {
     List<String> list = new ArrayList<>();
 
-    HtmlItem[] htmlFields = getHtmlFields();
-    for (HtmlItem field : htmlFields) {
+    HtmlItem[] htmlItems = getHtmlItems();
+    for (HtmlItem field : htmlItems) {
       if (field.getIsNotEmpty(loginState, bean)) {
         list.add(field.getItemIdField());
       }

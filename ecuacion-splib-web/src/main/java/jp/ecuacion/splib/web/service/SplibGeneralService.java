@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
-import jp.ecuacion.lib.core.exception.checked.AppExceptionItemIds;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
@@ -41,14 +40,14 @@ public abstract class SplibGeneralService {
 
   private DetailLogger detailLog = new DetailLogger(this);
 
-  /** 
+  /**
    * Provides the warning feature.
-   * 
-   * <p>By calling this method you can use the warning feature, 
-   *     which means that the warning message is shown on the message box, 
-   *     and by pressing OK button the warning is ignored at the next time.</p>
-   *     
-   * @param confirmedWarningMessageSet This is obtained from 
+   *
+   * <p>By calling this method you can use the warning feature,
+   * which means that the warning message is shown on the message box,
+   * and by pressing OK button the warning is ignored at the next time.</p>
+   *
+   * @param confirmedWarningMessageSet This is obtained from
    *     {@code form.getConfirmedWarningMessageSet()}.
    * @param locale locale
    * @param buttonIdToPressOnConfirm buttonIdToPressOnConfirm, may be {@code null}.
@@ -60,11 +59,11 @@ public abstract class SplibGeneralService {
    */
   protected void throwWarning(@RequireNonnull Set<String> confirmedWarningMessageSet,
       @RequireNonnull Locale locale, @Nullable String buttonIdToPressOnConfirm,
-      @Nullable AppExceptionItemIds fields, @RequireNonnull String msgId,
-      @RequireNonnull String... params) throws WebAppWarningException {
+      @Nullable String[] fields, @RequireNonnull String msgId, @RequireNonnull String... params)
+      throws WebAppWarningException {
 
     if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
-      throw new WebAppWarningException(locale, msgId, params).itemIds(fields)
+      throw new WebAppWarningException(msgId, params).itemPropertyPaths(fields)
           .buttonIdToPressOnConfirm(buttonIdToPressOnConfirm);
     }
   }

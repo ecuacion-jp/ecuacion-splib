@@ -17,9 +17,7 @@ package jp.ecuacion.splib.web.exception;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import java.util.Locale;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
-import jp.ecuacion.lib.core.exception.checked.AppExceptionItemIds;
 import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 
 /**
@@ -44,29 +42,17 @@ public class WebAppWarningException extends AppWarningException {
    * @param messageArgs messageArgs
    */
   public WebAppWarningException(@RequireNonnull String messageId, @Nonnull String... messageArgs) {
-    this(Locale.getDefault(), messageId, messageArgs);
-  }
-
-  /**
-   * Construct a new instance with the {@code locale}.
-   * 
-   * @param locale locale
-   * @param messageId messageId
-   * @param messageArgs messageArgs
-   */
-  public WebAppWarningException(@RequireNonnull Locale locale, @Nonnull String messageId,
-      @Nonnull String... messageArgs) {
-    super(locale, messageId, messageArgs);
+    super(messageId, messageArgs);
   }
 
   @Override
-  public @Nonnull WebAppWarningException itemIds(@Nullable AppExceptionItemIds fields) {
-    return (WebAppWarningException) super.itemIds(fields);
+  public @Nonnull WebAppWarningException itemPropertyPaths(@Nullable String[] fields) {
+    return (WebAppWarningException) super.itemPropertyPaths(fields);
   }
 
   @Override
-  public @Nonnull AppExceptionItemIds itemIds() {
-    return itemIds;
+  public @Nonnull String[] getItemPropertyPaths() {
+    return itemPropertyPaths;
   }
 
   /**

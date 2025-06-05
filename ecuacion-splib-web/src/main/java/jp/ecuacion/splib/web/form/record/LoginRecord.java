@@ -24,7 +24,7 @@ import jp.ecuacion.splib.web.bean.HtmlItem;
 public class LoginRecord extends SplibRecord implements RecordInterface {
 
   @Override
-  public HtmlItem[] getHtmlFields() {
+  public HtmlItem[] getHtmlItems() {
     return new HtmlItem[] {};
   }
 

@@ -19,7 +19,6 @@ import jakarta.annotation.Nonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.exception.FormInputValidationException;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
@@ -265,7 +264,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    */
   @PostMapping(value = "action", params = "showInsertForm")
   public String showInsertForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
-      throws FormInputValidationException, AppException {
+      throws AppException {
     prepare(model, loginUser);
     ReturnUrlBean bean =
         new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
@@ -283,7 +282,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    */
   @PostMapping(value = "action", params = "showUpdateForm")
   public String showUpdateForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
-      throws FormInputValidationException, AppException {
+      throws AppException {
     prepare(model, loginUser);
     ReturnUrlBean bean =
         new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());

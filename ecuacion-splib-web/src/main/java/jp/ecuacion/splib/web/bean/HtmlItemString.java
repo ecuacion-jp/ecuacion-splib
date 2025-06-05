@@ -28,10 +28,11 @@ public class HtmlItemString extends HtmlItem {
   /**
    * Constructs a new instance.
    * 
-   * @param itemName itemName
+   * @see HtmlItem
+   * @param propertyPath propertyPath
    */
-  public HtmlItemString(String itemName) {
-    super(itemName);
+  public HtmlItemString(String propertyPath) {
+    super(propertyPath);
     this.matchingCondition = new StringMatchingConditionBean();
   }
 
@@ -46,7 +47,7 @@ public class HtmlItemString extends HtmlItem {
   }
 
   @Override
-  public HtmlItemString isNotEmpty(HtmlFieldConditionKeyEnum authKind, String authString,
+  public HtmlItemString isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     return (HtmlItemString) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
@@ -56,7 +57,7 @@ public class HtmlItemString extends HtmlItem {
    * 
    * @param stringMatchingPattern stringMatchingPattern
    * @param ignoresCase ignoresCase
-   * @return HtmlFieldString
+   * @return HtmlItemString
    */
   public HtmlItemString stringMatchingCondition(StringMatchingPatternEnum stringMatchingPattern,
       boolean ignoresCase) {
