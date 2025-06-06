@@ -26,7 +26,8 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
  * <p>{@code HtmlItem} is a kind of "item". See <a href="https://github.com/ecuacion-jp/ecuacion-jp.github.io/blob/main/documentation/common/naming-convention.md">naming-convention.md</a>
  *     So its ID should consist of itemIdClass and itemIdField.<br>
  *     It complies the rule, but {@code itemIdClass} can be empty.
- *     When it's empty, {@code mainRootRecord} in {@Form} is used as itemIdClass as default.</p>
+ *     When it's empty, 
+ *     {@code mainRootRecord} in {@code Form} is used as itemIdClass as default.</p>
  *     
  * <p>Actually itemId cannot designate a unique location. 
  *     There can be multiple location as a relation or relation of relation.
@@ -88,7 +89,7 @@ public class HtmlItem {
     this.propertyPath = propertyPath;
     this.itemIdField = propertyPath;
   }
-  
+
   public String getPropertyPath() {
     return propertyPath;
   }

@@ -259,7 +259,6 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param model model
    * @param loginUser loginUser
    * @return URL
-   * @throws FormInputValidationException FormInputValidationException
    * @throws AppException AppException
    */
   @PostMapping(value = "action", params = "showInsertForm")
@@ -277,7 +276,6 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param model model
    * @param loginUser loginUser
    * @return URL
-   * @throws FormInputValidationException FormInputValidationException
    * @throws AppException AppException
    */
   @PostMapping(value = "action", params = "showUpdateForm")
