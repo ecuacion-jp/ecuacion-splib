@@ -576,7 +576,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * 
    * @param model model
    * @param forms forms
-   * @throws FormInputValidationException FormInputValidationException
    * @throws AppException AppException
    */
   public void prepare(Model model, SplibGeneralForm... forms) throws AppException {
