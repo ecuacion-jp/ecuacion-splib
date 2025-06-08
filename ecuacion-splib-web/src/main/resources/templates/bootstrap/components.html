@@ -45,8 +45,7 @@
 	</div>
 
 	<div th:fragment="subtitleDesc(desc, options)" th:remove="tag">
-			<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}">
-			</div>
+		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
 	</div>
 
 	<div th:fragment="subsubtitle(subsubtitle, options)" th:remove="tag">
@@ -56,8 +55,15 @@
 	</div>
 
 	<div th:fragment="subsubtitleDesc(desc, options)" th:remove="tag">
-			<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}">
-			</div>
+		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
+	</div>
+
+	<div th:fragment="paragraph(desc, options)" th:remove="tag">
+		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
+	</div>
+
+	<div th:fragment="referenceBox(desc, options)" th:remove="tag">
+		<pre><code><div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div></code></pre>
 	</div>
 		
 	<div th:fragment=horizontalLine(options) th:remove="tag">
@@ -327,7 +333,8 @@
 	<div th:fragment="generalForm(formContent, topSpaceContent, bottomSpaceContent
 			, formMethod, multipart, subFunction, versionFieldName, versionInitialValue, options)" th:remove="tag">
 		<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
-			<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')}">
+			<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')},
+					javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
 
 				<th:block th:replace="${topSpaceContent}" />
 
@@ -336,7 +343,7 @@
 						th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 						th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
 						th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
-						th:object="${__${function + #strings.capitalize(subFunction) + 'Form'}__}">
+						th:object="${__${javaFormName}__}">
 					<div th:replace="~{bootstrap/components :: token('')}"></div>
 					<!--/* controller側からmodelに渡すformm名が間違えている場合にいつもここでエラーになるが、設定したform名が取得できずdebugしているので、
 					       赤字でエラー表示しつつform名を出力 */-->
