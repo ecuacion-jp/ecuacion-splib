@@ -33,11 +33,13 @@
 	 */-->
 
 	<div th:fragment="title(title, options)" th:remove="tag">
-		<div class="text-dark fs-3 fw-bold mt-3 mb-3" th:text="${title}"></div>
+		<div class="text-dark fs-3 fw-bold mt-3 mb-5" th:text="${title}"></div>
 	</div>
 
 	<div th:fragment="titleDesc(desc, options)" th:remove="tag">
-		<div class="text-dark mt-5 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
+		<th:block th:if="${!#strings.isEmpty(desc)}">
+			<div class="text-dark mb-5" style="white-space: pre-wrap;" th:text="${desc}"></div>
+		</th:block>
 	</div>
 
 	<div th:fragment="subtitle(subtitle, options)" th:remove="tag">
@@ -59,11 +61,16 @@
 	</div>
 
 	<div th:fragment="paragraph(desc, options)" th:remove="tag">
-		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
+		<div class="text-dark mt-4" style="white-space: pre-wrap;" th:text="${desc}"></div>
 	</div>
 
-	<div th:fragment="referenceBox(desc, options)" th:remove="tag">
-		<pre><code><div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div></code></pre>
+	<div th:fragment="referenceBox(title, desc, options)" th:remove="tag">
+		<div class="text-dark mt-4">
+			<th:block th:if="${!#strings.isEmpty(title)}"><code  class="text-dark" th:text="'[' + ${title} + ']'"></code></th:block>
+			<div class="border ps-3 pe-3" style="background-color: #ffffe0">
+				<pre class="mb-0"><code><div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div></code></pre>
+			</div>
+		</div>
 	</div>
 		
 	<div th:fragment=horizontalLine(options) th:remove="tag">
@@ -86,7 +93,7 @@
 	
 	<!-- 自由なテキスト・htmlを入力。統一の文字色・フォントなどを使用する機能のみ保持。本component自体には何かの表示機能はない。 -->
 	<div th:fragment="freeSpace(content, options)" th:remove="tag">
-		<div class="text-dark mt-3">
+		<div class="text-dark">
 			<th:block th:replace="${content}" />
 		</div>
 	</div>
@@ -182,41 +189,48 @@
 	 
 	<!--/* messages */-->
 	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
-		<!-- messages from url parameter -->
-		<div th:replace="~{bootstrap/components :: freeSpace(~{::free-space-login-messages}, '')}"></div>
-		<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
-			<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
-			<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
-			<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
-			<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
-		</div></th:block>
-		<!-- messages from ${messagesBean} -->
-		<div class="mt-5" th:object="${messagesBean}">
-			<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
-				<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-				<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-			</div>
+		<div class="mt-5 mb-5">
+			<!-- messages from url parameter -->
 			<div class="all-error-messages-list-wrapper text-danger">
-				<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
-					<!--/* itemに紐づくエラーメッセージをtopに表示する場合 */-->
-					<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
-						<div class="all-error-messages-list-ul">
-							<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessages})}"></div>
-						</div>
-					</th:block>
-					<!--/* itemに紐づくエラーメッセージを個別itemの箇所に表示する場合 */-->
-					<th:block th:if="${showsMessagesLinkedToItemsAtEachField}">
-						<ul class="all-error-messages-list-ul">
-							<!--/* itemに紐づかないエラーの表示 */-->
-							<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
-								<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessagesNotLinkedToItems})}"></div>
-							</th:block>
-							<!--/* itemに紐づくエラーが存在することを示すメッセージの表示 */-->
-							<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
-								<div th:replace="~{bootstrap/components :: displayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
-							</th:block>
-						</ul>
-					</th:block>
+				<div class="bg-color-msg-error-bg p-2 rounded-1" 
+						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null}">
+					<div th:replace="~{bootstrap/components :: freeSpace(~{::free-space-login-messages}, '')}"></div>
+				</div>
+			</div>
+			<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
+				<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
+				<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
+				<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
+				<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
+			</div></th:block>
+			<!-- messages from ${messagesBean} -->
+			<div th:object="${messagesBean}">
+				<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
+					<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
+					<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
+				</div>
+				<div class="all-error-messages-list-wrapper text-danger">
+					<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
+						<!--/* itemに紐づくエラーメッセージをtopに表示する場合 */-->
+						<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
+							<div class="all-error-messages-list-ul">
+								<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessages})}"></div>
+							</div>
+						</th:block>
+						<!--/* itemに紐づくエラーメッセージを個別itemの箇所に表示する場合 */-->
+						<th:block th:if="${showsMessagesLinkedToItemsAtEachField}">
+							<ul class="all-error-messages-list-ul">
+								<!--/* itemに紐づかないエラーの表示 */-->
+								<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
+									<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessagesNotLinkedToItems})}"></div>
+								</th:block>
+								<!--/* itemに紐づくエラーが存在することを示すメッセージの表示 */-->
+								<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
+									<div th:replace="~{bootstrap/components :: displayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
+								</th:block>
+							</ul>
+						</th:block>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -250,13 +264,7 @@
 			</th:block>
 		</table>
 	</div>
-	
-	
-	
-	
-	
-				
-						
+
 	<div th:fragment="warnMessage(options)" th:remove="tag">
 		<div th:object="${messagesBean}">
 			<th:block th:if="*{warnMessage != null}">
@@ -338,6 +346,8 @@
 
 				<th:block th:replace="${topSpaceContent}" />
 
+				<div class="mt-3"></div>
+				
 				<!--/* subFunction, ctrlSubFunctionの挙動については#454参照。  */-->
 				<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
 						th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
