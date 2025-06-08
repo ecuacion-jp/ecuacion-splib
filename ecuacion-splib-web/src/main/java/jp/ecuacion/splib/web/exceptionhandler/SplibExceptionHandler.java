@@ -118,17 +118,18 @@ public abstract class SplibExceptionHandler {
    * "{0}"がmessageに含まれる場合はitemName（複数項目ある場合は複数項目）で置き換える。
    */
   @Nonnull
-  private String addItemDisplayNames(@RequireNonnull String message, @Nonnull String... itemIds) {
+  private String addItemDisplayNames(@RequireNonnull String message,
+      @Nonnull String... itemKindIds) {
     if (message.contains("{0}")) {
       message = MessageFormat.format(message,
-          getItemDisplayNames(ObjectsUtil.requireSizeNonZero(itemIds)));
+          getItemDisplayNames(ObjectsUtil.requireSizeNonZero(itemKindIds)));
     }
 
     return message;
   }
 
   @Nonnull
-  private String getItemDisplayNames(@RequireNonnull String[] itemIds) {
+  private String getItemDisplayNames(@RequireNonnull String[] itemKindIds) {
     StringBuilder sb = new StringBuilder();
     final String prependParenthesis = PropertyFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.itemName.prependParenthesis");
@@ -138,11 +139,11 @@ public abstract class SplibExceptionHandler {
         "jp.ecuacion.splib.web.common.message.itemName.separator");
 
     boolean is1stTime = true;
-    for (String itemId : ObjectsUtil.requireNonNull(itemIds)) {
+    for (String itemKindId : ObjectsUtil.requireNonNull(itemKindIds)) {
 
       // itemNameがmessages.propertiesにあったらそれに置き換える
-      if (PropertyFileUtil.hasItemName(itemId)) {
-        itemId = PropertyFileUtil.getItemName(request.getLocale(), itemId);
+      if (PropertyFileUtil.hasItemName(itemKindId)) {
+        itemKindId = PropertyFileUtil.getItemName(request.getLocale(), itemKindId);
       }
 
       if (is1stTime) {
@@ -152,7 +153,7 @@ public abstract class SplibExceptionHandler {
         sb.append(separator);
       }
 
-      sb.append(prependParenthesis + itemId + appendParenthesis);
+      sb.append(prependParenthesis + itemKindId + appendParenthesis);
     }
 
     return sb.toString();
@@ -259,7 +260,7 @@ public abstract class SplibExceptionHandler {
 
         // propertyPaths
         List<String> propertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
-            .map(itemId -> StringUtils.uncapitalize(itemId)).toList();
+            .map(itemKindId -> StringUtils.uncapitalize(itemKindId)).toList();
 
         // Add rootRecord plus dot(.) if BizLogicAppException
         if (saex instanceof BizLogicAppException && propertyPathList.size() > 0
@@ -278,17 +279,17 @@ public abstract class SplibExceptionHandler {
           // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
           // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
           // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
-          List<String> itemIdForNameList = new ArrayList<>();
+          List<String> itemKindIdForNameList = new ArrayList<>();
           for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
             HtmlItem field =
                 recUtil.getHtmlItem(getForms(), getController().getRootRecordName(), propertyPath);
-            itemIdForNameList.add(field.getItemIdFieldForName() == null
-                ? getController().getRootRecordName() + "." + field.getItemIdField()
-                : field.getItemIdFieldForName());
+            itemKindIdForNameList.add(field.getItemKindIdFieldForName() == null
+                ? getController().getRootRecordName() + "." + field.getItemKindIdField()
+                : field.getItemKindIdFieldForName());
           }
 
           message = addItemDisplayNames(message,
-              itemIdForNameList.toArray(new String[itemIdForNameList.size()]));
+              itemKindIdForNameList.toArray(new String[itemKindIdForNameList.size()]));
         }
 
         messagesBean.setErrorMessage(message, propertyPaths);

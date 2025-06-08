@@ -48,14 +48,14 @@ public interface RecordInterface {
   // }
 
   /**
-   * Returns whether the itemId needs comma.
+   * Returns whether the itemKindId needs comma.
    * 
-   * @param itemId itemId
+   * @param itemKindId itemKindId
    * @return boolean
    */
-  default boolean needsCommas(String itemId) {
+  default boolean needsCommas(String itemKindId) {
     HtmlItem item = Arrays.asList(getHtmlItems()).stream()
-        .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e)).get(itemId);
+        .collect(Collectors.toMap(e -> e.getItemKindIdField(), e -> e)).get(itemKindId);
 
     if (item == null || !(item instanceof HtmlItemNumber)) {
       return false;
@@ -90,9 +90,9 @@ public interface RecordInterface {
     }
 
     Map<String, String> displayNameIdMap = Arrays.asList(htmlItems).stream()
-        .collect(Collectors.toMap(e -> e.getItemIdField(),
-            e -> e.getItemIdFieldForName() == null ? e.getItemIdField()
-                : e.getItemIdFieldForName()));
+        .collect(Collectors.toMap(e -> e.getItemKindIdField(),
+            e -> e.getItemKindIdFieldForName() == null ? e.getItemKindIdField()
+                : e.getItemKindIdFieldForName()));
     String displayNameId = displayNameIdMap.get(fieldId);
 
     // htmlItems上で定義がない場合 /
@@ -112,9 +112,10 @@ public interface RecordInterface {
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
     List<String> field1IdList =
-        Arrays.asList(fields1).stream().map(e -> e.getItemIdField()).toList();
+        Arrays.asList(fields1).stream().map(e -> e.getItemKindIdField()).toList();
 
-    for (String field2Id : Arrays.asList(fields2).stream().map(e -> e.getItemIdField()).toList()) {
+    for (String field2Id : Arrays.asList(fields2).stream().map(e -> e.getItemKindIdField())
+        .toList()) {
       if (field1IdList.contains(field2Id)) {
         throw new RuntimeException(
             "'id' of HtmlItem[] duplicated with commonHtmlItems. key: " + field2Id);
@@ -140,7 +141,7 @@ public interface RecordInterface {
     HtmlItem[] htmlItems = getHtmlItems();
     for (HtmlItem field : htmlItems) {
       if (field.getIsNotEmpty(loginState, bean)) {
-        list.add(field.getItemIdField());
+        list.add(field.getItemKindIdField());
       }
     }
 

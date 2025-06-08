@@ -37,7 +37,7 @@ public interface SearchRecordInterface extends RecordInterface {
       if (item instanceof HtmlItemString
           && ((HtmlItemString) item).getStringSearchPatternEnum() != null) {
         HtmlItemString itemStr = (HtmlItemString) item;
-        map.put(item.getItemIdField(), new StringMatchingConditionBean(
+        map.put(item.getItemKindIdField(), new StringMatchingConditionBean(
             itemStr.getStringSearchPatternEnum(), itemStr.isIgnoresCase()));
       }
     }

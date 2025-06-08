@@ -1,4 +1,4 @@
-ecuacion-lib
+ecuacion-splib
 Copyright 2022 ecuacion.jp.
 
 This product includes software developed at
