@@ -17,22 +17,17 @@ package jp.ecuacion.splib.core.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**
- * Provides conigs for core.
+ * Provides configs for core.
  */
 @Configuration
-@PropertySources({
-  @PropertySource(value = "classpath:application_profile.properties"),
-  @PropertySource(value = "classpath:application_core.properties"),
-  @PropertySource(value = "classpath:application_core_profile.properties"),
-  @PropertySource(value = "classpath:application_base.properties"),
-})
 public class SplibCoreConfig {
   
+  /** 
+   * Needs to use {@code @Value}. 
+   */
   @Bean
   PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
     return new PropertySourcesPlaceholderConfigurer();
