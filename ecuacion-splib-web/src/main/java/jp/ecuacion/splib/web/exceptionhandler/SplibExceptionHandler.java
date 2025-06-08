@@ -75,7 +75,7 @@ public abstract class SplibExceptionHandler {
   @Autowired
   HttpServletRequest request;
 
-  @Autowired
+  @Autowired(required = false)
   SplibExceptionHandlerAction actionOnThrowable;
 
   @Autowired
@@ -330,7 +330,9 @@ public abstract class SplibExceptionHandler {
       @Nonnull HttpRequestMethodNotSupportedException exception) {
 
     LogUtil.logSystemError(detailLog, exception);
-    actionOnThrowable.execute(exception);
+    if (actionOnThrowable != null) {
+      actionOnThrowable.execute(exception);
+    }
 
     return new ModelAndView("redirect:/"
         + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
@@ -406,7 +408,9 @@ public abstract class SplibExceptionHandler {
     LogUtil.logSystemError(detailLog, exception);
 
     // 個別appの処理。mail送信など。
-    actionOnThrowable.execute(exception);
+    if (actionOnThrowable != null) {
+      actionOnThrowable.execute(exception);
+    }
 
     Model mdl = getModel() == null ? model : getModel();
     modelAttr.addAllToModel(mdl);
