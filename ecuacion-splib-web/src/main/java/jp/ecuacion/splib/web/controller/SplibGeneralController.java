@@ -83,6 +83,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     }
 
+
+    /**
+     * See functionKind().
+     */
+    private String[] functionKinds;
+
+
     /** 
      * See function().
      */
@@ -105,7 +112,35 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * See rootRecordName().
      */
     @Nullable
-    private String rootRecordName;
+    private String mainRootRecordName;
+
+    /**
+     * Stores {@code functionKind} and returns {@code ControllerContext}.
+     * 
+     * @param functionKinds functionKinds
+     */
+    public ControllerContext functionKinds(String... functionKinds) {
+      this.functionKinds = functionKinds;
+      return this;
+    }
+
+    /**
+     * Returns {@code functionKinds}.
+     * 
+     * <p>{@code functionKind} designates a kind of functions. <br>
+     *     It's used for paths of html files. 
+     *     If the default url path is {@code /public/account/page} 
+     *     and functionKind is {@code master-maintenance}, 
+     *     the resultant URL would be {@code  /public/master-maintenance/account/page}.</p>
+     * 
+     * <p>You can specify multiple clasification strings 
+     *     like {@code "master-maintenance", "account-related-master"}.</p>
+     *     
+     * @return functionKinds functionKinds
+     */
+    public String[] functionKinds() {
+      return functionKinds;
+    }
 
     /**
      * Stores {@code function} and returns {@code ControllerContext}.
@@ -215,14 +250,14 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     /**
      * Stores {@code rootRecordName} and returns {@code ControllerContext}.
      * 
-     * <p>See {@link ControllerContext#rootRecordName()}.</p>
+     * <p>See {@link ControllerContext#mainRootRecordName()}.</p>
      * 
      * @param rootRecordName rootRecordName
      * @return ControllerContext
      */
     @Nonnull
-    public ControllerContext rootRecordName(String rootRecordName) {
-      this.rootRecordName = rootRecordName;
+    public ControllerContext mainRootRecordName(String rootRecordName) {
+      this.mainRootRecordName = rootRecordName;
       return this;
     }
 
@@ -249,8 +284,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @return rootRecordName 
      */
     @Nonnull
-    public String rootRecordName() {
-      return rootRecordName == null ? function : rootRecordName;
+    public String mainRootRecordName() {
+      return mainRootRecordName == null ? function : mainRootRecordName;
     }
   }
 
@@ -353,7 +388,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   public String getRootRecordName() {
-    return context.rootRecordName();
+    return context.mainRootRecordName();
   }
 
   /**
@@ -414,7 +449,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   @ModelAttribute
   private void setParamsToModel(Model model, @AuthenticationPrincipal UserDetails loginUser) {
     model.addAttribute("function", context.function());
-    model.addAttribute("rootRecordName", context.rootRecordName());
+    model.addAttribute("rootRecordName", context.mainRootRecordName());
 
     rolesAndAuthoritiesBean =
         loginUser == null ? new SplibSecurityUtil().getRolesAndAuthoritiesBean()
