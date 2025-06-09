@@ -352,7 +352,7 @@
 				<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
 						th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 						th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
-						th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
+						th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
 						th:object="${__${javaFormName}__}">
 					<div th:replace="~{bootstrap/components :: token('')}"></div>
 					<!--/* controller側からmodelに渡すformm名が間違えている場合にいつもここでエラーになるが、設定したform名が取得できずdebugしているので、
