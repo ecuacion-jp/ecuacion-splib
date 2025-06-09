@@ -218,7 +218,7 @@
 							</div>
 						</th:block>
 						<!--/* itemに紐づくエラーメッセージを個別itemの箇所に表示する場合 */-->
-						<th:block th:if="${showsMessagesLinkedToItemsAtEachField}">
+						<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
 							<ul class="all-error-messages-list-ul">
 								<!--/* itemに紐づかないエラーの表示 */-->
 								<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
@@ -849,7 +849,7 @@
 						<th:block th:replace="${contents}" />
 	
 						<!--/* field messages */-->
-						<th:block th:if="${showsMessagesLinkedToItemsAtEachField}">
+						<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
 							<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${propertyPath}__') != null}"
 								th:classappend="${@optUtil.isForSwitch(options) ? 'mt-1' : ''}"
 								th:each="message : ${messagesBean.getErrorMessages('__${propertyPath}__')}">[[${message}]]</div>

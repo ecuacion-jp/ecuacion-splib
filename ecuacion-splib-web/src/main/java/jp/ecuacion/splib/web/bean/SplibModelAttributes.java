@@ -45,7 +45,7 @@ public class SplibModelAttributes extends HashMap<String, Object> {
 
   private boolean showsMessagesLinkedToItemsAtTheTop = true;
 
-  private boolean showsMessagesLinkedToItemsAtEachField = false;
+  private boolean showsMessagesLinkedToItemsAtEachItem = false;
 
   /**
    * Stores app-common modelAttributes which are not supported by the library.
@@ -131,13 +131,13 @@ public class SplibModelAttributes extends HashMap<String, Object> {
     this.showsMessagesLinkedToItemsAtTheTop = showsMessagesLinkedToItemsAtTheTop;
   }
 
-  public boolean isShowsMessagesLinkedToItemsAtEachField() {
-    return showsMessagesLinkedToItemsAtEachField;
+  public boolean isShowsMessagesLinkedToItemsAtEachItem() {
+    return showsMessagesLinkedToItemsAtEachItem;
   }
 
-  public void setShowsMessagesLinkedToItemsAtEachField(
-      boolean showsMessagesLinkedToItemsAtEachField) {
-    this.showsMessagesLinkedToItemsAtEachField = showsMessagesLinkedToItemsAtEachField;
+  public void setShowsMessagesLinkedToItemsAtEachItem(
+      boolean showsMessagesLinkedToItemsAtEachItem) {
+    this.showsMessagesLinkedToItemsAtEachItem = showsMessagesLinkedToItemsAtEachItem;
   }
 
   /**
@@ -154,7 +154,7 @@ public class SplibModelAttributes extends HashMap<String, Object> {
     model.addAttribute("navbarBgColorAdmin", navbarBgColorAdmin);
     model.addAttribute("bodyBgColor", bodyBgColor);
     model.addAttribute("showsMessagesLinkedToItemsAtTheTop", showsMessagesLinkedToItemsAtTheTop);
-    model.addAttribute("showsMessagesLinkedToItemsAtEachField",
-        showsMessagesLinkedToItemsAtEachField);
+    model.addAttribute("showsMessagesLinkedToItemsAtEachItem",
+        showsMessagesLinkedToItemsAtEachItem);
   }
 }
