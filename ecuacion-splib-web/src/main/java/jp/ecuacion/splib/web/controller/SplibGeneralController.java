@@ -34,6 +34,7 @@ import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
 import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
+import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.util.ValidationUtil;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
@@ -87,8 +88,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     /**
      * See functionKind().
      */
-    private String[] functionKinds;
-
+    private String[] functionKinds = new String[] {};
 
     /** 
      * See function().
@@ -379,6 +379,10 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     this.context = context;
   }
 
+  public String[] getFunctionKinds() {
+    return context.functionKinds();
+  }
+
   public String getFunction() {
     return context.function();
   }
@@ -448,6 +452,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    */
   @ModelAttribute
   private void setParamsToModel(Model model, @AuthenticationPrincipal UserDetails loginUser) {
+    model.addAttribute("functionKindsPathString", context.functionKinds().length == 0 ? ""
+        : (StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/"));
     model.addAttribute("function", context.function());
     model.addAttribute("rootRecordName", context.mainRootRecordName());
 
@@ -540,7 +546,9 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @return html filename
    */
   public String getDefaultHtmlPageName() {
-    return context.function()
+    String functionKindPath = context.functionKinds().length == 0 ? ""
+        : StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/";
+    return functionKindPath + context.function()
         + StringUtils.capitalize(context.htmlFilenamePostfix() == null ? context.subFunction()
             : context.htmlFilenamePostfix());
   }
