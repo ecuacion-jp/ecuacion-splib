@@ -347,7 +347,15 @@
 				<th:block th:replace="${topSpaceContent}" />
 
 				<div class="mt-5"></div>
-				
+
+				<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
+				<th:block th:if="${__${javaFormName}__} == null"
+						th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '. 
+								The reason can be: Form with the name not defined; 
+								Form is defined but not used (not set in the generics parameter of the controller definition sentence);'}">
+					[[${@exUtil.systemError(msg)}]]
+				</th:block>
+
 				<!--/* subFunction, ctrlSubFunctionの挙動については#454参照。  */-->
 				<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
 						th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
