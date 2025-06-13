@@ -272,7 +272,11 @@ public abstract class SplibExceptionHandler {
         String[] propertyPaths = propertyPathList.toArray(new String[propertyPathList.size()]);
 
         // message
-        String message = ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale()).get(0);
+        Boolean msgAtItem =
+            (Boolean) getModel().getAttribute(SplibWebConstants.KEY_MODEL_MESSAGES_AT_ITEMS);
+        boolean needsItemName = msgAtItem == null ? true : !msgAtItem;
+        String message = ExceptionUtil
+            .getAppExceptionMessageList(saex, request.getLocale(), needsItemName).get(0);
 
         if (saex instanceof ValidationAppException) {
           // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、

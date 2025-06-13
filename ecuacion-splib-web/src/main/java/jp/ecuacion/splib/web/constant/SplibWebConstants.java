@@ -31,4 +31,5 @@ public class SplibWebConstants {
   public static final String KEY_MESSAGES_BEAN = "messagesBean";
   public static final String KEY_MODEL = "model";
   
+  public static final String KEY_MODEL_MESSAGES_AT_ITEMS = "showsMessagesLinkedToItemsAtEachItem";
 }
