@@ -77,10 +77,10 @@ public class MessagesBean {
    * Sets error message.
    * 
    * @param message message
-   * @param itemIds itemIds
+   * @param itemKindIds itemKindIds
    */
-  public void setErrorMessage(String message, String... itemIds) {
-    errorMessageList.add(new ErrorMessageBean(message, itemIds));
+  public void setErrorMessage(String message, String... itemKindIds) {
+    errorMessageList.add(new ErrorMessageBean(message, itemKindIds));
   }
 
   /**
@@ -97,14 +97,14 @@ public class MessagesBean {
   }
 
   /**
-   * Obtains all the messages related to the specified itemId.
+   * Obtains all the messages related to the specified itemKindId.
    */
-  public List<String> getErrorMessages(String itemId) {
-    return getErrorMessageList(itemId);
+  public List<String> getErrorMessages(String itemKindId) {
+    return getErrorMessageList(itemKindId);
   }
 
   /**
-   * Obtains all the messages with itemId specified.
+   * Obtains all the messages with itemKindId specified.
    */
   public List<String> getErrorMessagesLinkedToItems() {
     return errorMessageList.stream().filter(e -> e.getItemNameSet().size() > 0)
@@ -112,7 +112,7 @@ public class MessagesBean {
   }
 
   /**
-   * Obtains all the messages without itemId specified.
+   * Obtains all the messages without itemKindId specified.
    */
   public List<String> getErrorMessagesNotLinkedToItems() {
     return errorMessageList.stream().filter(e -> e.getItemNameSet().size() == 0)
@@ -122,17 +122,17 @@ public class MessagesBean {
   /**
    * Returns invalid class string if the item is invalid.
    * 
-   * @param itemId itemId
+   * @param itemKindId itemKindId
    * @return String
    */
-  public String isValid(String itemId) {
-    return (getErrorMessageList(itemId).size() > 0) ? "is-invalid" : "";
+  public String isValid(String itemKindId) {
+    return (getErrorMessageList(itemKindId).size() > 0) ? "is-invalid" : "";
   }
 
   /**
-   * Stores the pair of error messages and itemIds.
+   * Stores the pair of error messages and itemKindIds.
    * 
-   * <p>The pair can be (message : itemId) = 1:1, 1:0, 1:n.</p>
+   * <p>The pair can be (message : itemKindId) = 1:1, 1:0, 1:n.</p>
    */
   static class ErrorMessageBean {
     private String message;
@@ -147,7 +147,7 @@ public class MessagesBean {
       this.message = message;
       this.itemNameSet =
           new HashSet<String>(Arrays.asList(itemName == null ? new String[] {} : itemName).stream()
-              .map(itemId -> StringUtils.uncapitalize(itemId)).toList());
+              .map(itemKindId -> StringUtils.uncapitalize(itemKindId)).toList());
     }
 
     public String getMessage() {

@@ -128,7 +128,14 @@ public class SplibThymeleafOptionUtil {
     return optionMap(options).containsKey(key.toLowerCase());
   }
 
-  private String getValue(String options, String key) {
+  /**
+   * Returns value obtained from the key.
+   * 
+   * @param options options
+   * @param key key
+   * @return value
+   */
+  public String getValue(String options, String key) {
     return optionMap(options).get(key.toLowerCase());
   }
 
@@ -250,34 +257,5 @@ public class SplibThymeleafOptionUtil {
    */
   public boolean hasThSortable(String options) {
     return hasKey(options, "thSortable");
-  }
-
-  /**
-   * Returns whether the options contain full.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean isWidthFull(String options) {
-    return widthCheck(options, "full");
-  }
-
-  /**
-   * Returns whether the options contain half.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean isWidthHalf(String options) {
-    return widthCheck(options, "half");
-  }
-
-  private boolean widthCheck(String options, String value) {
-    String key = "width";
-    if (!hasKey(options, key)) {
-      return false;
-    }
-
-    return getValue(options, key).equalsIgnoreCase(value) ? true : false;
   }
 }

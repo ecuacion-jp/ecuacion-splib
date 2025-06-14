@@ -34,6 +34,7 @@ import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
 import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
+import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.util.ValidationUtil;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
@@ -83,6 +84,12 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     }
 
+
+    /**
+     * See functionKind().
+     */
+    private String[] functionKinds = new String[] {};
+
     /** 
      * See function().
      */
@@ -105,7 +112,35 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * See rootRecordName().
      */
     @Nullable
-    private String rootRecordName;
+    private String mainRootRecordName;
+
+    /**
+     * Stores {@code functionKind} and returns {@code ControllerContext}.
+     * 
+     * @param functionKinds functionKinds
+     */
+    public ControllerContext functionKinds(String... functionKinds) {
+      this.functionKinds = functionKinds;
+      return this;
+    }
+
+    /**
+     * Returns {@code functionKinds}.
+     * 
+     * <p>{@code functionKind} designates a kind of functions. <br>
+     *     It's used for paths of html files. 
+     *     If the default url path is {@code /public/account/page} 
+     *     and functionKind is {@code master-maintenance}, 
+     *     the resultant URL would be {@code  /public/master-maintenance/account/page}.</p>
+     * 
+     * <p>You can specify multiple clasification strings 
+     *     like {@code "master-maintenance", "account-related-master"}.</p>
+     *     
+     * @return functionKinds functionKinds
+     */
+    public String[] functionKinds() {
+      return functionKinds;
+    }
 
     /**
      * Stores {@code function} and returns {@code ControllerContext}.
@@ -215,14 +250,14 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     /**
      * Stores {@code rootRecordName} and returns {@code ControllerContext}.
      * 
-     * <p>See {@link ControllerContext#rootRecordName()}.</p>
+     * <p>See {@link ControllerContext#mainRootRecordName()}.</p>
      * 
      * @param rootRecordName rootRecordName
      * @return ControllerContext
      */
     @Nonnull
-    public ControllerContext rootRecordName(String rootRecordName) {
-      this.rootRecordName = rootRecordName;
+    public ControllerContext mainRootRecordName(String rootRecordName) {
+      this.mainRootRecordName = rootRecordName;
       return this;
     }
 
@@ -249,8 +284,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @return rootRecordName 
      */
     @Nonnull
-    public String rootRecordName() {
-      return rootRecordName == null ? function : rootRecordName;
+    public String mainRootRecordName() {
+      return mainRootRecordName == null ? function : mainRootRecordName;
     }
   }
 
@@ -344,6 +379,10 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     this.context = context;
   }
 
+  public String[] getFunctionKinds() {
+    return context.functionKinds();
+  }
+
   public String getFunction() {
     return context.function();
   }
@@ -353,7 +392,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   public String getRootRecordName() {
-    return context.rootRecordName();
+    return context.mainRootRecordName();
   }
 
   /**
@@ -413,8 +452,14 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    */
   @ModelAttribute
   private void setParamsToModel(Model model, @AuthenticationPrincipal UserDetails loginUser) {
+    model.addAttribute("functionKindsPathString", context.functionKinds().length == 0 ? ""
+        : (StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/"));
     model.addAttribute("function", context.function());
-    model.addAttribute("rootRecordName", context.rootRecordName());
+
+
+    model.addAttribute("mainRootRecordName", context.mainRootRecordName());
+    // 以下は削除予定
+    model.addAttribute("rootRecordName", context.mainRootRecordName());
 
     rolesAndAuthoritiesBean =
         loginUser == null ? new SplibSecurityUtil().getRolesAndAuthoritiesBean()
@@ -505,7 +550,9 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @return html filename
    */
   public String getDefaultHtmlPageName() {
-    return context.function()
+    String functionKindPath = context.functionKinds().length == 0 ? ""
+        : StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/";
+    return functionKindPath + context.function()
         + StringUtils.capitalize(context.htmlFilenamePostfix() == null ? context.subFunction()
             : context.htmlFilenamePostfix());
   }

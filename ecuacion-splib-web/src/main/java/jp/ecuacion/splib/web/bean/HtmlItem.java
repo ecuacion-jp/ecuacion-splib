@@ -24,12 +24,12 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
  * Stores attributes of each html component which controls the behaviors of it in html pages.
  * 
  * <p>{@code HtmlItem} is a kind of "item". See <a href="https://github.com/ecuacion-jp/ecuacion-jp.github.io/blob/main/documentation/common/naming-convention.md">naming-convention.md</a>
- *     So its ID should consist of itemIdClass and itemIdField.<br>
- *     It complies the rule, but {@code itemIdClass} can be empty.
+ *     So its ID should consist of itemKindIdClass and itemKindIdField.<br>
+ *     It complies the rule, but {@code itemKindIdClass} can be empty.
  *     When it's empty, 
- *     {@code mainRootRecord} in {@code Form} is used as itemIdClass as default.</p>
+ *     {@code mainRootRecord} in {@code Form} is used as itemKindIdClass as default.</p>
  *     
- * <p>Actually itemId cannot designate a unique location. 
+ * <p>Actually itemKindId cannot designate a unique location. 
  *     There can be multiple location as a relation or relation of relation.
  *     To have a way to pinpoint the location of the form, it also has {@code propertyPath}.
  *     It can be empty for normal use, but you can make differences when you want.</p>
@@ -43,17 +43,17 @@ public class HtmlItem {
 
   /**
    * Is an ID which the root record name plus dot (like {@code "acc."}) is removed
-   * from the itemId.
+   * from the itemKindId.
    */
   @Nonnull
-  protected String itemIdField;
+  protected String itemKindIdField;
 
   /**
-   * Is an itemIdField used to display the name of the item.
+   * Is an itemKindIdField used to display the name of the item.
    * 
    * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
    */
-  protected String itemIdFieldForName;
+  protected String itemKindIdFieldForName;
 
   /**
    * Shows whether the field allows empty.
@@ -87,38 +87,38 @@ public class HtmlItem {
    */
   public HtmlItem(String propertyPath) {
     this.propertyPath = propertyPath;
-    this.itemIdField = propertyPath;
+    this.itemKindIdField = propertyPath;
   }
 
   public String getPropertyPath() {
     return propertyPath;
   }
 
-  public String getItemIdField() {
-    return itemIdField;
+  public String getItemKindIdField() {
+    return itemKindIdField;
   }
 
   /**
-   * Sets {@code itemIdFieldForName} and returns this for method chain.
+   * Sets {@code itemKindIdFieldForName} and returns this for method chain.
    * 
-   * @param itemIdFieldForName itemIdFieldForName
+   * @param itemKindIdFieldForName itemKindIdFieldForName
    * @return HtmlItem
    */
-  public HtmlItem itemIdFieldForName(String itemIdFieldForName) {
-    this.itemIdFieldForName = itemIdFieldForName;
+  public HtmlItem itemKindIdFieldForName(String itemKindIdFieldForName) {
+    this.itemKindIdFieldForName = itemKindIdFieldForName;
     return this;
   }
 
   /**
-   * Returns {@code itemIdFieldForName} value.
+   * Returns {@code itemKindIdFieldForName} value.
    * 
    * <p>Its value is {@code null} means 
-   *     the item's original itemId is equal to itemIdFieldForName.</p>
+   *     the item's original itemKindId is equal to itemKindIdFieldForName.</p>
    * 
-   * @return itemIdFieldForName
+   * @return itemKindIdFieldForName
    */
-  public String getItemIdFieldForName() {
-    return itemIdFieldForName;
+  public String getItemKindIdFieldForName() {
+    return itemKindIdFieldForName;
   }
 
   /**

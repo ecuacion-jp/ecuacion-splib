@@ -83,23 +83,24 @@ public abstract class SplibSearchListService
   protected List<? extends SplibRecord> getSortedList(List<? extends SplibRecord> listToSort,
       SplibSearchForm searchForm, String[] needsNumberSortItems) {
 
-    String itemId = searchForm.getSortItemWithDefault();
+    String itemKindId = searchForm.getSortItemWithDefault();
     boolean isDesc = searchForm.getDirection().equals(SplibSearchForm.DIRECTION_DESC);
 
     int directionVal = isDesc ? -1 : 1;
 
-    if (Arrays.asList(needsNumberSortItems).contains(itemId)) {
+    if (Arrays.asList(needsNumberSortItems).contains(itemKindId)) {
       return listToSort.stream()
-          .sorted((rec1, rec2) -> directionVal * (Integer.valueOf((String) rec1.getValue(itemId))
-              .compareTo(Integer.valueOf((String) rec2.getValue(itemId)))))
+          .sorted(
+              (rec1, rec2) -> directionVal * (Integer.valueOf((String) rec1.getValue(itemKindId))
+                  .compareTo(Integer.valueOf((String) rec2.getValue(itemKindId)))))
           .toList();
 
     } else {
       return listToSort.stream()
-          // #658: rec1.getValue(itemId) がnullの場合を考慮
-          .sorted((rec1, rec2) -> rec1.getValue(itemId) == null ? -1 * directionVal
-              : directionVal
-                  * ((String) rec1.getValue(itemId)).compareTo((String) rec2.getValue(itemId)))
+          // #658: rec1.getValue(itemKindId) がnullの場合を考慮
+          .sorted((rec1, rec2) -> rec1.getValue(itemKindId) == null ? -1 * directionVal
+              : directionVal * ((String) rec1.getValue(itemKindId))
+                  .compareTo((String) rec2.getValue(itemKindId)))
           .toList();
     }
   }

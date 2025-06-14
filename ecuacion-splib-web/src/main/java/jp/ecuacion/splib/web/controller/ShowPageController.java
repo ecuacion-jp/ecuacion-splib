@@ -72,7 +72,7 @@ public class ShowPageController extends SplibBaseController {
   public String page(Model model, @RequestParam("id") String page) throws IOException {
 
     // no checkだと脆弱性をつかれる可能性があるので、使用可能文字は限定しておく。
-    String expression = "^[a-zA-Z0-9_]*$";
+    String expression = "^[a-zA-Z0-9_\\-/]*$";
     if (!page.matches(expression)) {
       // システムエラーにすると面倒なので、home的なページへのredirectとしておく。
       // /public/home/pageとしているが、存在しなければredirectされて適切なページに飛ぶはず・・

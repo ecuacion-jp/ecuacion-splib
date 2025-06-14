@@ -40,10 +40,6 @@ public class SplibRecordUtil {
    */
   public HtmlItem getHtmlItem(SplibGeneralForm form, String rootRecordName,
       String itemPropertyPath) {
-    // if (!StringUtils.capitalize(itemId).startsWith(StringUtils.capitalize(rootRecordId) + ".")) {
-    // throw new RuntimeException("itemId: " + itemId + " does not start with rootRecordId: "
-    // + rootRecordId + " plus dot(.).");
-    // }
 
     return getHtmlItem(((RecordInterface) form.getRootRecord(rootRecordName)).getHtmlItems(),
         rootRecordName, itemPropertyPath);
@@ -58,11 +54,11 @@ public class SplibRecordUtil {
    * 
    * @param forms forms
    * @param rootRecordId rootRecordId
-   * @param itemId itemId
+   * @param itemKindId itemKindId
    * @return HtmlItem
    */
-  public HtmlItem getHtmlItem(SplibGeneralForm[] forms, String rootRecordId, String itemId) {
-    return getHtmlItem(forms[0], rootRecordId, itemId);
+  public HtmlItem getHtmlItem(SplibGeneralForm[] forms, String rootRecordId, String itemKindId) {
+    return getHtmlItem(forms[0], rootRecordId, itemKindId);
   }
 
   /**
@@ -75,7 +71,7 @@ public class SplibRecordUtil {
   public HtmlItem getHtmlItem(HtmlItem[] htmlItems, String rootRecordName,
       String itemPropertyPath) {
     Map<String, HtmlItem> map = Arrays.asList(htmlItems).stream()
-        .collect(Collectors.toMap(e -> e.getItemIdField(), e -> e));
+        .collect(Collectors.toMap(e -> e.getItemKindIdField(), e -> e));
 
     HtmlItem field = map.get(itemPropertyPath);
 

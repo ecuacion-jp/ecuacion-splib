@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
+import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
@@ -128,8 +129,8 @@ public class ReturnUrlBean {
       @RequireNonnull SplibUtil util, @RequireNonnull String subFunction,
       @RequireNonnull String page) {
     path = getPathFromParams(ObjectsUtil.requireNonNull(controller),
-        ObjectsUtil.requireNonNull(util).getLoginState(),
-        ObjectsUtil.requireNonNull(subFunction), ObjectsUtil.requireNonNull(page));
+        ObjectsUtil.requireNonNull(util).getLoginState(), ObjectsUtil.requireNonNull(subFunction),
+        ObjectsUtil.requireNonNull(page));
 
     putParamList(controller.getParamListOnRedirectToSelf());
   }
@@ -191,10 +192,12 @@ public class ReturnUrlBean {
    */
   private String getPathFromParams(SplibGeneralController<?> ctrl, String loginState,
       String subFunction, String page) {
-
+    String functionKindPath = ctrl.getFunctionKinds().length == 0 ? ""
+        : (StringUtil.getSeparatedValuesString(ctrl.getFunctionKinds(), "/") + "/");
     String subFuncPart = (subFunction.equals("") ? "" : "/" + subFunction);
 
-    return "/" + loginState + "/" + ctrl.getFunction() + subFuncPart + "/" + page;
+    return "/" + loginState + "/" + functionKindPath + ctrl.getFunction() + subFuncPart + "/"
+        + page;
   }
 
   /**

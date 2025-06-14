@@ -33,11 +33,13 @@
 	 */-->
 
 	<div th:fragment="title(title, options)" th:remove="tag">
-		<div class="text-dark fs-3 fw-bold mt-3 mb-3" th:text="${title}"></div>
+		<div class="text-dark fs-3 fw-bold mt-3 mb-5" th:text="${title}"></div>
 	</div>
 
 	<div th:fragment="titleDesc(desc, options)" th:remove="tag">
-		<div class="text-dark mt-5 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
+		<th:block th:if="${!#strings.isEmpty(desc)}">
+			<div class="text-dark mb-5" style="white-space: pre-wrap;" th:text="${desc}"></div>
+		</th:block>
 	</div>
 
 	<div th:fragment="subtitle(subtitle, options)" th:remove="tag">
@@ -45,8 +47,7 @@
 	</div>
 
 	<div th:fragment="subtitleDesc(desc, options)" th:remove="tag">
-			<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}">
-			</div>
+		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
 	</div>
 
 	<div th:fragment="subsubtitle(subsubtitle, options)" th:remove="tag">
@@ -56,8 +57,20 @@
 	</div>
 
 	<div th:fragment="subsubtitleDesc(desc, options)" th:remove="tag">
-			<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}">
+		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
+	</div>
+
+	<div th:fragment="paragraph(desc, options)" th:remove="tag">
+		<div class="text-dark mt-4" style="white-space: pre-wrap;" th:text="${desc}"></div>
+	</div>
+
+	<div th:fragment="referenceBox(title, desc, options)" th:remove="tag">
+		<div class="text-dark mt-4">
+			<th:block th:if="${!#strings.isEmpty(title)}"><code  class="text-dark" th:text="'[' + ${title} + ']'"></code></th:block>
+			<div class="border ps-3 pe-3" style="background-color: #ffffe0">
+				<pre class="mb-0"><code><div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div></code></pre>
 			</div>
+		</div>
 	</div>
 		
 	<div th:fragment=horizontalLine(options) th:remove="tag">
@@ -80,7 +93,7 @@
 	
 	<!-- 自由なテキスト・htmlを入力。統一の文字色・フォントなどを使用する機能のみ保持。本component自体には何かの表示機能はない。 -->
 	<div th:fragment="freeSpace(content, options)" th:remove="tag">
-		<div class="text-dark mt-3">
+		<div class="text-dark">
 			<th:block th:replace="${content}" />
 		</div>
 	</div>
@@ -176,41 +189,48 @@
 	 
 	<!--/* messages */-->
 	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
-		<!-- messages from url parameter -->
-		<div th:replace="~{bootstrap/components :: freeSpace(~{::free-space-login-messages}, '')}"></div>
-		<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
-			<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
-			<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
-			<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
-			<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
-		</div></th:block>
-		<!-- messages from ${messagesBean} -->
-		<div class="mt-5" th:object="${messagesBean}">
-			<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
-				<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-				<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-			</div>
+		<div class="mt-5 mb-5">
+			<!-- messages from url parameter -->
 			<div class="all-error-messages-list-wrapper text-danger">
-				<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
-					<!--/* itemに紐づくエラーメッセージをtopに表示する場合 */-->
-					<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
-						<div class="all-error-messages-list-ul">
-							<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessages})}"></div>
-						</div>
-					</th:block>
-					<!--/* itemに紐づくエラーメッセージを個別itemの箇所に表示する場合 */-->
-					<th:block th:if="${showsMessagesLinkedToItemsAtEachField}">
-						<ul class="all-error-messages-list-ul">
-							<!--/* itemに紐づかないエラーの表示 */-->
-							<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
-								<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessagesNotLinkedToItems})}"></div>
-							</th:block>
-							<!--/* itemに紐づくエラーが存在することを示すメッセージの表示 */-->
-							<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
-								<div th:replace="~{bootstrap/components :: displayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
-							</th:block>
-						</ul>
-					</th:block>
+				<div class="bg-color-msg-error-bg p-2 rounded-1" 
+						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null}">
+					<div th:replace="~{bootstrap/components :: freeSpace(~{::free-space-login-messages}, '')}"></div>
+				</div>
+			</div>
+			<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
+				<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
+				<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
+				<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
+				<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
+			</div></th:block>
+			<!-- messages from ${messagesBean} -->
+			<div th:object="${messagesBean}">
+				<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
+					<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
+					<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
+				</div>
+				<div class="all-error-messages-list-wrapper text-danger">
+					<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
+						<!--/* itemに紐づくエラーメッセージをtopに表示する場合 */-->
+						<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
+							<div class="all-error-messages-list-ul">
+								<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessages})}"></div>
+							</div>
+						</th:block>
+						<!--/* itemに紐づくエラーメッセージを個別itemの箇所に表示する場合 */-->
+						<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
+							<ul class="all-error-messages-list-ul">
+								<!--/* itemに紐づかないエラーの表示 */-->
+								<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
+									<div th:replace="~{bootstrap/components :: displayMessages(*{errorMessagesNotLinkedToItems})}"></div>
+								</th:block>
+								<!--/* itemに紐づくエラーが存在することを示すメッセージの表示 */-->
+								<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
+									<div th:replace="~{bootstrap/components :: displayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
+								</th:block>
+							</ul>
+						</th:block>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -244,13 +264,7 @@
 			</th:block>
 		</table>
 	</div>
-	
-	
-	
-	
-	
-				
-						
+
 	<div th:fragment="warnMessage(options)" th:remove="tag">
 		<div th:object="${messagesBean}">
 			<th:block th:if="*{warnMessage != null}">
@@ -327,16 +341,27 @@
 	<div th:fragment="generalForm(formContent, topSpaceContent, bottomSpaceContent
 			, formMethod, multipart, subFunction, versionFieldName, versionInitialValue, options)" th:remove="tag">
 		<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
-			<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')}">
+			<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')},
+					javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
 
 				<th:block th:replace="${topSpaceContent}" />
+
+				<div class="mt-5"></div>
+
+				<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
+				<th:block th:if="${__${javaFormName}__} == null"
+						th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '. 
+								The reason can be: Form with the name not defined; 
+								Form is defined but not used (not set in the generics parameter of the controller definition sentence);'}">
+					[[${@exUtil.systemError(msg)}]]
+				</th:block>
 
 				<!--/* subFunction, ctrlSubFunctionの挙動については#454参照。  */-->
 				<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
 						th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 						th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
-						th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
-						th:object="${__${function + #strings.capitalize(subFunction) + 'Form'}__}">
+						th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
+						th:object="${__${javaFormName}__}">
 					<div th:replace="~{bootstrap/components :: token('')}"></div>
 					<!--/* controller側からmodelに渡すformm名が間違えている場合にいつもここでエラーになるが、設定したform名が取得できずdebugしているので、
 					       赤字でエラー表示しつつform名を出力 */-->
@@ -809,16 +834,22 @@
 	 */-->
 	
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<!--/* options: 
+			- id		arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
+			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
+	*/-->
 	<div th:fragment="inputComponentExternalFrame(propertyPathWithoutRootRecord, contents, options)" th:remove="tag">
 		<th:block th:with="propertyPathClass=${propertyPathWithoutRootRecord.contains('.') 
 				? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
 				propertyPathField=${propertyPathWithoutRootRecord.contains('.') 
 				? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord},
-				itemIdClass=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : rootRecordName}">
-			<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemId=${itemIdClass + '.' + propertyPathField}">
+				itemKindIdClass=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : rootRecordName}">
+			<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemKindIdClass + '.' + propertyPathField}">
 				<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
 						inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
-					<div class="mb-4" th:classappend="${@optUtil.isWidthFull(options)} ? 'col-12' : (${@optUtil.isWidthHalf(options)} ? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
+					<div class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
+							? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
+							? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
 
 						<!--/* label */-->
 						<th:block th:with="displayName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
@@ -832,7 +863,7 @@
 						<th:block th:replace="${contents}" />
 	
 						<!--/* field messages */-->
-						<th:block th:if="${showsMessagesLinkedToItemsAtEachField}">
+						<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
 							<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${propertyPath}__') != null}"
 								th:classappend="${@optUtil.isForSwitch(options) ? 'mt-1' : ''}"
 								th:each="message : ${messagesBean.getErrorMessages('__${propertyPath}__')}">[[${message}]]</div>
