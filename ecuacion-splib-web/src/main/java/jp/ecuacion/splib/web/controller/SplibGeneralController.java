@@ -455,6 +455,10 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     model.addAttribute("functionKindsPathString", context.functionKinds().length == 0 ? ""
         : (StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/"));
     model.addAttribute("function", context.function());
+
+
+    model.addAttribute("mainRootRecordName", context.mainRootRecordName());
+    // 以下は削除予定
     model.addAttribute("rootRecordName", context.mainRootRecordName());
 
     rolesAndAuthoritiesBean =
