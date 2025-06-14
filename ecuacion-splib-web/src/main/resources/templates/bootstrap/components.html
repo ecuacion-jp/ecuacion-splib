@@ -834,6 +834,10 @@
 	 */-->
 	
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<!--/* options: 
+			- id		arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
+			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
+	*/-->
 	<div th:fragment="inputComponentExternalFrame(propertyPathWithoutRootRecord, contents, options)" th:remove="tag">
 		<th:block th:with="propertyPathClass=${propertyPathWithoutRootRecord.contains('.') 
 				? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
@@ -843,7 +847,9 @@
 			<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemKindIdClass + '.' + propertyPathField}">
 				<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
 						inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
-					<div class="mb-4" th:classappend="${@optUtil.isWidthFull(options)} ? 'col-12' : (${@optUtil.isWidthHalf(options)} ? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
+					<div class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
+							? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
+							? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
 
 						<!--/* label */-->
 						<th:block th:with="displayName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
