@@ -49,11 +49,11 @@ public class HtmlItem {
   protected String itemKindIdField;
 
   /**
-   * Is an itemKindIdField used to display the name of the item.
+   * Is a key used to obtain the name of the item.
    * 
    * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
    */
-  protected String itemKindIdFieldForName;
+  protected String itemNameKey;
 
   /**
    * Shows whether the field allows empty.
@@ -99,26 +99,26 @@ public class HtmlItem {
   }
 
   /**
-   * Sets {@code itemKindIdFieldForName} and returns this for method chain.
+   * Sets {@code itemNameKey} and returns this for method chain.
    * 
-   * @param itemKindIdFieldForName itemKindIdFieldForName
+   * @param itemNameKey itemNameKey
    * @return HtmlItem
    */
-  public HtmlItem itemKindIdFieldForName(String itemKindIdFieldForName) {
-    this.itemKindIdFieldForName = itemKindIdFieldForName;
+  public HtmlItem itemNameKey(String itemNameKey) {
+    this.itemNameKey = itemNameKey;
     return this;
   }
 
   /**
-   * Returns {@code itemKindIdFieldForName} value.
+   * Returns {@code itemNameKey} value.
    * 
    * <p>Its value is {@code null} means 
-   *     the item's original itemKindId is equal to itemKindIdFieldForName.</p>
+   *     the item's original itemKindId is equal to itemNameKey.</p>
    * 
    * @return itemKindIdFieldForName
    */
-  public String getItemKindIdFieldForName() {
-    return itemKindIdFieldForName;
+  public String getItemNameKey() {
+    return itemNameKey;
   }
 
   /**

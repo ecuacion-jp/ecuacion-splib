@@ -36,8 +36,8 @@ public class HtmlItemNumber extends HtmlItem {
   }
 
   @Override
-  public HtmlItemNumber itemKindIdFieldForName(String itemKindIdFieldForName) {
-    return (HtmlItemNumber) super.itemKindIdFieldForName(itemKindIdFieldForName);
+  public HtmlItemNumber itemNameKey(String itemKindIdFieldForName) {
+    return (HtmlItemNumber) super.itemNameKey(itemKindIdFieldForName);
   }
 
   @Override

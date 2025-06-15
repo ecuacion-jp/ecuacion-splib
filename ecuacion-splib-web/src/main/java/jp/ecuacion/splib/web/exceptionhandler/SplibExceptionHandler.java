@@ -283,17 +283,17 @@ public abstract class SplibExceptionHandler {
           // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
           // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
           // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
-          List<String> itemKindIdForNameList = new ArrayList<>();
+          List<String> itemNameKeyList = new ArrayList<>();
           for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
-            HtmlItem field =
+            HtmlItem item =
                 recUtil.getHtmlItem(getForms(), getController().getRootRecordName(), propertyPath);
-            itemKindIdForNameList.add(field.getItemKindIdFieldForName() == null
-                ? getController().getRootRecordName() + "." + field.getItemKindIdField()
-                : field.getItemKindIdFieldForName());
+            itemNameKeyList.add(item.getItemNameKey() == null
+                ? getController().getRootRecordName() + "." + item.getItemKindIdField()
+                : item.getItemNameKey());
           }
 
           message = addItemDisplayNames(message,
-              itemKindIdForNameList.toArray(new String[itemKindIdForNameList.size()]));
+              itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
         }
 
         messagesBean.setErrorMessage(message, propertyPaths);
