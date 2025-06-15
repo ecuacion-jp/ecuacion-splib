@@ -91,8 +91,8 @@ public interface RecordInterface {
 
     Map<String, String> displayNameIdMap = Arrays.asList(htmlItems).stream()
         .collect(Collectors.toMap(e -> e.getItemKindIdField(),
-            e -> e.getItemKindIdFieldForName() == null ? e.getItemKindIdField()
-                : e.getItemKindIdFieldForName()));
+            e -> e.getItemNameKey() == null ? e.getItemKindIdField()
+                : e.getItemNameKey()));
     String displayNameId = displayNameIdMap.get(fieldId);
 
     // htmlItems上で定義がない場合 /
