@@ -24,78 +24,146 @@
 	
 	<!--/* 
 		###
-		### 共通components.
+		### common components.
 		###
 	 */-->
 
 	<!--/* 
-		### 静的表示用components.
+		### display message components.
 	 */-->
 
+	<!--/* internal common display message component. 
+		'title' and 'message' can be the key to the message.properties or item_names.properties, 
+		or if it does not exist in properties files, it shows the string directly.
+	*/-->
+	<div th:fragment="displayMessageComponentExternalFrame(contents, options)" th:remove="tag">
+		<div class="text-dark" 
+				th:with="titleString=${@msgUtil.get(#locale, title)},
+				messageString=${@msgUtil.get(#locale, message)}">
+
+			<!--/* content */-->
+			<th:block th:replace="${contents}" />
+			
+		</div>
+	</div>
+
+	<!--/* title */-->
 	<div th:fragment="title(title, options)" th:remove="tag">
-		<div class="text-dark fs-3 fw-bold mt-3 mb-5" th:text="${title}"></div>
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::titleInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="titleInternal" th:remove="tag">
+			<div class="fs-3 fw-bold mt-3 mb-5" th:text="${titleString}"></div>
+		</div></th:block>
 	</div>
 
-	<div th:fragment="titleDesc(desc, options)" th:remove="tag">
-		<th:block th:if="${!#strings.isEmpty(desc)}">
-			<div class="text-dark mb-5" style="white-space: pre-wrap;" th:text="${desc}"></div>
-		</th:block>
+	<!--/* titleDesc */-->
+	<!--/* It's placed above the message space, so it does not seem very useful. Maybe it will become deprecated in the future. */-->
+	<div th:fragment="titleDesc(message, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::titleDescInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="titleDescInternal" th:remove="tag">
+			<th:block th:if="${!#strings.isEmpty(messageString)}">
+				<div class="mb-5" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+			</th:block>
+		</div></th:block>
 	</div>
 
-	<div th:fragment="subtitle(subtitle, options)" th:remove="tag">
-		<div class="text-dark border-5 border-color-subtitle fs-5 fw-bold mt-5 mb-3 pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${subtitle}"></div>
+	<!--/* subtitle  */-->
+	<div th:fragment="subtitle(title, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::subtitleInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="subtitleInternal" th:remove="tag">
+			<div class="border-5 border-color-subtitle fs-5 fw-bold mt-5 mb-3 pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
+		</div></th:block>
 	</div>
 
-	<div th:fragment="subtitleDesc(desc, options)" th:remove="tag">
-		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
-	</div>
+	<!--/* paragraphWithSubtitle */-->
+	<div th:fragment="paragraphWithSubtitle(title, message, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::paragraphWithSubtitleInternal}, ${options})}"></div>
 
-	<div th:fragment="subsubtitle(subsubtitle, options)" th:remove="tag">
-		<div class="mt-5 mb-3 pt-1 pb-1 ps-3">
-			<span class="text-color-subtitle me-3 fs-7 fw-bold">-︎</span><span class="text-dark fs-5 fw-bold" th:text="${subsubtitle}"></span>
-		</div>
-	</div>
-
-	<div th:fragment="subsubtitleDesc(desc, options)" th:remove="tag">
-		<div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div>
-	</div>
-
-	<div th:fragment="paragraph(desc, options)" th:remove="tag">
-		<div class="text-dark mt-4" style="white-space: pre-wrap;" th:text="${desc}"></div>
-	</div>
-
-	<div th:fragment="referenceBox(title, desc, options)" th:remove="tag">
-		<div class="text-dark mt-4">
-			<th:block th:if="${!#strings.isEmpty(title)}"><code  class="text-dark" th:text="'[' + ${title} + ']'"></code></th:block>
-			<div class="border ps-3 pe-3" style="background-color: #ffffe0">
-				<pre class="mb-0"><code><div class="text-dark mt-3 mb-3" style="white-space: pre-wrap;" th:text="${desc}"></div></code></pre>
-			</div>
-		</div>
-	</div>
-		
-	<div th:fragment=horizontalLine(options) th:remove="tag">
-		<hr class="mt-4 mb-4">
-	</div>
-
-	<!-- 枠で囲んだ表示を作る。複数の機能を並列で並べる場合の使用を想定。 -->
-	<div th:fragment="box(boxContent, boxTitle, boxDesc, options)" th:remove="tag">
-		<div class="border text-dark mt-3">
-			<div class="m-3">
-				<div class="fs-4 mb-3" th:text="${boxTitle}"></div>
-				<div style="white-space: pre-wrap;" th:text="${boxDesc}"></div>
-				<br>
-				
-				<th:block th:replace="${boxContent}" />
-				 
-			</div>
-		</div>
+		<th:block th:if="false"><div th:fragment="paragraphWithSubtitleInternal" th:remove="tag">
+ 			<div th:replace="~{bootstrap/components :: subtitleInternal}"></div>
+			<div class="mt-3 mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+		</div></th:block>
 	</div>
 	
-	<!-- 自由なテキスト・htmlを入力。統一の文字色・フォントなどを使用する機能のみ保持。本component自体には何かの表示機能はない。 -->
+	<!--/* subtitle  */-->
+	<div th:fragment="subsubtitle(title, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::subsubtitleInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="subsubtitleInternal" th:remove="tag">
+			<div class="mt-5 mb-3 pt-1 pb-1 ps-3">
+				<span class="text-color-subtitle me-3 fs-7 fw-bold">-︎</span><span class="fs-5 fw-bold" th:text="${titleString}"></span>
+			</div>
+		</div></th:block>
+	</div>
+
+	<!--/* paragraphWithSubsubtitle */-->
+	<div th:fragment="paragraphWithSubsubtitle(title, message, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::paragraphWithSubsubtitleInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="paragraphWithSubsubtitleInternal" th:remove="tag">
+ 			<div th:replace="~{bootstrap/components :: subsubtitleInternal}"></div>
+			<div class="mt-3 mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+		</div></th:block>
+	</div>
+	
+	<!--/* paragraph */-->
+	<div th:fragment="paragraph(message, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::paragraphInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="paragraphInternal" th:remove="tag">
+			<div class="mt-4" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+		</div></th:block>
+	</div>
+	
+	<!--/* referenceBox */-->
+	<div th:fragment="referenceBox(title, message, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::referenceBoxInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="referenceBoxInternal" th:remove="tag">
+			<div class="text-dark mt-4">
+				<th:block th:if="${!#strings.isEmpty(titleString)}"><code  class="text-dark" th:text="'[' + ${titleString} + ']'"></code></th:block>
+				<div class="border ps-3 pe-3" style="background-color: #ffffe0">
+					<pre class="mb-0"><code><div class="mt-3 mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div></code></pre>
+				</div>
+			</div>
+		</div></th:block>
+	</div>
+
+	<!--/* box. space enclosed by a frame. */-->
+	<div th:fragment="box(boxContent, title, message, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::boxInternal(${boxContent})}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="boxInternal(boxContent)" th:remove="tag">
+			<div class="border mt-3">
+				<div class="m-3">
+					<div class="fs-4 mb-3" th:text="${titleString}"></div>
+					<div style="white-space: pre-wrap;" th:text="${messageString}"></div>
+					<br>
+					
+					<th:block th:replace="${boxContent}" />
+					 
+				</div>
+			</div>
+		</div></th:block>
+	</div>
+	
+	<!--/* freeSpace. You can input free text / html. It is used for commonize color and font. */-->
 	<div th:fragment="freeSpace(content, options)" th:remove="tag">
-		<div class="text-dark">
-			<th:block th:replace="${content}" />
-		</div>
+ 		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::freeSpaceInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="freeSpaceInternal" th:remove="tag">
+				<th:block th:replace="${content}" />
+		</div></th:block>
+	</div>
+	
+	<!--/* 
+		### shape components.
+	 */-->
+	
+	<div th:fragment=horizontalLine(options) th:remove="tag">
+		<hr class="mt-4 mb-4">
 	</div>
 	
 	<!--/* 
@@ -833,7 +901,7 @@
 		###
 	 */-->
 	
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<!--/* internal common input component. */-->
 	<!--/* options: 
 			- id		arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
 			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
@@ -1021,23 +1089,21 @@
 		<div th:replace="~{bootstrap/components :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::inputComponentSelectInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="inputComponentSelectInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<th:block th:with="labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
-				<!--/* selectにはreadonlyが存在しないため、disabledを使用 */-->
-				<th:block th:if="${@optUtil.isReadOnly(options)}">
-					<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? propertyPath : null}" th:name="${propertyPath}" th:value="${inputValue}">
-				</th:block>
-				<select th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
-						class="form-select" th:classappend="${messagesBean.isValid(propertyPath)}"
-						th:disabled="${@optUtil.isReadOnly(options)}"
-						th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
-						th:data-html-form-name="${htmlFormName}"
-						onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
-					<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
-					<th:block th:each="pair : ${pairs}">
-						<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
-					</th:block>
-				</select>
+			<!--/* selectにはreadonlyが存在しないため、disabledを使用 */-->
+			<th:block th:if="${@optUtil.isReadOnly(options)}">
+				<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? propertyPath : null}" th:name="${propertyPath}" th:value="${inputValue}">
 			</th:block>
+			<select th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
+					class="form-select" th:classappend="${messagesBean.isValid(propertyPath)}"
+					th:disabled="${@optUtil.isReadOnly(options)}"
+					th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
+					th:data-html-form-name="${htmlFormName}"
+					onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
+				<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
+				<th:block th:each="pair : ${pairs}">
+					<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
+				</th:block>
+			</select>
 		</div></th:block>
 	</div>
 	
