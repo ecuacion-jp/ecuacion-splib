@@ -73,7 +73,7 @@
  		<div th:replace="~{bootstrap/components :: displayMessageComponentExternalFrame(~{::subtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subtitleInternal" th:remove="tag">
-			<div class="border-5 border-color-subtitle fs-5 fw-bold mt-5 mb-3 pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
+			<div class="border-5 border-color-subtitle fs-5 fw-bold mt-5 pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
 		</div></th:block>
 	</div>
 
@@ -463,12 +463,12 @@
 	 */-->
 
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="searchComponentLabel(itemName, postfix, options)" th:remove="tag">
-		<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
-				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
+	<div th:fragment="searchComponentLabel(propertyPathWithoutRootRecord, postfix, options)" th:remove="tag">
+		<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
+				fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
 			<th:block th:with="labelRecordName=${#strings.contains(recordName, '.') ? #strings.substring(recordName, #strings.indexOf(recordName, '.') + 1) : recordName}">
 				<label th:for="${id}" class="form-label text-dark" 
-						th:with="labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemName}__')}">
+						th:with="labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
 					[[#{__${labelFieldName}__}]] [[${postfix}]]
 				</label>
 			</th:block>
@@ -477,22 +477,22 @@
 	
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="searchComponentExternalFrame(propertyPath, contents, labelPostfix, options)" th:remove="tag">
-		<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
-				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
+		<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
+				fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
 			<th:block th:with="id=${recordName + '.' + fieldName},value=*{__${recordName + '.' + fieldName}__}">
 				<div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-					<div th:replace="~{bootstrap/components :: searchComponentLabel(${itemName}, ${labelPostfix}, ${options})}"></div>
+					<div th:replace="~{bootstrap/components :: searchComponentLabel(${propertyPathWithoutRootRecord}, ${labelPostfix}, ${options})}"></div>
 					<th:block th:replace="${contents}" />
 				</div>
 			</th:block>
 		</th:block>
 	</div>
 	
-	<div th:fragment="searchText(itemName, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${itemName}, ~{::searchTextInternal(${itemName}, 
-				${options})}, *{__${rootRecordName}__.getSearchPatternComment(#locale, '__${itemName}__')}, ${options})}"></div>
+	<div th:fragment="searchText(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::searchTextInternal(${propertyPathWithoutRootRecord}, 
+				${options})}, *{__${rootRecordName}__.getSearchPatternComment(#locale, '__${propertyPathWithoutRootRecord}__')}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchTextInternal(itemName, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchTextInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
 			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}"
 				th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${recordName}__.getStringLength('__${fieldName}__')}"
@@ -500,10 +500,10 @@
 		</div></th:block>
 	</div>
 
-	<div th:fragment="searchNumber(itemName, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${itemName}, ~{::searchNumberInternal(${itemName}, ${options})}, '',  ${options})}"></div>
+	<div th:fragment="searchNumber(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::searchNumberInternal(${propertyPathWithoutRootRecord}, ${options})}, '',  ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchNumberInternal(itemName, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchNumberInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
 			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
 				class="text-end"
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}"
@@ -512,19 +512,19 @@
 		</div></th:block>
 	</div>
 	 
-	<div th:fragment="searchDate(itemName, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${itemName}, ~{::searchDateInternal(${itemName}, ${options})}, '',  ${options})}"></div>
+	<div th:fragment="searchDate(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::searchDateInternal(${propertyPathWithoutRootRecord}, ${options})}, '',  ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchDateInternal(itemName, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchDateInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
 			<input type="date" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
 				th:readonly="${@optUtil.isReadOnly(options)}">
 		</div></th:block>
 	</div>
 
-	<div th:fragment="searchSelect(itemName, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: searchComponentSelect(${itemName}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemName)}__()}, ${options})}"></div>
+	<div th:fragment="searchSelect(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: searchComponentSelect(${propertyPathWithoutRootRecord}, 
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(propertyPathWithoutRootRecord)}__()}, ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -535,16 +535,16 @@
 		  - firstCharOfCodeLessThanOrEqualTo: codeの一文字目をascii codeの大小で比較
 		  - firstCharOfCodeGreaterThanOrEqualTo: codeの一文字目をascii codeの大小で比較
 	 */-->
-	<div th:fragment="searchSelectFromEnum(itemName, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: searchComponentSelect(${itemName}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemName)}__(#locale, '__${options}__')}, ${options})}"></div>
+	<div th:fragment="searchSelectFromEnum(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: searchComponentSelect(${propertyPathWithoutRootRecord}, 
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(propertyPathWithoutRootRecord)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* 内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
-	<div th:fragment="searchComponentSelect(itemName, pairs, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${itemName}, ~{::searchSelectInternal(${itemName}, ${options})}, '',  ${options})}"></div>
+	<div th:fragment="searchComponentSelect(propertyPathWithoutRootRecord, pairs, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::searchSelectInternal(${propertyPathWithoutRootRecord}, ${options})}, '',  ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchSelectInternal(itemName, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchSelectInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
 			<select class="form-select" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" 
 					th:name="${id}"
 					th:classappend="${messagesBean.isValid(id)}" 
@@ -683,24 +683,24 @@
 	 */-->
 
 	<!--/* sort不可能なth。text-alignはcenter固定。formは引数に与えていないが外でth:withでformという名前に設定しておく必要あり */-->
-	<div th:fragment="thText(itemName, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: thCustomizable(${itemName}, 'center', ${options})}"></div>
+	<div th:fragment="thText(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: thCustomizable(${propertyPathWithoutRootRecord}, 'center', ${options})}"></div>
 	</div>
 	
 	<!--/* sort可能なth。text-alignはcenter固定。formは引数に与えていないが外でth:withでformという名前に設定しておく必要あり */-->
-	<div th:fragment="thSortable(itemName, options)" th:remove="tag">
-		<div th:replace="~{bootstrap/components :: thCustomizable(${itemName}, 'center', ${options + ',thSortable'})}"></div>
+	<div th:fragment="thSortable(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: thCustomizable(${propertyPathWithoutRootRecord}, 'center', ${options + ',thSortable'})}"></div>
 	</div>
 	
 	<!--/* カスタマイズ可能なsort可能なth。formは引数に与えていないが外でth:withでformという名前に設定しておく必要あり */-->
-	<div th:fragment="thCustomizable(itemName, position, options)" th:remove="tag">
-		<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
-				fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
-			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemName}__')}">
+	<div th:fragment="thCustomizable(propertyPathWithoutRootRecord, position, options)" th:remove="tag">
+		<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
+				fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
+			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
 				<th:block th:if="${@optUtil.hasThSortable(options)}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
 							style="cursor: pointer" th:text="#{__${labelFieldName}__}" 
-							th:data-item="${itemName}" th:data-direction="${form.nextDirection('__${itemName}__')}"
+							th:data-item="${propertyPathWithoutRootRecord}" th:data-direction="${form.nextDirection('__${propertyPathWithoutRootRecord}__')}"
 							onClick="list(this.dataset.item, this.dataset.direction);"></th>
 		 		</th:block>
 		 		<th:block th:if="${!@optUtil.hasThSortable(options)}">
@@ -721,24 +721,24 @@
 	 */-->
 	
 	<!--/* td readOnly text */-->
-	<div th:fragment="tdReadOnlyText(itemName, options)" th:remove="tag">
-		<th:block th:with="value=${rec.getValue(itemName)}">
+	<div th:fragment="tdReadOnlyText(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(propertyPathWithoutRootRecord)}">
 			<div th:replace="~{bootstrap/components :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>
 	
 	<!--/* td readOnly number */-->
-	<div th:fragment="tdReadOnlyNumber(itemName, options)" th:remove="tag">
-		<th:block th:with="value=${rec.getValue(itemName)},
-				needsCommas=*{needsCommas('__${itemName}__')}">
+	<div th:fragment="tdReadOnlyNumber(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(propertyPathWithoutRootRecord)},
+				needsCommas=*{needsCommas('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
 			<div th:replace="~{bootstrap/components :: tdReadOnlyCustomizable(${((needsCommas && @strUtil.isNumberFormat(value)) ? #numbers.formatDecimal(value, 1, 'COMMA', 0, 'POINT')
 					: value)}, 'right', ${options})}"></div>
 		</th:block>
 	</div>
 	
 	<!--/* td readOnly fixed length */-->
-	<div th:fragment="tdReadOnlyFixedLength(itemName, options)" th:remove="tag">
-		<th:block th:with="value=${rec.getValue(itemName)}">
+	<div th:fragment="tdReadOnlyFixedLength(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(propertyPathWithoutRootRecord)}">
 			<div th:replace="~{bootstrap/components :: tdReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
 		</th:block>
 	</div>
@@ -754,8 +754,8 @@
 	</div>
 	
 	<!--/* td readOnly enum text */-->
-	<div th:fragment="tdReadOnlyEnumText(itemName, options)" th:remove="tag">
-		<th:block th:with="value=${rec.get__${#strings.capitalize(itemName)}__Name(#locale)}">
+	<div th:fragment="tdReadOnlyEnumText(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:with="value=${rec.get__${#strings.capitalize(propertyPathWithoutRootRecord)}__Name(#locale)}">
 			<div th:replace="~{bootstrap/components :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>
@@ -775,19 +775,19 @@
 	</div>
 	
 	<!--/* td readOnly checkbox */-->
-	<div th:fragment="tdReadOnlyCheckbox(itemName, options)" th:remove="tag">
+	<div th:fragment="tdReadOnlyCheckbox(propertyPathWithoutRootRecord, options)" th:remove="tag">
 		<td class="align-middle text-center" th:th:rowspan="${@optUtil.rows(options)}" th:colspan="${@optUtil.cols(options)}">
-			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${itemName}__}" disabled>
+			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${propertyPathWithoutRootRecord}__}" disabled>
 		</td>
 	</div>
 	
 	<!--/* inline input number */-->
-	<div th:fragment="tdInputNumber(itemName, idValue, options)" th:remove="tag">
+	<div th:fragment="tdInputNumber(propertyPathWithoutRootRecord, idValue, options)" th:remove="tag">
 		<td class="align-middle text-center" th:rowspan="${@optUtil.rows(options)}" th:colspan="${@optUtil.cols(options)}">
-			<th:block th:with="recordName=${itemName.contains('.') ? rootRecordName + '.' + itemName.substring(0, itemName.lastIndexOf('.')) : rootRecordName},
-					fieldName=${itemName.contains('.') ? itemName.substring(itemName.lastIndexOf('.') + 1) : itemName}">
-				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(itemName)},
-						needsCommas=*{needsCommas('__${itemName}__')}">
+			<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
+					fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
+				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(propertyPathWithoutRootRecord)},
+						needsCommas=*{needsCommas('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
 					<input th:type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}"
 							th:value="${(needsCommas && @strUtil.isNumberFormat(value)) ? #numbers.formatDecimal(#strings.replace(value, ',', ''), 1, 'COMMA', 0, 'POINT') : value}"
 							class="text-end form-control-sm fs-6 text-dark"
@@ -830,17 +830,17 @@
 	</div>
 
 	<!--/* general button */-->
-	<div th:fragment="tdButton(itemName, id, version, options)" th:remove="tag">
+	<div th:fragment="tdButton(propertyPathWithoutRootRecord, id, version, options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.rows(options)}" th:colspan="${@optUtil.cols(options)}">
-			<button type="submit" th:id="${itemName} + '_' + ${id}" th:name="${itemName}" class="btn btn-sm btn-color-btn text-white"
+			<button type="submit" th:id="${propertyPathWithoutRootRecord} + '_' + ${id}" th:name="${propertyPathWithoutRootRecord}" class="btn btn-sm btn-color-btn text-white"
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 					th:data-version="${version}"
-					th:text="#{__${itemName}__}"
+					th:text="#{__${propertyPathWithoutRootRecord}__}"
 					th:disabled=${@optUtil.isDisabled(options)}>
 			</button>
 			<th:block th:if="${@optUtil.needsOnclickJs(options)}">
 				<script th:inline="javascript">
-					onTdButtonClick(/*[[${itemName}]], [[${id}]]*/);
+					onTdButtonClick(/*[[${propertyPathWithoutRootRecord}]], [[${id}]]*/);
 				</script>
 			</th:block>
 		</td>
@@ -969,7 +969,7 @@
 		<div th:replace="~{bootstrap/components :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{::inputNumberInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="inputNumberInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${propertyPathWithoutRootRecord}__')}">
+			<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
 				<input th:type="text" th:id="${inputId}" th:name="${inputName}"
 						th:value="${(needsCommas && @strUtil.isNumberFormat(inputValue)) ? #numbers.formatDecimal(#strings.replace(inputValue, ',', ''), 1, 'COMMA', 0, 'POINT') : inputValue}"
 						th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
@@ -1133,7 +1133,7 @@
 		- 問い合わせ等でのやり取りの履歴をチャット形式で残す際に使用。
 		- 使用する個数は動的なため、ループの中に記載することになるが、右（本人）と左（他人）の出てくる順番もランダムのため、componentとしてはひとつのballoonとし、引数で左右を分ける形とした。
 	 */-->
-	<div  th:fragment="speechBalloon(itemName, isMySpeech, isSelectable, name, timestamp, message, options)" th:remove="tag">
+	<div  th:fragment="speechBalloon(propertyPathWithoutRootRecord, isMySpeech, isSelectable, name, timestamp, message, options)" th:remove="tag">
 		<!--/* そもそも登録不可にしておくべきだが、messagesが空文字の場合は、表示が崩れるので半角空白を入れておく */-->
 		<div th:classappend="'balloon_' + ${isMySpeech ? 'r' : 'l'}" th:with="message=${message == null || message == '' ? '&nbsp;' : message}">
 			<div class="faceicon" th:if="${!isMySpeech}">
@@ -1141,13 +1141,13 @@
 			</div>
 			<div>
 				<div class="name" th:if="${!isMySpeech}" th:text="${name}"></div>
-				<div th:classappend="${'says' + (isSelectable ? '-selectable' : '')}" th:id="${itemName}"></div>
+				<div th:classappend="${'says' + (isSelectable ? '-selectable' : '')}" th:id="${propertyPathWithoutRootRecord}"></div>
 				<div class="name mt-1" th:style="${'font-size: 60%; ' + (isMySpeech ? '' : 'display: flex; align-items: flex-end;')}">
 				<span th:style="${isMySpeech ? 'margin-left: auto;' : ''}" th:text="${timestamp}"></span>
 			</div>
-			<input type="hidden" th:id="${itemName + '_hidden'}" th:value="${message}" />
+			<input type="hidden" th:id="${propertyPathWithoutRootRecord + '_hidden'}" th:value="${message}" />
 			<script type="text/javascript">
-				document.getElementById('[[${itemName}]]').innerText = document.getElementById('[[${itemName}]]' + '_hidden').value;
+				document.getElementById('[[${propertyPathWithoutRootRecord}]]').innerText = document.getElementById('[[${propertyPathWithoutRootRecord}]]' + '_hidden').value;
 			</script>
 		</div>
 	</div>

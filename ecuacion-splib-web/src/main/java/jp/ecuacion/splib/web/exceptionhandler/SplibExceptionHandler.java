@@ -49,7 +49,7 @@ import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
 import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
 import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.util.SplibRecordUtil;
+import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,9 +68,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public abstract class SplibExceptionHandler {
 
   private DetailLogger detailLog = new DetailLogger(this);
-
-  @Autowired
-  SplibRecordUtil recUtil;
 
   @Autowired
   HttpServletRequest request;
@@ -286,10 +283,9 @@ public abstract class SplibExceptionHandler {
           List<String> itemNameKeyList = new ArrayList<>();
           for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
             HtmlItem item =
-                recUtil.getHtmlItem(getForms(), getController().getRootRecordName(), propertyPath);
-            itemNameKeyList.add(item.getItemNameKey() == null
-                ? getController().getRootRecordName() + "." + item.getItemKindIdField()
-                : item.getItemNameKey());
+                ((RecordInterface) getForms()[0].getRootRecord(getController().getRootRecordName()))
+                    .getHtmlItem(getController().getRootRecordName(), propertyPath);
+            itemNameKeyList.add(item.getItemNameKey(getController().getRootRecordName()));
           }
 
           message = addItemDisplayNames(message,

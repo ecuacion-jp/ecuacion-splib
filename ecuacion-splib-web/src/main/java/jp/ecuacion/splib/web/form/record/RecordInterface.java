@@ -31,31 +31,40 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 public interface RecordInterface {
 
   /**
+   * Returns {@code HtmlItem} from {@code HtmlItem[]} and {@code fieldId}. 
+   * 
+   * @param itemPropertyPath itemPropertyPath
+   * @return HtmlItem
+   */
+  default HtmlItem getHtmlItem(String rootRecordName, String itemPropertyPath) {
+    Map<String, HtmlItem> map = Arrays.asList(getHtmlItems()).stream()
+        .collect(Collectors.toMap(e -> e.getPropertyPath(), e -> e));
+
+    HtmlItem field = map.get(itemPropertyPath);
+
+    // Try with itemPropertyPathWithoutRootRecord
+    if (field == null && itemPropertyPath.startsWith(rootRecordName)) {
+      field = map.get(itemPropertyPath.substring(rootRecordName.length() + 1));
+    }
+
+    return field == null ? new HtmlItem(itemPropertyPath) : field;
+  }
+
+  /**
    * Returns HtmlItem.
    * 
    * @return HtmlItem[]
    */
   HtmlItem[] getHtmlItems();
 
-  // /**
-  // * Returns HtmlItem in respond to the specified fieldId.
-  // *
-  // * @param fieldId fieldId
-  // * @return HtmlItem
-  // */
-  // default HtmlItem getHtmlItem(String fieldId) {
-  // return new SplibRecordUtil().getHtmlItem(getHtmlItems(), fieldId);
-  // }
-
   /**
-   * Returns whether the itemKindId needs comma.
-   * 
-   * @param itemKindId itemKindId
-   * @return boolean
-   */
-  default boolean needsCommas(String itemKindId) {
-    HtmlItem item = Arrays.asList(getHtmlItems()).stream()
-        .collect(Collectors.toMap(e -> e.getItemKindIdField(), e -> e)).get(itemKindId);
+  * Returns whether the itemKindId needs comma.
+  *
+  * @param propertyPath propertyPath
+  * @return boolean
+  */
+  default boolean needsCommas(String rootRecordName, String propertyPath) {
+    HtmlItem item = getHtmlItem(rootRecordName, propertyPath);
 
     if (item == null || !(item instanceof HtmlItemNumber)) {
       return false;
@@ -80,27 +89,13 @@ public interface RecordInterface {
    * <p>relationがある場合を含めて、各componentのitemNameに指定する文字列は、必ずHtmlItemに指定したitemNameと同一となる。
    * </p>
    */
-  default String getDisplayName(String rootRecordId, String fieldId) {
-    HtmlItem[] htmlItems = getHtmlItems() == null ? new HtmlItem[] {} : getHtmlItems();
-
-    // rootRecordNameがaccの場合に、例外処理でエラーメッセージに項目名を出す際の処理は、itemNameが「acc.accId」となってしまう。
-    // この場合でも対応できるように、itemNameの頭がrootRecordName + '.'の場合はそれを取り除く処理を行う。
-    if (fieldId.startsWith(rootRecordId + ".")) {
-      fieldId = fieldId.substring((rootRecordId + ".").length());
-    }
-
-    Map<String, String> displayNameIdMap = Arrays.asList(htmlItems).stream()
-        .collect(Collectors.toMap(e -> e.getItemKindIdField(),
-            e -> e.getItemNameKey() == null ? e.getItemKindIdField()
-                : e.getItemNameKey()));
-    String displayNameId = displayNameIdMap.get(fieldId);
-
-    // htmlItems上で定義がない場合 /
-    // htmlItems上でlabelItemNameが未定義の場合はlabelItemNameがnullになるが、その場合はもとのfieldNameの値を入れておく
-    displayNameId = displayNameId == null ? fieldId : displayNameId;
+  default String getDisplayName(String rootRecordName, String propertyPathWithoutRootRecordName) {
+    HtmlItem htmlItem = getHtmlItem(rootRecordName, propertyPathWithoutRootRecordName);
+    String displayNameId = htmlItem.getItemNameKey(rootRecordName);
 
     // htmlItems上、関連を使用している場合はaccGroup.nameのようにfieldName自体にentityNameを含む場合があるので考慮
-    return displayNameId.contains(".") ? displayNameId : rootRecordId + "." + displayNameId;
+    return displayNameId.contains(".") ? displayNameId
+        : propertyPathWithoutRootRecordName + "." + displayNameId;
   }
 
   /**
@@ -111,14 +106,14 @@ public interface RecordInterface {
     List<HtmlItem> list = new ArrayList<>(Arrays.asList(fields1));
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
-    List<String> field1IdList =
-        Arrays.asList(fields1).stream().map(e -> e.getItemKindIdField()).toList();
+    List<String> propertyPath1List =
+        Arrays.asList(fields1).stream().map(e -> e.getPropertyPath()).toList();
 
-    for (String field2Id : Arrays.asList(fields2).stream().map(e -> e.getItemKindIdField())
+    for (String propertyPath2 : Arrays.asList(fields2).stream().map(e -> e.getPropertyPath())
         .toList()) {
-      if (field1IdList.contains(field2Id)) {
+      if (propertyPath1List.contains(propertyPath2)) {
         throw new RuntimeException(
-            "'id' of HtmlItem[] duplicated with commonHtmlItems. key: " + field2Id);
+            "'id' of HtmlItem[] duplicated with commonHtmlItems. key: " + propertyPath2);
       }
     }
 
@@ -141,7 +136,7 @@ public interface RecordInterface {
     HtmlItem[] htmlItems = getHtmlItems();
     for (HtmlItem field : htmlItems) {
       if (field.getIsNotEmpty(loginState, bean)) {
-        list.add(field.getItemKindIdField());
+        list.add(field.getPropertyPath());
       }
     }
 
