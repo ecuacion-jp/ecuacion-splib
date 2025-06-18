@@ -21,7 +21,7 @@ package jp.ecuacion.splib.web.bean;
 public class HtmlItemNumber extends HtmlItem {
 
   /**
-   * Determins whether commas are used or not.
+   * Determines whether commas are used or not.
    */
   protected boolean needsCommas;
 

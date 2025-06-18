@@ -390,7 +390,8 @@ public abstract class SplibExceptionHandler {
 
     detailLog.info("Designated html file not allowed to open. Needs to add option to html tag."
         + " html file name = " + exception.getFileName());
-
+    detailLog.error(exception);
+    
     // それっぽいURLにredirectしておく。なければさらにredirectされて適切な画面が表示される。
     return new ModelAndView("redirect:/public/home/page");
   }
