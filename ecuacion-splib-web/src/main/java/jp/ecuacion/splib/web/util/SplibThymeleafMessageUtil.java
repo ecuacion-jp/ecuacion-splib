@@ -41,7 +41,7 @@ public class SplibThymeleafMessageUtil {
    * @param id id
    * @return String
    */
-  public String get(Locale locale, String id) {
+  public String get(Locale locale, String id, String... args) {
     
     // Return blank when id is empty.
     if (StringUtils.isEmpty(id)) {
@@ -49,25 +49,21 @@ public class SplibThymeleafMessageUtil {
     }
     
     boolean hasMsg = PropertyFileUtil.hasMessage(id);
+    boolean hasStr = PropertyFileUtil.hasString(id);
     boolean hasItem = PropertyFileUtil.hasItemName(id);
     
-    // Throw exception when both messages.properties and item_names.properties have the key.
-    if (hasMsg && hasItem) {
-      String msg =
-          "Key '" + id + "' has both in 'messages.properties' and 'item_names.properties'. "
-              + "One of keys must be removed. (key : " + id + ")";
-      throw new RuntimeException(msg);
-    }
-    
     // Return id when id not exist in both.
-    if (!hasMsg && !hasItem) {
+    if (!hasMsg && !hasStr && !hasItem) {
       return id;
     }
 
     // Even when hasMsg == false && hasItem = false, Exception doesn't emerge.
     if (hasMsg) {
-      return PropertyFileUtil.getMessage(locale, id);
+      return PropertyFileUtil.getMessage(locale, id, args);
 
+    } else if (hasStr) {
+      return PropertyFileUtil.getString(id, args);
+      
     } else {
       return PropertyFileUtil.getItemName(locale, id);
     }

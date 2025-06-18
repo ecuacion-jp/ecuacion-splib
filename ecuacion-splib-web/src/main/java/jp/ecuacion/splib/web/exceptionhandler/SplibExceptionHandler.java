@@ -49,7 +49,7 @@ import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
 import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
 import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.util.SplibRecordUtil;
+import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,9 +68,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public abstract class SplibExceptionHandler {
 
   private DetailLogger detailLog = new DetailLogger(this);
-
-  @Autowired
-  SplibRecordUtil recUtil;
 
   @Autowired
   HttpServletRequest request;
@@ -283,17 +280,16 @@ public abstract class SplibExceptionHandler {
           // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
           // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
           // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
-          List<String> itemKindIdForNameList = new ArrayList<>();
+          List<String> itemNameKeyList = new ArrayList<>();
           for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
-            HtmlItem field =
-                recUtil.getHtmlItem(getForms(), getController().getRootRecordName(), propertyPath);
-            itemKindIdForNameList.add(field.getItemKindIdFieldForName() == null
-                ? getController().getRootRecordName() + "." + field.getItemKindIdField()
-                : field.getItemKindIdFieldForName());
+            HtmlItem item =
+                ((RecordInterface) getForms()[0].getRootRecord(getController().getRootRecordName()))
+                    .getHtmlItem(getController().getRootRecordName(), propertyPath);
+            itemNameKeyList.add(item.getItemNameKey(getController().getRootRecordName()));
           }
 
           message = addItemDisplayNames(message,
-              itemKindIdForNameList.toArray(new String[itemKindIdForNameList.size()]));
+              itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
         }
 
         messagesBean.setErrorMessage(message, propertyPaths);
@@ -394,7 +390,8 @@ public abstract class SplibExceptionHandler {
 
     detailLog.info("Designated html file not allowed to open. Needs to add option to html tag."
         + " html file name = " + exception.getFileName());
-
+    detailLog.error(exception);
+    
     // それっぽいURLにredirectしておく。なければさらにredirectされて適切な画面が表示される。
     return new ModelAndView("redirect:/public/home/page");
   }

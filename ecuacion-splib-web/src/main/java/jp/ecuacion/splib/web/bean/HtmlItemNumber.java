@@ -21,7 +21,7 @@ package jp.ecuacion.splib.web.bean;
 public class HtmlItemNumber extends HtmlItem {
 
   /**
-   * Determins whether commas are used or not.
+   * Determines whether commas are used or not.
    */
   protected boolean needsCommas;
 
@@ -36,8 +36,8 @@ public class HtmlItemNumber extends HtmlItem {
   }
 
   @Override
-  public HtmlItemNumber itemKindIdFieldForName(String itemKindIdFieldForName) {
-    return (HtmlItemNumber) super.itemKindIdFieldForName(itemKindIdFieldForName);
+  public HtmlItemNumber itemNameKey(String itemNameKey) {
+    return (HtmlItemNumber) super.itemNameKey(itemNameKey);
   }
 
   @Override
