@@ -21,7 +21,13 @@
 	<meta charset="UTF-8" />
 </head>
 <body>
-	
+
+	<!--/* 
+		###
+		### components available in any pages
+		###
+	 */-->
+	 
 	<!--/* 
 		### common components
 	 */-->
@@ -35,7 +41,7 @@
 		- componentId	(an arbitrary string)	Specifies 'id' attribute of the whole. 
 												As default id value is the same as the value of name for html controls.
  	 */-->
-	<div th:fragment="allCommonExternalFrame(contentsOfAllCommon, createsComponentIdDiv, options)" th:remove="tag">
+	<div th:fragment="internalAllCommonComponent(contentsOfAllCommon, createsComponentIdDiv, options)" th:remove="tag">
 		<th:block th:with="componentId=${@optUtil.getValueOrElse(options, 'componentId', null)}">
 			<div th:if="${createsComponentIdDiv}" th:id="${componentId}">
 				<th:block th:replace="${contentsOfAllCommon}" />
@@ -56,10 +62,10 @@
 		'title' and 'message' can be the key to the message.properties or item_names.properties, 
 		or if it does not exist in properties files, it shows the string directly.
 	*/-->
-	<div th:fragment="messageDisplayingComponentExternalFrame(contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: allCommonExternalFrame(~{ :: messageDisplayingComponentExternalFrameInternal}, true, ${options})}"></div>
+	<div th:fragment="internalMessageDisplayingCommonComponent(contents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: internalMessageDisplayingCommonComponentFragment}, true, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="messageDisplayingComponentExternalFrameInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="internalMessageDisplayingCommonComponentFragment" th:remove="tag">
 			<div class="text-dark" 
 					th:with="titleString=${@msgUtil.get(#locale, title)},
 					messageString=${@msgUtil.get(#locale, message)}">
@@ -71,7 +77,7 @@
 
 	<!--/* title */-->
 	<div th:fragment="title(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: titleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: titleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="titleInternal" th:remove="tag">
 			<div class="fs-3 fw-bold mt-3 mb-5" th:text="${titleString}"></div>
@@ -81,7 +87,7 @@
 	<!--/* titleDesc */-->
 	<!--/* It's placed above the message space, so it does not seem very useful. Maybe it will become deprecated in the future. */-->
 	<div th:fragment="titleDesc(message, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: titleDescInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: titleDescInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="titleDescInternal" th:remove="tag">
 			<th:block th:if="${!#strings.isEmpty(messageString)}">
@@ -92,7 +98,7 @@
 
 	<!--/* subtitle  */-->
 	<div th:fragment="subtitle(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: subtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: subtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subtitleInternal" th:remove="tag">
 			<div class="border-5 border-color-subtitle fs-5 fw-bold mt-5 pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
@@ -101,7 +107,7 @@
 
 	<!--/* paragraphWithSubtitle */-->
 	<div th:fragment="paragraphWithSubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: paragraphWithSubtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subtitleInternal}"></div>
@@ -111,7 +117,7 @@
 	
 	<!--/* subtitle  */-->
 	<div th:fragment="subsubtitle(title, options)" th:remove="tag">
-		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: subsubtitleInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: subsubtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subsubtitleInternal" th:remove="tag">
 			<div>
@@ -124,7 +130,7 @@
 
 	<!--/* paragraphWithSubsubtitle */-->
 	<div th:fragment="paragraphWithSubsubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: paragraphWithSubsubtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubsubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subsubtitleInternal}"></div>
@@ -134,7 +140,7 @@
 	
 	<!--/* paragraph */-->
 	<div th:fragment="paragraph(message, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: paragraphInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: paragraphInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphInternal" th:remove="tag">
 			<div class="mt-4" style="white-space: pre-wrap;" th:text="${messageString}"></div>
@@ -143,7 +149,7 @@
 	
 	<!--/* referenceBox */-->
 	<div th:fragment="referenceBox(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: referenceBoxInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: referenceBoxInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="referenceBoxInternal" th:remove="tag">
 			<div class="text-dark mt-4">
@@ -157,7 +163,7 @@
 
 	<!--/* box. space enclosed by a frame. */-->
 	<div th:fragment="box(boxContents, title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: boxInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: boxInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="boxInternal" th:remove="tag">
 			<div class="border mt-3">
@@ -182,7 +188,7 @@
 	<!--/* freeSpace */-->
 	<!--/* You can input free text / html. It is used for commonize color and font. */-->
 	<div th:fragment="freeSpace(freeSpaceContent, options)" th:remove="tag">
- 		<div th:replace="~{ :: messageDisplayingComponentExternalFrame(~{ :: freeSpaceInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: freeSpaceInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="freeSpaceInternal" th:remove="tag">
 				<th:block th:replace="${freeSpaceContent}" />
@@ -198,17 +204,18 @@
 		'title' and 'message' can be the key to the message.properties or item_names.properties, 
 		or if it does not exist in properties files, it shows the string directly.
 	*/-->
-	<div th:fragment="tableComponentExternalFrame(contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: allCommonExternalFrame(~{ :: tableComponentExternalFrameInternal}, false, ${options})}"></div>
+	<div th:fragment="internalTableCommonComponent(contents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: internalTableCommonComponentInternal}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="tableComponentExternalFrameInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="internalTableCommonComponentInternal" th:remove="tag">
+			[[${contents}]]
 			<th:block th:replace="${contents}" />
 		</div></th:block>
 	</div>
 	
 	<!--/* simple table header */-->
 	<div th:fragment="simpleTableHeader(labels, options)" th:remove="tag">
- 		<div th:replace="~{ :: tableComponentExternalFrame(~{ :: simpleTableHeaderInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableHeaderInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="simpleTableHeaderInternal" th:remove="tag">
 			<thead th:id="${componentId}" class="text-white bg-color-tbl-header bg-gradient  align-middle">
@@ -223,7 +230,7 @@
  	
 	<!--/* simple table lines from lines of cell elements */-->
 	<div th:fragment="simpleTableTrsFromLines(linesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: tableComponentExternalFrame(~{ :: simpleTableTrsFromLinesInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableTrsFromLinesInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="simpleTableTrsFromLinesInternal" th:remove="tag">
 			<tr th:id="${componentId}" th:each="cellElements : ${linesOfCellElements}">
@@ -248,7 +255,7 @@
 		linesOfCellElements is an array of cellElements, which means linesOfCellElements is 3-dimensional array.
 	 */-->
 	<div th:fragment="simpleTableBodyFromLines(linesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: tableComponentExternalFrame(~{ :: simpleTableBodyFromLinesInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableBodyFromLinesInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="simpleTableBodyFromLinesInternal" th:remove="tag">
 			<tbody th:id="${componentId}">
@@ -264,7 +271,7 @@
 		for example table lines have a common part. 
 	 */-->
 	<div th:fragment="simpleTableBodyFromArrayOfLines(arrayOfLinesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: tableComponentExternalFrame(~{ :: simpleTableBodyFromArrayOfLinesInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableBodyFromArrayOfLinesInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="simpleTableBodyFromArrayOfLinesInternal" th:remove="tag">
 			<tbody th:id="${componentId}">
@@ -283,8 +290,8 @@
 	<!--/* 
 		special thanks to: https://stand-4u.com/css/fukidashi.html
 	 */-->
-	<div  th:fragment="speechBalloon(propertyPathWithoutRootRecord, isMySpeech, isSelectable, name, timestamp, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: allCommonExternalFrame(~{ :: speechBalloonInternal}, false, ${options})}"></div>
+	<div  th:fragment="speechBalloon(itemPropertyPath, isMySpeech, isSelectable, name, timestamp, message, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: speechBalloonInternal}, false, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="speechBalloonInternal" th:remove="tag">
 			<!--/* Add space character when the input string is blank. */-->
@@ -294,13 +301,13 @@
 				</div>
 				<div>
 					<div class="name" th:if="${!isMySpeech}" th:text="${name}"></div>
-					<div th:classappend="${'says' + (isSelectable ? '-selectable' : '')}" th:id="${propertyPathWithoutRootRecord}"></div>
+					<div th:classappend="${'says' + (isSelectable ? '-selectable' : '')}" th:id="${itemPropertyPath}"></div>
 					<div class="name mt-1" th:style="${'font-size: 60%; ' + (isMySpeech ? '' : 'display: flex; align-items: flex-end;')}">
 					<span th:style="${isMySpeech ? 'margin-left: auto;' : ''}" th:text="${timestamp}"></span>
 				</div>
-				<input type="hidden" th:id="${propertyPathWithoutRootRecord + '_hidden'}" th:value="${message}" />
+				<input type="hidden" th:id="${itemPropertyPath + '_hidden'}" th:value="${message}" />
 				<script type="text/javascript">
-					document.getElementById('[[${propertyPathWithoutRootRecord}]]').innerText = document.getElementById('[[${propertyPathWithoutRootRecord}]]' + '_hidden').value;
+					document.getElementById('[[${itemPropertyPath}]]').innerText = document.getElementById('[[${itemPropertyPath}]]' + '_hidden').value;
 				</script>
 			</div>
 		</div></th:block>
@@ -312,7 +319,7 @@
 	
 	<!--/* hr */-->
 	<div th:fragment=horizontalLine(options) th:remove="tag">
- 		<div th:replace="~{ :: allCommonExternalFrame(~{ :: horizontalLineInternal}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: horizontalLineInternal}, true, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="horizontalLineInternal" th:remove="tag">
 			<hr class="mt-4 mb-4">
@@ -323,40 +330,59 @@
 		### navbar components.
 	 */-->
 	
-	<div th:fragment="navBarComponentExternalFrame(contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: allCommonExternalFrame(~{ :: navBarComponentExternalFrameInternal}, false, ${options})}"></div>
+	<!--/* internal common navBar component */-->
+	<div th:fragment="internalNavBarCommonComponent(contents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: internalNavBarCommonComponentInternal}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="navBarComponentExternalFrameInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="internalNavBarCommonComponentInternal" th:remove="tag">
 			<th:block th:replace="${contents}" />
 		</div></th:block>
 	</div>
 	
 	<!--/* navBarMenu: A menu link (not dropdown) placed on navigation bars. */-->
 	<div th:fragment="navBarMenuItem(href, label, options)" th:remove="tag">
-		<li style="margin-left: 20px">
-			<a class="nav-link" th:href="${href}" th:text="${label}"></a>
-		</li>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarMenuItemInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="navBarMenuItemInternal" th:remove="tag">
+			<li th:id="${componentId}" style="margin-left: 20px">
+				<a class="nav-link" th:href="${href}" th:text="${label}"></a>
+			</li>
+		</div></th:block>
 	</div>
 	
 	<!--/* navBarMenu: A menu link (not dropdown) placed on navigation bars. */-->
 	<div th:fragment="navBarSubMenu(label, menuItems, options)" th:remove="tag">
-		<li style="margin-left: 20px" class="nav-item dropdown">
-			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
-					data-bs-toggle="dropdown" aria-expanded="false" th:text="${label}"></a>
-			<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown"
-					th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-					+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
-					<th:block th:replace="${menuItems}" />
-			</ul>
-		</li>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarSubMenuInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="navBarSubMenuInternal" th:remove="tag">
+			<li th:id="${componentId}" style="margin-left: 20px" class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+						data-bs-toggle="dropdown" aria-expanded="false" th:text="${label}"></a>
+				<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown"
+						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
+						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
+						<th:block th:replace="${menuItems}" />
+				</ul>
+			</li>
+		</div></th:block>
 	</div>
 
+	<!--/* navBarDropDownMenuItem */-->
 	<div th:fragment="navBarDropDownMenuItem(href, label, options)" th:remove="tag">
-		<li><a class="dropdown-item" th:href="${href}" th:text="${label}"></a></li>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownMenuItemInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="navBarDropDownMenuItemInternal" th:remove="tag">
+			<li th:id="${componentId}"><a class="dropdown-item" th:href="${href}" th:text="${label}"></a></li>
+		</div></th:block>
 	</div>
 
+	<!--/* navBarDropDownMenuDivider */-->
 	<div th:fragment="navBarDropDownMenuDivider(options)" th:remove="tag">
-		<li><hr class="dropdown-divider"></li>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownMenuDividerInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="navBarDropDownMenuDividerInternal" th:remove="tag">
+			<li th:id="${componentId}"><hr class="dropdown-divider"></li>
+		</div></th:block>
 	</div>
 
 	<!--/* navBarDropDownMenuGroupLabel */-->
@@ -365,81 +391,94 @@
 		It's supposed to be placed at the top or right after the divider.
 	*/-->
 	<div th:fragment="navBarDropDownMenuGroupLabel(label, options)" th:remove="tag">
-		<li class="mb-1"><small>
-			<div class="ms-3" style="font-weight: bold" th:text="${'&lt; &nbsp;' + label + '&nbsp; &gt;'}"></div>
-		</small></li>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownMenuGroupLabelInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="navBarDropDownMenuGroupLabelInternal" th:remove="tag">
+			<li th:id="${componentId}" class="mb-1"><small>
+				<div class="ms-3" style="font-weight: bold" th:text="${'&lt; &nbsp;' + label + '&nbsp; &gt;'}"></div>
+			</small></li>
+		</div>
 	</div>
 
+	<!--/* navBarDropDownSubMenu */-->
 	<div th:fragment="navBarDropDownSubMenu(label, menuItems, options)" th:remove="tag">
-		<li>
-			<a class="dropdown-item" href="#">
-				<div style="text-align: left; float: left;" th:text="${label}"></div>
-				<div style="text-align: right;" th:text="${options.contains('direction=left') ? '&ltrif;' : '&rtrif;'}">︎</div>
-			</a>
-			<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark bg-gradient bg-primary"
-					th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-					+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)
-					+ ' ' + (options.contains('direction=left') ? 'dropdown-submenu-left' : '')}">
-				<th:block th:replace="${menuItems}" />
-			</ul>
-		</li>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownSubMenuInternal}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="navBarDropDownSubMenuInternal" th:remove="tag">
+			<li th:id="${componentId}">
+				<a class="dropdown-item" href="#">
+					<div style="text-align: left; float: left;" th:text="${label}"></div>
+					<div style="text-align: right;" th:text="${options.contains('direction=left') ? '&ltrif;' : '&rtrif;'}">︎</div>
+				</a>
+				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark bg-gradient bg-primary"
+						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
+						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)
+						+ ' ' + (options.contains('direction=left') ? 'dropdown-submenu-left' : '')}">
+					<th:block th:replace="${menuItems}" />
+				</ul>
+			</li>
+		</div></th:block>
 	</div>
 	 
 	<!--/* 
 		### server message displaying components.
 	 */-->
 	 
-	<!--/* messages */-->
+	<!--/* server messages */-->
 	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
-		<div class="mt-5 mb-5">
-			<!-- messages from url parameter -->
-			<div class="all-error-messages-list-wrapper text-danger">
-				<div class="bg-color-msg-error-bg p-2 rounded-1" 
-						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null}">
-					<div th:replace="~{ :: freeSpace(~{ ::free-space-login-messages}, '')}"></div>
-				</div>
-			</div>
-			<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
-				<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
-				<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
-				<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
-				<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
-			</div></th:block>
-			<!-- messages from ${messagesBean} -->
-			<div th:object="${messagesBean}">
-				<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
-					<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-					<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-				</div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: messagesInternal}, true, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="messagesInternal" th:remove="tag">
+			<div class="mt-5 mb-5">
+				<!-- messages from url parameter -->
 				<div class="all-error-messages-list-wrapper text-danger">
-					<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
-						<!--/* in the case of showing item related message here */-->
-						<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
-							<div class="all-error-messages-list-ul">
-								<div th:replace="~{ :: displayMessages(*{errorMessages})}"></div>
-							</div>
-						</th:block>
-						<!--/* in the case of showing item related message at each item */-->
-						<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
-							<ul class="all-error-messages-list-ul">
-								<!--/* showing non-item-related messages */-->
-								<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
-									<div th:replace="~{ :: displayMessages(*{errorMessagesNotLinkedToItems})}"></div>
-								</th:block>
-								<!--/* showing a message that says there's an error at some of the items */-->
-								<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
-									<div th:replace="~{ :: displayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
-								</th:block>
-							</ul>
-						</th:block>
+					<div class="bg-color-msg-error-bg p-2 rounded-1" 
+							th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null}">
+						<div th:replace="~{ :: freeSpace(~{ ::free-space-login-messages}, '')}"></div>
+					</div>
+				</div>
+				<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
+					<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
+					<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
+					<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
+					<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
+				</div></th:block>
+				<!-- messages from ${messagesBean} -->
+				<div th:object="${messagesBean}">
+					<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
+						<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
+						<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
+					</div>
+					<div class="all-error-messages-list-wrapper text-danger">
+						<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
+							<!--/* in the case of showing item related message here */-->
+							<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
+								<div class="all-error-messages-list-ul">
+									<div th:replace="~{ :: internalDisplayMessages(*{errorMessages})}"></div>
+								</div>
+							</th:block>
+							<!--/* in the case of showing item related message at each item */-->
+							<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
+								<ul class="all-error-messages-list-ul">
+									<!--/* showing non-item-related messages */-->
+									<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
+										<div th:replace="~{ :: internalDisplayMessages(*{errorMessagesNotLinkedToItems})}"></div>
+									</th:block>
+									<!--/* showing a message that says there's an error at some of the items */-->
+									<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
+										<div th:replace="~{ :: internalDisplayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
+									</th:block>
+								</ul>
+							</th:block>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</div></th:block>
 	</div>
 
-	<!--/* message表示用内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
-	<div th:fragment="displayMessages(errorMessages)" th:remove="tag">
+	<!--/* message displaying internal common component */-->
+	<div th:fragment="internalDisplayMessages(errorMessages)" th:remove="tag">
 		<table th:each="message : ${errorMessages}" style="width: 100%;">
 			<tr>
 				<td style="vertical-align:top; width: 20px"><div style="margin-left: 10px; margin-right: 10px;">- </div></td>
@@ -467,7 +506,74 @@
 		</table>
 	</div>
 
-	<div th:fragment="warnMessage(options)" th:remove="tag">
+
+
+	<!--/* 
+		###
+		### components available in general form pages
+		### pages using general forms (like edit, searchList) are included.
+		###
+	 */-->
+
+	<!--/* 
+		### form
+	 */-->
+
+	<!--/* generalForm */-->
+	<div th:fragment="generalForm(formContent, topSpaceContent, bottomSpaceContent
+			, formMethod, multipart, subFunction, versionFieldName, versionInitialValue, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentGeneralForm}, true, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentGeneralForm" th:remove="tag">
+			<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
+				<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')},
+						javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
+	
+					<th:block th:replace="${topSpaceContent}" />
+	
+					<div class="mt-5"></div>
+	
+					<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
+					<th:block th:if="${__${javaFormName}__} == null"
+							th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '. 
+									The reason can be: Form with the name not defined; 
+									Form is defined but not used (not set in the generics parameter of the controller definition sentence);'}">
+						[[${@exUtil.systemError(msg)}]]
+					</th:block>
+	
+					<!--/* subFunction, ctrlSubFunctionの挙動については#454参照。  */-->
+					<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
+							th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
+							th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
+							th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
+							th:object="${__${javaFormName}__}">
+						<div th:replace="~{ :: token('')}"></div>
+						<!--/* controller側からmodelに渡すformm名が間違えている場合にいつもここでエラーになるが、設定したform名が取得できずdebugしているので、
+						       赤字でエラー表示しつつform名を出力 */-->
+						<h1 style="color: red" th:if="${__${function + #strings.capitalize(subFunction) + 'Form'}__} == null">
+							form: [[${function + #strings.capitalize(subFunction) + 'Form'}]] is null.
+						</h1> 
+						
+						<!--/* confirmedWarningsで、formの外からボタンクリックが必要なためform名を保持しておく */-->
+						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
+						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="*{confirmedWarnings}">
+			 			<input type="hidden" name="submitOnChangeToRefresh">
+						<div th:replace="~{ :: version(${rootRecordName}, ${versionFieldName}, ${versionInitialValue}, '')}"></div>
+						<th:block th:replace="${formContent}" />
+			
+						<div th:replace="~{ :: internalWarnMessage('')}"></div>
+	
+		 			</form>
+					
+					<th:block th:replace="${bottomSpaceContent}" />
+			
+				</th:block>
+			</th:block>
+		</div></th:block>
+	</div>
+
+	<!--/* internal warn message part */-->
+	<div th:fragment="internalWarnMessage(options)" th:remove="tag">
 		<div th:object="${messagesBean}">
 			<th:block th:if="*{warnMessage != null}">
 				<input type="hidden" name="warnMessage" th:data-button-name="*{warnMessage.buttonName}" th:data-msg-id="*{warnMessage.messageId}" th:value="*{warnMessage.message}">
@@ -498,56 +604,282 @@
 		</div>
 	</div>
 
+	<!--/* 
+		### input components
+	 */-->
+	
+	<!--/* internal common input component. */-->
+	<!--/* options: 
+			- id		arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
+			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
+	*/-->
+	<div th:fragment="internalInputCommonComponent(itemPropertyPath, contents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInputCommonComponent}, true, ${options})}"></div>
 
+		<th:block th:if="false"><div th:fragment="fragmentInputCommonComponent" th:remove="tag">
+			<th:block th:with="propertyPathClass=${itemPropertyPath.contains('.') 
+					? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
+					propertyPathField=${itemPropertyPath.contains('.') 
+					? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
+					itemKindIdClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}">
+				<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemKindIdClass + '.' + propertyPathField}">
+					<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
+							inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
+						<div class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
+								? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
+								? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
+	
+							<!--/* label */-->
+							<th:block th:with="displayName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
+									<!--/* isPrincipalStringは、#authentication.principalが、loginしている場合は複数項目を格納するbeanなのに、loginしていない場合はStringといういやらしい仕様なので、String可動化をチェックしている */-->
+								<label th:for="${inputId}" class="form-label text-dark" th:with="isPrincipalString=${#authentication.principal.class.name == 'java.lang.String'}">
+									[[${@msgUtil.get(#locale, '__${displayName}__')}]]<span class="text-danger" th:if="*{__${rootRecordName}__.isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${isPrincipalString ? '' : #authentication.principal.authorities}__')}">&nbsp;*</span>
+								</label>
+							</th:block>
+							
+							<!--/* content */-->
+							<th:block th:replace="${contents}" />
+		
+							<!--/* field messages */-->
+							<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
+								<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${propertyPath}__') != null}"
+									th:classappend="${@optUtil.isForSwitch(options) ? 'mt-1' : ''}"
+									th:each="message : ${messagesBean.getErrorMessages('__${propertyPath}__')}">[[${message}]]</div>
+							</th:block>
+							
+						</div>
+					</th:block>
+				</th:block>
+			</th:block>	
+		</div></th:block>
+	</div>
+	
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<div th:fragment="inputComponentText(itemPropertyPath, type, needsMaxLength, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::inputTextInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
 
+		<th:block th:if="false"><div th:fragment="inputTextInternal(itemPropertyPath, options)" th:remove="tag">
+			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
+					th:maxlength="${@optUtil.isReadOnly(options) || type == 'hidden'} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
+					th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
+					th:readonly="${@optUtil.isReadOnly(options)}">
+		</div></th:block>
+	</div>
 
+	<div th:fragment="inputText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: inputComponentText(${itemPropertyPath}, 'text', true, ${options})}"></div>
+	</div>
+	
+	<!--/* textbox(password) */-->
+	<div th:fragment="inputPassword(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: inputComponentText(${itemPropertyPath}, 'password', true, ${options})}"></div>
+	</div>
+	
+	<!--/* inputNumber */-->
+	<div th:fragment="inputNumber(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::inputNumberInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
 
+		<th:block th:if="false"><div th:fragment="inputNumberInternal(itemPropertyPath, options)" th:remove="tag">
+			<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
+				<input th:type="text" th:id="${inputId}" th:name="${inputName}"
+						th:value="${(needsCommas && @strUtil.isNumberFormat(inputValue)) ? #numbers.formatDecimal(#strings.replace(inputValue, ',', ''), 1, 'COMMA', 0, 'POINT') : inputValue}"
+						th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
+						class="text-end"
+						th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
+						th:readonly="${@optUtil.isReadOnly(options)}">
+				<th:block th:if="${needsCommas}">
+					<script th:inline="javascript">
+						addNumberFormatFunction(/*[[${rootRecordName + '.' + itemPropertyPath}]]*/);
+					</script>
+				</th:block>
+			</th:block>
+		</div></th:block>
+	</div>
 
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<div th:fragment="inputComponentDateTime(itemPropertyPath, type, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::inputDateTimeInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
 
+		<th:block th:if="false"><div th:fragment="inputDateTimeInternal(itemPropertyPath, options)" th:remove="tag">
+			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
+				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
+				th:readonly="${@optUtil.isReadOnly(options)}">
+		</div></th:block>
+	</div>
 
+	<!--/* textbox(month) */-->
+	<div th:fragment="inputYearMonth(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: inputComponentDateTime(${itemPropertyPath}, 'month', ${options})}"></div>
+	</div>
+
+	<!--/* textbox(date) */-->
+	<div th:fragment="inputDate(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: inputComponentDateTime(${itemPropertyPath}, 'date', ${options})}"></div>
+	</div>
+
+	<!--/* textbox(time) */-->
+	<div th:fragment="inputTime(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: inputComponentDateTime(${itemPropertyPath}, 'time', ${options})}"></div>
+	</div>
+
+	<!--/* textarea */-->
+ 	<div th:fragment="inputTextArea(itemPropertyPath, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::inputTextAreaInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="inputTextAreaInternal(itemPropertyPath, options)" th:remove="tag">
+			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
+				th:maxlength="*{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}" 
+				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
+				th:readonly="${@optUtil.isReadOnly(options)}" rows="3">
+			</textarea>
+		</div></th:block>
+	</div>
+
+	<!--/* checkbox (switch) */-->
+	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::inputSwitchInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="inputSwitchInternal(itemPropertyPath, options)" th:remove="tag">
+			<div class="form-check form-switch mt-2">
+				<th:block th:if="${@optUtil.isReadOnly(options)}">
+					<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
+				</th:block>
+				<div>
+					<input type="hidden" th:name="${@optUtil.isReadOnly(options) ? '' : inputName}" value="off">
+					<input th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
+						class="form-check-input align-bottom mb-1" type="checkbox" 
+						th:checked="${inputValue}"
+						th:classappend="${messagesBean.isValid(propertyPath)}"
+						th:disabled="${@optUtil.isReadOnly(options)}">
+				</div>
+			</div>
+		</div></th:block>
+	</div>
+	 
+	<!--/* checkbox */-->
+	<div th:fragment="inputCheckboxes(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::inputCheckboxesInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="inputCheckboxesInternal(itemPropertyPath, options)" th:remove="tag">
+			<div class="form-check mt-2" th:each="option : *{__${propertyPathClass + '.' + propertyPathField + 'List'}__}">
+				<th:block th:with="optionId=${option[0]},optionLabel=${option[1]},optionOptions=${option.length == 2 ? '' : option[2]}">
+					<input th:id="${optionId}" class="form-check-input align-bottom mb-1" type="checkbox" 
+						th:name="${@optUtil.isReadOnly(optionOptions) ? '' : propertyPath}" 
+						th:checked="*{__${propertyPathClass + '.' + propertyPathField + '.contains(''' + optionId + ''')'}__}"
+						th:classappend="${messagesBean.isValid(propertyPath)}"
+						th:disabled="${@optUtil.isReadOnly(optionOptions)}"
+						th:value="${optionId}">
+					<label class="form-check-label text-dark" th:for="${optionId}" th:text="${optionLabel}"></label>
+					<th:block th:if="${@optUtil.isReadOnly(optionOptions)}">
+						<input type="hidden" th:name="${propertyPath}" th:value="${optionId}">
+					</th:block>
+				</th:block>
+			</div>
+		</div></th:block>
+	</div>
+	
+	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: inputComponentSelect(${itemPropertyPath}, *{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
+	</div>
+
+	<!--/* 
+		- options:
+		  - including: 指定したEnum要素のみをプルダウンに表示。'include=ADMIN,GROUP_ADMIN' など、enumの要素名で、カンマ区切り指定。（codeではない）
+		  - excluding: 指定したEnum要素以外をプルダウンに表示。'exclude=ADMIN,GROUP_ADMIN' など、enumの要素名で、カンマ区切り指定。（codeではない）
+		  - firstCharOfCodeEqualTo: codeの一文字目が等しい場合にtrue
+		  - firstCharOfCodeLessThanOrEqualTo: codeの一文字目をascii codeの大小で比較
+		  - firstCharOfCodeGreaterThanOrEqualTo: codeの一文字目をascii codeの大小で比較
+	 */-->
+	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: inputComponentSelect(${itemPropertyPath}, 
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+	</div>
+
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<div th:fragment="inputComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::inputComponentSelectInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="inputComponentSelectInternal(itemPropertyPath, options)" th:remove="tag">
+			<!--/* selectにはreadonlyが存在しないため、disabledを使用 */-->
+			<th:block th:if="${@optUtil.isReadOnly(options)}">
+				<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? propertyPath : null}" th:name="${propertyPath}" th:value="${inputValue}">
+			</th:block>
+			<select th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
+					class="form-select" th:classappend="${messagesBean.isValid(propertyPath)}"
+					th:disabled="${@optUtil.isReadOnly(options)}"
+					th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
+					th:data-html-form-name="${htmlFormName}"
+					onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
+				<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
+				<th:block th:each="pair : ${pairs}">
+					<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
+				</th:block>
+			</select>
+		</div></th:block>
+	</div>
+	
+	<!--/* component for file upload */-->
+	<div  th:fragment="inputFile(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: inputFileInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="inputFileInternal(itemPropertyPath, options)" th:remove="tag">
+			<input class="form-control" type="file" th:id="${inputId}" th:name="${propertyPath}" 
+					th:classappend="${messagesBean.isValid(propertyPath)}">
+		</div></th:block>
+	</div>
+
+	<!--/* hidden */-->
+	<div th:fragment="inputHidden(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: inputHiddenInternal(${itemPropertyPath}, ${options})}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="inputHiddenInternal(itemPropertyPath, options)" th:remove="tag">
+			<div th:replace="~{ :: inputComponentText(${itemPropertyPath}, 'hidden', false, ${options})}"></div>
+		</div></th:block>
+	</div>
 	
 	<!--/* 
 		### button.
 	 */-->
 
 	<!--/* internal common navBar component. */-->
-	<div th:fragment="navBarComponentExternalFrame(contents, options)" th:remove="tag">
-	<!--/* 
-		<div class="text-dark" 
-				th:with="titleString=${@msgUtil.get(#locale, title)},
-				messageString=${@msgUtil.get(#locale, message)}">
- */-->
-			<!--/* content */-->
+	<div th:fragment="internalButtonCommonComponent(contents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, true, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
 			<th:block th:replace="${contents}" />
-			
-		</div>
+		</div></th:block>
 	</div>
 	
 	<!--/* common button */-->
 	<div th:fragment="commonPrimaryButton(id, label, options)" th:remove="tag">
-		<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${label}"></button>
+		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentCommonPrimaryButton}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentCommonPrimaryButton" th:remove="tag">
+			<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
+					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+					th:text="${label}"></button>
+		</div></th:block>
 	</div>
 
 	<!--/* backButton */-->
 	<div th:fragment="backButton(label, options)" th:remove="tag">
-		<button type="submit" id="back" name="back" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${label}"></button>
+		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentBackButton}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentBackButton" th:remove="tag">
+			<button type="submit" id="back" name="back" class="btn btn-color-btn text-white" 
+					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+					th:text="${label}"></button>
+		</div></th:block>
 	</div>
 	
 	<!--/* inter-button space */-->
 	<span th:fragment="interButtonSpace(options)" th:remove="tag">
-		<span>&nbsp;&nbsp;&nbsp;</span>
-	</span>
+		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentInterButtonSpace}, ${options})}"></div>
 
-	<!--/* 
-		###
-		### general formで使用するcomponents.
-		### editなどgeneral formを使用しているpageでも使用。
-		###
-	 */-->
+		<th:block th:if="false"><div th:fragment="fragmentInterButtonSpace" th:remove="tag">
+			<span>&nbsp;&nbsp;&nbsp;</span>
+		</div></th:block>
+	</span>
 
 	<!--/* 
 		### hidden components.
@@ -585,99 +917,42 @@
 		});
 		</script>
 	</div>
-
-	<!--/* 
-		### form
-	 */-->
-
-	<!--/* generalForm */-->
-	<div th:fragment="generalForm(formContent, topSpaceContent, bottomSpaceContent
-			, formMethod, multipart, subFunction, versionFieldName, versionInitialValue, options)" th:remove="tag">
-		<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
-			<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')},
-					javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
-
-				<th:block th:replace="${topSpaceContent}" />
-
-				<div class="mt-5"></div>
-
-				<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
-				<th:block th:if="${__${javaFormName}__} == null"
-						th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '. 
-								The reason can be: Form with the name not defined; 
-								Form is defined but not used (not set in the generics parameter of the controller definition sentence);'}">
-					[[${@exUtil.systemError(msg)}]]
-				</th:block>
-
-				<!--/* subFunction, ctrlSubFunctionの挙動については#454参照。  */-->
-				<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
-						th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
-						th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
-						th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
-						th:object="${__${javaFormName}__}">
-					<div th:replace="~{ :: token('')}"></div>
-					<!--/* controller側からmodelに渡すformm名が間違えている場合にいつもここでエラーになるが、設定したform名が取得できずdebugしているので、
-					       赤字でエラー表示しつつform名を出力 */-->
-					<h1 style="color: red" th:if="${__${function + #strings.capitalize(subFunction) + 'Form'}__} == null">
-						form: [[${function + #strings.capitalize(subFunction) + 'Form'}]] is null.
-					</h1> 
-					
-					<!--/* confirmedWarningsで、formの外からボタンクリックが必要なためform名を保持しておく */-->
-					<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
-					<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="*{confirmedWarnings}">
-		 			<input type="hidden" name="submitOnChangeToRefresh">
-					<div th:replace="~{ :: version(${rootRecordName}, ${versionFieldName}, ${versionInitialValue}, '')}"></div>
-					<th:block th:replace="${formContent}" />
-		
-					<div th:replace="~{ :: warnMessage('')}"></div>
 	
-	 			</form>
-				
-				<th:block th:replace="${bottomSpaceContent}" />
-		
-			</th:block>
-		</th:block>
-	</div>
-
-
-
 	<!--/* 
 		###
 		### search components.
 		###
 	 */-->
-
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="searchComponentLabel(propertyPathWithoutRootRecord, postfix, options)" th:remove="tag">
-		<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
-				fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
-			<th:block th:with="labelRecordName=${#strings.contains(recordName, '.') ? #strings.substring(recordName, #strings.indexOf(recordName, '.') + 1) : recordName}">
-				<label th:for="${id}" class="form-label text-dark" 
-						th:with="labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
-					[[#{__${labelFieldName}__}]] [[${postfix}]]
-				</label>
-			</th:block>
-		</th:block>
-	</div>
 	
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="searchComponentExternalFrame(propertyPath, contents, labelPostfix, options)" th:remove="tag">
-		<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
-				fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
+	<div th:fragment="internalSearchCommonComponent(itemPropertyPath, contents, labelPostfix, options)" th:remove="tag">
+		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
+				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
 			<th:block th:with="id=${recordName + '.' + fieldName},value=*{__${recordName + '.' + fieldName}__}">
 				<div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-					<div th:replace="~{ :: searchComponentLabel(${propertyPathWithoutRootRecord}, ${labelPostfix}, ${options})}"></div>
+				
+					<!--/* label */-->
+					<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
+							fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
+						<th:block th:with="labelRecordName=${#strings.contains(recordName, '.') ? #strings.substring(recordName, #strings.indexOf(recordName, '.') + 1) : recordName}">
+							<label th:for="${id}" class="form-label text-dark" 
+									th:with="labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
+								[[#{__${labelFieldName}__}]] [[${labelPostfix}]]
+							</label>
+						</th:block>
+					</th:block>
+		
 					<th:block th:replace="${contents}" />
 				</div>
 			</th:block>
 		</th:block>
 	</div>
 	
-	<div th:fragment="searchText(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::searchTextInternal(${propertyPathWithoutRootRecord}, 
-				${options})}, *{__${rootRecordName}__.getSearchPatternComment(#locale, '__${propertyPathWithoutRootRecord}__')}, ${options})}"></div>
+	<div th:fragment="searchText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchTextInternal(${itemPropertyPath}, 
+				${options})}, *{__${rootRecordName}__.getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchTextInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchTextInternal(itemPropertyPath, options)" th:remove="tag">
 			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}"
 				th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${recordName}__.getStringLength('__${fieldName}__')}"
@@ -685,10 +960,10 @@
 		</div></th:block>
 	</div>
 
-	<div th:fragment="searchNumber(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::searchNumberInternal(${propertyPathWithoutRootRecord}, ${options})}, '',  ${options})}"></div>
+	<div th:fragment="searchNumber(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchNumberInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchNumberInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchNumberInternal(itemPropertyPath, options)" th:remove="tag">
 			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
 				class="text-end"
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}"
@@ -697,19 +972,19 @@
 		</div></th:block>
 	</div>
 	 
-	<div th:fragment="searchDate(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::searchDateInternal(${propertyPathWithoutRootRecord}, ${options})}, '',  ${options})}"></div>
+	<div th:fragment="searchDate(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchDateInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchDateInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchDateInternal(itemPropertyPath, options)" th:remove="tag">
 			<input type="date" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
 				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
 				th:readonly="${@optUtil.isReadOnly(options)}">
 		</div></th:block>
 	</div>
 
-	<div th:fragment="searchSelect(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: searchComponentSelect(${propertyPathWithoutRootRecord}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(propertyPathWithoutRootRecord)}__()}, ${options})}"></div>
+	<div th:fragment="searchSelect(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -720,16 +995,16 @@
 		  - firstCharOfCodeLessThanOrEqualTo: codeの一文字目をascii codeの大小で比較
 		  - firstCharOfCodeGreaterThanOrEqualTo: codeの一文字目をascii codeの大小で比較
 	 */-->
-	<div th:fragment="searchSelectFromEnum(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: searchComponentSelect(${propertyPathWithoutRootRecord}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(propertyPathWithoutRootRecord)}__(#locale, '__${options}__')}, ${options})}"></div>
+	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* 内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
-	<div th:fragment="searchComponentSelect(propertyPathWithoutRootRecord, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: searchComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::searchSelectInternal(${propertyPathWithoutRootRecord}, ${options})}, '',  ${options})}"></div>
+	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
+		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchSelectInternal}, '',  ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="searchSelectInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="searchSelectInternal" th:remove="tag">
 			<select class="form-select" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" 
 					th:name="${id}"
 					th:classappend="${messagesBean.isValid(id)}" 
@@ -868,24 +1143,24 @@
 	 */-->
 
 	<!--/* sort不可能なth。text-alignはcenter固定。formは引数に与えていないが外でth:withでformという名前に設定しておく必要あり */-->
-	<div th:fragment="thText(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: thCustomizable(${propertyPathWithoutRootRecord}, 'center', ${options})}"></div>
+	<div th:fragment="thText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: thCustomizable(${itemPropertyPath}, 'center', ${options})}"></div>
 	</div>
 	
 	<!--/* sort可能なth。text-alignはcenter固定。formは引数に与えていないが外でth:withでformという名前に設定しておく必要あり */-->
-	<div th:fragment="thSortable(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: thCustomizable(${propertyPathWithoutRootRecord}, 'center', ${options + ',thSortable'})}"></div>
+	<div th:fragment="thSortable(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: thCustomizable(${itemPropertyPath}, 'center', ${options + ',thSortable'})}"></div>
 	</div>
 	
 	<!--/* カスタマイズ可能なsort可能なth。formは引数に与えていないが外でth:withでformという名前に設定しておく必要あり */-->
-	<div th:fragment="thCustomizable(propertyPathWithoutRootRecord, position, options)" th:remove="tag">
-		<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
-				fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
-			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
+	<div th:fragment="thCustomizable(itemPropertyPath, position, options)" th:remove="tag">
+		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
+				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
+			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 				<th:block th:if="${@optUtil.hasThSortable(options)}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
 							style="cursor: pointer" th:text="#{__${labelFieldName}__}" 
-							th:data-item="${propertyPathWithoutRootRecord}" th:data-direction="${form.nextDirection('__${propertyPathWithoutRootRecord}__')}"
+							th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
 							onClick="list(this.dataset.item, this.dataset.direction);"></th>
 		 		</th:block>
 		 		<th:block th:if="${!@optUtil.hasThSortable(options)}">
@@ -906,24 +1181,24 @@
 	 */-->
 	
 	<!--/* td readOnly text */-->
-	<div th:fragment="tdReadOnlyText(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<th:block th:with="value=${rec.getValue(propertyPathWithoutRootRecord)}">
+	<div th:fragment="tdReadOnlyText(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>
 	
 	<!--/* td readOnly number */-->
-	<div th:fragment="tdReadOnlyNumber(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<th:block th:with="value=${rec.getValue(propertyPathWithoutRootRecord)},
-				needsCommas=*{needsCommas('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
+	<div th:fragment="tdReadOnlyNumber(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)},
+				needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${((needsCommas && @strUtil.isNumberFormat(value)) ? #numbers.formatDecimal(value, 1, 'COMMA', 0, 'POINT')
 					: value)}, 'right', ${options})}"></div>
 		</th:block>
 	</div>
 	
 	<!--/* td readOnly fixed length */-->
-	<div th:fragment="tdReadOnlyFixedLength(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<th:block th:with="value=${rec.getValue(propertyPathWithoutRootRecord)}">
+	<div th:fragment="tdReadOnlyFixedLength(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
 		</th:block>
 	</div>
@@ -939,8 +1214,8 @@
 	</div>
 	
 	<!--/* td readOnly enum text */-->
-	<div th:fragment="tdReadOnlyEnumText(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<th:block th:with="value=${rec.get__${#strings.capitalize(propertyPathWithoutRootRecord)}__Name(#locale)}">
+	<div th:fragment="tdReadOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.get__${#strings.capitalize(itemPropertyPath)}__Name(#locale)}">
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>
@@ -960,19 +1235,19 @@
 	</div>
 	
 	<!--/* td readOnly checkbox */-->
-	<div th:fragment="tdReadOnlyCheckbox(propertyPathWithoutRootRecord, options)" th:remove="tag">
+	<div th:fragment="tdReadOnlyCheckbox(itemPropertyPath, options)" th:remove="tag">
 		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${propertyPathWithoutRootRecord}__}" disabled>
+			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${itemPropertyPath}__}" disabled>
 		</td>
 	</div>
 	
 	<!--/* inline input number */-->
-	<div th:fragment="tdInputNumber(propertyPathWithoutRootRecord, idValue, options)" th:remove="tag">
+	<div th:fragment="tdInputNumber(itemPropertyPath, idValue, options)" th:remove="tag">
 		<td class="align-middle text-center" th:rowspan="${@optUtil..getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<th:block th:with="recordName=${propertyPathWithoutRootRecord.contains('.') ? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
-					fieldName=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord}">
-				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(propertyPathWithoutRootRecord)},
-						needsCommas=*{needsCommas('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
+			<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
+					fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
+				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(itemPropertyPath)},
+						needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 					<input th:type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}"
 							th:value="${(needsCommas && @strUtil.isNumberFormat(value)) ? #numbers.formatDecimal(#strings.replace(value, ',', ''), 1, 'COMMA', 0, 'POINT') : value}"
 							class="text-end form-control-sm fs-6 text-dark"
@@ -1015,17 +1290,17 @@
 	</div>
 
 	<!--/* general button */-->
-	<div th:fragment="tdButton(propertyPathWithoutRootRecord, id, version, options)" th:remove="tag">
+	<div th:fragment="itemPropertyPath, id, version, options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<button type="submit" th:id="${propertyPathWithoutRootRecord} + '_' + ${id}" th:name="${propertyPathWithoutRootRecord}" class="btn btn-sm btn-color-btn text-white"
+			<button type="submit" th:id="${itemPropertyPath} + '_' + ${id}" th:name="${itemPropertyPath}" class="btn btn-sm btn-color-btn text-white"
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 					th:data-version="${version}"
-					th:text="#{__${propertyPathWithoutRootRecord}__}"
+					th:text="#{__${itemPropertyPath}__}"
 					th:disabled=${@optUtil.isDisabled(options)}>
 			</button>
 			<th:block th:if="${@optUtil.needsOnclickJs(options)}">
 				<script th:inline="javascript">
-					onTdButtonClick(/*[[${propertyPathWithoutRootRecord}]], [[${id}]]*/);
+					onTdButtonClick(/*[[${itemPropertyPath}]], [[${id}]]*/);
 				</script>
 			</th:block>
 		</td>
@@ -1078,233 +1353,6 @@
 		<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? 'insertOrUpdate' : null}" name="insertOrUpdate" class="btn btn-color-btn text-white" 
 				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 				th:text="${label}"></button>
-	</div>
-
-	<!--/* 
-		###
-		### input components
-		###
-	 */-->
-	
-	<!--/* internal common input component. */-->
-	<!--/* options: 
-			- id		arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
-			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
-	*/-->
-	<div th:fragment="inputComponentExternalFrame(propertyPathWithoutRootRecord, contents, options)" th:remove="tag">
-		<th:block th:with="propertyPathClass=${propertyPathWithoutRootRecord.contains('.') 
-				? rootRecordName + '.' + propertyPathWithoutRootRecord.substring(0, propertyPathWithoutRootRecord.lastIndexOf('.')) : rootRecordName},
-				propertyPathField=${propertyPathWithoutRootRecord.contains('.') 
-				? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : propertyPathWithoutRootRecord},
-				itemKindIdClass=${propertyPathWithoutRootRecord.contains('.') ? propertyPathWithoutRootRecord.substring(propertyPathWithoutRootRecord.lastIndexOf('.') + 1) : rootRecordName}">
-			<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemKindIdClass + '.' + propertyPathField}">
-				<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
-						inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
-					<div class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
-							? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
-							? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
-
-						<!--/* label */-->
-						<th:block th:with="displayName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
-								<!--/* isPrincipalStringは、#authentication.principalが、loginしている場合は複数項目を格納するbeanなのに、loginしていない場合はStringといういやらしい仕様なので、String可動化をチェックしている */-->
-							<label th:for="${inputId}" class="form-label text-dark" th:with="isPrincipalString=${#authentication.principal.class.name == 'java.lang.String'}">
-								[[${@msgUtil.get(#locale, '__${displayName}__')}]]<span class="text-danger" th:if="*{__${rootRecordName}__.isNotEmpty('__${propertyPathWithoutRootRecord}__', '__${loginState}__', '__${isPrincipalString ? '' : #authentication.principal.authorities}__')}">&nbsp;*</span>
-							</label>
-						</th:block>
-						
-						<!--/* content */-->
-						<th:block th:replace="${contents}" />
-	
-						<!--/* field messages */-->
-						<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
-							<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${propertyPath}__') != null}"
-								th:classappend="${@optUtil.isForSwitch(options) ? 'mt-1' : ''}"
-								th:each="message : ${messagesBean.getErrorMessages('__${propertyPath}__')}">[[${message}]]</div>
-						</th:block>
-						
-					</div>
-				</th:block>
-			</th:block>
-		</th:block>	
-	</div>
-	
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="inputComponentText(propertyPathWithoutRootRecord, type, needsMaxLength, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::inputTextInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputTextInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
-					th:maxlength="${@optUtil.isReadOnly(options) || type == 'hidden'} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
-					th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-					th:readonly="${@optUtil.isReadOnly(options)}">
-		</div></th:block>
-	</div>
-
-	<div th:fragment="inputText(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentText(${propertyPathWithoutRootRecord}, 'text', true, ${options})}"></div>
-	</div>
-	
-	<!--/* textbox(password) */-->
-	<div th:fragment="inputPassword(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentText(${propertyPathWithoutRootRecord}, 'password', true, ${options})}"></div>
-	</div>
-	
-	<!--/* inputNumber */-->
-	<div th:fragment="inputNumber(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::inputNumberInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputNumberInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${rootRecordName}__', '__${propertyPathWithoutRootRecord}__')}">
-				<input th:type="text" th:id="${inputId}" th:name="${inputName}"
-						th:value="${(needsCommas && @strUtil.isNumberFormat(inputValue)) ? #numbers.formatDecimal(#strings.replace(inputValue, ',', ''), 1, 'COMMA', 0, 'POINT') : inputValue}"
-						th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
-						class="text-end"
-						th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-						th:readonly="${@optUtil.isReadOnly(options)}">
-				<th:block th:if="${needsCommas}">
-					<script th:inline="javascript">
-						addNumberFormatFunction(/*[[${rootRecordName + '.' + propertyPathWithoutRootRecord}]]*/);
-					</script>
-				</th:block>
-			</th:block>
-		</div></th:block>
-	</div>
-
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="inputComponentDateTime(propertyPathWithoutRootRecord, type, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::inputDateTimeInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputDateTimeInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
-				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-				th:readonly="${@optUtil.isReadOnly(options)}">
-		</div></th:block>
-	</div>
-
-	<!--/* textbox(month) */-->
-	<div th:fragment="inputYearMonth(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentDateTime(${propertyPathWithoutRootRecord}, 'month', ${options})}"></div>
-	</div>
-
-	<!--/* textbox(date) */-->
-	<div th:fragment="inputDate(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentDateTime(${propertyPathWithoutRootRecord}, 'date', ${options})}"></div>
-	</div>
-
-	<!--/* textbox(time) */-->
-	<div th:fragment="inputTime(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentDateTime(${propertyPathWithoutRootRecord}, 'time', ${options})}"></div>
-	</div>
-
-	<!--/* textarea */-->
- 	<div th:fragment="inputTextArea(propertyPathWithoutRootRecord, options)" th:remove="tag">
- 		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::inputTextAreaInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputTextAreaInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
-				th:maxlength="*{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}" 
-				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-				th:readonly="${@optUtil.isReadOnly(options)}" rows="3">
-			</textarea>
-		</div></th:block>
-	</div>
-
-	<!--/* checkbox (switch) */-->
-	<div th:fragment="inputSwitch(propertyPathWithoutRootRecord, options)" th:remove="tag">
- 		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::inputSwitchInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputSwitchInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<div class="form-check form-switch mt-2">
-				<th:block th:if="${@optUtil.isReadOnly(options)}">
-					<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
-				</th:block>
-				<div>
-					<input type="hidden" th:name="${@optUtil.isReadOnly(options) ? '' : inputName}" value="off">
-					<input th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
-						class="form-check-input align-bottom mb-1" type="checkbox" 
-						th:checked="${inputValue}"
-						th:classappend="${messagesBean.isValid(propertyPath)}"
-						th:disabled="${@optUtil.isReadOnly(options)}">
-				</div>
-			</div>
-		</div></th:block>
-	</div>
-	 
-	<!--/* checkbox */-->
-	<div th:fragment="inputCheckboxes(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::inputCheckboxesInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputCheckboxesInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<div class="form-check mt-2" th:each="option : *{__${propertyPathClass + '.' + propertyPathField + 'List'}__}">
-				<th:block th:with="optionId=${option[0]},optionLabel=${option[1]},optionOptions=${option.length == 2 ? '' : option[2]}">
-					<input th:id="${optionId}" class="form-check-input align-bottom mb-1" type="checkbox" 
-						th:name="${@optUtil.isReadOnly(optionOptions) ? '' : propertyPath}" 
-						th:checked="*{__${propertyPathClass + '.' + propertyPathField + '.contains(''' + optionId + ''')'}__}"
-						th:classappend="${messagesBean.isValid(propertyPath)}"
-						th:disabled="${@optUtil.isReadOnly(optionOptions)}"
-						th:value="${optionId}">
-					<label class="form-check-label text-dark" th:for="${optionId}" th:text="${optionLabel}"></label>
-					<th:block th:if="${@optUtil.isReadOnly(optionOptions)}">
-						<input type="hidden" th:name="${propertyPath}" th:value="${optionId}">
-					</th:block>
-				</th:block>
-			</div>
-		</div></th:block>
-	</div>
-	
-	<div th:fragment="inputSelect(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentSelect(${propertyPathWithoutRootRecord}, *{__${rootRecordName}__.__${@strUtil.selectListMethodName(propertyPathWithoutRootRecord)}__()}, ${options})}"></div>
-	</div>
-
-	<!--/* 
-		- options:
-		  - including: 指定したEnum要素のみをプルダウンに表示。'include=ADMIN,GROUP_ADMIN' など、enumの要素名で、カンマ区切り指定。（codeではない）
-		  - excluding: 指定したEnum要素以外をプルダウンに表示。'exclude=ADMIN,GROUP_ADMIN' など、enumの要素名で、カンマ区切り指定。（codeではない）
-		  - firstCharOfCodeEqualTo: codeの一文字目が等しい場合にtrue
-		  - firstCharOfCodeLessThanOrEqualTo: codeの一文字目をascii codeの大小で比較
-		  - firstCharOfCodeGreaterThanOrEqualTo: codeの一文字目をascii codeの大小で比較
-	 */-->
-	<div th:fragment="inputSelectFromEnum(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentSelect(${propertyPathWithoutRootRecord}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(propertyPathWithoutRootRecord)}__(#locale, '__${options}__')}, ${options})}"></div>
-	</div>
-
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="inputComponentSelect(propertyPathWithoutRootRecord, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ ::inputComponentSelectInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputComponentSelectInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<!--/* selectにはreadonlyが存在しないため、disabledを使用 */-->
-			<th:block th:if="${@optUtil.isReadOnly(options)}">
-				<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? propertyPath : null}" th:name="${propertyPath}" th:value="${inputValue}">
-			</th:block>
-			<select th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
-					class="form-select" th:classappend="${messagesBean.isValid(propertyPath)}"
-					th:disabled="${@optUtil.isReadOnly(options)}"
-					th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
-					th:data-html-form-name="${htmlFormName}"
-					onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
-				<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
-				<th:block th:each="pair : ${pairs}">
-					<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
-				</th:block>
-			</select>
-		</div></th:block>
-	</div>
-	
-	<!--/* component for file upload */-->
-	<div  th:fragment="inputFile(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentExternalFrame(${propertyPathWithoutRootRecord}, ~{ :: inputFileInternal(${propertyPathWithoutRootRecord}, ${options})}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="inputFileInternal(propertyPathWithoutRootRecord, options)" th:remove="tag">
-			<input class="form-control" type="file" th:id="${inputId}" th:name="${propertyPath}" 
-					th:classappend="${messagesBean.isValid(propertyPath)}">
-		</div></th:block>
-	</div>
-
-	<!--/* hidden */-->
-	<div th:fragment="inputHidden(propertyPathWithoutRootRecord, options)" th:remove="tag">
-		<div th:replace="~{ :: inputComponentText(${propertyPathWithoutRootRecord}, 'hidden', false, ${options})}"></div>
 	</div>
 	
 </body>

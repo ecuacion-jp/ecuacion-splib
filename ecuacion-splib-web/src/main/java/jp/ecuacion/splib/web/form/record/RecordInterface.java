@@ -38,11 +38,11 @@ public interface RecordInterface {
    */
   default HtmlItem getHtmlItem(String rootRecordName, String itemPropertyPath) {
     Map<String, HtmlItem> map = Arrays.asList(getHtmlItems()).stream()
-        .collect(Collectors.toMap(e -> e.getPropertyPath(), e -> e));
+        .collect(Collectors.toMap(e -> e.getItemPropertyPath(), e -> e));
 
     HtmlItem field = map.get(itemPropertyPath);
 
-    // Try with itemPropertyPathWithoutRootRecord
+    // Try with itemPropertyPath
     if (field == null && itemPropertyPath.startsWith(rootRecordName)) {
       field = map.get(itemPropertyPath.substring(rootRecordName.length() + 1));
     }
@@ -107,9 +107,9 @@ public interface RecordInterface {
 
     // common側と個別側で同一項目が定義されている場合はエラーとする
     List<String> propertyPath1List =
-        Arrays.asList(fields1).stream().map(e -> e.getPropertyPath()).toList();
+        Arrays.asList(fields1).stream().map(e -> e.getItemPropertyPath()).toList();
 
-    for (String propertyPath2 : Arrays.asList(fields2).stream().map(e -> e.getPropertyPath())
+    for (String propertyPath2 : Arrays.asList(fields2).stream().map(e -> e.getItemPropertyPath())
         .toList()) {
       if (propertyPath1List.contains(propertyPath2)) {
         throw new RuntimeException(
@@ -136,7 +136,7 @@ public interface RecordInterface {
     HtmlItem[] htmlItems = getHtmlItems();
     for (HtmlItem field : htmlItems) {
       if (field.getIsNotEmpty(loginState, bean)) {
-        list.add(field.getPropertyPath());
+        list.add(field.getItemPropertyPath());
       }
     }
 
