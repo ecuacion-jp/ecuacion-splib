@@ -85,7 +85,7 @@ public class HtmlItem {
    * <p>It doesn't depend on the data type.</p>
    * 
    * <p>The default value is preset: {@code false}. So the value becomes {@code false} 
-   *     if you don't have to set this value.</p>
+   *     if you don't set this value.</p>
    */
   protected HtmlItemConditionContainer<Boolean> isNotEmpty =
       new HtmlItemConditionContainer<>(false);
@@ -226,7 +226,7 @@ public class HtmlItem {
    * Is the condition which decides isNotEmpty or not.
    */
   public static enum HtmlItemConditionKeyEnum {
-    LOGIN_STATE, ROLE, AUTHORITY, KEYWORD;
+    LOGIN_STATE, ROLE_CONTAINS, AUTHORITY_CONTAINS;
   }
 
   /**
@@ -300,17 +300,12 @@ public class HtmlItem {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.ROLE) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.ROLE_CONTAINS) {
           if (bean.getRoleList().contains(info.getConditionValue())) {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.AUTHORITY) {
-          if (bean.getAuthorityList().contains(info.getConditionValue())) {
-            return info.getValue();
-          }
-
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.KEYWORD) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.AUTHORITY_CONTAINS) {
           if (bean.getAuthorityList().contains(info.getConditionValue())) {
             return info.getValue();
           }

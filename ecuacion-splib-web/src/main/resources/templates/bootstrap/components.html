@@ -62,10 +62,10 @@
 		'title' and 'message' can be the key to the message.properties or item_names.properties, 
 		or if it does not exist in properties files, it shows the string directly.
 	*/-->
-	<div th:fragment="internalMessageDisplayingCommonComponent(contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: internalMessageDisplayingCommonComponentFragment}, true, ${options})}"></div>
+	<div th:fragment="internalMessageDisplayCommonComponent(contents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentMessageDisplayCommonComponent}, true, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="internalMessageDisplayingCommonComponentFragment" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentMessageDisplayCommonComponent" th:remove="tag">
 			<div class="text-dark" 
 					th:with="titleString=${@msgUtil.get(#locale, title)},
 					messageString=${@msgUtil.get(#locale, message)}">
@@ -77,7 +77,7 @@
 
 	<!--/* title */-->
 	<div th:fragment="title(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: titleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: titleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="titleInternal" th:remove="tag">
 			<div class="fs-3 fw-bold mt-3 mb-5" th:text="${titleString}"></div>
@@ -87,7 +87,7 @@
 	<!--/* titleDesc */-->
 	<!--/* It's placed above the message space, so it does not seem very useful. Maybe it will become deprecated in the future. */-->
 	<div th:fragment="titleDesc(message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: titleDescInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: titleDescInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="titleDescInternal" th:remove="tag">
 			<th:block th:if="${!#strings.isEmpty(messageString)}">
@@ -98,7 +98,7 @@
 
 	<!--/* subtitle  */-->
 	<div th:fragment="subtitle(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: subtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: subtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subtitleInternal" th:remove="tag">
 			<div class="border-5 border-color-subtitle fs-5 fw-bold mt-5 pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
@@ -107,7 +107,7 @@
 
 	<!--/* paragraphWithSubtitle */-->
 	<div th:fragment="paragraphWithSubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subtitleInternal}"></div>
@@ -117,7 +117,7 @@
 	
 	<!--/* subtitle  */-->
 	<div th:fragment="subsubtitle(title, options)" th:remove="tag">
-		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: subsubtitleInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: subsubtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subsubtitleInternal" th:remove="tag">
 			<div>
@@ -130,7 +130,7 @@
 
 	<!--/* paragraphWithSubsubtitle */-->
 	<div th:fragment="paragraphWithSubsubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubsubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subsubtitleInternal}"></div>
@@ -140,7 +140,7 @@
 	
 	<!--/* paragraph */-->
 	<div th:fragment="paragraph(message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: paragraphInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: paragraphInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphInternal" th:remove="tag">
 			<div class="mt-4" style="white-space: pre-wrap;" th:text="${messageString}"></div>
@@ -149,7 +149,7 @@
 	
 	<!--/* referenceBox */-->
 	<div th:fragment="referenceBox(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: referenceBoxInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: referenceBoxInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="referenceBoxInternal" th:remove="tag">
 			<div class="text-dark mt-4">
@@ -163,7 +163,7 @@
 
 	<!--/* box. space enclosed by a frame. */-->
 	<div th:fragment="box(boxContents, title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: boxInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: boxInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="boxInternal" th:remove="tag">
 			<div class="border mt-3">
@@ -188,7 +188,7 @@
 	<!--/* freeSpace */-->
 	<!--/* You can input free text / html. It is used for commonize color and font. */-->
 	<div th:fragment="freeSpace(freeSpaceContent, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayingCommonComponent(~{ :: freeSpaceInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: freeSpaceInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="freeSpaceInternal" th:remove="tag">
 				<th:block th:replace="${freeSpaceContent}" />
@@ -205,19 +205,18 @@
 		or if it does not exist in properties files, it shows the string directly.
 	*/-->
 	<div th:fragment="internalTableCommonComponent(contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: internalTableCommonComponentInternal}, false, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentTableCommonComponent}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="internalTableCommonComponentInternal" th:remove="tag">
-			[[${contents}]]
+		<th:block th:if="false"><div th:fragment="fragmentTableCommonComponent" th:remove="tag">
 			<th:block th:replace="${contents}" />
 		</div></th:block>
 	</div>
 	
 	<!--/* simple table header */-->
 	<div th:fragment="simpleTableHeader(labels, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableHeaderInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableHeader}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="simpleTableHeaderInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentSimpleTableHeader" th:remove="tag">
 			<thead th:id="${componentId}" class="text-white bg-color-tbl-header bg-gradient  align-middle">
 				<tr>
 					<th:block th:each="label : ${labels}">
@@ -230,9 +229,9 @@
  	
 	<!--/* simple table lines from lines of cell elements */-->
 	<div th:fragment="simpleTableTrsFromLines(linesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableTrsFromLinesInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableTrsFromLines}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="simpleTableTrsFromLinesInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentSimpleTableTrsFromLines" th:remove="tag">
 			<tr th:id="${componentId}" th:each="cellElements : ${linesOfCellElements}">
 				<th:block th:each="cellElement : ${cellElements}">
 					<th:block th:with="alignment=${cellElement[0]}, string=${cellElement[1]}, 
@@ -240,7 +239,7 @@
 							colspan=${#lists.size(cellElement) == 2 ? 1 : cellElement[3]},
 							">
 						<td class="align-middle fs-6 text-dark" th:classappend="${'text-' + alignment}" style="white-space: pre-wrap;"
-								th:utext="${@msgUtil.get(#locale, string)}" th:rowspan="${rowspan}" th:colspan="${colspan}"></td>
+								th:text="${@msgUtil.get(#locale, string)}" th:rowspan="${rowspan}" th:colspan="${colspan}"></td>
 					</th:block>
 				</th:block>
 			</tr>
@@ -255,9 +254,9 @@
 		linesOfCellElements is an array of cellElements, which means linesOfCellElements is 3-dimensional array.
 	 */-->
 	<div th:fragment="simpleTableBodyFromLines(linesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableBodyFromLinesInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableBodyFromLines}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="simpleTableBodyFromLinesInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentSimpleTableBodyFromLines" th:remove="tag">
 			<tbody th:id="${componentId}">
 				<div th:replace="~{ :: simpleTableTrsFromLines(${linesOfCellElements}, ${options})}"></div>
 			</tbody>
@@ -271,9 +270,9 @@
 		for example table lines have a common part. 
 	 */-->
 	<div th:fragment="simpleTableBodyFromArrayOfLines(arrayOfLinesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTableCommonComponent(~{ :: simpleTableBodyFromArrayOfLinesInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableBodyFromArrayOfLines}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="simpleTableBodyFromArrayOfLinesInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentSimpleTableBodyFromArrayOfLines" th:remove="tag">
 			<tbody th:id="${componentId}">
 				<th:block th:each="linesOfCellElements : ${arrayOfLinesOfCellElements}">
 					<div th:replace="~{ :: simpleTableTrsFromLinesOfCellElements(${linesOfCellElements}, ${options})}"></div>
@@ -291,9 +290,9 @@
 		special thanks to: https://stand-4u.com/css/fukidashi.html
 	 */-->
 	<div  th:fragment="speechBalloon(itemPropertyPath, isMySpeech, isSelectable, name, timestamp, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: speechBalloonInternal}, false, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentSpeechBalloon}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="speechBalloonInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentSpeechBalloon" th:remove="tag">
 			<!--/* Add space character when the input string is blank. */-->
 			<div th:classappend="'balloon_' + ${isMySpeech ? 'r' : 'l'}" th:with="message=${message == null || message == '' ? '&nbsp;' : message}">
 				<div class="faceicon" th:if="${!isMySpeech}">
@@ -319,9 +318,9 @@
 	
 	<!--/* hr */-->
 	<div th:fragment=horizontalLine(options) th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: horizontalLineInternal}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentHorizontalLine}, true, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="horizontalLineInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentHorizontalLine" th:remove="tag">
 			<hr class="mt-4 mb-4">
 		</div></th:block>
 	</div>
@@ -331,33 +330,34 @@
 	 */-->
 	
 	<!--/* internal common navBar component */-->
-	<div th:fragment="internalNavBarCommonComponent(contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: internalNavBarCommonComponentInternal}, false, ${options})}"></div>
+	<div th:fragment="internalNavBarCommonComponent(contents, label, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavBarCommonComponent}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="internalNavBarCommonComponentInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavBarCommonComponent" th:remove="tag">
+			<th:block th:with="labelString=${@msgUtil.get(#locale, '__${label}__')}">
 			<th:block th:replace="${contents}" />
 		</div></th:block>
 	</div>
 	
 	<!--/* navBarMenu: A menu link (not dropdown) placed on navigation bars. */-->
 	<div th:fragment="navBarMenuItem(href, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarMenuItemInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarMenuItem}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="navBarMenuItemInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavBarMenuItem" th:remove="tag">
 			<li th:id="${componentId}" style="margin-left: 20px">
-				<a class="nav-link" th:href="${href}" th:text="${label}"></a>
+				<a class="nav-link" th:href="${href}" th:text="${labelString}"></a>
 			</li>
 		</div></th:block>
 	</div>
 	
 	<!--/* navBarMenu: A menu link (not dropdown) placed on navigation bars. */-->
 	<div th:fragment="navBarSubMenu(label, menuItems, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarSubMenuInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarSubMenu}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="navBarSubMenuInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavBarSubMenu" th:remove="tag">
 			<li th:id="${componentId}" style="margin-left: 20px" class="nav-item dropdown">
 				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
-						data-bs-toggle="dropdown" aria-expanded="false" th:text="${label}"></a>
+						data-bs-toggle="dropdown" aria-expanded="false" th:text="${labelString}"></a>
 				<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown"
 						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
 						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
@@ -369,18 +369,18 @@
 
 	<!--/* navBarDropDownMenuItem */-->
 	<div th:fragment="navBarDropDownMenuItem(href, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownMenuItemInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownMenuItem}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="navBarDropDownMenuItemInternal" th:remove="tag">
-			<li th:id="${componentId}"><a class="dropdown-item" th:href="${href}" th:text="${label}"></a></li>
+		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownMenuItem" th:remove="tag">
+			<li th:id="${componentId}"><a class="dropdown-item" th:href="${href}" th:text="${labelString}"></a></li>
 		</div></th:block>
 	</div>
 
 	<!--/* navBarDropDownMenuDivider */-->
 	<div th:fragment="navBarDropDownMenuDivider(options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownMenuDividerInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownMenuDivider}, '', ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="navBarDropDownMenuDividerInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownMenuDivider" th:remove="tag">
 			<li th:id="${componentId}"><hr class="dropdown-divider"></li>
 		</div></th:block>
 	</div>
@@ -391,23 +391,23 @@
 		It's supposed to be placed at the top or right after the divider.
 	*/-->
 	<div th:fragment="navBarDropDownMenuGroupLabel(label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownMenuGroupLabelInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownMenuGroupLabel}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="navBarDropDownMenuGroupLabelInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownMenuGroupLabel" th:remove="tag">
 			<li th:id="${componentId}" class="mb-1"><small>
-				<div class="ms-3" style="font-weight: bold" th:text="${'&lt; &nbsp;' + label + '&nbsp; &gt;'}"></div>
+				<div class="ms-3" style="font-weight: bold" th:text="${'&lt; &nbsp;' + labelString + '&nbsp; &gt;'}"></div>
 			</small></li>
 		</div>
 	</div>
 
 	<!--/* navBarDropDownSubMenu */-->
 	<div th:fragment="navBarDropDownSubMenu(label, menuItems, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: navBarDropDownSubMenuInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownSubMenu}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="navBarDropDownSubMenuInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownSubMenu" th:remove="tag">
 			<li th:id="${componentId}">
 				<a class="dropdown-item" href="#">
-					<div style="text-align: left; float: left;" th:text="${label}"></div>
+					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
 					<div style="text-align: right;" th:text="${options.contains('direction=left') ? '&ltrif;' : '&rtrif;'}">︎</div>
 				</a>
 				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark bg-gradient bg-primary"
@@ -426,9 +426,9 @@
 	 
 	<!--/* server messages */-->
 	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: messagesInternal}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentMessages}, true, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="messagesInternal" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentMessages" th:remove="tag">
 			<div class="mt-5 mb-5">
 				<!-- messages from url parameter -->
 				<div class="all-error-messages-list-wrapper text-danger">
@@ -838,7 +838,7 @@
 	</div>
 	
 	<!--/* 
-		### button.
+		### general form button.
 	 */-->
 
 	<!--/* internal common navBar component. */-->
@@ -882,7 +882,7 @@
 	</span>
 
 	<!--/* 
-		### hidden components.
+		### general form hidden components
 	 */-->
 
 	<!--/*
@@ -898,10 +898,7 @@
 		<input type="hidden" name="transactionToken" th:value="${transactionToken}">
 	</div>
 	
-	<!--/* 
-		### zone offsetを取得する処理。
-	 */-->
-
+	<!--/* zone offsetを取得する処理 */-->
 	<div th:fragment="sendZoneOffset(options)" th:remove="tag">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		<input type="hidden" id="zoneOffsetParams" th:data-url="@{/public/zoneOffset}">
@@ -1070,7 +1067,7 @@
 	</div>
 
 	<!--/* 
-		### button.
+		### search form button
 	 */-->
 
 	<!--/* searchButton */-->
@@ -1088,7 +1085,7 @@
 	</div>
 
 	<!--/* 
-		### 検索関連のscript。
+		### search script
 	 */-->
 	 
 	<!--/* javaScript for inline update button. inline update buttonを配置するならこれも併せて配置。通常ページの一番下に配置。  */-->
@@ -1290,7 +1287,7 @@
 	</div>
 
 	<!--/* general button */-->
-	<div th:fragment="itemPropertyPath, id, version, options)" th:remove="tag">
+	<div th:fragment="tdButton(itemPropertyPath, id, version, options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<button type="submit" th:id="${itemPropertyPath} + '_' + ${id}" th:name="${itemPropertyPath}" class="btn btn-sm btn-color-btn text-white"
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
@@ -1347,7 +1344,7 @@
 				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.insert')}"></button>
 	</div>
-	
+
 	<!--/* insertOrUpdateButton */-->
 	<div th:fragment="insertOrUpdateButton(label, options)" th:remove="tag">
 		<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? 'insertOrUpdate' : null}" name="insertOrUpdate" class="btn btn-color-btn text-white" 

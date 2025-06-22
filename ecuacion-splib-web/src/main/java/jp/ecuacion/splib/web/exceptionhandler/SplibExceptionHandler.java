@@ -388,8 +388,8 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleHtmlFileNotAllowedToOpenException(
       @Nonnull HtmlFileNotAllowedToOpenException exception) {
 
-    detailLog.info("Designated html file not allowed to open. Needs to add option to html tag."
-        + " html file name = " + exception.getFileName());
+
+    detailLog.info(exception.getMessage());
     detailLog.error(exception);
     
     // それっぽいURLにredirectしておく。なければさらにredirectされて適切な画面が表示される。
