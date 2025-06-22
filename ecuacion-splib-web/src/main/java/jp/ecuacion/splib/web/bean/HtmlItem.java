@@ -93,18 +93,8 @@ public class HtmlItem {
   /**
    * Constructs a new instance with {@code ID}.
    * 
-   * <p>Generally propertyPath starts with a rootRecord 
-   *     (a record field name which is directly defined in a form)
-   *     and should be like {@code user.name} or {@code user.dept.name}.
-   *     But it is also allowed that you can omit the top rootRecord part 
-   *     when {@code user} is the mainRootRecord, 
-   *     which means {@code name} or {@code dept.name} is also okay.
-   *     When creating html htmlItems are searched with propertyPath,
-   *     and if nothing found, 
-   *     mainRootRecord is automatically added to the top of propertyPath and search again.</p>
-   * 
-   * @param itemPropertyPath propertyPath, maybe without top mainRootRecord part.
-   *     (when "user" is mainRootRecord, both user.name and name are accepted)
+   * @param itemPropertyPath propertyPath, without top mainRootRecord part.
+   *     (when "user" is mainRootRecord, itemPropertyPath is "name", not "user.name")
    */
   public HtmlItem(@RequireNonempty String itemPropertyPath) {
 
