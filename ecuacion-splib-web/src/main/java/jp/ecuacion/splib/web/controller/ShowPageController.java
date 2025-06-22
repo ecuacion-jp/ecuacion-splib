@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
+import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
 import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
 import jp.ecuacion.splib.web.util.SplibUtil;
@@ -110,7 +111,7 @@ public class ShowPageController extends SplibBaseController {
 
     // 改行・空欄で区切り、"data-show-page-login-state" の属性を抽出
     List<String> list = Arrays.asList(htmlTag.replaceAll("\n", " ").split(" ")).stream()
-        .filter(str -> str.contains("data-show-page-login-state")).toList();
+        .filter(str -> str.contains(SplibWebConstants.KEY_BASE_PAGE_LOGIN_STATE)).toList();
 
     // チェック
     if (list.size() != 1 || !list.get(0).contains("=")

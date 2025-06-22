@@ -32,4 +32,6 @@ public class SplibWebConstants {
   public static final String KEY_MODEL = "model";
   
   public static final String KEY_MODEL_MESSAGES_AT_ITEMS = "showsMessagesLinkedToItemsAtEachItem";
+  
+  public static final String KEY_BASE_PAGE_LOGIN_STATE = "data-show-page-login-state";
 }

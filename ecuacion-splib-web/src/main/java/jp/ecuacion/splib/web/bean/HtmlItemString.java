@@ -29,10 +29,10 @@ public class HtmlItemString extends HtmlItem {
    * Constructs a new instance.
    * 
    * @see HtmlItem
-   * @param propertyPath propertyPath
+   * @param itemPropertyPath propertyPath
    */
-  public HtmlItemString(String propertyPath) {
-    super(propertyPath);
+  public HtmlItemString(String itemPropertyPath) {
+    super(itemPropertyPath);
     this.matchingCondition = new StringMatchingConditionBean();
   }
 

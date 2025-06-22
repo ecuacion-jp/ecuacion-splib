@@ -47,7 +47,7 @@ public class HtmlItem {
    *     where "acc" is the rootRecordName.</p>
    */
   @Nonnull
-  protected String propertyPath;
+  protected String itemPropertyPath;
 
   /**
    * Is a class part (= left part) of itemKindId. (like "acc" from itemKindId: "acc.name")
@@ -85,7 +85,7 @@ public class HtmlItem {
    * <p>It doesn't depend on the data type.</p>
    * 
    * <p>The default value is preset: {@code false}. So the value becomes {@code false} 
-   *     if you don't have to set this value.</p>
+   *     if you don't set this value.</p>
    */
   protected HtmlItemConditionContainer<Boolean> isNotEmpty =
       new HtmlItemConditionContainer<>(false);
@@ -103,30 +103,30 @@ public class HtmlItem {
    *     and if nothing found, 
    *     mainRootRecord is automatically added to the top of propertyPath and search again.</p>
    * 
-   * @param propertyPath propertyPath, maybe without top mainRootRecord part.
+   * @param itemPropertyPath propertyPath, maybe without top mainRootRecord part.
    *     (when "user" is mainRootRecord, both user.name and name are accepted)
    */
-  public HtmlItem(@RequireNonempty String propertyPath) {
+  public HtmlItem(@RequireNonempty String itemPropertyPath) {
 
-    this.propertyPath = ObjectsUtil.requireNonEmpty(propertyPath);
+    this.itemPropertyPath = ObjectsUtil.requireNonEmpty(itemPropertyPath);
 
     // Remove far left part ("name" in "acc.name") from propertyPath.
     // It's null when propertyPath doesn't contain ".".
-    String propertyPathWithoutFarRightPart =
-        propertyPath.contains(".") ? propertyPath.substring(0, propertyPath.lastIndexOf("."))
-            : null;
+    String propertyPathWithoutFarRightPart = itemPropertyPath.contains(".")
+        ? itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf("."))
+        : null;
 
     this.itemKindIdClass = propertyPathWithoutFarRightPart == null ? null
         : (propertyPathWithoutFarRightPart.contains(".")
-            ? propertyPathWithoutFarRightPart.substring(propertyPath.lastIndexOf(".") + 1)
+            ? propertyPathWithoutFarRightPart.substring(itemPropertyPath.lastIndexOf(".") + 1)
             : propertyPathWithoutFarRightPart);
-    this.itemKindIdField =
-        propertyPath.contains(".") ? propertyPath.substring(propertyPath.lastIndexOf(".") + 1)
-            : propertyPath;
+    this.itemKindIdField = itemPropertyPath.contains(".")
+        ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf(".") + 1)
+        : itemPropertyPath;
   }
 
-  public String getPropertyPath() {
-    return propertyPath;
+  public String getItemPropertyPath() {
+    return itemPropertyPath;
   }
 
   /**
@@ -226,7 +226,7 @@ public class HtmlItem {
    * Is the condition which decides isNotEmpty or not.
    */
   public static enum HtmlItemConditionKeyEnum {
-    LOGIN_STATE, ROLE, AUTHORITY, KEYWORD;
+    LOGIN_STATE, ROLE_CONTAINS, AUTHORITY_CONTAINS;
   }
 
   /**
@@ -300,17 +300,12 @@ public class HtmlItem {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.ROLE) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.ROLE_CONTAINS) {
           if (bean.getRoleList().contains(info.getConditionValue())) {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.AUTHORITY) {
-          if (bean.getAuthorityList().contains(info.getConditionValue())) {
-            return info.getValue();
-          }
-
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.KEYWORD) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.AUTHORITY_CONTAINS) {
           if (bean.getAuthorityList().contains(info.getConditionValue())) {
             return info.getValue();
           }

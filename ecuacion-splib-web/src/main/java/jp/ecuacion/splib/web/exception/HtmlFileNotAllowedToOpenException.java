@@ -15,6 +15,8 @@
  */
 package jp.ecuacion.splib.web.exception;
 
+import jp.ecuacion.splib.web.constant.SplibWebConstants;
+
 /**
  * Notices that the html page file specified by url parameter 
  * does not have the needed option at the html tqg.
@@ -33,8 +35,17 @@ public class HtmlFileNotAllowedToOpenException extends RuntimeException {
   public HtmlFileNotAllowedToOpenException(String htmlFileName) {
     this.fileName = htmlFileName;
   }
-  
+
   public String getFileName() {
     return fileName;
+  }
+
+  @Override
+  public String getMessage() {
+    String message = "Designated html file not allowed to open. It needs to add option "
+        + SplibWebConstants.KEY_BASE_PAGE_LOGIN_STATE + " to html tag. html file name = "
+        + fileName;
+
+    return message;
   }
 }
