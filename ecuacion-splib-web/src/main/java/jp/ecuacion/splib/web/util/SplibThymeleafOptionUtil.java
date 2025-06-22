@@ -139,12 +139,21 @@ public class SplibThymeleafOptionUtil {
     return optionMap(options).get(key.toLowerCase());
   }
 
-  private String defaultIfKeyNotExist(String options, String key, String defaultValue) {
+  /**
+   * Returns value obtained from the key, or defaultValue 
+   * when the key does not exist in the properties file.
+   * 
+   * @param options options
+   * @param key key
+   * @param defaultValue defaultValue
+   * @return value
+   */
+  public String getValueOrElse(String options, String key, String defaultValue) {
     if (hasKey(options, key)) {
       return getValue(options, key);
 
     } else {
-      return Integer.valueOf(defaultValue).toString();
+      return defaultValue;
     }
   }
 
@@ -229,25 +238,25 @@ public class SplibThymeleafOptionUtil {
   }
 
 
-  /**
-   * Returns rows with default value 1.
-   * 
-   * @param options options
-   * @return linkUrl
-   */
-  public String rows(String options) {
-    return defaultIfKeyNotExist(options, "rows", "1");
-  }
+  // /**
+  // * Returns rows with default value 1.
+  // *
+  // * @param options options
+  // * @return linkUrl
+  // */
+  // public String rows(String options) {
+  // return getValueOrElse(options, "rows", "1");
+  // }
 
-  /**
-   * Returns cols with default value 1.
-   * 
-   * @param options options
-   * @return linkUrl
-   */
-  public String cols(String options) {
-    return defaultIfKeyNotExist(options, "cols", "1");
-  }
+  // /**
+  // * Returns cols with default value 1.
+  // *
+  // * @param options options
+  // * @return linkUrl
+  // */
+  // public String cols(String options) {
+  // return getValueOrElse(options, "cols", "1");
+  // }
 
   /**
    * Returns whether the options contain thSortable.

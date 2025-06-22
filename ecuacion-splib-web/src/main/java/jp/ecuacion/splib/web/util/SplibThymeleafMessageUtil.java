@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.util;
 
 import java.util.Locale;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -40,22 +41,29 @@ public class SplibThymeleafMessageUtil {
    * @param id id
    * @return String
    */
-  public String get(Locale locale, String id) {
+  public String get(Locale locale, String id, String... args) {
+    
+    // Return blank when id is empty.
+    if (StringUtils.isEmpty(id)) {
+      return "";
+    }
+    
     boolean hasMsg = PropertyFileUtil.hasMessage(id);
+    boolean hasStr = PropertyFileUtil.hasString(id);
     boolean hasItem = PropertyFileUtil.hasItemName(id);
-
-    // 両方に存在する場合はエラー
-    if (hasMsg && hasItem) {
-      String msg =
-          "Key '" + id + "' has both in 'messages.properties' and 'item_names.properties'. "
-              + "One of keys must be removed. (key : " + id + ")";
-      throw new RuntimeException(msg);
+    
+    // Return id when id not exist in both.
+    if (!hasMsg && !hasStr && !hasItem) {
+      return id;
     }
 
     // Even when hasMsg == false && hasItem = false, Exception doesn't emerge.
     if (hasMsg) {
-      return PropertyFileUtil.getMessage(locale, id);
+      return PropertyFileUtil.getMessage(locale, id, args);
 
+    } else if (hasStr) {
+      return PropertyFileUtil.getString(id, args);
+      
     } else {
       return PropertyFileUtil.getItemName(locale, id);
     }

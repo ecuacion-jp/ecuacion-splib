@@ -18,7 +18,10 @@ package jp.ecuacion.splib.web.bean;
 import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import jp.ecuacion.lib.core.annotation.RequireNonempty;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Stores attributes of each html component which controls the behaviors of it in html pages.
@@ -37,23 +40,41 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 public class HtmlItem {
 
   /**
-   * propertyPath.
+   * Is the ID string of htmlItem.
+   * 
+   * <p>rootRecordName part (= far left part) can be omitted. Namely it can be "name" or "dept.name"
+   *     when the real propertyPath is "acc.name" or "acc.dept.name" 
+   *     where "acc" is the rootRecordName.</p>
    */
-  protected String propertyPath;
+  @Nonnull
+  protected String itemPropertyPath;
 
   /**
-   * Is an ID which the root record name plus dot (like {@code "acc."}) is removed
-   * from the itemKindId.
+   * Is a class part (= left part) of itemKindId. (like "acc" from itemKindId: "acc.name")
+   * 
+   * <p>It can be {@code null}, then {@code rootRecordName} obtained from context is used.</p>
+   */
+  protected String itemKindIdClass;
+
+  /**
+   * Is a field part (= right part) of itemKindId. (like "name" from itemKindId: "acc.name")
    */
   @Nonnull
   protected String itemKindIdField;
 
   /**
-   * Is an itemKindIdField used to display the name of the item.
+   * Is a class part (= left part) of itemNameKey. (like "acc" from itemKindId: "acc.name")
    * 
    * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
    */
-  protected String itemKindIdFieldForName;
+  protected String itemNameKeyClass;
+
+  /**
+   * Is a field part (= right part) of itemNameKey. (like "name" from itemKindId: "acc.name")
+   * 
+   * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
+   */
+  protected String itemNameKeyField;
 
   /**
    * Shows whether the field allows empty.
@@ -64,7 +85,7 @@ public class HtmlItem {
    * <p>It doesn't depend on the data type.</p>
    * 
    * <p>The default value is preset: {@code false}. So the value becomes {@code false} 
-   *     if you don't have to set this value.</p>
+   *     if you don't set this value.</p>
    */
   protected HtmlItemConditionContainer<Boolean> isNotEmpty =
       new HtmlItemConditionContainer<>(false);
@@ -75,50 +96,90 @@ public class HtmlItem {
    * <p>Generally propertyPath starts with a rootRecord 
    *     (a record field name which is directly defined in a form)
    *     and should be like {@code user.name} or {@code user.dept.name}.
-   *     It is allowed that you can omit the top rootRecord part 
+   *     But it is also allowed that you can omit the top rootRecord part 
    *     when {@code user} is the mainRootRecord, 
    *     which means {@code name} or {@code dept.name} is also okay.
    *     When creating html htmlItems are searched with propertyPath,
    *     and if nothing found, 
    *     mainRootRecord is automatically added to the top of propertyPath and search again.</p>
    * 
-   * @param propertyPath propertyPath, maybe without top mainRootRecord part.
+   * @param itemPropertyPath propertyPath, maybe without top mainRootRecord part.
    *     (when "user" is mainRootRecord, both user.name and name are accepted)
    */
-  public HtmlItem(String propertyPath) {
-    this.propertyPath = propertyPath;
-    this.itemKindIdField = propertyPath;
+  public HtmlItem(@RequireNonempty String itemPropertyPath) {
+
+    this.itemPropertyPath = ObjectsUtil.requireNonEmpty(itemPropertyPath);
+
+    // Remove far left part ("name" in "acc.name") from propertyPath.
+    // It's null when propertyPath doesn't contain ".".
+    String propertyPathWithoutFarRightPart = itemPropertyPath.contains(".")
+        ? itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf("."))
+        : null;
+
+    this.itemKindIdClass = propertyPathWithoutFarRightPart == null ? null
+        : (propertyPathWithoutFarRightPart.contains(".")
+            ? propertyPathWithoutFarRightPart.substring(itemPropertyPath.lastIndexOf(".") + 1)
+            : propertyPathWithoutFarRightPart);
+    this.itemKindIdField = itemPropertyPath.contains(".")
+        ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf(".") + 1)
+        : itemPropertyPath;
   }
 
-  public String getPropertyPath() {
-    return propertyPath;
-  }
-
-  public String getItemKindIdField() {
-    return itemKindIdField;
+  public String getItemPropertyPath() {
+    return itemPropertyPath;
   }
 
   /**
-   * Sets {@code itemKindIdFieldForName} and returns this for method chain.
+   * Returns itemKindId.
    * 
-   * @param itemKindIdFieldForName itemKindIdFieldForName
+   * <p>itemKindId is built from itemKindIdClass and itemKindIdField.<br>
+   * When itemKindIdClass is {@code null}, rootRecordName is used instead.</p>
+   * 
+   * @param rootRecordName rootRecordName
+   * @return itemKindId
+   */
+  public String getItemKindId(String rootRecordName) {
+    return (StringUtils.isEmpty(itemKindIdClass) ? rootRecordName : itemKindIdClass) + "."
+        + itemKindIdField;
+  }
+
+  /**
+   * Sets {@code itemNameKey} and returns this for method chain.
+   * 
+   * <p>The format of itemNameKey is the same as itemKindId, which is like "acc.name",
+   *     always has one dot (not more than one) in the middle of the string.<br>
+   *     But the argument of the method can be like "name".
+   *     In that case itemKindIdClass is used instead. 
+   *     When itemKindIdClass is {@code null}, rootRecordName is used instead.</p>
+   * 
+   * @param itemNameKey itemNameKey
    * @return HtmlItem
    */
-  public HtmlItem itemKindIdFieldForName(String itemKindIdFieldForName) {
-    this.itemKindIdFieldForName = itemKindIdFieldForName;
+  public HtmlItem itemNameKey(@RequireNonempty String itemNameKey) {
+    ObjectsUtil.requireNonEmpty(itemNameKey);
+
+    this.itemNameKeyClass =
+        itemNameKey.contains(".") ? itemNameKey.substring(0, itemNameKey.lastIndexOf(".")) : null;
+    this.itemNameKeyField =
+        itemNameKey.contains(".") ? itemNameKey.substring(itemNameKey.lastIndexOf(".") + 1)
+            : itemNameKey;
     return this;
   }
 
   /**
-   * Returns {@code itemKindIdFieldForName} value.
+   * Returns {@code itemNameKey} value.
    * 
    * <p>Its value is {@code null} means 
-   *     the item's original itemKindId is equal to itemKindIdFieldForName.</p>
+   *     the item's original itemKindId is equal to itemNameKey.</p>
    * 
    * @return itemKindIdFieldForName
    */
-  public String getItemKindIdFieldForName() {
-    return itemKindIdFieldForName;
+  public String getItemNameKey(String rootRecordName) {
+    String classPart = !StringUtils.isEmpty(itemNameKeyClass) ? itemNameKeyClass
+        : (!StringUtils.isEmpty(itemKindIdClass) ? itemKindIdClass : rootRecordName);
+    String fieldPart = !StringUtils.isEmpty(itemNameKeyField) ? itemNameKeyField : itemKindIdField;
+
+    return classPart + "." + fieldPart;
   }
 
   /**
@@ -165,7 +226,7 @@ public class HtmlItem {
    * Is the condition which decides isNotEmpty or not.
    */
   public static enum HtmlItemConditionKeyEnum {
-    LOGIN_STATE, ROLE, AUTHORITY, KEYWORD;
+    LOGIN_STATE, ROLE_CONTAINS, AUTHORITY_CONTAINS;
   }
 
   /**
@@ -239,17 +300,12 @@ public class HtmlItem {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.ROLE) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.ROLE_CONTAINS) {
           if (bean.getRoleList().contains(info.getConditionValue())) {
             return info.getValue();
           }
 
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.AUTHORITY) {
-          if (bean.getAuthorityList().contains(info.getConditionValue())) {
-            return info.getValue();
-          }
-
-        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.KEYWORD) {
+        } else if (info.getConditionKey() == HtmlItemConditionKeyEnum.AUTHORITY_CONTAINS) {
           if (bean.getAuthorityList().contains(info.getConditionValue())) {
             return info.getValue();
           }
