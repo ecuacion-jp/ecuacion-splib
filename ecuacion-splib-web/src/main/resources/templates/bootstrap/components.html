@@ -837,6 +837,11 @@
 				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
+	<div th:fragment="inputSelectWithLocale(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputSelect(${itemPropertyPath}, 
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+	</div>
+	
 	<!--/* component for file upload */-->
 	<div  th:fragment="inputFile(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ${options})}"></div>
@@ -845,6 +850,108 @@
 			<input class="form-control" type="file" th:id="${inputId}" th:name="${propertyPath}" 
 					th:classappend="${messagesBean.isValid(propertyPath)}">
 		</div></th:block>
+	</div>
+	
+	<!--/* component for file upload */-->
+	<div  th:fragment="inputTakenPhotoMobile(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoMobile}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentInputTakenPhotoMobile" th:remove="tag">
+			<input class="form-control" th:classappend="${messagesBean.isValid(propertyPath)}" 
+					type="file" th:name="${propertyPath}"  th:id="${inputId}" accept="image/*" capture="user">
+		</div></th:block>
+
+	<!--/* for PC
+		<video id="video" width="320" height="240" autoplay muted></video>
+		<canvas id="canvas" width="320" height="240"></canvas>
+		<img id="photo" src="#" alt="taken photo">
+		<input type="hidden" id="takenPhoto" name="input.inputTakenPhoto" th:value="*{input.inputTakenPhoto}">
+		<div class="mt-2"></div>
+		<button id="allowance" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient">撮影画面表示</button>
+		<button id="capture" type="button" style="vertical-align: center;" class="btn btn-sm btn-color-btn text-white bg-gradient">撮影</button>
+		<button id="recapture" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient">再撮影</button>
+	
+		<script>
+			const video = document.getElementById('video');
+			const canvas = document.getElementById('canvas');
+			const photo = document.getElementById('photo');
+			const hidden = document.getElementById('takenPhoto');
+			const allowanceButton = document.getElementById('allowance');
+			const captureButton = document.getElementById('capture');
+			const recaptureButton = document.getElementById('recapture');
+			let stream;
+	
+			video.style.display = 'none';
+			canvas.style.display = 'none';
+			photo.style.display = 'none';
+			captureButton.style.display = 'none';
+			recaptureButton.style.display = 'none';
+			
+			if (hidden.value != "") {
+				photo.style.display = 'flex';
+				photo.setAttribute('src', hidden.value);
+			}
+			
+			// allowanceボタンが押された時の処理
+			allowanceButton.addEventListener('click', function() {
+				// カメラへのアクセス許可を要求
+				navigator.mediaDevices.getUserMedia({ video: true })
+					.then(function(mediaStream) {
+						stream = mediaStream;
+						video.srcObject = stream;
+						video.onloadedmetadata = function(e) {
+						  video.play();
+						};
+	
+						// 撮影画面表示の変更
+						video.style.display = 'flex';
+						photo.style.display = 'none';
+						// ボタンの表示を変更
+						allowanceButton.style.display = 'none';
+						captureButton.style.display = 'flex';
+						
+						// canvasから画像データを取得
+						photo.setAttribute('src', '');
+						hidden.value = '';
+					})
+					.catch(function(err) {
+						console.log("カメラへのアクセスエラー: " + err);
+					});
+			});
+	
+			// 撮影ボタンがクリックされた時の処理
+			captureButton.addEventListener('click', function() {
+				const context = canvas.getContext('2d');
+				context.drawImage(video, 0, 0, canvas.width, canvas.height);
+				 
+				// 撮影画面表示の変更
+				video.style.display = 'none';
+				photo.style.display = 'flex';
+				// ボタンの表示を変更
+				captureButton.style.display = 'none';
+				recaptureButton.style.display = 'inline-block';
+				// canvasから画像データを取得
+				photo.setAttribute('src', canvas.toDataURL('image/jpeg'));
+				hidden.value = canvas.toDataURL('image/jpeg');
+			});
+	
+			// 再撮影ボタンがクリックされた時の処理
+			recaptureButton.addEventListener('click', function() {
+				const context = canvas.getContext('2d');
+				context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+				// 撮影画面表示の変更
+				video.style.display = 'flex';
+				photo.style.display = 'none';
+				// ボタンの表示を変更
+				captureButton.style.display = 'inline-block';
+				recaptureButton.style.display = 'none';
+				
+				// canvasから画像データを取得
+				photo.setAttribute('src', '');
+				hidden.value = '';
+			});
+	  </script> */-->
 	</div>
 	
 	<!--/* 
