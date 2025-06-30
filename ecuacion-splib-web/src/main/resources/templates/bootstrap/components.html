@@ -1112,7 +1112,7 @@
 				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
-	<!--/* 内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
+	<!--/* internal common component */-->
 	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
 		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchSelectInternal}, '',  ${options})}"></div>
 
