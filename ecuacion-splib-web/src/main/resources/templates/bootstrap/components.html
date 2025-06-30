@@ -541,8 +541,6 @@
 	
 					<th:block th:replace="${topSpaceContent}" />
 	
-					<div class="mt-5"></div>
-	
 					<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
 					<th:block th:if="${__${javaFormName}__} == null"
 							th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '. 
@@ -624,7 +622,7 @@
 			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
 	*/-->
 	<div th:fragment="internalInputCommonComponent(itemPropertyPath, contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInputCommonComponent}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInputCommonComponent}, false, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCommonComponent" th:remove="tag">
 			<th:block th:with="propertyPathClass=${itemPropertyPath.contains('.') 
@@ -635,7 +633,7 @@
 				<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemKindIdClass + '.' + propertyPathField}">
 					<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
 							inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
-						<div class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
+						<div th:id="${componentId}" class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
 								? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
 								? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
 	
@@ -1357,7 +1355,7 @@
 	
 	<!--/* inline input number */-->
 	<div th:fragment="tdInputNumber(itemPropertyPath, idValue, options)" th:remove="tag">
-		<td class="align-middle text-center" th:rowspan="${@optUtil..getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
 					fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
 				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(itemPropertyPath)},
