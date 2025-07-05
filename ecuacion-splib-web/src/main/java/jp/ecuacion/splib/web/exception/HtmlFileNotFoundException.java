@@ -36,4 +36,9 @@ public class HtmlFileNotFoundException extends RuntimeException {
   public String getFileName() {
     return fileName;
   }
+  
+  @Override
+  public String getMessage() {
+    return "Designated html file not found. html file name = templates/" + getFileName() + ".html";
+  }
 }
