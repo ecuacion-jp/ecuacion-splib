@@ -957,34 +957,24 @@
 	 */-->
 
 	<!--/* internal common navBar component. */-->
-	<div th:fragment="internalButtonCommonComponent(contents, options)" th:remove="tag">
+	<div th:fragment="internalButtonCommonComponent(id, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, true, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
-			<th:block th:replace="${contents}" />
+			<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
+					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+					th:text="${@msgUtil.get(#locale, label)}"></button>					
 		</div></th:block>
 	</div>
 	
 	<!--/* common button */-->
 	<div th:fragment="commonPrimaryButton(id, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentCommonPrimaryButton}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentCommonPrimaryButton" th:remove="tag">
-			<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:text="${label}"></button>
-		</div></th:block>
+		<div th:replace="~{ :: internalButtonCommonComponent(${id}, ${label}, ${options})}"></div>
 	</div>
 
 	<!--/* backButton */-->
-	<div th:fragment="backButton(label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentBackButton}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentBackButton" th:remove="tag">
-			<button type="submit" id="back" name="back" class="btn btn-color-btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:text="${label}"></button>
-		</div></th:block>
+	<div th:fragment="backButton(options)" th:remove="tag">
+		<div th:replace="~{ :: internalButtonCommonComponent('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
 	</div>
 	
 	<!--/* inter-button space */-->
@@ -1455,17 +1445,13 @@
 
 	<!--/* showInsertFormButton */-->
 	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
-		<button type="submit" name="showInsertForm" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.insert')}"></button>
+		<div th:replace="~{ :: internalButtonCommonComponent('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
 	</div>
 
 	<!--/* insertOrUpdateButton */-->
-	<div th:fragment="insertOrUpdateButton(label, options)" th:remove="tag">
-		<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? 'insertOrUpdate' : null}" name="insertOrUpdate" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${label}"></button>
+	<div th:fragment="insertOrUpdateButton(isInsert, options)" th:remove="tag">
+		<div th:replace="~{ :: internalButtonCommonComponent('insertOrUpdate', 
+				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, ${options})}"></div>
 	</div>
-	
 </body>
 </html>
