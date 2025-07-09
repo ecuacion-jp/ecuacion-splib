@@ -68,7 +68,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * Constructs a new instance.
    */
   public SplibSearchForm() {
-    // default値
+    // Set default values.
     this.sortItem = getDefaultSortItem();
     this.direction = getDefaultDirection();
     this.page = 0;

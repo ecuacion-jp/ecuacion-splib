@@ -1272,15 +1272,41 @@
 	 	</th:block>
 	</div>
 	
-	<!--/* ただのth。引数で表示するlabelを指定。 */-->
+	<!--/* th with label string */-->
 	<div th:fragment="thFreeText(label, options)" th:remove="tag">
-		<th scope="col" class="text-center" th:text="${label}"></th>
+		<th scope="col" class="text-center" th:text="${@msgUtil.get(#locale, label)}"></th>
 	</div>
 	
+	<!-- update button -->
+	<div th:fragment="thUpdateButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.update', ${options})}"></div>
+	</div>
+	
+	<!-- delete button -->
+	<div th:fragment="thDeleteButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.delete', ${options})}"></div>
+	</div>
+
 	<!--/* 
-		### 以下、table内のinline componentsとjavascriptなど。
-		### td系（ただしボタンを除く）は、その外でth:with="deleted=true"と与えると、文字が薄くなり削除されたっぽい効果がつく。
+		### The followings are td components.
 	 */-->
+
+	<!--/* td readOnly customizable */-->
+	<!--/* context options: (temporary)
+			- th:with="deleted=true"	adds a deleted line effect.
+	*/-->
+	<div th:fragment="tdReadOnlyCustomizable(value, position, options)" th:remove="tag">
+		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
+				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
+				th:classappend="${(deleted != null && deleted) || @optUtil.isDeleted(options)} ? 'text-deleted' : 'text-dark'">
+			<th:block th:if="${@optUtil.hasLinkUrl(options)}">
+				<a th:href="${@optUtil.getLinkUrl(options)}" target="_blank">[[${value}]]</a>
+			</th:block>
+			<th:block th:if="${@optUtil.hasLinkUrl(options) == false}">
+				[[${value}]]
+			</th:block>
+		</td>
+	</div>
 	
 	<!--/* td readOnly text */-->
 	<div th:fragment="tdReadOnlyText(itemPropertyPath, options)" th:remove="tag">
@@ -1320,20 +1346,6 @@
 		<th:block th:with="value=${rec.get__${#strings.capitalize(itemPropertyPath)}__Name(#locale)}">
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
-	</div>
-
-	<!--/* td readOnly customizable */-->
-	<div th:fragment="tdReadOnlyCustomizable(value, position, options)" th:remove="tag">
-		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
-				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
-				th:classappend="${(deleted != null && deleted) || @optUtil.isDeleted(options)} ? 'text-deleted' : 'text-dark'">
-			<th:block th:if="${@optUtil.hasLinkUrl(options)}">
-				<a th:href="${@optUtil.getLinkUrl(options)}" target="_blank">[[${value}]]</a>
-			</th:block>
-			<th:block th:if="${@optUtil.hasLinkUrl(options) == false}">
-				[[${value}]]
-			</th:block>
-		</td>
 	</div>
 	
 	<!--/* td readOnly checkbox */-->
