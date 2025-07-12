@@ -142,7 +142,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
 
     getService().prepareForm(form, loginUser);
 
-    return getFunction() + "Edit";
+    return getDefaultHtmlPageName();
   }
 
   /**
