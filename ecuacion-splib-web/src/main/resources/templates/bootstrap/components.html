@@ -541,8 +541,6 @@
 	
 					<th:block th:replace="${topSpaceContent}" />
 	
-					<div class="mt-5"></div>
-	
 					<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
 					<th:block th:if="${__${javaFormName}__} == null"
 							th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '. 
@@ -624,7 +622,7 @@
 			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
 	*/-->
 	<div th:fragment="internalInputCommonComponent(itemPropertyPath, contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInputCommonComponent}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInputCommonComponent}, false, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCommonComponent" th:remove="tag">
 			<th:block th:with="propertyPathClass=${itemPropertyPath.contains('.') 
@@ -635,7 +633,7 @@
 				<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemKindIdClass + '.' + propertyPathField}">
 					<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
 							inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
-						<div class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
+						<div th:id="${componentId}" class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
 								? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
 								? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
 	
@@ -959,34 +957,24 @@
 	 */-->
 
 	<!--/* internal common navBar component. */-->
-	<div th:fragment="internalButtonCommonComponent(contents, options)" th:remove="tag">
+	<div th:fragment="internalButtonCommonComponent(id, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, true, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
-			<th:block th:replace="${contents}" />
+			<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
+					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+					th:text="${@msgUtil.get(#locale, label)}"></button>					
 		</div></th:block>
 	</div>
 	
 	<!--/* common button */-->
 	<div th:fragment="commonPrimaryButton(id, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentCommonPrimaryButton}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentCommonPrimaryButton" th:remove="tag">
-			<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:text="${label}"></button>
-		</div></th:block>
+		<div th:replace="~{ :: internalButtonCommonComponent(${id}, ${label}, ${options})}"></div>
 	</div>
 
 	<!--/* backButton */-->
-	<div th:fragment="backButton(label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentBackButton}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentBackButton" th:remove="tag">
-			<button type="submit" id="back" name="back" class="btn btn-color-btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:text="${label}"></button>
-		</div></th:block>
+	<div th:fragment="backButton(options)" th:remove="tag">
+		<div th:replace="~{ :: internalButtonCommonComponent('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
 	</div>
 	
 	<!--/* inter-button space */-->
@@ -1114,7 +1102,7 @@
 				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
-	<!--/* 内部共通component。本componponentを直接呼ぶのはサポート対象外 */-->
+	<!--/* internal common component */-->
 	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
 		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchSelectInternal}, '',  ${options})}"></div>
 
@@ -1284,15 +1272,41 @@
 	 	</th:block>
 	</div>
 	
-	<!--/* ただのth。引数で表示するlabelを指定。 */-->
+	<!--/* th with label string */-->
 	<div th:fragment="thFreeText(label, options)" th:remove="tag">
-		<th scope="col" class="text-center" th:text="${label}"></th>
+		<th scope="col" class="text-center" th:text="${@msgUtil.get(#locale, label)}"></th>
 	</div>
 	
+	<!-- update button -->
+	<div th:fragment="thUpdateButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.update', ${options})}"></div>
+	</div>
+	
+	<!-- delete button -->
+	<div th:fragment="thDeleteButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.delete', ${options})}"></div>
+	</div>
+
 	<!--/* 
-		### 以下、table内のinline componentsとjavascriptなど。
-		### td系（ただしボタンを除く）は、その外でth:with="deleted=true"と与えると、文字が薄くなり削除されたっぽい効果がつく。
+		### The followings are td components.
 	 */-->
+
+	<!--/* td readOnly customizable */-->
+	<!--/* context options: (temporary)
+			- th:with="deleted=true"	adds a deleted line effect.
+	*/-->
+	<div th:fragment="tdReadOnlyCustomizable(value, position, options)" th:remove="tag">
+		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
+				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
+				th:classappend="${(deleted != null && deleted) || @optUtil.isDeleted(options)} ? 'text-deleted' : 'text-dark'">
+			<th:block th:if="${@optUtil.hasLinkUrl(options)}">
+				<a th:href="${@optUtil.getLinkUrl(options)}" target="_blank">[[${value}]]</a>
+			</th:block>
+			<th:block th:if="${@optUtil.hasLinkUrl(options) == false}">
+				[[${value}]]
+			</th:block>
+		</td>
+	</div>
 	
 	<!--/* td readOnly text */-->
 	<div th:fragment="tdReadOnlyText(itemPropertyPath, options)" th:remove="tag">
@@ -1333,20 +1347,6 @@
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>
-
-	<!--/* td readOnly customizable */-->
-	<div th:fragment="tdReadOnlyCustomizable(value, position, options)" th:remove="tag">
-		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
-				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
-				th:classappend="${(deleted != null && deleted) || @optUtil.isDeleted(options)} ? 'text-deleted' : 'text-dark'">
-			<th:block th:if="${@optUtil.hasLinkUrl(options)}">
-				<a th:href="${@optUtil.getLinkUrl(options)}" target="_blank">[[${value}]]</a>
-			</th:block>
-			<th:block th:if="${@optUtil.hasLinkUrl(options) == false}">
-				[[${value}]]
-			</th:block>
-		</td>
-	</div>
 	
 	<!--/* td readOnly checkbox */-->
 	<div th:fragment="tdReadOnlyCheckbox(itemPropertyPath, options)" th:remove="tag">
@@ -1357,7 +1357,7 @@
 	
 	<!--/* inline input number */-->
 	<div th:fragment="tdInputNumber(itemPropertyPath, idValue, options)" th:remove="tag">
-		<td class="align-middle text-center" th:rowspan="${@optUtil..getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
 					fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
 				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(itemPropertyPath)},
@@ -1457,17 +1457,13 @@
 
 	<!--/* showInsertFormButton */-->
 	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
-		<button type="submit" name="showInsertForm" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.insert')}"></button>
+		<div th:replace="~{ :: internalButtonCommonComponent('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
 	</div>
 
 	<!--/* insertOrUpdateButton */-->
-	<div th:fragment="insertOrUpdateButton(label, options)" th:remove="tag">
-		<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? 'insertOrUpdate' : null}" name="insertOrUpdate" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${label}"></button>
+	<div th:fragment="insertOrUpdateButton(isInsert, options)" th:remove="tag">
+		<div th:replace="~{ :: internalButtonCommonComponent('insertOrUpdate', 
+				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, ${options})}"></div>
 	</div>
-	
 </body>
 </html>

@@ -41,7 +41,6 @@ import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
-import jp.ecuacion.splib.web.bean.SplibModelAttributes;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.BizLogicRedirectAppException;
@@ -53,14 +52,11 @@ import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Provides an exception handler.
@@ -75,8 +71,8 @@ public abstract class SplibExceptionHandler {
   @Autowired(required = false)
   SplibExceptionHandlerAction actionOnThrowable;
 
-  @Autowired
-  private SplibModelAttributes modelAttr;
+  // @Autowired
+  // private SplibModelAttributes modelAttr;
 
   @Autowired
   private SplibUtil util;
@@ -320,80 +316,26 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
-   * Catches {@code HttpRequestMethodNotSupportedException}, which means HTTP response 403.
+   * Catches some specific exceptions. 
    * 
-   * @param exception HttpRequestMethodNotSupportedException
-   * @return redirect URL
-   */
-  @ExceptionHandler({HttpRequestMethodNotSupportedException.class})
-  public @Nonnull ModelAndView handleHttpRequestMethodNotSupportedException(
-      @Nonnull HttpRequestMethodNotSupportedException exception) {
-
-    LogUtil.logSystemError(detailLog, exception);
-    if (actionOnThrowable != null) {
-      actionOnThrowable.execute(exception);
-    }
-
-    return new ModelAndView("redirect:/"
-        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
-  }
-
-  /**
-   * Catches {@code NoResourceFoundException}, which means HTTP response 404.
-   * 
-   * <p>This throws NoResourceFoundException again, that means this method do nothing. 
-   *     It's used just to debug 404 occurrence procedure.</p>
-   * 
-   * @param exception NoResourceFoundException
-   * @throws NoResourceFoundException NoResourceFoundException
-   */
-  @ExceptionHandler({NoResourceFoundException.class})
-  public void handleNoResourceFoundException(@Nonnull NoResourceFoundException exception)
-      throws NoResourceFoundException {
-    // 後述のhandleThrowableに含まれないよう別出ししているが、特に処理せずそのまま投げることで
-    // spring標準のエラー処理（error/404.htmlを参照）の動きとする
-
-    throw exception;
-  }
-
-  /**
-   * Catches {@code HtmlFileNotFoundException}, 
-   * which means {@code ShowPageController} cannot find the html file specified 
-   * to the parameter of the url.
-   * 
-   * <p>Since users can set the url parameter, system error is not very preferable.</p>
-   * 
-   * @param exception HtmlFileNotFoundException
+   * @param exception Exception
    * @return ModelAndView
    */
-  @ExceptionHandler({HtmlFileNotFoundException.class})
-  public @Nonnull ModelAndView handleHtmlFileNotFoundException(
-      @Nonnull HtmlFileNotFoundException exception) {
-
-    detailLog.info("Designated html file not found. html file name = " + exception.getFileName());
-
-    // それっぽいURLにredirectしておく。なければさらにredirectされて適切な画面が表示される。
-    return new ModelAndView("redirect:/public/home/page");
-  }
-
-  /**
-   * Catches {@code HtmlFileNotAllowedToOpenException}, 
-   * which means {@code ShowPageController} notices the html file doesn't have the needed option 
-   * at the html tag.
-   * 
-   * @param exception HtmlFileNotAllowedToOpenException
-   * @return ModelAndView
-   */
-  @ExceptionHandler({HtmlFileNotAllowedToOpenException.class})
-  public @Nonnull ModelAndView handleHtmlFileNotAllowedToOpenException(
-      @Nonnull HtmlFileNotAllowedToOpenException exception) {
-
+  @ExceptionHandler({HtmlFileNotFoundException.class, HtmlFileNotAllowedToOpenException.class})
+  public @Nonnull ModelAndView handleExceptionsWhichLeadsToDefaultPage(
+      @Nonnull Exception exception) {
 
     detailLog.info(exception.getMessage());
-    detailLog.error(exception);
-    
-    // それっぽいURLにredirectしておく。なければさらにredirectされて適切な画面が表示される。
-    return new ModelAndView("redirect:/public/home/page");
+
+    // Output log to error.log
+    if (exception instanceof HtmlFileNotAllowedToOpenException) {
+      detailLog.error(exception);
+    }
+
+    // Redirect to a page which seems to exist.
+    // If it does not, it will be re-redirected to an existent page.
+    return new ModelAndView("redirect:"
+        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
   }
 
   /**
@@ -413,9 +355,12 @@ public abstract class SplibExceptionHandler {
       actionOnThrowable.execute(exception);
     }
 
-    Model mdl = getModel() == null ? model : getModel();
-    modelAttr.addAllToModel(mdl);
+    return new ModelAndView("redirect:/"
+        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
 
-    return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
+    // Model mdl = getModel() == null ? model : getModel();
+    // modelAttr.addAllToModel(mdl);
+    //
+    // return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
   }
 }

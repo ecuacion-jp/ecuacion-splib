@@ -262,9 +262,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @throws AppException AppException
    */
   @PostMapping(value = "action", params = "showInsertForm")
-  public String showInsertForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
-      throws AppException {
-    prepare(model, loginUser);
+  public String showInsertForm(Model model, FST searchForm, FLT listForm,
+      @AuthenticationPrincipal UserDetails loginUser) throws AppException {
+    prepare(model, loginUser, searchForm, listForm);
     ReturnUrlBean bean =
         new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
     return bean.getUrl();
@@ -279,9 +279,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @throws AppException AppException
    */
   @PostMapping(value = "action", params = "showUpdateForm")
-  public String showUpdateForm(Model model, @AuthenticationPrincipal UserDetails loginUser)
-      throws AppException {
-    prepare(model, loginUser);
+  public String showUpdateForm(Model model, FST searchForm, FLT listForm,
+      @AuthenticationPrincipal UserDetails loginUser) throws AppException {
+    prepare(model, loginUser, searchForm, listForm);
     ReturnUrlBean bean =
         new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
     return bean.getUrl();
