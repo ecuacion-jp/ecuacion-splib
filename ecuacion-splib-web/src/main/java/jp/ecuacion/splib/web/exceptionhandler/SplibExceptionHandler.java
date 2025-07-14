@@ -334,7 +334,8 @@ public abstract class SplibExceptionHandler {
 
     // Redirect to a page which seems to exist.
     // If it does not, it will be re-redirected to an existent page.
-    return new ModelAndView("redirect:/public/home/page");
+    return new ModelAndView("redirect:"
+        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
   }
 
   /**
