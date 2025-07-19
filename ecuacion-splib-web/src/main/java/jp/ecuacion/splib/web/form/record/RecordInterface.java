@@ -130,17 +130,11 @@ public interface RecordInterface {
    * @param bean bean
    * @return {@code List<String>}
    */
+  @Deprecated
   default List<String> getNotEmptyFields(String loginState, RolesAndAuthoritiesBean bean) {
-    List<String> list = new ArrayList<>();
-
-    HtmlItem[] htmlItems = getHtmlItems();
-    for (HtmlItem field : htmlItems) {
-      if (field.getIsNotEmpty(loginState, bean)) {
-        list.add(field.getItemPropertyPath());
-      }
-    }
-
-    return list;
+    return Arrays.asList(getHtmlItems()).stream()
+        .filter(item -> item.getIsNotEmpty(loginState, bean))
+        .map(item -> item.getItemPropertyPath()).toList();
   }
 
   /**
@@ -151,9 +145,65 @@ public interface RecordInterface {
    * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
    * @return boolean
    */
+  @Deprecated
   default boolean isNotEmpty(String fieldId, String loginState, String rolesOrAuthoritiesString) {
     SplibSecurityUtil.RolesAndAuthoritiesBean bean =
         new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
     return getNotEmptyFields(loginState, bean).contains(fieldId);
+  }
+
+  /**
+   * Obtrains NotEmpty fields.
+   * 
+   * @param loginState loginState
+   * @param bean bean
+   * @return {@code List<String>}
+   */
+  default List<String> getRequiredFields(String loginState, RolesAndAuthoritiesBean bean) {
+    return Arrays.asList(getHtmlItems()).stream()
+        .filter(item -> item.getIsNotEmpty(loginState, bean))
+        .map(item -> item.getItemPropertyPath()).toList();
+  }
+
+  /**
+   * Returns whether isNotEmpty or not.
+   * 
+   * @param fieldId fieldId
+   * @param loginState loginState
+   * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
+   * @return boolean
+   */
+  default boolean isRequired(String fieldId, String loginState, String rolesOrAuthoritiesString) {
+    SplibSecurityUtil.RolesAndAuthoritiesBean bean =
+        new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
+    return getRequiredFields(loginState, bean).contains(fieldId);
+  }
+
+  /**
+   * Obtrains NotEmpty fields.
+   * 
+   * @param loginState loginState
+   * @param bean bean
+   * @return {@code List<String>}
+   */
+  default List<String> getRequiredFieldsOnSearch(String loginState, RolesAndAuthoritiesBean bean) {
+    return Arrays.asList(getHtmlItems()).stream()
+        .filter(item -> item.getRequiredOnSearch(loginState, bean))
+        .map(item -> item.getItemPropertyPath()).toList();
+  }
+
+  /**
+   * Returns whether isNotEmpty or not.
+   * 
+   * @param fieldId fieldId
+   * @param loginState loginState
+   * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
+   * @return boolean
+   */
+  default boolean isRequiredOnSearch(String fieldId, String loginState,
+      String rolesOrAuthoritiesString) {
+    SplibSecurityUtil.RolesAndAuthoritiesBean bean =
+        new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
+    return getRequiredFieldsOnSearch(loginState, bean).contains(fieldId);
   }
 }

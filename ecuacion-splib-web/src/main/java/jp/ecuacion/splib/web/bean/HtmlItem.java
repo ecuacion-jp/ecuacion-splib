@@ -87,7 +87,10 @@ public class HtmlItem {
    * <p>The default value is preset: {@code false}. So the value becomes {@code false} 
    *     if you don't set this value.</p>
    */
-  protected HtmlItemConditionContainer<Boolean> isNotEmpty =
+  protected HtmlItemConditionContainer<Boolean> isRequired =
+      new HtmlItemConditionContainer<>(false);
+
+  protected HtmlItemConditionContainer<Boolean> isRequiredOnSearch =
       new HtmlItemConditionContainer<>(false);
 
   /**
@@ -183,6 +186,70 @@ public class HtmlItem {
   }
 
   /**
+   * Sets required.
+   * 
+   * @return HtmlItem
+   */
+  public HtmlItem required(boolean isRequired) {
+    this.isRequired.setDefaultValue(isRequired);
+    return this;
+  }
+
+  /**
+   * Sets isRequired with the conditions of {@code HtmlItemConditionKeyEnum}, {@code authString}.
+   * 
+   * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
+   * 
+   * @param authKind authKind
+   * @param authString authString
+   * @param isRequired isRequired
+   * @return HtmlItem
+   */
+  public HtmlItem required(HtmlItemConditionKeyEnum authKind, String authString,
+      boolean isRequired) {
+    this.isRequired.add(new HtmlItemCondition<Boolean>(authKind, authString, isRequired));
+    return this;
+  }
+
+  /**
+   * Sets required.
+   * 
+   * @return HtmlItem
+   */
+  public HtmlItem requiredOnSearch(boolean isRequired) {
+    this.isRequiredOnSearch.setDefaultValue(isRequired);
+    return this;
+  }
+
+  /**
+   * Sets isRequiredOnSearch with the conditions of 
+   *     {@code HtmlItemConditionKeyEnum}, {@code authString}.
+   * 
+   * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
+   * 
+   * @param authKind authKind
+   * @param authString authString
+   * @param isRequired isRequired
+   * @return HtmlItem
+   */
+  public HtmlItem requiredOnSearch(HtmlItemConditionKeyEnum authKind, String authString,
+      boolean isRequired) {
+    this.isRequiredOnSearch.add(new HtmlItemCondition<Boolean>(authKind, authString, isRequired));
+    return this;
+  }
+
+  /**
+   * Obtains isNotEmpty.
+   * 
+   * @param loginState loginState
+   * @param bean bean
+   * @return boolean
+   */
+  public boolean getRequiredOnSearch(String loginState, RolesAndAuthoritiesBean bean) {
+    return isRequiredOnSearch.getValue(loginState, bean);
+  }
+
+  /**
    * Sets isNotEmpty.
    * 
    * <p>Set {@code true} when you want to the item is required.</p>
@@ -190,8 +257,9 @@ public class HtmlItem {
    * @param isNotEmpty isNotEmpty
    * @return HtmlItem
    */
+  @Deprecated
   public HtmlItem isNotEmpty(boolean isNotEmpty) {
-    this.isNotEmpty.setDefaultValue(isNotEmpty);
+    this.isRequired.setDefaultValue(isNotEmpty);
     return this;
   }
 
@@ -205,9 +273,10 @@ public class HtmlItem {
    * @param isNotEmpty isNotEmpty
    * @return HtmlItem
    */
+  @Deprecated
   public HtmlItem isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
-    this.isNotEmpty.add(new HtmlItemCondition<Boolean>(authKind, authString, isNotEmpty));
+    this.isRequired.add(new HtmlItemCondition<Boolean>(authKind, authString, isNotEmpty));
     return this;
   }
 
@@ -219,7 +288,7 @@ public class HtmlItem {
    * @return boolean
    */
   public boolean getIsNotEmpty(String loginState, RolesAndAuthoritiesBean bean) {
-    return isNotEmpty.getValue(loginState, bean);
+    return isRequired.getValue(loginState, bean);
   }
 
   /**

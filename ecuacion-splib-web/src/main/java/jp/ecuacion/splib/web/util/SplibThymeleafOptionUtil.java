@@ -158,16 +158,6 @@ public class SplibThymeleafOptionUtil {
   }
 
   /**
-   * Returns whether the options contain readonly.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean isReadOnly(String options) {
-    return hasKey(options, "readonly");
-  }
-
-  /**
    * Returns whether the options contain disabled.
    * 
    * @param options options
@@ -187,15 +177,15 @@ public class SplibThymeleafOptionUtil {
     return hasKey(options, "deleted");
   }
 
-  /**
-   * Returns whether the options contain forSwitch.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean isForSwitch(String options) {
-    return hasKey(options, "forSwitch");
-  }
+  // /**
+  // * Returns whether the options contain forSwitch.
+  // *
+  // * @param options options
+  // * @return boolean
+  // */
+  // public boolean isForSwitch(String options) {
+  // return hasKey(options, "forSwitch");
+  // }
 
   /**
    * Returns whether the options contain noEmptyOption.
@@ -236,27 +226,6 @@ public class SplibThymeleafOptionUtil {
   public String getLinkUrl(String options) {
     return getValue(options, "linkUrl");
   }
-
-
-  // /**
-  // * Returns rows with default value 1.
-  // *
-  // * @param options options
-  // * @return linkUrl
-  // */
-  // public String rows(String options) {
-  // return getValueOrElse(options, "rows", "1");
-  // }
-
-  // /**
-  // * Returns cols with default value 1.
-  // *
-  // * @param options options
-  // * @return linkUrl
-  // */
-  // public String cols(String options) {
-  // return getValueOrElse(options, "cols", "1");
-  // }
 
   /**
    * Returns whether the options contain thSortable.
