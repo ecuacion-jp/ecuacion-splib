@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.splib.web.form.record.RecordInterface;
+import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -40,6 +42,11 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    */
   private boolean requestFromSearchForm;
 
+  /**
+   * Specifies whether the form is prepared, which means "prepareForm" method is applied.
+   */
+  private boolean prepared = false;
+
   // 検索に必要な条件
   protected String sortItem;
   protected String direction;
@@ -49,7 +56,13 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   /** pagerを作成するのに必要となるため、serviceから受け取りpager作成時に使用. */
   protected Integer numberOfRecords;
 
-  // protected Locale locale;
+  public boolean isPrepared() {
+    return prepared;
+  }
+
+  public void setPrepared(boolean prepared) {
+    this.prepared = prepared;
+  }
 
   /**
    * Gets getDefaultSortItem.
@@ -312,5 +325,11 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     int normalMax = (page + 1) * recordsInScreen;
     int max = normalMax > numberOfRecords ? numberOfRecords : normalMax;
     return "( " + min + " - " + max + " / " + numberOfRecords + " )";
+  }
+  
+  @Override
+  protected List<String> getRequiredFields(RecordInterface rootRecord, String loginState,
+      RolesAndAuthoritiesBean bean) {
+    return rootRecord.getRequiredFieldsOnSearch(loginState, bean);
   }
 }

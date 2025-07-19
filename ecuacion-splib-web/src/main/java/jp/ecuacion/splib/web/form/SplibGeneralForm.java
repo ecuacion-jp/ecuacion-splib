@@ -254,7 +254,7 @@ public abstract class SplibGeneralForm {
       String rootRecordFieldName = rootRecordField.getName();
       RecordInterface rootRecord = (RecordInterface) getRootRecord(rootRecordField);
 
-      for (String notEmptyField : rootRecord.getNotEmptyFields(loginState, bean)) {
+      for (String notEmptyField : getRequiredFields(rootRecord, loginState, bean)) {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyField);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
@@ -265,5 +265,18 @@ public abstract class SplibGeneralForm {
     }
 
     return rtnSet;
+  }
+
+  /**
+   * Returns required fields.
+   * 
+   * @param rootRecord rootRecord
+   * @param loginState loginState
+   * @param bean bean
+   * @return List of strings
+   */
+  protected List<String> getRequiredFields(RecordInterface rootRecord, String loginState,
+      RolesAndAuthoritiesBean bean) {
+    return rootRecord.getRequiredFields(loginState, bean);
   }
 }

@@ -16,7 +16,9 @@
 package jp.ecuacion.splib.web.controller;
 
 import jakarta.annotation.Nonnull;
+import java.util.ArrayList;
 import jp.ecuacion.lib.core.exception.checked.AppException;
+import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
@@ -108,8 +110,19 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     redirectUrlOnAppExceptionBean = new ReturnUrlBean(this, util, false);
 
     prepare(model, loginUser, searchForm, listForm);
-    getService().page(searchForm, listForm, loginUser);
+
     getService().prepareForm(searchForm, listForm, loginUser);
+
+    // Do not search when search condition has errors
+    MessagesBean mb = (MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
+    if (mb.getErrorMessages().size() == 0) {
+      getService().page(searchForm, listForm, loginUser);
+
+    } else {
+      // Does something needed to search result of zero list.
+      listForm.setRecList(new ArrayList<>());
+      searchForm.setNumberOfRecordsAndAdjustCurrentPageNumger(0L);
+    }
 
     return getDefaultHtmlPageName();
   }
@@ -131,15 +144,18 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String search(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
-    prepare(model, searchForm, listForm);
+    // Prepare searchForm before validating it.
+    // This is meaningful when showing errors on opening searchList page
+    // by not calling ".../searchList/page" but ".../searchList/action?search"
+    // to validate searchForm.
+    prepareForm(searchForm, listForm, loginUser);
+    
+    prepare(model, searchForm.validate(null), listForm);
     return redirectToSamePageTakingOverModel(model);
   }
 
   /**
    * Searches from the search conditions in {@code searchForm}.
-   * 
-   * <p>This method only redirects to {@code page} 
-   *     because the actual search procedure is implemented at {@code page} method.</p>
    * 
    * <p>This is exactly the same procedure as {@code search}, but there seems to be no way
    *     to integrate these
@@ -155,9 +171,40 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   @GetMapping(value = "action", params = "action=searchAgain")
   public String searchAgain(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+    return search(model, searchForm, listForm, loginUser);
+  }
 
-    prepare(model, searchForm, listForm);
-    return redirectToSamePageTakingOverModel(model);
+  private void prepareForm(FST searchForm, FLT listForm, UserDetails loginUser) {
+    if (!searchForm.isPrepared()) {
+      getService().prepareForm(searchForm, listForm, loginUser);
+      searchForm.setPrepared(true);
+    }
+  }
+
+  /**
+   * Clears search conditions.
+   * 
+   * @param model model
+   * @param searchForm searchForm
+   * @param listForm listForm
+   * @param loginUser loginUser
+   * @return URL
+   * @throws Exception Exception
+   */
+  @GetMapping(value = "action", params = "conditionClear")
+  public String searchConditionClear(Model model, FST searchForm, FLT listForm,
+      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+    // 情報をクリアするための設定を行う
+    String formName = getFunction() + "SearchForm";
+    String sessionKey =
+        formName + (searchForm.getDataKind() == null || searchForm.getDataKind().equals("") ? ""
+            : "." + searchForm.getDataKind());
+
+    request.getSession().setAttribute(sessionKey, newSearchForm);
+
+    prepare(model, loginUser, searchForm, listForm);
+    return new ReturnUrlBean(this, util, true)
+        .putParam(SplibWebConstants.KEY_DATA_KIND, searchForm.getDataKind()).getUrl();
   }
 
   /**
@@ -205,32 +252,6 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   private String getSessionKey(String formName, FST searchForm) {
     return formName + (searchForm == null || searchForm.getDataKind() == null
         || searchForm.getDataKind().equals("") ? "" : "." + searchForm.getDataKind());
-  }
-
-  /**
-   * Clears search conditions.
-   * 
-   * @param model model
-   * @param searchForm searchForm
-   * @param listForm listForm
-   * @param loginUser loginUser
-   * @return URL
-   * @throws Exception Exception
-   */
-  @GetMapping(value = "action", params = "conditionClear")
-  public String searchConditionClear(Model model, FST searchForm, FLT listForm,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    // 情報をクリアするための設定を行う
-    String formName = getFunction() + "SearchForm";
-    String sessionKey =
-        formName + (searchForm.getDataKind() == null || searchForm.getDataKind().equals("") ? ""
-            : "." + searchForm.getDataKind());
-
-    request.getSession().setAttribute(sessionKey, newSearchForm);
-
-    prepare(model, loginUser, searchForm, listForm);
-    return new ReturnUrlBean(this, util, true)
-        .putParam(SplibWebConstants.KEY_DATA_KIND, searchForm.getDataKind()).getUrl();
   }
 
   /**

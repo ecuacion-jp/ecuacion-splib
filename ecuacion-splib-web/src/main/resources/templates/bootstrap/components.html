@@ -615,43 +615,48 @@
 	<!--/* 
 		### input components
 	 */-->
-	
+
 	<!--/* internal common input component. */-->
 	<!--/* options: 
-			- id		arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
-			- width		arbitrary	specifies width of the html component. values can be 'full' or 'half'.
+			- id			arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
+			- width			arbitrary	specifies width of the html component. values can be 'full' or 'half'.
+			- componentType	arbitrary	speciifes the kind of the component. Used to change the look or action by its type.
+			                            'switch' is used in the fragment for now.
+			- readOnly		arbitrary	specifies whether the component is read-only.			                            
 	*/-->
-	<div th:fragment="internalInputCommonComponent(itemPropertyPath, contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInputCommonComponent}, false, ${options})}"></div>
+	<div th:fragment="internalAllInputCommonComponent(itemPropertyPath, allInputCcontents, required, labelPostfix, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentInputCommonComponent" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentAllInputCommonComponent" th:remove="tag">
 			<th:block th:with="propertyPathClass=${itemPropertyPath.contains('.') 
 					? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
 					propertyPathField=${itemPropertyPath.contains('.') 
 					? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
-					itemKindIdClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}">
-				<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemKindIdClass + '.' + propertyPathField}">
+					itemNameKeyClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}">
+				<th:block th:with="propertyPath=${propertyPathClass + '.' + propertyPathField}, itemKindId=${itemNameKeyClass + '.' + propertyPathField}">
 					<th:block th:with="inputValue=*{__${propertyPath}__}, inputName=${propertyPath},
-							inputId=${@optUtil.hasKey(options, 'id') ? @optUtil.getValue(options, 'id') : (htmlFormName + '.' + propertyPath)}">
+							inputId=${@optUtil.getValueOrElse(options, 'id', htmlFormName + '.' + propertyPath)},
+							isReadOnly=${@optUtil.hasKey(options, 'readonly')}">
+		
 						<div th:id="${componentId}" class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
-								? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
-								? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
-	
+						? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
+						? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
+
 							<!--/* label */-->
 							<th:block th:with="displayName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 									<!--/* isPrincipalStringは、#authentication.principalが、loginしている場合は複数項目を格納するbeanなのに、loginしていない場合はStringといういやらしい仕様なので、String可動化をチェックしている */-->
-								<label th:for="${inputId}" class="form-label text-dark" th:with="isPrincipalString=${#authentication.principal.class.name == 'java.lang.String'}">
-									[[${@msgUtil.get(#locale, '__${displayName}__')}]]<span class="text-danger" th:if="*{__${rootRecordName}__.isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${isPrincipalString ? '' : #authentication.principal.authorities}__')}">&nbsp;*</span>
+								<label th:for="${inputId}" class="form-label text-dark">
+									[[${@msgUtil.get(#locale, '__${displayName}__')}]] [[${labelPostfix + ' '}]]<span class="text-danger" th:if="${required}">*</span>
 								</label>
 							</th:block>
-							
+
 							<!--/* content */-->
-							<th:block th:replace="${contents}" />
-		
+							<th:block th:replace="${allInputCcontents}" />
+							
 							<!--/* field messages */-->
 							<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
 								<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${propertyPath}__') != null}"
-									th:classappend="${@optUtil.isForSwitch(options) ? 'mt-1' : ''}"
+									th:classappend="${@optUtil.hasKey(options, 'componentType') and @optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
 									th:each="message : ${messagesBean.getErrorMessages('__${propertyPath}__')}">[[${message}]]</div>
 							</th:block>
 							
@@ -661,49 +666,95 @@
 			</th:block>	
 		</div></th:block>
 	</div>
-	
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="internalInputTextComponent(itemPropertyPath, type, needsMaxLength, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputText}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentInputText" th:remove="tag">
-			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
-					th:maxlength="${@optUtil.isReadOnly(options) || type == 'hidden'} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
-					th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-					th:readonly="${@optUtil.isReadOnly(options)}">
+	<!--/* internal common input text component. */-->
+	<div th:fragment="internalAllInputTextComponent" th:remove="tag">
+		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
+				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
+				th:classappend="${isReadOnly ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
+				th:readonly="${isReadOnly}">
+	</div>
+
+	<div th:fragment="internalEditInputCommonComponent(itemPropertyPath, editInputContents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentEditInputCommonComponent},
+ 				*{__${rootRecordName}__.isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
+ 				 '',  ${options})}"></div>
+		
+		<th:block th:if="false"><div th:fragment="fragmentEditInputCommonComponent" th:remove="tag">
+			<th:block th:replace="${editInputContents}" />
 		</div></th:block>
 	</div>
-
-	<div th:fragment="inputText(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputTextComponent(${itemPropertyPath}, 'text', true, ${options})}"></div>
+	
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<div th:fragment="internalEditInputTextComponent(itemPropertyPath, type, needsMaxLength, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllInputTextComponent}, ${options})}"></div>
 	</div>
 	
+	<!--/* textbox */-->
+	<div th:fragment="editText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'text', true, ${options})}"></div>
+	</div>
+	<div th:fragment="inputText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'text', true, ${options})}"></div>
+	</div>
+				
 	<!--/* textbox(password) */-->
+	<div th:fragment="editPassword(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'password', true, ${options})}"></div>
+	</div>
 	<div th:fragment="inputPassword(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputTextComponent(${itemPropertyPath}, 'password', true, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'password', true, ${options})}"></div>
 	</div>
 
 	<!--/* hidden */-->
+	<div th:fragment="editHidden(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'hidden', false, ${options})}"></div>
+	</div>
 	<div th:fragment="inputHidden(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputHidden}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'hidden', false, ${options})}"></div>
+	</div>
+	
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<div th:fragment="internalEditInputDateTime(itemPropertyPath, type, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, ${type}, false, ${options})}"></div>
+	</div>	
 
-		<th:block th:if="false"><div th:fragment="fragmentInputHidden" th:remove="tag">
-			<div th:replace="~{ :: internalInputTextComponent(${itemPropertyPath}, 'hidden', false, ${options})}"></div>
-		</div></th:block>
+	<!--/* textbox(month) */-->
+	<div th:fragment="editYearMonth(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'month', ${options})}"></div>
+	</div>
+	<div th:fragment="inputYearMonth(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'month', ${options})}"></div>
+	</div>
+
+	<!--/* textbox(date) */-->
+	<div th:fragment="editDate(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'date', ${options})}"></div>
+	</div>
+	<div th:fragment="inputDate(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'date', ${options})}"></div>
+	</div>
+
+	<!--/* textbox(time) */-->
+	<div th:fragment="editTime(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'time', ${options})}"></div>
+	</div>
+	<div th:fragment="inputTime(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'time', ${options})}"></div>
 	</div>
 	
 	<!--/* inputNumber */-->
 	<div th:fragment="inputNumber(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputNumber}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputNumber}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputNumber" th:remove="tag">
 			<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 				<input th:type="text" th:id="${inputId}" th:name="${inputName}"
 						th:value="${(needsCommas && @strUtil.isNumberFormat(inputValue)) ? #numbers.formatDecimal(#strings.replace(inputValue, ',', ''), 1, 'COMMA', 0, 'POINT') : inputValue}"
-						th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
+						th:maxlength="${isReadOnly} ? '' : *{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}"
 						class="text-end"
-						th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-						th:readonly="${@optUtil.isReadOnly(options)}">
+						th:classappend="${isReadOnly ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
+						th:readonly="${isReadOnly}">
 				<th:block th:if="${needsCommas}">
 					<script th:inline="javascript">
 						addNumberFormatFunction(/*[[${rootRecordName + '.' + itemPropertyPath}]]*/);
@@ -713,61 +764,35 @@
 		</div></th:block>
 	</div>
 
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="internalInputDateTime(itemPropertyPath, type, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputDateTime}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentInputDateTime" th:remove="tag">
-			<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
-				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-				th:readonly="${@optUtil.isReadOnly(options)}">
-		</div></th:block>
-	</div>
-
-	<!--/* textbox(month) */-->
-	<div th:fragment="inputYearMonth(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputDateTime(${itemPropertyPath}, 'month', ${options})}"></div>
-	</div>
-
-	<!--/* textbox(date) */-->
-	<div th:fragment="inputDate(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputDateTime(${itemPropertyPath}, 'date', ${options})}"></div>
-	</div>
-
-	<!--/* textbox(time) */-->
-	<div th:fragment="inputTime(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputDateTime(${itemPropertyPath}, 'time', ${options})}"></div>
-	</div>
-
 	<!--/* textarea */-->
  	<div th:fragment="inputTextArea(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputTextArea}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputTextArea}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTextArea" th:remove="tag">
 			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
 				th:maxlength="*{__${propertyPathClass}__.getStringLength('__${propertyPathField}__')}" 
-				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
-				th:readonly="${@optUtil.isReadOnly(options)}" rows="3">
+				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(propertyPath)}" 
+				th:readonly="${isReadOnly}" rows="3">
 			</textarea>
 		</div></th:block>
 	</div>
 
 	<!--/* checkbox (switch) */-->
 	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputSwitch}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputSwitch}, ${options + ',componentType=switch'})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputSwitch" th:remove="tag">
 			<div class="form-check form-switch mt-2">
-				<th:block th:if="${@optUtil.isReadOnly(options)}">
+				<th:block th:if="${isReadOnly}">
 					<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
 				</th:block>
 				<div>
-					<input type="hidden" th:name="${@optUtil.isReadOnly(options) ? '' : inputName}" value="off">
-					<input th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
+					<input type="hidden" th:name="${isReadOnly ? '' : inputName}" value="off">
+					<input th:id="${inputId}" th:name="${isReadOnly ? '' : propertyPath}"
 						class="form-check-input align-bottom mb-1" type="checkbox" 
 						th:checked="${inputValue}"
 						th:classappend="${messagesBean.isValid(propertyPath)}"
-						th:disabled="${@optUtil.isReadOnly(options)}">
+						th:disabled="${isReadOnly}">
 				</div>
 			</div>
 		</div></th:block>
@@ -775,7 +800,7 @@
 	 
 	<!--/* checkbox */-->
 	<div th:fragment="inputCheckboxes(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckboxes}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckboxes}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCheckboxes" th:remove="tag">
 			<div class="form-check mt-2" th:each="option : *{__${propertyPath + 'List'}__}">
@@ -797,16 +822,16 @@
 
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="internalInputSelect(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputComponentSelect}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputComponentSelect}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputComponentSelect" th:remove="tag">
 			<!--/* selectにはreadonlyが存在しないため、disabledを使用 */-->
-			<th:block th:if="${@optUtil.isReadOnly(options)}">
+			<th:block th:if="${isReadOnly}">
 				<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? propertyPath : null}" th:name="${propertyPath}" th:value="${inputValue}">
 			</th:block>
-			<select th:id="${inputId}" th:name="${@optUtil.isReadOnly(options) ? '' : propertyPath}"
+			<select th:id="${inputId}" th:name="${isReadOnly ? '' : propertyPath}"
 					class="form-select" th:classappend="${messagesBean.isValid(propertyPath)}"
-					th:disabled="${@optUtil.isReadOnly(options)}"
+					th:disabled="${isReadOnly}"
 					th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
 					th:data-html-form-name="${htmlFormName}"
 					onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
@@ -842,7 +867,7 @@
 	
 	<!--/* component for file upload */-->
 	<div  th:fragment="inputFile(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputFile" th:remove="tag">
 			<input class="form-control" type="file" th:id="${inputId}" th:name="${propertyPath}" 
@@ -852,7 +877,7 @@
 	
 	<!--/* component for file upload */-->
 	<div  th:fragment="inputTakenPhotoMobile(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoMobile}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoMobile}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTakenPhotoMobile" th:remove="tag">
 			<input class="form-control" th:classappend="${messagesBean.isValid(propertyPath)}" 
@@ -963,7 +988,7 @@
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
 			<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:text="${@msgUtil.get(#locale, label)}"></button>					
+					th:text="${@msgUtil.get(#locale, label)}"></button>
 		</div></th:block>
 	</div>
 	
@@ -1025,62 +1050,41 @@
 		### search components.
 		###
 	 */-->
-	
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
-	<div th:fragment="internalSearchCommonComponent(itemPropertyPath, contents, labelPostfix, options)" th:remove="tag">
-		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
-				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
-			<th:block th:with="id=${recordName + '.' + fieldName},value=*{__${recordName + '.' + fieldName}__}">
-				<div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-				
-					<!--/* label */-->
-					<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
-							fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
-						<th:block th:with="labelRecordName=${#strings.contains(recordName, '.') ? #strings.substring(recordName, #strings.indexOf(recordName, '.') + 1) : recordName}">
-							<label th:for="${id}" class="form-label text-dark" 
-									th:with="labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
-								[[#{__${labelFieldName}__}]] [[${labelPostfix}]]
-							</label>
-						</th:block>
-					</th:block>
-		
-					<th:block th:replace="${contents}" />
-				</div>
-			</th:block>
-		</th:block>
+	<div th:fragment="internalSearchInputCommonComponent(itemPropertyPath, searchInputContents, labelPostfix, options)" th:remove="tag">
+		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentSearchInputCommonComponent}, 
+		*{__${rootRecordName}__.isRequiredOnSearch('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
+		${labelPostfix}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentSearchInputCommonComponent" th:remove="tag">
+			<th:block th:replace="${searchInputContents}" />
+		</div></th:block>
 	</div>
 	
 	<div th:fragment="searchText(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchTextInternal(${itemPropertyPath}, 
-				${options})}, *{__${rootRecordName}__.getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="searchTextInternal(itemPropertyPath, options)" th:remove="tag">
-			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
-				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}"
-				th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${recordName}__.getStringLength('__${fieldName}__')}"
-				th:readonly="${@optUtil.isReadOnly(options)}">
-		</div></th:block>
+		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllInputTextComponent}, 
+				*{__${rootRecordName}__.getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>
 	</div>
 
 	<div th:fragment="searchNumber(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchNumberInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
+		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ ::searchNumberInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="searchNumberInternal(itemPropertyPath, options)" th:remove="tag">
-			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
+			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" th:name="${inputId}" th:value="${inputValue}"
 				class="text-end"
-				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}"
-				th:maxlength="${@optUtil.isReadOnly(options)} ? '' : *{__${recordName}__.getStringLength('__${fieldName}__')}"
-				th:readonly="${@optUtil.isReadOnly(options)}">
+				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(inputId)}"
+				th:maxlength="${isReadOnly} ? '' : *{__${propertyPathClass}__.getStringLength('__${fieldName}__')}"
+				th:readonly="${isReadOnly}">
 		</div></th:block>
 	</div>
 	 
 	<div th:fragment="searchDate(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchDateInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
+		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ ::searchDateInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="searchDateInternal(itemPropertyPath, options)" th:remove="tag">
-			<input type="date" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" th:value="${value}"
-				th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
-				th:readonly="${@optUtil.isReadOnly(options)}">
+			<input type="date" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" th:name="${inputId}" th:value="${inputValue}"
+				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(inputId)}" 
+				th:readonly="${isReadOnly}">
 		</div></th:block>
 	</div>
 
@@ -1104,19 +1108,19 @@
 	
 	<!--/* internal common component */-->
 	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSearchCommonComponent(${itemPropertyPath}, ~{ ::searchSelectInternal}, '',  ${options})}"></div>
+		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ ::searchSelectInternal}, '',  ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="searchSelectInternal" th:remove="tag">
-			<select class="form-select" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" 
-					th:name="${id}"
-					th:classappend="${messagesBean.isValid(id)}" 
+			<select class="form-select" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" 
+					th:name="${inputId}"
+					th:classappend="${messagesBean.isValid(inputId)}" 
 					th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
 					th:data-html-form-name="${htmlFormName}"
 					onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
-				<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${value == null || value == ''}"></option>
+				<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
 				<th:block th:each="pair : ${pairs}">
 					<!--/* 通常の文字列だとpre-processingは不要だったのだが、booleanを処理しようとすると子hの形でないと認識されなかった */-->
-					<option th:value="${pair[0]}" th:selected="${pair[0] == '__${value}__'}">[[${pair[1]}]]</option>
+					<option th:value="${pair[0]}" th:selected="${pair[0] == '__${inputValue}__'}">[[${pair[1]}]]</option>
 				</th:block>
 			</select>
 		</div></th:block>
@@ -1365,8 +1369,8 @@
 					<input th:type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}"
 							th:value="${(needsCommas && @strUtil.isNumberFormat(value)) ? #numbers.formatDecimal(#strings.replace(value, ',', ''), 1, 'COMMA', 0, 'POINT') : value}"
 							class="text-end form-control-sm fs-6 text-dark"
-							th:classappend="${(@optUtil.isReadOnly(options)) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
-							th:readonly="${@optUtil.isReadOnly(options)}">
+							th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
+							th:readonly="${isReadOnly}">
 					<th:block th:if="${needsCommas}">
 					<script th:inline="javascript">
 						addNumberFormatFunction(/*[[${id}]]*/);

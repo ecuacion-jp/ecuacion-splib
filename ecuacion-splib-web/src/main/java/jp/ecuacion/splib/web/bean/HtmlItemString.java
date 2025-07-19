@@ -42,14 +42,27 @@ public class HtmlItemString extends HtmlItem {
   }
 
   @Override
-  public HtmlItemString isNotEmpty(boolean isNotEmpty) {
-    return (HtmlItemString) super.isNotEmpty(isNotEmpty);
+  public HtmlItemString required(boolean isRequired) {
+    return (HtmlItemString) super.required(isRequired);
   }
 
   @Override
+  public HtmlItemString required(HtmlItemConditionKeyEnum authKind, String authString,
+      boolean isRequired) {
+    return (HtmlItemString) super.required(authKind, authString, isRequired);
+  }
+
+  @Override
+  @Deprecated
+  public HtmlItemString isNotEmpty(boolean isNotEmpty) {
+    return (HtmlItemString) super.required(isNotEmpty);
+  }
+
+  @Override
+  @Deprecated
   public HtmlItemString isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
-    return (HtmlItemString) super.isNotEmpty(authKind, authString, isNotEmpty);
+    return (HtmlItemString) super.required(authKind, authString, isNotEmpty);
   }
 
   /**
