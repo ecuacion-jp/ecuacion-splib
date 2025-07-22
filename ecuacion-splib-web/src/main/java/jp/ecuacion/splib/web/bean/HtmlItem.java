@@ -24,18 +24,10 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Stores attributes of each html component which controls the behaviors of it in html pages.
+ * Stores attributes of an html component which control the behaviors of the component 
+ *     in html pages.
  * 
- * <p>{@code HtmlItem} is a kind of "item". See <a href="https://github.com/ecuacion-jp/ecuacion-jp.github.io/blob/main/documentation/common/naming-convention.md">naming-convention.md</a>
- *     So its ID should consist of itemKindIdClass and itemKindIdField.<br>
- *     It complies the rule, but {@code itemKindIdClass} can be empty.
- *     When it's empty, 
- *     {@code mainRootRecord} in {@code Form} is used as itemKindIdClass as default.</p>
- *     
- * <p>Actually itemKindId cannot designate a unique location. 
- *     There can be multiple location as a relation or relation of relation.
- *     To have a way to pinpoint the location of the form, it also has {@code propertyPath}.
- *     It can be empty for normal use, but you can make differences when you want.</p>
+ * <p>{@code HtmlItem} is a kind of "item"s. See <a href="https://github.com/ecuacion-jp/ecuacion-jp.github.io/blob/main/documentation/common/naming-convention.md">naming-convention.md</a></p>
  */
 public class HtmlItem {
 
@@ -43,8 +35,8 @@ public class HtmlItem {
    * Is the ID string of htmlItem.
    * 
    * <p>rootRecordName part (= far left part) can be omitted. Namely it can be "name" or "dept.name"
-   *     when the real propertyPath is "acc.name" or "acc.dept.name" 
-   *     where "acc" is the rootRecordName.</p>
+   *     when the propertyPath with rootRecordName added (= also called "recordPropertyPath") 
+   *     is "acc.name" or "acc.dept.name" where "acc" is the rootRecordName.</p>
    */
   @Nonnull
   protected String itemPropertyPath;
@@ -94,20 +86,18 @@ public class HtmlItem {
       new HtmlItemConditionContainer<>(false);
 
   /**
-   * Constructs a new instance with {@code ID}.
+   * Constructs a new instance with {@code itemPropertyPath}.
    * 
    * <p>Generally propertyPath starts with a rootRecord 
-   *     (a record field name which is directly defined in a form)
-   *     and should be like {@code user.name} or {@code user.dept.name}.
-   *     But it is also allowed that you can omit the top rootRecord part 
-   *     when {@code user} is the mainRootRecord, 
-   *     which means {@code name} or {@code dept.name} is also okay.
-   *     When creating html htmlItems are searched with propertyPath,
-   *     and if nothing found, 
-   *     mainRootRecord is automatically added to the top of propertyPath and search again.</p>
+   *     (a record field name which is directly defined in a form),
+   *     which should be like {@code user.name} or {@code user.dept.name}. 
+   *     (It's called {@code recordPropertyPath} in the library.)<br>
+   *     But here you need to set {@code itemPropertyPath}, 
+   *     which is a propertyPath with rootRecordName + "." removed at the start part of it.<br><br>
+   *     You cannot set recordPropertyPath here.
+   *     Setting it is considered as a duplication of rootRecordName.</p>
    * 
-   * @param itemPropertyPath propertyPath, maybe without top mainRootRecord part.
-   *     (when "user" is mainRootRecord, both user.name and name are accepted)
+   * @param itemPropertyPath itemPropertyPath
    */
   public HtmlItem(@RequireNonempty String itemPropertyPath) {
 
@@ -115,14 +105,14 @@ public class HtmlItem {
 
     // Remove far left part ("name" in "acc.name") from propertyPath.
     // It's null when propertyPath doesn't contain ".".
-    String propertyPathWithoutFarRightPart = itemPropertyPath.contains(".")
+    String itemPropertyPathClass = itemPropertyPath.contains(".")
         ? itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf("."))
         : null;
 
-    this.itemKindIdClass = propertyPathWithoutFarRightPart == null ? null
-        : (propertyPathWithoutFarRightPart.contains(".")
-            ? propertyPathWithoutFarRightPart.substring(itemPropertyPath.lastIndexOf(".") + 1)
-            : propertyPathWithoutFarRightPart);
+    this.itemKindIdClass = itemPropertyPathClass == null ? null
+        : (itemPropertyPathClass.contains(".")
+            ? itemPropertyPathClass.substring(itemPropertyPath.lastIndexOf(".") + 1)
+            : itemPropertyPathClass);
     this.itemKindIdField = itemPropertyPath.contains(".")
         ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf(".") + 1)
         : itemPropertyPath;
@@ -136,7 +126,7 @@ public class HtmlItem {
    * Returns itemKindId.
    * 
    * <p>itemKindId is built from itemKindIdClass and itemKindIdField.<br>
-   * When itemKindIdClass is {@code null}, rootRecordName is used instead.</p>
+   * When itemKindIdClass is {@code null}, rootRecordName is used as itemKindIdClass instead.</p>
    * 
    * @param rootRecordName rootRecordName
    * @return itemKindId
@@ -183,6 +173,15 @@ public class HtmlItem {
     String fieldPart = !StringUtils.isEmpty(itemNameKeyField) ? itemNameKeyField : itemKindIdField;
 
     return classPart + "." + fieldPart;
+  }
+
+  /**
+   * Sets required = true.
+   * 
+   * @return HtmlItem
+   */
+  public HtmlItem required() {
+    return required(true);
   }
 
   /**
