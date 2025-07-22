@@ -111,7 +111,7 @@ public class HtmlItem {
 
     this.itemKindIdClass = itemPropertyPathClass == null ? null
         : (itemPropertyPathClass.contains(".")
-            ? itemPropertyPathClass.substring(itemPropertyPath.lastIndexOf(".") + 1)
+            ? itemPropertyPathClass.substring(itemPropertyPathClass.lastIndexOf(".") + 1)
             : itemPropertyPathClass);
     this.itemKindIdField = itemPropertyPath.contains(".")
         ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf(".") + 1)
