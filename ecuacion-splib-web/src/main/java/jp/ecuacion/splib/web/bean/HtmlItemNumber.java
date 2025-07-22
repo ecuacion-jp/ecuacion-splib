@@ -39,16 +39,29 @@ public class HtmlItemNumber extends HtmlItem {
   public HtmlItemNumber itemNameKey(String itemNameKey) {
     return (HtmlItemNumber) super.itemNameKey(itemNameKey);
   }
-
+  
   @Override
-  public HtmlItemNumber isNotEmpty(boolean isNotEmpty) {
-    return (HtmlItemNumber) super.isNotEmpty(isNotEmpty);
+  public HtmlItemNumber required(boolean isRequired) {
+    return (HtmlItemNumber) super.required(isRequired);
   }
 
   @Override
+  public HtmlItemNumber required(HtmlItemConditionKeyEnum authKind, String authString,
+      boolean isRequired) {
+    return (HtmlItemNumber) super.required(authKind, authString, isRequired);
+  }
+
+  @Override
+  @Deprecated
+  public HtmlItemNumber isNotEmpty(boolean isNotEmpty) {
+    return (HtmlItemNumber) super.required(isNotEmpty);
+  }
+
+  @Override
+  @Deprecated
   public HtmlItemNumber isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
-    return (HtmlItemNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
+    return (HtmlItemNumber) super.required(authKind, authString, isNotEmpty);
   }
 
   /**

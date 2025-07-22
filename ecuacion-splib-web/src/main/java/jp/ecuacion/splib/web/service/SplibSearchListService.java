@@ -50,7 +50,7 @@ public abstract class SplibSearchListService
     <FST extends SplibSearchForm, FLT extends SplibListForm<?>>
     extends SplibGeneral2FormsService<FST, FLT> {
   //@formatter:on
-
+  
   /**
    * Deletes the record.
    * 

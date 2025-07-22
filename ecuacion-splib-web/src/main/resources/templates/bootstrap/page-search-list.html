@@ -58,9 +58,7 @@
 	
 	<div layout:fragment="form-content-2" th:remove="tag">
 		<div class="container-fluid">
-	<!--/* 
-			<div th:replace="~{bootstrap/components :: version(${rootRecordName}, ${versionFieldName}, '')}"></div>
- */-->
+
  			<div th:replace="~{bootstrap/components :: hiddenForInlineButtons(${rootRecordName}, ${idFieldName2}, '')}"></div>
 			<input type="hidden" name="dataKind" th:value="*{dataKind}">
 			
