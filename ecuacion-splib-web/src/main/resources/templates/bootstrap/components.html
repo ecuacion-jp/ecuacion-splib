@@ -707,6 +707,26 @@
 		</th:block>
 	</div>
 
+	<!--/* internal common input text component. */-->
+	<div th:fragment="internalAllHtmSelectComponent" th:remove="tag">
+		<!--/* disabled is used because select component does not have readonly readOnly attribute */-->
+		<th:block th:if="${isReadOnly}">
+			<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? recordPropertyPath : null}" th:name="${recordPropertyPath}" th:value="${inputValue}">
+		</th:block>
+	
+		<select th:id="${inputId}" th:name="${inputName}"
+				class="form-select" th:classappend="${messagesBean.isValid(recordPropertyPath)}"
+				th:disabled="${isReadOnly}"
+				th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
+				th:data-html-form-name="${htmlFormName}"
+				onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
+			<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
+			<th:block th:each="pair : ${pairs}">
+				<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
+			</th:block>
+		</select>
+	</div>
+
 	<!--/* 
 		### general-form-page input components
 	 */-->
@@ -830,25 +850,7 @@
 
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="internalEditInputSelectComponent(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputComponentSelect}, ~{ :: fragmentNoContents}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentInputComponentSelect" th:remove="tag">
-			<!--/* disabled is used because select component does not have readonly readOnly attribute */-->
-			<th:block th:if="${isReadOnly}">
-				<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? recordPropertyPath : null}" th:name="${recordPropertyPath}" th:value="${inputValue}">
-			</th:block>
-			<select th:id="${inputId}" th:name="${isReadOnly ? '' : recordPropertyPath}"
-					class="form-select" th:classappend="${messagesBean.isValid(recordPropertyPath)}"
-					th:disabled="${isReadOnly}"
-					th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
-					th:data-html-form-name="${htmlFormName}"
-					onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
-				<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
-				<th:block th:each="pair : ${pairs}">
-					<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
-				</th:block>
-			</select>
-		</div></th:block>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, ~{ :: fragmentNoContents}, ${options})}"></div>
 	</div>
 	
 	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
@@ -1118,22 +1120,7 @@
 	
 	<!--/* internal common component */-->
 	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ ::searchSelectInternal}, '',  ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="searchSelectInternal" th:remove="tag">
-			<select class="form-select" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" 
-					th:name="${inputId}"
-					th:classappend="${messagesBean.isValid(inputId)}" 
-					th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
-					th:data-html-form-name="${htmlFormName}"
-					onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
-				<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
-				<th:block th:each="pair : ${pairs}">
-					<!--/* 通常の文字列だとpre-processingは不要だったのだが、booleanを処理しようとすると子hの形でないと認識されなかった */-->
-					<option th:value="${pair[0]}" th:selected="${pair[0] == '__${inputValue}__'}">[[${pair[1]}]]</option>
-				</th:block>
-			</select>
-		</div></th:block>
+		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, '',  ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -1373,7 +1360,8 @@
 	<div th:fragment="tdInputNumber(itemPropertyPath, idValue, options)" th:remove="tag">
 		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
-					fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
+					fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
+					isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
 				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(itemPropertyPath)},
 						needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 					<input th:type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}"
