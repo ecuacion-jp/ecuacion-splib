@@ -25,7 +25,6 @@ import java.util.UUID;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
@@ -124,15 +123,14 @@ public class SplibUtil {
    * Prepares for page transition and returns url.
    * 
    * @param request request
-   * @param ctrl ctrl
    * @param redirectBean redirectBean
    * @param model model
    * @param takeOverMessages takeOverMessages
    * @return String
    */
-  public String prepareForPageTransition(HttpServletRequest request, SplibGeneralController<?> ctrl,
+  public String prepareForPageTransition(HttpServletRequest request,
       ReturnUrlBean redirectBean, Model model, boolean takeOverMessages) {
-
+    
     // contextId and contextMap
     String contextId = UUID.randomUUID().toString();
     Map<String, Object> contextMap = new HashMap<>();

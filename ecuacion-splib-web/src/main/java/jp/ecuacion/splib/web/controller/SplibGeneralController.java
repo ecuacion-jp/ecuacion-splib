@@ -510,7 +510,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       bean.showSuccessMessage();
     }
 
-    return util.prepareForPageTransition(request, this, bean, model, false);
+    return util.prepareForPageTransition(request, bean, model, false);
   }
 
   /**
