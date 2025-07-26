@@ -15,30 +15,32 @@
  */
 package jp.ecuacion.splib.web.exception;
 
+import org.slf4j.event.Level;
+
 /**
  * Notices that the html page file specified by url parameter does not exist.
  */
-public class HtmlFileNotFoundException extends RuntimeException {
+public class HtmlFileNotFoundException extends RedirectToHomePageException {
 
   private static final long serialVersionUID = 1L;
-
-  private String fileName;
 
   /**
    * Constructs a new instance.
    * 
-   * @param htmlFileName htmlFileName
+   * @param filename filename
    */
-  public HtmlFileNotFoundException(String htmlFileName) {
-    this.fileName = htmlFileName;
+  public HtmlFileNotFoundException(String filename) {
+    this(Level.ERROR, filename);
   }
-  
-  public String getFileName() {
-    return fileName;
-  }
-  
-  @Override
-  public String getMessage() {
-    return "Designated html file not found. html file name = templates/" + getFileName() + ".html";
+
+  /**
+   * Constructs a new instance.
+   * 
+   * @param logLevel log level
+   * @param filename filename
+   */
+  public HtmlFileNotFoundException(Level logLevel, String filename) {
+    super(logLevel,
+        "Designated html file not found. html file name = templates/" + filename + ".html");
   }
 }

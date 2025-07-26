@@ -222,7 +222,7 @@ public class ReturnUrlBean {
       for (String value : entry.getValue()) {
         if (is1st) {
           is1st = false;
-          sb.append("?");
+          sb.append(path.contains("?") ? "&" : "?");
 
         } else {
           sb.append("&");
