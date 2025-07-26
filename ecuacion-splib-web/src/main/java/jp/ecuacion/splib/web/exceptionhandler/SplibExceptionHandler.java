@@ -72,9 +72,6 @@ public abstract class SplibExceptionHandler {
   @Autowired(required = false)
   SplibExceptionHandlerAction actionOnThrowable;
 
-  // @Autowired
-  // private SplibModelAttributes modelAttr;
-
   @Autowired
   private SplibUtil util;
 
@@ -177,7 +174,7 @@ public abstract class SplibExceptionHandler {
 
     } else {
       // redirectBean == nullの場合は自画面遷移、自画面遷移の場合はmodelの情報も保持する
-      String path = util.prepareForPageTransition(request, ctrl, redirectBean, getModel(), true);
+      String path = util.prepareForPageTransition(request, redirectBean, getModel(), true);
 
       return new ModelAndView(path);
     }
@@ -318,37 +315,58 @@ public abstract class SplibExceptionHandler {
    * </ul>
    * 
    * @param exception Exception
+   * @param newModel When Exception occurs before Controller#prepare called, getModel() is null.
+   *     In that case, this new model can be used.
+   *     This is different from the one you get at controller.
    * @return ModelAndView
    */
   @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
-  public @Nonnull ModelAndView handleRedirectNeededExceptions(@Nonnull Exception exception) {
+  public @Nonnull ModelAndView handleRedirectNeededExceptions(@RequireNonnull Exception exception,
+      Model newModel) {
+    RedirectException redirectException = null;
+
+    // Setupu model if it's new.
+    Model model = getModel();
+    if (model == null) {
+      model = newModel;
+      newModel.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
+    }
 
     if (exception instanceof RedirectException) {
-      RedirectToHomePageException goTo = (RedirectToHomePageException) exception;
-      if (goTo.getLogLevel() != null) {
-        detailLog.log(goTo.getLogLevel(), goTo.getLogString());
-      }
-
-      if (!StringUtils.isEmpty(goTo.getMessageId())) {
-        MessagesBean messagesBean =
-            ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
-        messagesBean.setErrorMessage(
-            PropertyFileUtil.getMessage(goTo.getMessageId(), goTo.getMessageArgs()));
-      }
+      redirectException = (RedirectToHomePageException) exception;
 
     } else {
       if (!StringUtils.isEmpty(exception.getMessage())) {
         detailLog.info(exception.getMessage());
+      }
 
-        exception = new RedirectToHomePageException();
+      if (exception instanceof NoResourceFoundException) {
+        String path = ((NoResourceFoundException) exception).getResourcePath();
+
+        redirectException = new RedirectToHomePageException(
+            "jp.ecuacion.splib.web.common.message.NoResourceFoundException", path);
+
+      } else {
+        redirectException = new RedirectToHomePageException();
       }
     }
 
-    String redirectPath = ((RedirectException) exception).getRedirectPath();
-    ReturnUrlBean redirectBean = new ReturnUrlBean(getController(), redirectPath);
+    // Logging
+    if (redirectException.getLogLevel() != null) {
+      detailLog.log(redirectException.getLogLevel(), redirectException.getLogString());
+    }
 
-    String path =
-        util.prepareForPageTransition(request, getController(), redirectBean, getModel(), true);
+    // Showing message
+    if (!StringUtils.isEmpty(redirectException.getMessageId())) {
+      MessagesBean messagesBean =
+          ((MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
+      messagesBean.setErrorMessage(PropertyFileUtil.getMessage(request.getLocale(),
+          redirectException.getMessageId(), redirectException.getMessageArgs()));
+    }
+
+    // redirect
+    ReturnUrlBean redirectBean = new ReturnUrlBean(redirectException.getRedirectPath());
+    String path = util.prepareForPageTransition(request, redirectBean, model, true);
     return new ModelAndView(path);
   }
 
