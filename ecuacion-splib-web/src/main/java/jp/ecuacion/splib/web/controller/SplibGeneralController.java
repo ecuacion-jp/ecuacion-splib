@@ -48,15 +48,12 @@ import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Provides abstract general controller.
@@ -514,26 +511,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     }
 
     return util.prepareForPageTransition(request, this, bean, model, false);
-  }
-
-  /**
-   * Receives {@code action} url with {@code GET} method.
-   * 
-   * <p>Accesses to the URL with {@code action} are supposed to be {@code POST} method.
-   *     But in some reasons {@code action} with {@code GET} method exist, 
-   *     mostly under the situation 
-   *     like the URL bar in browsers remains {@code action} URL and clicks it.<br>
-   *     In that situation it results in html 403, but it's not preferable 
-   *     so by this method 403 changes 404 and redirect to the default page.</p>
-   *     
-   * <p>Notice that {@code action} with {@code GET} is not recommended, but supported.
-   *     If you use with {@code GET} method, you have to add {@code params} to {@code @GetMapping}.
-   *     Otherwise this method robs the procedure.
-   *     </p>
-   */
-  @GetMapping(value = "action")
-  public void throw404() throws NoResourceFoundException {
-    throw new NoResourceFoundException(HttpMethod.GET, "from SplibGeneralController#throw404");
   }
 
   /**

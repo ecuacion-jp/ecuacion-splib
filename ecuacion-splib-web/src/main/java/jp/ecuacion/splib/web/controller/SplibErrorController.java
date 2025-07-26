@@ -19,8 +19,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.LogUtil;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -79,15 +79,13 @@ public class SplibErrorController implements ErrorController {
   }
 
   /**
-   * Shows the next screen specified in properties file 
-   * with key {@code jp.ecuacion.splib.web.system-error.go-to-path}
-   * when the button on system error screen is pressed.
+   * Goes to the home page of the system.
    * 
    * @return html file name
+   * @throws RedirectToHomePageException GoToHomePageException
    */
   @GetMapping("action")
-  public String action() {
-    return "redirect:"
-        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path");
+  public String action() throws RedirectToHomePageException {
+    throw new RedirectToHomePageException();
   }
 }

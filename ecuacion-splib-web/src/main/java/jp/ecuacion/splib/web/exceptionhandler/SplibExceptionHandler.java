@@ -43,20 +43,21 @@ import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
-import jp.ecuacion.splib.web.exception.BizLogicRedirectAppException;
-import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
-import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
+import jp.ecuacion.splib.web.exception.RedirectException;
+import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Provides an exception handler.
@@ -219,81 +220,70 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleAppException(@Nonnull AppException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
-    ReturnUrlBean redirectBean = null;
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-    // BizLogicRedirectAppException
-    if (exception instanceof BizLogicRedirectAppException) {
-      String redirectPath = ((BizLogicRedirectAppException) exception).getRedirectPath();
-      redirectBean = new ReturnUrlBean(getController(), redirectPath);
+    // MultipleAppExceptionも考慮し例外を複数持つ
+    List<SingleAppException> exList = new ArrayList<>();
+
+    if (exception instanceof MultipleAppException) {
+      for (SingleAppException appEx : ((MultipleAppException) exception).getList()) {
+        exList.add(appEx);
+      }
+
+      // 結果exListがゼロの場合はシステムエラーとして処理。
+      if (exList.size() == 0) {
+        throw new RuntimeException("No exception included in MultipleAppException.");
+      }
 
     } else {
-      // other than BizLogicRedirectAppException
-
-      // MultipleAppExceptionも考慮し例外を複数持つ
-      List<SingleAppException> exList = new ArrayList<>();
-
-      if (exception instanceof MultipleAppException) {
-        for (SingleAppException appEx : ((MultipleAppException) exception).getList()) {
-          exList.add(appEx);
-        }
-
-        // 結果exListがゼロの場合はシステムエラーとして処理。
-        if (exList.size() == 0) {
-          throw new RuntimeException("No exception included in MultipleAppException.");
-        }
-
-      } else {
-        exList.add((SingleAppException) exception);
-      }
-
-      // exList内のexceptionを一つずつ処理
-      for (SingleAppException saex : exList) {
-
-        // propertyPaths
-        List<String> propertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
-            .map(itemKindId -> StringUtils.uncapitalize(itemKindId)).toList();
-
-        // Add rootRecord plus dot(.) if BizLogicAppException
-        if (saex instanceof BizLogicAppException && propertyPathList.size() > 0
-            && !propertyPathList.get(0).startsWith(getController().getRootRecordName() + ".")) {
-          propertyPathList = propertyPathList.stream()
-              .map(path -> getController().getRootRecordName() + "." + path).toList();
-        }
-
-        String[] propertyPaths = propertyPathList.toArray(new String[propertyPathList.size()]);
-
-        // message
-        Boolean msgAtItem =
-            (Boolean) getModel().getAttribute(SplibWebConstants.KEY_MODEL_MESSAGES_AT_ITEMS);
-        boolean needsItemName = msgAtItem == null ? true : !msgAtItem;
-        String message = ExceptionUtil
-            .getAppExceptionMessageList(saex, request.getLocale(), needsItemName).get(0);
-
-        if (saex instanceof ValidationAppException) {
-          // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
-          // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
-          // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
-          // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
-          List<String> itemNameKeyList = new ArrayList<>();
-          for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
-            HtmlItem item =
-                ((RecordInterface) getForms()[0].getRootRecord(getController().getRootRecordName()))
-                    .getHtmlItem(getController().getRootRecordName(), propertyPath);
-            itemNameKeyList.add(item.getItemNameKey(getController().getRootRecordName()));
-          }
-
-          message = addItemDisplayNames(message,
-              itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
-        }
-
-        messagesBean.setErrorMessage(message, propertyPaths);
-      }
+      exList.add((SingleAppException) exception);
     }
 
-    redirectBean =
-        redirectBean == null ? getController().getRedirectUrlOnAppExceptionBean() : redirectBean;
+    // exList内のexceptionを一つずつ処理
+    for (SingleAppException saex : exList) {
+
+      // propertyPaths
+      List<String> propertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
+          .map(itemKindId -> StringUtils.uncapitalize(itemKindId)).toList();
+
+      // Add rootRecord plus dot(.) if BizLogicAppException
+      if (saex instanceof BizLogicAppException && propertyPathList.size() > 0
+          && !propertyPathList.get(0).startsWith(getController().getRootRecordName() + ".")) {
+        propertyPathList = propertyPathList.stream()
+            .map(path -> getController().getRootRecordName() + "." + path).toList();
+      }
+
+      String[] propertyPaths = propertyPathList.toArray(new String[propertyPathList.size()]);
+
+      // message
+      Boolean msgAtItem =
+          (Boolean) getModel().getAttribute(SplibWebConstants.KEY_MODEL_MESSAGES_AT_ITEMS);
+      boolean needsItemName = msgAtItem == null ? true : !msgAtItem;
+      String message =
+          ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale(), needsItemName).get(0);
+
+      if (saex instanceof ValidationAppException) {
+        // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
+        // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
+        // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
+        // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
+        List<String> itemNameKeyList = new ArrayList<>();
+        for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
+          HtmlItem item =
+              ((RecordInterface) getForms()[0].getRootRecord(getController().getRootRecordName()))
+                  .getHtmlItem(getController().getRootRecordName(), propertyPath);
+          itemNameKeyList.add(item.getItemNameKey(getController().getRootRecordName()));
+        }
+
+        message = addItemDisplayNames(message,
+            itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
+      }
+
+      messagesBean.setErrorMessage(message, propertyPaths);
+    }
+
+    ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
   }
 
@@ -309,7 +299,8 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleOptimisticLockingFailureException(
       @Nonnull OverlappingFileLockException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    // 通常のチェックエラー扱いとする
+
+    // Treat as normal BizLogicAppException
     return handleAppException(
         new BizLogicAppException("jp.ecuacion.splib.web.common.message.optimisticLocking"),
         loginUser);
@@ -318,24 +309,47 @@ public abstract class SplibExceptionHandler {
   /**
    * Catches some specific exceptions. 
    * 
+   * <ul>
+   * <li>NoResourceFoundException: 
+   * No @RequestMapping settings in controllers which matches the request url.</li>
+   * <li>RedirectException: @RequestMapping settings 
+   * exists, but html file does not exist.</li>
+   * <li>HtmlFileNotAllowedToOpenException: html page exists but not allowed.</li>
+   * </ul>
+   * 
    * @param exception Exception
    * @return ModelAndView
    */
-  @ExceptionHandler({HtmlFileNotFoundException.class, HtmlFileNotAllowedToOpenException.class})
-  public @Nonnull ModelAndView handleExceptionsWhichLeadsToDefaultPage(
-      @Nonnull Exception exception) {
+  @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
+  public @Nonnull ModelAndView handleRedirectNeededExceptions(@Nonnull Exception exception) {
 
-    detailLog.info(exception.getMessage());
+    if (exception instanceof RedirectException) {
+      RedirectToHomePageException goTo = (RedirectToHomePageException) exception;
+      if (goTo.getLogLevel() != null) {
+        detailLog.log(goTo.getLogLevel(), goTo.getLogString());
+      }
 
-    // Output log to error.log
-    if (exception instanceof HtmlFileNotAllowedToOpenException) {
-      detailLog.error(exception);
+      if (!StringUtils.isEmpty(goTo.getMessageId())) {
+        MessagesBean messagesBean =
+            ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
+        messagesBean.setErrorMessage(
+            PropertyFileUtil.getMessage(goTo.getMessageId(), goTo.getMessageArgs()));
+      }
+
+    } else {
+      if (!StringUtils.isEmpty(exception.getMessage())) {
+        detailLog.info(exception.getMessage());
+
+        exception = new RedirectToHomePageException();
+      }
     }
 
-    // Redirect to a page which seems to exist.
-    // If it does not, it will be re-redirected to an existent page.
-    return new ModelAndView("redirect:"
-        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
+    String redirectPath = ((RedirectException) exception).getRedirectPath();
+    ReturnUrlBean redirectBean = new ReturnUrlBean(getController(), redirectPath);
+
+    String path =
+        util.prepareForPageTransition(request, getController(), redirectBean, getModel(), true);
+    return new ModelAndView(path);
   }
 
   /**
@@ -350,17 +364,12 @@ public abstract class SplibExceptionHandler {
 
     LogUtil.logSystemError(detailLog, exception);
 
-    // 個別appの処理。mail送信など。
+    // app dependent procedures, like sending mail.
     if (actionOnThrowable != null) {
       actionOnThrowable.execute(exception);
     }
 
-    return new ModelAndView("redirect:/"
-        + PropertyFileUtil.getApplication("jp.ecuacion.splib.web.system-error.go-to-path"));
-
-    // Model mdl = getModel() == null ? model : getModel();
-    // modelAttr.addAllToModel(mdl);
-    //
-    // return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
+    Model mdl = getModel() == null ? model : getModel();
+    return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
   }
 }

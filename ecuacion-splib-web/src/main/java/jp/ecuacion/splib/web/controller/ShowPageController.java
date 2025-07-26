@@ -72,12 +72,11 @@ public class ShowPageController extends SplibBaseController {
   @RequestMapping(value = "page", method = {RequestMethod.POST, RequestMethod.GET})
   public String page(Model model, @RequestParam("id") String page) throws IOException {
 
-    // no checkだと脆弱性をつかれる可能性があるので、使用可能文字は限定しておく。
+    // Validate input string to prevent from attacks.
     String expression = "^[a-zA-Z0-9_\\-/]*$";
     if (!page.matches(expression)) {
-      // システムエラーにすると面倒なので、home的なページへのredirectとしておく。
-      // /public/home/pageとしているが、存在しなければredirectされて適切なページに飛ぶはず・・
-      return "redirect:/public/home/page";
+      // Redirected to default page because system error is stressful on development...
+      throw new HtmlFileNotFoundException(page);
     }
 
     // pageの存在有無はチェックしておく
