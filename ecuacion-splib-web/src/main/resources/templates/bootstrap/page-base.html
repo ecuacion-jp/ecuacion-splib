@@ -31,7 +31,7 @@
 	<link th:href="@{/css/splib-web.css}" rel="stylesheet">
 	<link th:href="@{/css/app.css}" rel="stylesheet">
 	<script th:src="@{/js/splib-web.js}"></script>
-	<title th:text="${headTitle == null || headTitle == '' ? title : headTitle}"></title>
+	<title th:text="${headTitle == null || headTitle == '' ? @msgUtil.get(#locale, title) : @msgUtil.get(#locale, headTitle)}"></title>
 </head>
 <body th:style="'background-color: ' + ${bodyBgColor}">
 <!--/*   */-->
