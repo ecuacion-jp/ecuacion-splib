@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.web.form.record;
 
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.form.record.SplibRecord;
@@ -31,8 +32,19 @@ public class ConfigRecord extends SplibRecord implements RecordInterface {
     return new HtmlItem[] {};
   }
 
+  /**
+   * get appVersion.
+   * 
+   * @return String
+   */
   public String getAppVersion() {
-    return ResourceBundle.getBundle("version").getString("project.version");
+    try {
+      ResourceBundle bundle = ResourceBundle.getBundle("version");
+      return bundle.getString("project.version");
+
+    } catch (MissingResourceException ex) {
+      return "(none)";
+    }
   }
 
   public String getExcelTemplateVersion() {

@@ -32,7 +32,7 @@
 </head>
 <body>
 	<div layout:fragment="base-content" th:remove="tag">
-		<form method="GET" th:action="@{/} + ${@propUtil.get('jp.ecuacion.splib.web.system-error.go-to-path')}">
+		<form method="GET" th:action="@{/} + ${@propUtil.get('jp.ecuacion.splib.web.home-page')}">
 			 <div class="mt-2 ml-3">
 				<div th:replace="~{bootstrap/components :: subtitle(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.systemError.title')}, '')}"></div>
 				<p>

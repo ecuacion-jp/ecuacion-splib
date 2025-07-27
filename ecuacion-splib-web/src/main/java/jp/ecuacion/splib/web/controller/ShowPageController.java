@@ -20,9 +20,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.exception.HtmlFileNotAllowedToOpenException;
-import jp.ecuacion.splib.web.exception.HtmlFileNotFoundException;
+import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.util.SplibUtil;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ClassPathResource;
@@ -72,18 +72,19 @@ public class ShowPageController extends SplibBaseController {
   @RequestMapping(value = "page", method = {RequestMethod.POST, RequestMethod.GET})
   public String page(Model model, @RequestParam("id") String page) throws IOException {
 
-    // no checkだと脆弱性をつかれる可能性があるので、使用可能文字は限定しておく。
+    // Validate input string to prevent from attacks.
     String expression = "^[a-zA-Z0-9_\\-/]*$";
     if (!page.matches(expression)) {
-      // システムエラーにすると面倒なので、home的なページへのredirectとしておく。
-      // /public/home/pageとしているが、存在しなければredirectされて適切なページに飛ぶはず・・
-      return "redirect:/public/home/page";
+      // Redirected to default page because system error is stressful on development...
+      throw new RedirectToHomePageException(Level.INFO,
+          "jp.ecuacion.splib.web.common.message.htmlFileNameNotAllowed", new String[] {page});
     }
 
     // pageの存在有無はチェックしておく
     ClassPathResource resource = new ClassPathResource("templates/" + page + ".html");
     if (!resource.exists()) {
-      throw new HtmlFileNotFoundException(page);
+      throw new RedirectToHomePageException(Level.INFO,
+          "jp.ecuacion.splib.web.common.message.htmlFileNotFound", new String[] {page});
     }
 
     // htmlタグに"data-show-page-login-state属性があり、その値に現在のloginStateが存在することをチェック
@@ -102,7 +103,8 @@ public class ShowPageController extends SplibBaseController {
 
     // ifの条件の後者は「htmlタグが2つ以上ある場合。
     if (!html.contains(startTag) || html.replace(startTag, "").contains(startTag)) {
-      throw new HtmlFileNotFoundException(page);
+      throw new RedirectToHomePageException(Level.INFO,
+          "jp.ecuacion.splib.web.common.message.htmlFileNotAllowedToOpen", new String[] {page});
     }
 
     // htmlタグを抜き出す
@@ -116,7 +118,8 @@ public class ShowPageController extends SplibBaseController {
     // チェック
     if (list.size() != 1 || !list.get(0).contains("=")
         || !list.get(0).split("=")[1].contains(util.getLoginState())) {
-      throw new HtmlFileNotAllowedToOpenException(page);
+      throw new RedirectToHomePageException(Level.INFO,
+          "jp.ecuacion.splib.web.common.message.htmlFileNotAllowedToOpen", new String[] {page});
     }
   }
 }

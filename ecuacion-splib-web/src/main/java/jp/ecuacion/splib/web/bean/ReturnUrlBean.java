@@ -136,16 +136,12 @@ public class ReturnUrlBean {
   }
 
   /**
-   * Constructs a new instance with path.
+   * Constructs a new instance with explicit path.
    * 
-   * @param controller controller
    * @param path path
    */
-  public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
-      @RequireNonnull String path) {
+  public ReturnUrlBean(@RequireNonnull String path) {
     this.path = ObjectsUtil.requireNonNull(path);
-
-    putParamList(controller.getParamListOnRedirectToSelf());
   }
 
   /**
@@ -222,7 +218,7 @@ public class ReturnUrlBean {
       for (String value : entry.getValue()) {
         if (is1st) {
           is1st = false;
-          sb.append("?");
+          sb.append(path.contains("?") ? "&" : "?");
 
         } else {
           sb.append("&");
