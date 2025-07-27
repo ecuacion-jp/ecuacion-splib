@@ -15,22 +15,29 @@
  */
 package jp.ecuacion.splib.web.exception;
 
+import java.util.Locale;
+import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.slf4j.event.Level;
 
 /** 
- * Is an exception extending {@code BizLogicAppException}.
- * 
- * <p>This causes redirect to the other page and show error messages in it.<br>
- * Since the page is transitioned, the error item is not supposed to exist.
- * Therefore this exception doesn't have {@code AppErrorFields}.</p>
+ * Redirects to specified page.
  */
 public class RedirectException extends RuntimeException {
   private static final long serialVersionUID = 1L;
 
+  /** redirect path. */
   private String redirectPath;
+
+  /** messageId to show message at the redirected page. */
   private String messageId;
+
+  /** messageArgs to show message at the redirected page. */
   private String[] messageArgs;
+
+  /** logLevel to log to file. */
   private Level logLevel;
+
+  /** log message to log to file. */
   private String logString;
 
   /**
@@ -82,6 +89,29 @@ public class RedirectException extends RuntimeException {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
     this.logString = logString;
+    this.messageId = messageId;
+    this.messageArgs = messageArgs;
+  }
+
+  /**
+   * Constructs a new instance.
+   * 
+   * <p>messageId and messageArgs are used both for message shown on the page and log message.<br>
+   *     English locale is always used for log messages.</p>
+   * 
+   * <p>Since hard to distinguish other constructors, messageArgs is not {@code String...},
+   *     but {@code String[]}.</p>
+   * 
+   * @param redirectPath redirectPath like "/account/instancePowerStatus/searchList/page".
+   * @param messageId messageId
+   * @param messageArgs messageArgs
+   * @param logLevel logLevel
+   */
+  public RedirectException(String redirectPath, Level logLevel, String messageId,
+      String[] messageArgs) {
+    this.redirectPath = redirectPath;
+    this.logLevel = logLevel;
+    this.logString = PropertyFileUtil.getMessage(Locale.ENGLISH, messageId, messageArgs);
     this.messageId = messageId;
     this.messageArgs = messageArgs;
   }
