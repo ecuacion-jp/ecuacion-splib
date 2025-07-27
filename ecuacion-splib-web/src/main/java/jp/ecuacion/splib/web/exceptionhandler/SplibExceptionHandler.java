@@ -311,7 +311,6 @@ public abstract class SplibExceptionHandler {
    * No @RequestMapping settings in controllers which matches the request url.</li>
    * <li>RedirectException: @RequestMapping settings 
    * exists, but html file does not exist.</li>
-   * <li>HtmlFileNotAllowedToOpenException: html page exists but not allowed.</li>
    * </ul>
    * 
    * @param exception Exception

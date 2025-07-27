@@ -38,7 +38,17 @@ public class RedirectToHomePageException extends RedirectException {
    */
   public RedirectToHomePageException(Level logLevel, String logString, String messageId,
       String... messageArgs) {
-    super((HOME_PAGE_PATH.startsWith("/") ? "" : "/") + HOME_PAGE_PATH, logLevel, logString,
-        messageId, messageArgs);
+    super(properHomePagePath(), logLevel, logString, messageId, messageArgs);
+  }
+
+  /**
+   * See {@link RedirectException}.
+   */
+  public RedirectToHomePageException(Level logLevel, String messageId, String[] messageArgs) {
+    super(properHomePagePath(), logLevel, messageId, messageArgs);
+  }
+
+  private static String properHomePagePath() {
+    return (HOME_PAGE_PATH.startsWith("/") ? "" : "/") + HOME_PAGE_PATH;
   }
 }
