@@ -24,8 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 /**
  *  Provides the abstract SecurityConfig class for admin.
@@ -87,9 +85,7 @@ public abstract class SplibWebSecurityConfigForAdmin {
    */
   @Order(11)
   @Bean
-  SecurityFilterChain filterChainForAdmin(HttpSecurity http,
-      HandlerMappingIntrospector introspector) throws Exception {
-    MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
+  SecurityFilterChain filterChainForAdmin(HttpSecurity http) throws Exception {
 
     http.securityMatcher("/public/admin*/**", "/admin/**");
 
@@ -102,7 +98,7 @@ public abstract class SplibWebSecurityConfigForAdmin {
 
     http.authorizeHttpRequests(
         requests -> requests.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-            .permitAll().requestMatchers(mvc.pattern("/public/admin*/**")).permitAll());
+            .permitAll().requestMatchers("/public/admin*/**").permitAll());
 
     // 管理者など、ログイン後の/admin配下の全画面が閲覧可能としたいroleは、ADMIN_FULL_ACCESSのroleを設定すればOK。
     List<AuthorizationBean> roleList = getRoleInfo() == null ? new ArrayList<>() : getRoleInfo();
