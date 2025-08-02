@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * Provides security config for rest.
@@ -45,7 +45,8 @@ public abstract class SplibRestSecurityConfig {
     http.csrf(csrf -> csrf.disable());
 
     http.authorizeHttpRequests(requests -> requests
-        .requestMatchers(new AntPathRequestMatcher("/api/public/**")).permitAll());
+        .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher("/api/public/**"))
+        .permitAll());
 
     return http.build();
   }

@@ -25,8 +25,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 /**
  * Provides the abstract SecurityConfig class.
@@ -89,17 +87,11 @@ public abstract class SplibWebSecurityConfig {
     return passwordEncoder;
   }
 
-  @Bean
-  MvcRequestMatcher.Builder mvc(HandlerMappingIntrospector introspector) {
-    return new MvcRequestMatcher.Builder(introspector);
-  }
-
   /*
    * Adds security settings to the {@code HttpSecurity} object. 
    */
   @Bean
-  SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc)
-      throws Exception {
+  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
     http.httpBasic(basic -> basic.disable());
 
@@ -110,8 +102,8 @@ public abstract class SplibWebSecurityConfig {
 
     http.authorizeHttpRequests(
         requests -> requests.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-            .permitAll().requestMatchers(mvc.pattern("/public/**")).permitAll()
-            .requestMatchers(mvc.pattern("/ecuacion/public/**")).permitAll());
+            .permitAll().requestMatchers("/public/**").permitAll()
+            .requestMatchers("/ecuacion/public/**").permitAll());
 
     // 管理者など、ログイン後の/account配下の全画面が閲覧可能としたいroleは、ACCOUNT_FULL_ACCESSのroleを設定すればOK。
     List<AuthorizationBean> roleList =
