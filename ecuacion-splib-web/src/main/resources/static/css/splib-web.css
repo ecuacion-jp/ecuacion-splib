@@ -104,6 +104,7 @@ footer{
 }
 
 .name {
+  font-size: 90%;
   display: flex;
   flex-wrap: wrap;
   position: relative;
