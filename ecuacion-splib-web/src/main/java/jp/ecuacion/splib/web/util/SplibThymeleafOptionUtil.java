@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -117,8 +118,8 @@ public class SplibThymeleafOptionUtil {
     String[] options = optionCsv.split(",");
     for (String option : options) {
       if (option.contains("=")) {
-        key = option.substring(0, option.indexOf("="));
-        value = option.substring(option.indexOf("=") + 1);
+        key = StringUtils.trim(option.substring(0, option.indexOf("=")));
+        value = StringUtils.trim(option.substring(option.indexOf("=") + 1));
 
       } else {
         key = option;
