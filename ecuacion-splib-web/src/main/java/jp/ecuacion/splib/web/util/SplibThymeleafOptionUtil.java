@@ -20,21 +20,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
  * Analyzes options specified with html components.
  * 
  * <p>It's called from thymeleaf.<br>
- *     Options are in the format of csv and receives multiple optional attributes.
+ *     Options are in the format of csv and able to receive multiple optional attributes.
  *     It's written like 'readonly,required'.<br>
- *     It also receives key value parameter like 'readonly,a=b,required'.</p>
+ *     It also receives key value parameter like 'readonly,id=deptName,required'.</p>
  */
 @Component("optUtil")
 public class SplibThymeleafOptionUtil {
 
   private HttpServletRequest request;
+
+  private DetailLogger detailLog = new DetailLogger(this);
 
   /**
    * Constructs a new instance.
@@ -92,6 +96,14 @@ public class SplibThymeleafOptionUtil {
         new String[] {fieldNames.toString()});
   }
 
+  /**
+   * Creates Map from option csv.
+   * 
+   * <p>When duplicated keys exists, former one is overrided and ignored.</p>
+   * 
+   * @param optionCsv optionCsv
+   * @return Map
+   */
   private Map<String, String> optionMap(String optionCsv) {
 
     Map<String, String> rtnMap = new HashMap<>();
@@ -106,8 +118,8 @@ public class SplibThymeleafOptionUtil {
     String[] options = optionCsv.split(",");
     for (String option : options) {
       if (option.contains("=")) {
-        key = option.substring(0, option.indexOf("="));
-        value = option.substring(option.indexOf("=") + 1);
+        key = StringUtils.trim(option.substring(0, option.indexOf("=")));
+        value = StringUtils.trim(option.substring(option.indexOf("=") + 1));
 
       } else {
         key = option;
@@ -115,6 +127,12 @@ public class SplibThymeleafOptionUtil {
 
       // 多少の間違いを拾うため、全てのkeyの文字をlowerCaseにしておく
       String lowerCaseKey = key.toLowerCase();
+
+      // if the key already exists in the map, the value is updated and output log.
+      if (rtnMap.containsKey(lowerCaseKey)) {
+        detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
+      }
+
       rtnMap.put(lowerCaseKey, value);
     }
 

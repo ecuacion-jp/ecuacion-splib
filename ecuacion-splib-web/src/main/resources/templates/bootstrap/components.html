@@ -38,15 +38,21 @@
 		  If it's false (=you don't want to add 'id' attribute to div component), caller component need to implement component as id = ${componentId}. 
 	 */-->
 	<!--/* options:
-		- componentId	(an arbitrary string)	Specifies 'id' attribute of the whole. 
-												As default id value is the same as the value of name for html controls.
+		- componentId	string	Specifies 'id' attribute of the whole integrated component. 
+								As default id value is the same as the value of name for html controls.
+		- mt			integer	Specifies the margin top value of the integrated component. 
+								When you set 'mt=3' to options, it turns into 'class="mt-3"'. It's valid only when createsComponentIdDiv == true.
+		- mb			integer Specifies the margin bottom value of the integrated component.
+								When you set 'mb=3' to options, it turns into 'class="mb-3"'. It's valid only when createsComponentIdDiv == true.
  	 */-->
 	<div th:fragment="internalAllCommonComponent(contentsOfAllCommon, createsComponentIdDiv, options)" th:remove="tag">
-		<th:block th:with="componentId=${@optUtil.getValueOrElse(options, 'componentId', null)}">
-			<div th:if="${createsComponentIdDiv}" th:id="${componentId}">
+		<th:block th:with="componentId=${@optUtil.getValueOrElse(options, 'componentId', null)},
+				mtClass=${@optUtil.hasKey(options, 'mt') ? 'mt-' + @optUtil.getValue(options, 'mt') : ''},
+				mbClass=${@optUtil.hasKey(options, 'mb') ? 'mb-' + @optUtil.getValue(options, 'mb') : ''},
+				">
+			<div th:if="${createsComponentIdDiv}" th:id="${componentId}" th:classappend="${mtClass} + ' ' + ${mbClass}">
 				<th:block th:replace="${contentsOfAllCommon}" />
 			</div>
-
 			<th:block th:if="${!createsComponentIdDiv}">
 				<th:block th:replace="${contentsOfAllCommon}" />
 			</th:block>
@@ -55,10 +61,10 @@
 	
 	<!--/* fragment with no contents. Used as 'null' fragment since you can't pass null to fragment parameters. */-->
 	<div th:fragment="fragmentNoContents" th:remove="tag">
-	</div><
+	</div>
 
 	<!--/* 
-		### message displaying components
+		### message components
 	 */-->
 
 	<!--/* internal common display message component */-->
@@ -66,67 +72,74 @@
 		'title' and 'message' can be the key to the message.properties or item_names.properties, 
 		or if it does not exist in properties files, it shows the string directly.
 	*/-->
-	<div th:fragment="internalMessageDisplayCommonComponent(contents, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentMessageDisplayCommonComponent}, true, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentMessageDisplayCommonComponent" th:remove="tag">
+	<!--/* options:
+		- selectable	boolean	Specifies whether it looks selectable on hover. Notice that this option make components look like selectable only.
+						Procedure on click needs to be added aside this option.
+						This options is meant to be a message components common option, but for now it's implemented only in speechBaloon.
+ 	 */-->
+ 	<div th:fragment="internalMessageCommonComponent(contents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentMessageCommonComponent}, true, ${options})}"></div>
+ 		
+		<th:block th:if="false"><div th:fragment="fragmentMessageCommonComponent" th:remove="tag">
 			<div class="text-dark" 
 					th:with="titleString=${@msgUtil.get(#locale, title)},
-					messageString=${@msgUtil.get(#locale, message)}">
+					messageString=${@msgUtil.get(#locale, message)},
+					isSelectable=${@optUtil.hasKey(options, 'selectable')}">
+
 				<th:block th:replace="${contents}" />
-				
+
 			</div>
 		</div>
 	</div>
 
 	<!--/* title */-->
 	<div th:fragment="title(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: titleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: titleInternal}, ${'mt=3,mb=5,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="titleInternal" th:remove="tag">
-			<div class="fs-3 fw-bold mt-3 mb-5" th:text="${titleString}"></div>
+			<div class="fs-3 fw-bold" th:text="${titleString}"></div>
 		</div></th:block>
 	</div>
 
 	<!--/* titleDesc */-->
 	<!--/* It's placed above the message space, so it does not seem very useful. Maybe it will become deprecated in the future. */-->
 	<div th:fragment="titleDesc(message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: titleDescInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: titleDescInternal}, ${'mb=5,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="titleDescInternal" th:remove="tag">
 			<th:block th:if="${!#strings.isEmpty(messageString)}">
-				<div class="mb-5" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+				<div class="" style="white-space: pre-wrap;" th:text="${messageString}"></div>
 			</th:block>
 		</div></th:block>
 	</div>
 
 	<!--/* subtitle  */-->
 	<div th:fragment="subtitle(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: subtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: subtitleInternal}, ${'mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subtitleInternal" th:remove="tag">
-			<div class="border-5 border-color-subtitle fs-5 fw-bold mt-5 pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
+			<div class="border-5 border-color-subtitle fs-5 fw-bold pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
 		</div></th:block>
 	</div>
 
 	<!--/* paragraphWithSubtitle */-->
 	<div th:fragment="paragraphWithSubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${'mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subtitleInternal}"></div>
-			<div class="mt-3 mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+			<div class="mt-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
 		</div></th:block>
 	</div>
 	
-	<!--/* subtitle  */-->
+	<!--/* subsubtitle  */-->
 	<div th:fragment="subsubtitle(title, options)" th:remove="tag">
-		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: subsubtitleInternal}, ${options})}"></div>
+		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: subsubtitleInternal}, ${'mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subsubtitleInternal" th:remove="tag">
 			<div>
-				<div class="mt-5 mb-3 pt-1 pb-1 ps-3">
-					<span class="text-color-subtitle me-3 fs-7 fw-bold">-︎</span><span class="fs-5 fw-bold" th:text="${titleString}"></span>
+				<div class="pt-1 pb-1 ps-3">
+					<span class="text-color-subtitle me-3 fs-7 fw-bold">&#45;</span><span class="fs-5 fw-bold" th:text="${titleString}"></span>
 				</div>
 			</div>
 		</div></th:block>
@@ -134,40 +147,38 @@
 
 	<!--/* paragraphWithSubsubtitle */-->
 	<div th:fragment="paragraphWithSubsubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${'mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubsubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subsubtitleInternal}"></div>
-			<div class="mt-3 mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+			<div class="mt-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
 		</div></th:block>
 	</div>
 	
 	<!--/* paragraph */-->
 	<div th:fragment="paragraph(message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: paragraphInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphInternal}, ${'mt=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphInternal" th:remove="tag">
-			<div class="mt-4" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+			<div class="" style="white-space: pre-wrap;" th:text="${messageString}"></div>
 		</div></th:block>
 	</div>
 	
 	<!--/* referenceBox */-->
 	<div th:fragment="referenceBox(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: referenceBoxInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: referenceBoxInternal}, ${'mt=4,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="referenceBoxInternal" th:remove="tag">
-			<div class="text-dark mt-4">
-				<th:block th:if="${!#strings.isEmpty(titleString)}"><code  class="text-dark" th:text="'[' + ${titleString} + ']'"></code></th:block>
-				<div class="border ps-3 pe-3" style="background-color: #ffffe0">
-					<pre class="mb-0"><code><div class="mt-3 mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div></code></pre>
-				</div>
+			<th:block th:if="${!#strings.isEmpty(titleString)}"><code class="text-dark" th:text="'[' + ${titleString} + ']'"></code></th:block>
+			<div class="border ps-3 pe-3" style="background-color: #ffffe0">
+				<pre class="mb-0"><code><div class="mt-3 mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div></code></pre>
 			</div>
 		</div></th:block>
 	</div>
 
 	<!--/* box. space enclosed by a frame. */-->
 	<div th:fragment="box(boxContents, title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: boxInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: boxInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="boxInternal" th:remove="tag">
 			<div class="border mt-3">
@@ -176,7 +187,7 @@
 						<div class="fs-4 mb-3" th:text="${titleString}"></div>
 					</th:block>
 					<th:block th:if="${!#strings.isEmpty(messageString)}">
-						<div style="white-space: pre-wrap;" th:text="${messageString}"></div>
+						<div class="mb-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
 					</th:block>
 
 					<th:block th:replace="${boxContents}" />
@@ -189,7 +200,7 @@
 	<!--/* freeSpace */-->
 	<!--/* You can input free text / html. It is used for commonize color and font. */-->
 	<div th:fragment="freeSpace(freeSpaceContent, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: freeSpaceInternal}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: freeSpaceInternal}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="freeSpaceInternal" th:remove="tag">
 				<th:block th:replace="${freeSpaceContent}" />
@@ -200,25 +211,21 @@
 	<!--/* 
 		special thanks to: https://stand-4u.com/css/fukidashi.html
 	 */-->
-	<div  th:fragment="speechBalloon(itemPropertyPath, isMySpeech, isSelectable, name, timestamp, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageDisplayCommonComponent(~{ :: fragmentSpeechBalloon}, false, ${options})}"></div>
+	<div  th:fragment="speechBalloon(message, isMyMessage, name, timestamp, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: fragmentSpeechBalloon}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentSpeechBalloon" th:remove="tag">
 			<!--/* Add space character when the input string is blank. */-->
-			<div th:classappend="'balloon_' + ${isMySpeech ? 'r' : 'l'}" th:with="message=${message == null || message == '' ? '&nbsp;' : message}">
-				<div class="faceicon" th:if="${!isMySpeech}">
+			<div th:classappend="'balloon_' + ${isMyMessage ? 'r' : 'l'}" th:with="message=${message == null || message == '' ? '&nbsp;' : message}">
+				<div class="faceicon" th:if="${!isMyMessage}">
 					<img th:src="@{/images/speech-balloon-account-icon.png}" alt="" />
 				</div>
 				<div>
-					<div class="name" th:if="${!isMySpeech}" th:text="${name}"></div>
-					<div th:classappend="${'says' + (isSelectable ? '-selectable' : '')}" th:id="${itemPropertyPath}"></div>
-					<div class="name mt-1" th:style="${'font-size: 60%; ' + (isMySpeech ? '' : 'display: flex; align-items: flex-end;')}">
-					<span th:style="${isMySpeech ? 'margin-left: auto;' : ''}" th:text="${timestamp}"></span>
+					<div class="name" th:if="${!isMyMessage}" th:text="${name}"></div>
+					<div th:classappend="${'says' + (isSelectable ? '-selectable' : '')}" th:text="${messageString}"></div>
+					<div class="name mt-1" th:style="${'font-size: 60%; ' + (isMyMessage ? '' : 'display: flex; align-items: flex-end;')}">
+					<span th:style="${isMyMessage ? 'margin-left: auto;' : ''}" th:text="${timestamp}"></span>
 				</div>
-				<input type="hidden" th:id="${itemPropertyPath + '_hidden'}" th:value="${messageString}" />
-				<script type="text/javascript">
-					document.getElementById('[[${itemPropertyPath}]]').innerText = document.getElementById('[[${itemPropertyPath}]]' + '_hidden').value;
-				</script>
 			</div>
 		</div></th:block>
 	</div>
@@ -227,7 +234,7 @@
 		### table components.
 	 */-->
 
-	<!--/* internal common display message component */-->
+	<!--/* internal common table component */-->
 	<!--/* 
 		'title' and 'message' can be the key to the message.properties or item_names.properties, 
 		or if it does not exist in properties files, it shows the string directly.
@@ -239,76 +246,152 @@
 			<th:block th:replace="${contents}" />
 		</div></th:block>
 	</div>
-	
-	<!--/* simple table header */-->
-	<div th:fragment="simpleTableHeader(labels, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableHeader}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentSimpleTableHeader" th:remove="tag">
-			<thead th:id="${componentId}" class="text-white bg-color-tbl-header bg-gradient  align-middle">
+	<!--/* internalStaticTableCell */-->
+	<!--/* parameters:
+		- cellElement		multiple types	an array which consists of attributes of a cell. The array can be one of the following formats:
+											1. string                   (just a string)
+											2. ${ {string} }            (an array with one attribute)
+											3. ${ {string, options} }   (an array with two attributes)
+		- isHeader			boolean			Specifies whether the cell is placed in the header line or not.
+		- cascadedOptions	string			options set for line or the head / body part of the table.
+											The options for cell is prior to it, but when the value is not set at the option for cell, 
+											the value of cascadedOptions is used.
+	 */-->
+	<!--/* options: (in the cellELement)
+		- rowspan			integer	Specifies the rowspan value. default value is 1.
+		- colspan			integer	Specifies the colspan value. default value is 1.
+		- textAlignment		string	Specifies the text-alignment. It takes either start, end, center.
+		- textColor			string	Specifies the color attribute.
+		- backgroundColor	string	Specifies the background-color attribute.
+ 	 */-->
+	<div th:fragment="internalStaticTableCell(cellElement, isHeader, cascadedOptions)" th:remove="tag">
+		<th:block th:with="
+				string=${cellElement.class.name == 'java.lang.String' ? cellElement : cellElement[0]},
+				options=${cascadedOptions + ',' + ((cellElement.class.name == 'java.lang.String' || #lists.size(cellElement)== 1) ? '' : cellElement[1])}">
+			<th:block th:with="
+					textColor=${@optUtil.getValueOrElse(options, 'textColor', '')},
+					textColorStyle=${textColor == '' ? '' : 'color: ' + textColor + '; '},
+					bgColor=${@optUtil.getValueOrElse(options, 'backgroundColor', '')},
+					bgColorStyle=${bgColor == '' ? '' : 'background-color: ' + bgColor + '; '},
+					class=${'align-middle fs-6'},
+					text=${@msgUtil.get(#locale, string)},
+					textAlignment=${'text-' + @optUtil.getValueOrElse(options, 'textAlignment', isHeader ? 'center' : 'left')},
+					style=${'white-space: pre-wrap; ' + textColorStyle + bgColorStyle},
+					rowspan=${@optUtil.getValueOrElse(options, 'rowspan', 1)},
+					colspan=${@optUtil.getValueOrElse(options, 'colspan', 1)},
+					">
+
+				<th:block th:if="${isHeader}">
+					<th th:class="${class}" th:classappend="${textAlignment}" th:text="${text}"	th:style="${style}" th:rowspan="${rowspan}" th:colspan="${colspan}"></th>
+				</th:block>
+				
+				<th:block th:if="${!isHeader}">
+					<td th:class="${class}" th:classappend="${textAlignment}" th:text="${text}"	th:style="${style}"	th:rowspan="${rowspan}" th:colspan="${colspan}"></td>
+				</th:block>
+			</th:block>
+		</th:block>
+	</div>
+
+	<!--/* internalStaticTableLine */-->
+	<!--/* parameters:
+		- cellElements		array	an array of "cellElement"s. See parameters part of "internalStaticTableCell" for the format of each cellElement.
+									The array can be { cellElement, ..., } or { cellElement, ..., lineOptions }.
+									"lineOptions" is a format of the same as that of cellElement, { null, options }. 1st element must be null.
+									lineOptions is a string parameter, which is cascaded to cellElement options.		
+		- cascadedOptions	string	options cascaded from the upper component.
+	 */-->
+ 	<div th:fragment="internalStaticTableLine(cellElementsFor1Line, isHeader, cascadedOptions)" th:remove="tag">
+		<th:block th:with="arrayLength=${#lists.size(cellElementsFor1Line)}, 
+				containsOptionsInLine=${cellElementsFor1Line[arrayLength - 1].class.name.contains('Collection') and cellElementsFor1Line[arrayLength - 1][0] == null}, 
+				optionsInLine=${containsOptionsInLine ? cellElementsFor1Line[arrayLength - 1][1] : ''}, options=${cascadedOptions + ',' + optionsInLine}">
+			<th:block th:with="arrayLength=${containsOptionsInLine ? arrayLength - 1 : arrayLength}">
 				<tr>
-					<th:block th:each="label : ${labels}">
-						<th scope="col" class="text-center" th:utext="${@msgUtil.get(#locale, label)}"></th>
+					<th:block th:each="cellElement, loopStatus : ${cellElementsFor1Line}">
+						<th:block th:if="${loopStatus.index < arrayLength}">
+							<div th:replace="~{ :: internalStaticTableCell(${cellElement}, ${isHeader}, ${cascadedOptions + ',' + options})}"></div>
+						</th:block>
 					</th:block>
 				</tr>
+			</th:block>
+		</th:block>
+	</div>
+		
+	<!--/* static table lines from lines of cell elements */-->
+	<div th:fragment="internalStaticTableLines(lines, isHeader, cascadedOptions)" th:remove="tag">
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentinternalStaticTableLines}, ${cascadedOptions})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentinternalStaticTableLines" th:remove="tag">
+			<th:block th:with="containsOptionsInLines=${lines[#lists.size(lines) - 1].class.name.contains('String')}, 
+					optionsInLines=${containsOptionsInLines ? lines[#lists.size(lines) - 1] : ''}, options=${cascadedOptions + ',' + optionsInLines}">
+				<th:block th:each="cellElementsFor1Line, loopStatus : ${lines}" class="text-dark">
+					<th:block th:if="${!containsOptionsInLines or loopStatus.index != #lists.size(lines) - 1}">
+						<div th:replace="~{ :: internalStaticTableLine(${cellElementsFor1Line}, ${isHeader}, ${options})}"></div>
+					</th:block>
+				</th:block>
+			</th:block>
+		</div></th:block>
+	</div>
+	
+	<!--/* static table header */-->
+	<!--/* 
+		The parameter labels is an array of strings.
+		It's supposed to define as "${ {'messageId_1', 'messageId_2', 'messageId_3'} }".
+	 */-->
+	<div th:fragment="staticTableHeaderWithLine(cellElements, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentStaticTableHeaderWithLine}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentStaticTableHeaderWithLine" th:remove="tag">
+			<thead th:id="${componentId}" class="text-white bg-color-tbl-header bg-gradient">
+				<div th:replace="~{ :: internalStaticTableLine(${cellElements}, true, ${options})}"></div>
 			</thead>
 		</div></th:block>
 	</div>
- 	
-	<!--/* simple table lines from lines of cell elements */-->
-	<div th:fragment="simpleTableTrsFromLines(linesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableTrsFromLines}, ${options})}"></div>
+	
+	<div th:fragment="staticTableHeaderWithLines(headerLines, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentStaticTableHeaderWithLines}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentSimpleTableTrsFromLines" th:remove="tag">
-			<tr th:id="${componentId}" th:each="cellElements : ${linesOfCellElements}">
-				<th:block th:each="cellElement : ${cellElements}">
-					<th:block th:with="alignment=${cellElement[0]}, string=${cellElement[1]}, 
-							rowspan=${#lists.size(cellElement) == 2 ? 1 : cellElement[2]},
-							colspan=${#lists.size(cellElement) == 2 ? 1 : cellElement[3]},
-							">
-						<td class="align-middle fs-6 text-dark" th:classappend="${'text-' + alignment}" style="white-space: pre-wrap;"
-								th:text="${@msgUtil.get(#locale, string)}" th:rowspan="${rowspan}" th:colspan="${colspan}"></td>
-					</th:block>
-				</th:block>
-			</tr>
+		<th:block th:if="false"><div th:fragment="fragmentStaticTableHeaderWithLines" th:remove="tag">
+			<thead th:id="${componentId}" class="text-white bg-color-tbl-header bg-gradient">
+				<div th:replace="~{ :: internalStaticTableLines(${headerLines}, true, ${options})}"></div>
+			</thead>
 		</div></th:block>
 	</div>
-	
-	<!--/* simple table body from lines of cell elements. */-->
+	<!--/* static table body from lines of cell elements. */-->
 	<!--/*
 		Each cellElement in a table is expressed in the form of an array :  {alignment, string} or {alignment, string, rowspan, colspan}
 		where alignment selections are 'start', 'center' and 'end'.
 		cellElements (= cell elements which form a line of a table) is an array of 'cellElement's, which means cellElements is a 2-dimensional array.
 		linesOfCellElements is an array of cellElements, which means linesOfCellElements is 3-dimensional array.
 	 */-->
-	<div th:fragment="simpleTableBodyFromLines(linesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableBodyFromLines}, ${options})}"></div>
+	<div th:fragment="staticTableBodyWithLines(linesOfCellElements, options)" th:remove="tag">
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentstaticTableBodyWithLines}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentSimpleTableBodyFromLines" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentstaticTableBodyWithLines" th:remove="tag">
 			<tbody th:id="${componentId}">
-				<div th:replace="~{ :: simpleTableTrsFromLines(${linesOfCellElements}, ${options})}"></div>
+				<div th:replace="~{ :: internalStaticTableLines(${linesOfCellElements}, false, ${options})}"></div>
 			</tbody>
 		</div></th:block>
  	</div>
 	
-	<!--/* simple table body from an array of lines of cell elements. */-->
+	<!--/* static table body from an array of lines of cell elements. */-->
 	<!--/* 
-		simpleTableBodyFromLines creates table from one 'linesOCellElements', 
+		staticTableBodyWithLines creates table from one 'linesOCellElements', 
 		but sometimes you want to create a table from multiple 'linesOfCellElements', 
 		for example table lines have a common part. 
 	 */-->
-	<div th:fragment="simpleTableBodyFromArrayOfLines(arrayOfLinesOfCellElements, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentSimpleTableBodyFromArrayOfLines}, ${options})}"></div>
+	<div th:fragment="staticTableBodyWithArrayOfLines(arrayOfLinesOfCellElements, options)" th:remove="tag">
+		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentStaticTableBodyWithArrayOfLines}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentSimpleTableBodyFromArrayOfLines" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentStaticTableBodyWithArrayOfLines" th:remove="tag">
 			<tbody th:id="${componentId}">
 				<th:block th:each="linesOfCellElements : ${arrayOfLinesOfCellElements}">
-					<div th:replace="~{ :: simpleTableTrsFromLinesOfCellElements(${linesOfCellElements}, ${options})}"></div>
+					<div th:replace="~{ :: internalStaticTableLines(${linesOfCellElements}, false, ${options})}"></div>
 				</th:block>
 			</tbody>
 		</div></th:block>
  	</div>
-	
+
 	<!--/* 
 		### shape components.
 	 */-->
@@ -332,7 +415,8 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavBarCommonComponent" th:remove="tag">
 			<th:block th:with="labelString=${@msgUtil.get(#locale, '__${label}__')}">
-			<th:block th:replace="${contents}" />
+				<th:block th:replace="${contents}" />
+			</th:block>
 		</div></th:block>
 	</div>
 	
@@ -649,11 +733,13 @@
 				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField}, itemKindId=${itemNameKeyClass + '.' + propertyPathField}">
 					<th:block th:with="inputValue=*{__${recordPropertyPath}__}, inputName=${recordPropertyPath},
 							inputId=${@optUtil.getValueOrElse(options, 'id', htmlFormName + '.' + recordPropertyPath)},
-							isReadOnly=${@optUtil.hasKey(options, 'readonly')}">
+							isReadOnly=${@optUtil.hasKey(options, 'readonly')},
+							widthValue=${@optUtil.getValueOrElse(options, 'width', '')}, 
+							widthNumber=${@optUtil.hasKey(options, 'width') ? (widthValue == 'full' ? '12' : (widthValue == 'half' ? '6' : widthValue)) : ''}">
 		
-						<div th:id="${componentId}" class="mb-4" th:classappend="${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'full'} 
-						? 'col-12' : (${@optUtil.hasKey(options, 'width') and @optUtil.getValue(options, 'width') == 'half'}
-						? ' col-md-6' : 'col-xl-3 col-lg-4 col-md-6')">
+						<div th:id="${componentId}" class="" th:classappend="${widthNumber == '' ? 'col-xl-3 col-lg-4 col-md-6' : 'col-md-' + widthNumber} + ' '
+								+ ${mtClass} + ' ' + ${mbClass == '' ? 'mb-4' : mbClass}
+						">
 
 							<!--/* label */-->
 							<th:block th:if="${needsLabel}"
