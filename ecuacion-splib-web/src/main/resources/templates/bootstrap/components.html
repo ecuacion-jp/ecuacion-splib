@@ -24,7 +24,7 @@
 
 	<!--/* 
 		###
-		### components available in any pages (base-page components)
+		### base-page components (components available in any pages)
 		###
 	 */-->
 	 
@@ -283,7 +283,7 @@
 					">
 
 				<th:block th:if="${isHeader}">
-					<th th:class="${class}" th:classappend="${textAlignment}" th:text="${text}"	th:style="${style}" th:rowspan="${rowspan}" th:colspan="${colspan}"></th>
+					<th th:class="${class + ' text-white bg-color-tbl-header bg-gradient'}" th:classappend="${textAlignment}" th:text="${text}"	th:style="${style}" th:rowspan="${rowspan}" th:colspan="${colspan}"></th>
 				</th:block>
 				
 				<th:block th:if="${!isHeader}">
@@ -324,7 +324,7 @@
 		<th:block th:if="false"><div th:fragment="fragmentinternalStaticTableLines" th:remove="tag">
 			<th:block th:with="containsOptionsInLines=${lines[#lists.size(lines) - 1].class.name.contains('String')}, 
 					optionsInLines=${containsOptionsInLines ? lines[#lists.size(lines) - 1] : ''}, options=${cascadedOptions + ',' + optionsInLines}">
-				<th:block th:each="cellElementsFor1Line, loopStatus : ${lines}" class="text-dark">
+				<th:block th:each="cellElementsFor1Line, loopStatus : ${lines}">
 					<th:block th:if="${!containsOptionsInLines or loopStatus.index != #lists.size(lines) - 1}">
 						<div th:replace="~{ :: internalStaticTableLine(${cellElementsFor1Line}, ${isHeader}, ${options})}"></div>
 					</th:block>
@@ -342,7 +342,7 @@
  		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentStaticTableHeaderWithLine}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentStaticTableHeaderWithLine" th:remove="tag">
-			<thead th:id="${componentId}" class="text-white bg-color-tbl-header bg-gradient">
+			<thead th:id="${componentId}">
 				<div th:replace="~{ :: internalStaticTableLine(${cellElements}, true, ${options})}"></div>
 			</thead>
 		</div></th:block>
@@ -352,7 +352,7 @@
  		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentStaticTableHeaderWithLines}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentStaticTableHeaderWithLines" th:remove="tag">
-			<thead th:id="${componentId}" class="text-white bg-color-tbl-header bg-gradient">
+			<thead th:id="${componentId}">
 				<div th:replace="~{ :: internalStaticTableLines(${headerLines}, true, ${options})}"></div>
 			</thead>
 		</div></th:block>
@@ -410,34 +410,76 @@
 	 */-->
 	
 	<!--/* internal common navBar component */-->
-	<div th:fragment="internalNavBarCommonComponent(contents, label, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavBarCommonComponent}, false, ${options})}"></div>
+	<div th:fragment="internalNavbarCommonComponent(contents, label, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavbarCommonComponent}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentNavBarCommonComponent" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavbarCommonComponent" th:remove="tag">
 			<th:block th:with="labelString=${@msgUtil.get(#locale, '__${label}__')}">
 				<th:block th:replace="${contents}" />
 			</th:block>
 		</div></th:block>
 	</div>
 	
-	<!--/* navBarMenu: A menu link (not dropdown) placed on navigation bars. */-->
-	<div th:fragment="navBarMenuItem(href, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarMenuItem}, ${label}, ${options})}"></div>
+	<!--/* navbarRoot */-->
+	<div th:fragment="navbarRoot(contentsOfNavBarRoot, appName, imagePath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavBarRoot}, ${label}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentNavBarRoot" th:remove="tag">
+			<th:block th:with="navbarBgColor=${
+							(loginState == 'public' || loginState == 'ecuacion-public') && navbarBgColorPublic != null ? navbarBgColorPublic : 
+							(loginState == 'account' ? navbarBgColorAccount : 
+							(loginState == 'admin' ? navbarBgColorAdmin : navbarBgColor
+							))}">
+				<nav class="navbar navbar-expand-md navbar-dark"
+						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
+						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
+					<div class="container-fluid">
+						<a class="navbar-brand" th:href="@{/public/show/page?id=home}">
+							<th:block th:if="${imagePath != ''}">
+								<img th:src="${imagePath}" width="30" height="24" th:classappend="${appName == '' ? '' : 'd-inline-block align-text-top'}">
+							</th:block>
+							<th:block th:if="${appName != ''}">
+								<span th:text="${appName}"></span>
+							</th:block>
+						</a>
+						
+						<div class="container">
+							<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+								<span class="navbar-toggler-icon"></span>
+							</button>
+				
+							<div class="collapse navbar-collapse" id="navbarText">
+								<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+										<th:block th:replace="${contentsOfNavBarRoot}" />
+
+								</ul>
+							</div>
+						</div>
+					</div>
+				</nav>
+			</th:block>
+		</div></th:block>
+	</div>
+		
+	<!--/* navbarMenu: A menu link (not dropdown) placed on navigation bars. */-->
+	<div th:fragment="navbarMenuItem(href, label, options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavBarMenuItem}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavBarMenuItem" th:remove="tag">
-			<li th:id="${componentId}" style="margin-left: 20px">
+			<li class="nav-item" th:id="${componentId}" style="margin-left: 20px">
 				<a class="nav-link" th:href="${href}" th:text="${labelString}"></a>
 			</li>
 		</div></th:block>
 	</div>
 	
-	<!--/* navBarMenu: A menu link (not dropdown) placed on navigation bars. */-->
-	<div th:fragment="navBarSubMenu(label, menuItems, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarSubMenu}, ${label}, ${options})}"></div>
+	<!--/* navbarMenu: A menu link (not dropdown) placed on navigation bars. */-->
+	<div th:fragment="navbarSubMenu(label, menuItems, options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarSubMenu}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentNavBarSubMenu" th:remove="tag">
-			<li th:id="${componentId}" style="margin-left: 20px" class="nav-item dropdown">
-				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+		<th:block th:if="false"><div th:fragment="fragmentNavbarSubMenu" th:remove="tag">
+			<li class="nav-item dropdown" th:id="${componentId}" style="margin-left: 20px">
+				<a class="nav-link dropdown-toggle" href="#" role="button" 
 						data-bs-toggle="dropdown" aria-expanded="false" th:text="${labelString}"></a>
 				<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown"
 						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
@@ -448,44 +490,44 @@
 		</div></th:block>
 	</div>
 
-	<!--/* navBarDropDownMenuItem */-->
-	<div th:fragment="navBarDropDownMenuItem(href, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownMenuItem}, ${label}, ${options})}"></div>
+	<!--/* navbarDropDownMenuItem */-->
+	<div th:fragment="navbarDropDownMenuItem(href, label, options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownMenuItem}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownMenuItem" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuItem" th:remove="tag">
 			<li th:id="${componentId}"><a class="dropdown-item" th:href="${href}" th:text="${labelString}"></a></li>
 		</div></th:block>
 	</div>
 
-	<!--/* navBarDropDownMenuDivider */-->
-	<div th:fragment="navBarDropDownMenuDivider(options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownMenuDivider}, '', ${options})}"></div>
+	<!--/* navbarDropDownMenuDivider */-->
+	<div th:fragment="navbarDropDownMenuDivider(options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownMenuDivider}, '', ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownMenuDivider" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuDivider" th:remove="tag">
 			<li th:id="${componentId}"><hr class="dropdown-divider"></li>
 		</div></th:block>
 	</div>
 
-	<!--/* navBarDropDownMenuGroupLabel */-->
+	<!--/* navbarDropDownMenuGroupLabel */-->
 	<!--/* 
 		It's used when you want to put a classification label. 
 		It's supposed to be placed at the top or right after the divider.
 	*/-->
-	<div th:fragment="navBarDropDownMenuGroupLabel(label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownMenuGroupLabel}, ${label}, ${options})}"></div>
+	<div th:fragment="navbarDropDownMenuGroupLabel(label, options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownMenuGroupLabel}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownMenuGroupLabel" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuGroupLabel" th:remove="tag">
 			<li th:id="${componentId}" class="mb-1"><small>
 				<div class="ms-3" style="font-weight: bold" th:text="${'&lt; &nbsp;' + labelString + '&nbsp; &gt;'}"></div>
 			</small></li>
 		</div>
 	</div>
 
-	<!--/* navBarDropDownSubMenu */-->
-	<div th:fragment="navBarDropDownSubMenu(label, menuItems, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavBarCommonComponent(~{ :: fragmentNavBarDropDownSubMenu}, ${label}, ${options})}"></div>
+	<!--/* navbarDropDownSubMenu */-->
+	<div th:fragment="navbarDropDownSubMenu(label, menuItems, options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownSubMenu}, ${label}, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentNavBarDropDownSubMenu" th:remove="tag">
+		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownSubMenu" th:remove="tag">
 			<li th:id="${componentId}">
 				<a class="dropdown-item" href="#">
 					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
@@ -502,10 +544,10 @@
 	</div>
 	 
 	<!--/* 
-		### server message displaying components.
+		###process result message components.
 	 */-->
 	 
-	<!--/* server messages */-->
+	<!--/* messages */-->
 	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentMessages}, true, ${options})}"></div>
 
@@ -567,6 +609,7 @@
 						${#strings.contains(message, #strings.unescapeJava('\n\n')) ? 
 						#strings.substring(message, 0, #strings.indexOf(message, #strings.unescapeJava('\n\n'))) : message}]]</div></td>
 			</tr>
+			
 			<!--/* 
 				subMessage feature.
 				See the following for error reasons:\n\nreason1: xxx\nreason2: xxx
@@ -586,7 +629,11 @@
 			</th:block>
 		</table>
 	</div>
-	
+
+	<!--/* 
+		### base-page button components.
+	 */-->
+
 	<!--/* button */-->
 	<div th:fragment="button(id, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButton}, true, ${options})}"></div>
@@ -599,18 +646,38 @@
 		 */-->
 		</div></th:block>
 	</div>
+	
+	<!--/* 
+		### base-page script components.
+	 */-->
+
+	<!--/* sendZoneOffset */-->
+	<div th:fragment="sendZoneOffset(options)" th:remove="tag">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<input type="hidden" id="zoneOffsetParams" th:data-url="@{/public/zoneOffset}">
+		<script>
+		$(function() {
+			var offset = new Date().getTimezoneOffset();
+			var url = document.getElementById('zoneOffsetParams').dataset.url;
+			$.ajax(url + '?zoneOffset=' + offset,
+				{
+					type: 'get'
+				}
+			)
+		});
+		</script>
+	</div>
 
 
 
 	<!--/* 
 		###
-		### components available in general form pages
-		### pages using general forms (like edit, searchList) are included.
+		### general-form-page components
 		###
 	 */-->
 
 	<!--/* 
-		### form
+		### form components
 	 */-->
 
 	<!--/* generalForm */-->
@@ -699,10 +766,10 @@
 	</div>
 
 	<!--/* 
-		### input components (internal all input components)
+		### general-form-page input components
 	 */-->
 
-	<!--/* internal common input component. */-->
+	<!--/* internalAllInputCommonComponent. */-->
 	<!--/* parameters: 
 			- itemPropertyPath			String 		not empty	itemPropertyPath (recordPropertyPath NOT accepted)
 			- allInputCcontents			Fragment	not empty	a fragment of the component
@@ -769,7 +836,7 @@
 		</div></th:block>
 	</div>
 
-	<!--/* internal common input text component. */-->
+	<!--/* internalAllHtmlInputComponent. */-->
 	<div th:fragment="internalAllHtmlInputComponent(position)" th:remove="tag">
 		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
 				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{__${recordPropertyPathClass}__.getStringLength('__${propertyPathField}__')}"
@@ -779,7 +846,7 @@
 				th:readonly="${isReadOnly}">
 	</div>
 
-	<!--/* internal common input text component. */-->
+	<!--/* internalAllHtmlInputNumberComponent. */-->
 	<div th:fragment="internalAllHtmlInputNumberComponent" th:remove="tag">
 		<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 			<th:block th:with="type=text, inputValue=${(needsCommas && inputValue != null) ? #numbers.formatDecimal(#strings.replace(inputValue, ',', ''), 1, 'COMMA', 0, 'POINT') : inputValue}">
@@ -793,7 +860,7 @@
 		</th:block>
 	</div>
 
-	<!--/* internal common input text component. */-->
+	<!--/* internalAllHtmSelectComponent. */-->
 	<div th:fragment="internalAllHtmSelectComponent" th:remove="tag">
 		<!--/* disabled is used because select component does not have readonly readOnly attribute */-->
 		<th:block th:if="${isReadOnly}">
@@ -813,11 +880,7 @@
 		</select>
 	</div>
 
-	<!--/* 
-		### general-form-page input components
-	 */-->
-
-	<!--/* internal edit input common component. */-->
+	<!--/* internalEditInputCommonComponent. */-->
 	<div th:fragment="internalEditInputCommonComponent(itemPropertyPath, editInputContents, editInputContentsPostfix, options)" th:remove="tag">
 		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
  		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentEditInputCommonComponent}, ${editInputContentsPostfix}, 
@@ -830,7 +893,7 @@
 		
 	</div>
 	
-	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<!--/* internalEditInputTextComponent. */-->
 	<div th:fragment="internalEditInputTextComponent(itemPropertyPath, type, needsMaxLength, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('left')}, ~{ :: fragmentNoContents}, ${options})}"></div>
 	</div>
@@ -1088,7 +1151,7 @@
 	</div>
 	
 	<!--/* 
-		### general form button.
+		### general-form-page button
 	 */-->
 
 	<!--/* internal common navBar component. */-->
@@ -1121,32 +1184,18 @@
 		</div></th:block>
 	</span>
 
-	<!--/* 
-		### general form hidden components
-	 */-->
-	
-	<!--/* zone offsetを取得する処理 */-->
-	<div th:fragment="sendZoneOffset(options)" th:remove="tag">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		<input type="hidden" id="zoneOffsetParams" th:data-url="@{/public/zoneOffset}">
-		<script>
-		$(function() {
-			var offset = new Date().getTimezoneOffset();
-			var url = document.getElementById('zoneOffsetParams').dataset.url;
-			$.ajax(url + '?zoneOffset=' + offset,
-				{
-					type: 'get'
-				}
-			)
-		});
-		</script>
-	</div>
-	
+
+
 	<!--/* 
 		###
-		### search components.
+		### search-page components
 		###
 	 */-->
+	
+	<!--/* 
+		### search-page input components
+	 */-->
+	 
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="internalSearchInputCommonComponent(itemPropertyPath, searchInputContents, labelPostfix, options)" th:remove="tag">
 		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
@@ -1185,6 +1234,11 @@
 				th:readonly="${isReadOnly}">
 		</div></th:block>
 	</div>
+	
+	<!--/* internal common component */-->
+	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
+		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, '',  ${options})}"></div>
+	</div>
 
 	<div th:fragment="searchSelect(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
@@ -1203,17 +1257,30 @@
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
 				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
-	
-	<!--/* internal common component */-->
-	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, '',  ${options})}"></div>
+
+	<!--/* 
+		### search-page button components
+	 */-->
+
+	<!--/* searchButton */-->
+	<div th:fragment="searchButton(options)" th:remove="tag">
+		<button type="submit" name="search" class="btn btn-color-btn text-white" 
+				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.search')}"></button>
+	</div>
+
+	<!--/* searchConditionClearButton */-->
+	<div th:fragment="searchConditionClearButton(options)" th:remove="tag">
+		<button type="submit" name="conditionClear" class="btn btn-color-btn text-white" 
+				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.conditionClear')}"></button>
 	</div>
 	
 	<!--/* 
-		### tableのsort, pagination, 表示行数の関連components。
+		### search result display condition components (sort, pagination and lines of display in the table)
 	 */-->
 	
-	<!--/* sort, paging, 表示件数をまとめた機能  */-->
+	<!--/* component which is integrated with functions of sort, paging and lines of data */-->
 	<div th:fragment="sortPagingAndRecordsInScreen(form, options)" th:remove="tag">
 		<input type="hidden" id="sortItem" name="sortItem" th:value="${form.sortItem}">
 		<input type="hidden" id="direction" name="direction" th:value="${form.direction}">
@@ -1259,25 +1326,7 @@
 	</div>
 
 	<!--/* 
-		### search form button
-	 */-->
-
-	<!--/* searchButton */-->
-	<div th:fragment="searchButton(options)" th:remove="tag">
-		<button type="submit" name="search" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.search')}"></button>
-	</div>
-
-	<!--/* searchConditionClearButton */-->
-	<div th:fragment="searchConditionClearButton(options)" th:remove="tag">
-		<button type="submit" name="conditionClear" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.conditionClear')}"></button>
-	</div>
-
-	<!--/* 
-		### search script
+		### search-page script
 	 */-->
 	 
 	<!--/* javaScript for inline update button. inline update buttonを配置するならこれも併せて配置。通常ページの一番下に配置。  */-->
@@ -1323,8 +1372,12 @@
 
 	<!--/* 
 		###
-		### list関連components.
+		### list-page components.
 		###
+	 */-->
+
+	<!--/* 
+		### search-page script
 	 */-->
 
 	<!--/* 
