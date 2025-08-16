@@ -34,38 +34,31 @@
 	<title th:text="${headTitle == null || headTitle == '' ? @msgUtil.get(#locale, title) : @msgUtil.get(#locale, headTitle)}"></title>
 </head>
 <body th:style="'background-color: ' + ${bodyBgColor}">
-<!--/*   */-->
-	<div class="content-wrapper"
-			th:with="navbarBgColor=${
-						(loginState == 'public' || loginState == 'ecuacion-public') && navbarBgColorPublic != null ? navbarBgColorPublic : 
-						(loginState == 'account' ? navbarBgColorAccount : 
-						(loginState == 'admin' ? navbarBgColorAdmin : navbarBgColor
-						))}">
-		<nav class="navbar navbar-expand-md navbar-dark"
-				th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-				+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
-			<div class="container-fluid">
-				<!--/* loginStateにより表示するnavBarを変更 */-->
-				<th:block th:if="${loginState == 'public'}">
-					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
-				</th:block>
-				<th:block th:if="${loginState == 'account'}">
-					<span th:replace="~{splib-web/parts :: nav-bar-account}"></span>
-				</th:block>
-				<th:block th:if="${loginState == 'admin'}">
-					<span th:replace="~{splib-web/parts :: nav-bar-admin}"></span>
-				</th:block>
-				<th:block th:if="${loginState == 'ecuacion-public'}">
-					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
-				</th:block>
-				<h1 style="color: red" 
-						th:if="${loginState != 'public' && loginState != 'account' && loginState != 'admin' && loginState != 'ecuacion-public'}">
-					parameter: ${loginState} is not properly designated.
-				</h1> 
-				
-			</div>
-		</nav>
-		
+	<div class="content-wrapper">
+
+		<!--/* navbar */-->
+		<div th:replace="~{bootstrap/components :: navbarRoot(~{ :: fragmentNavbarBasePage}, ${@environment.getProperty('jp.ecuacion.splib.web.app-name')}, '', ${options})}"></div>
+		<th:block th:if="false"><div th:fragment="fragmentNavbarBasePage" th:remove="tag">
+			<!--/* Change navbar dependent on loginState */-->
+			<th:block th:if="${loginState == 'public'}">
+				<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
+			</th:block>
+			<th:block th:if="${loginState == 'account'}">
+				<span th:replace="~{splib-web/parts :: nav-bar-account}"></span>
+			</th:block>
+			<th:block th:if="${loginState == 'admin'}">
+				<span th:replace="~{splib-web/parts :: nav-bar-admin}"></span>
+			</th:block>
+			<th:block th:if="${loginState == 'ecuacion-public'}">
+				<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
+			</th:block>
+			<h1 style="color: red" 
+					th:if="${loginState != 'public' && loginState != 'account' && loginState != 'admin' && loginState != 'ecuacion-public'}">
+				parameter: ${loginState} is not properly designated.
+			</h1> 
+		</div></th:block>
+
+		<!--/* title */-->
 		<th:block th:if="false"><div th:fragment="page-base-title-part" th:remove="tag">
 			<div th:if="${title != null && title != ''}" th:replace="~{bootstrap/components :: title(${title}, '')}"></div>
 			<div th:if="${titleDesc != null && titleDesc != ''}" th:replace="~{bootstrap/components :: titleDesc(${titleDesc}, '')}"></div>
