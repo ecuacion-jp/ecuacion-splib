@@ -41,4 +41,24 @@ public class SplibThymeleafPropertiesUtil {
   public String get(String id) {
     return PropertyFileUtil.getApplication(id);
   }
+
+  /**
+   * Returns value from id.
+   * 
+   * @param id id
+   * @return String
+   */
+  public boolean has(String id) {
+    return PropertyFileUtil.hasApplication(id);
+  }
+
+  /**
+   * Returns value from id.
+   * 
+   * @param id id
+   * @return String
+   */
+  public String getValueOrElse(String id, String defaultValue) {
+    return has(id) ? get(id) : defaultValue;
+  }
 }
