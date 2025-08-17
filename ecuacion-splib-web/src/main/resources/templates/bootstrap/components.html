@@ -60,7 +60,7 @@
 	</div>
 	
 	<!--/* fragment with no contents. Used as 'null' fragment since you can't pass null to fragment parameters. */-->
-	<div th:fragment="fragmentNoContents" th:remove="tag">
+	<div th:fragment="nullFragment" th:remove="tag">
 	</div>
 
 	<!--/* 
@@ -421,25 +421,40 @@
 	</div>
 	
 	<!--/* navbarRoot */-->
-	<div th:fragment="navbarRoot(contentsOfNavBarRoot, appName, imagePath, options)" th:remove="tag">
+	<!--/* parameters:
+		- contentsOfNavBarRoot		contents passed from the caller.
+		- title						navbar title.
+		- imagePath					navbar image path.
+	 */-->
+	<!--/* options:
+		- navbarTitleAccount		navbar title for account login.
+		- navbarTitleAdmin			navbar title for admin login.
+		- navbarImagePathAccount	navbar image path for account login.
+		- navbarImagePathAdmin		navbar image path for admin login.
+ 	 */-->
+ 	<div th:fragment="navbarRoot(contentsOfNavBarRootLeft, title, imagePath, defaultPagePath, contentsOfNavBarRootRight, options)" th:remove="tag">
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavBarRoot}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavBarRoot" th:remove="tag">
-			<th:block th:with="navbarBgColor=${
-							(loginState == 'public' || loginState == 'ecuacion-public') && navbarBgColorPublic != null ? navbarBgColorPublic : 
-							(loginState == 'account' ? navbarBgColorAccount : 
-							(loginState == 'admin' ? navbarBgColorAdmin : navbarBgColor
-							))}">
+			<th:block th:with="
+					navbarBgColor=${loginState == 'account' ? navbarBgColorAccount : (loginState == 'admin' ? navbarBgColorAdmin : navbarBgColor)},
+					navbarTitleAccount=${@optUtil.getValueOrElse(options, 'navbarTitleAccount', title)},
+					navbarTitleAdmin=${@optUtil.getValueOrElse(options, 'navbarTitleAdmin', title)},
+					navbarTitle=${loginState == 'account' ? navbarTitleAccount : (loginState == 'admin' ? navbarTitleAdmin : title)},
+					navbarImagePathAccount=${@optUtil.getValueOrElse(options, 'navbarImagePathAccount', imagePath)},
+					navbarImagePathAdmin=${@optUtil.getValueOrElse(options, 'navbarImagePathAdmin', imagePath)},
+					navbarImagePath=${loginState == 'account' ? navbarImagePathAccount : (loginState == 'admin' ? navbarImagePathAdmin : imagePath)},
+					">
 				<nav class="navbar navbar-expand-md navbar-dark"
 						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
 						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
 					<div class="container-fluid">
-						<a class="navbar-brand" th:href="@{/public/show/page?id=home}">
-							<th:block th:if="${imagePath != ''}">
-								<img th:src="${imagePath}" width="30" height="24" th:classappend="${appName == '' ? '' : 'd-inline-block align-text-top'}">
+						<a class="navbar-brand" th:href="@{__${defaultPagePath}__}">
+							<th:block th:if="${navbarImagePath != ''}">
+								<img th:src="@{__${navbarImagePath}__}" width="30" height="24" th:classappend="${navbarTitle == '' ? '' : 'd-inline-block align-text-top'}">
 							</th:block>
-							<th:block th:if="${appName != ''}">
-								<span th:text="${appName}"></span>
+							<th:block th:if="${navbarTitle != ''}">
+								<span th:text="${navbarTitle}"></span>
 							</th:block>
 						</a>
 						
@@ -451,11 +466,20 @@
 							<div class="collapse navbar-collapse" id="navbarText">
 								<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-										<th:block th:replace="${contentsOfNavBarRoot}" />
+									<th:block th:replace="${contentsOfNavBarRootLeft}" />
 
 								</ul>
 							</div>
 						</div>
+						
+						<div class="ml-auto">
+							<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+							
+								<th:block th:replace="${contentsOfNavBarRootRight}" />
+
+							</ul>
+						</div>
+								
 					</div>
 				</nav>
 			</th:block>
@@ -895,7 +919,7 @@
 	
 	<!--/* internalEditInputTextComponent. */-->
 	<div th:fragment="internalEditInputTextComponent(itemPropertyPath, type, needsMaxLength, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('left')}, ~{ :: fragmentNoContents}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('left')}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 	</div>
 	
 	<!--/* textbox */-->
@@ -911,14 +935,14 @@
 	<!--/* hidden */-->
 	<div th:fragment="inputHidden(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="type=hidden">
-	 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent(null)}, ~{ :: fragmentNoContents}, 
+	 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent(null)}, ~{bootstrap/components :: nullFragment}, 
 	 				false, false, false, '',  ${options})}"></div>
  		</th:block>
 	</div>
 	
 	<!--/* inputNumber */-->
 	<div th:fragment="inputNumber(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputNumberComponent}, ~{ :: fragmentNoContents}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputNumberComponent}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 	</div>
 	
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
@@ -943,7 +967,7 @@
 
 	<!--/* textarea */-->
  	<div th:fragment="inputTextArea(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputTextArea}, ~{ :: fragmentNoContents}, ${options})}"></div>
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputTextArea}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTextArea" th:remove="tag">
 			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
@@ -956,7 +980,7 @@
 
 	<!--/* checkbox (switch) */-->
 	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputSwitch}, ~{ :: fragmentNoContents}, ${options + ',componentType=switch'})}"></div>
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputSwitch}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputSwitch" th:remove="tag">
 			<div class="form-check form-switch mt-2">
@@ -977,7 +1001,7 @@
 	 
 	<!--/* checkbox */-->
 	<div th:fragment="inputCheckboxes(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckboxes}, ~{ :: fragmentNoContents}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckboxes}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCheckboxes" th:remove="tag">
 			<div class="form-check mt-2" th:each="option : *{__${recordPropertyPath + 'List'}__}">
@@ -999,7 +1023,7 @@
 
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="internalEditInputSelectComponent(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, ~{ :: fragmentNoContents}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 	</div>
 	
 	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
@@ -1026,7 +1050,7 @@
 	
 	<!--/* component for file upload */-->
 	<div  th:fragment="inputFile(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ~{ :: fragmentNoContents}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputFile" th:remove="tag">
 			<input class="form-control" type="file" th:id="${inputId}" th:name="${inputName}" 
@@ -1056,7 +1080,7 @@
 
 	<!--/* component for taken photo upload for PC */-->
 	<div  th:fragment="inputTakenPhotoPc(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoPc}, ~{ :: fragmentNoContents}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoPc}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTakenPhotoPc" th:remove="tag">
 			<video th:id="${'video-' + inputId}" width="320" height="240" autoplay muted style="border: 1px solid #000;"></video>
@@ -1199,7 +1223,7 @@
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="internalSearchInputCommonComponent(itemPropertyPath, searchInputContents, labelPostfix, options)" th:remove="tag">
 		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
-		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentSearchInputCommonComponent}, ~{ :: fragmentNoContents}, 
+		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentSearchInputCommonComponent}, ~{bootstrap/components :: nullFragment}, 
 		*{__${rootRecordName}__.isRequiredOnSearch('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
 		true, true, ${labelPostfix}, ${options})}"></div>
 
