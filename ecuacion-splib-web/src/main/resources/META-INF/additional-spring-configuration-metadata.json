@@ -1,0 +1,42 @@
+{"properties": [
+  {
+    "name": "jp.ecuacion.splib.web.home-page",
+    "type": "java.lang.String",
+    "description": "Required. It's used to specify the destination page from system error page. ex: 'public/show/page?id=home'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.navbar.title",
+    "type": "java.lang.String",
+    "description": "Optional. It's shown on the left side of the navbar. ex: 'AWS instance manager'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.navbar.title-account",
+    "type": "java.lang.String",
+    "description": "Optional. It's shown on the left side of the navbar when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.title' value is used. ex: 'AWS instance manager (logged in)'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.navbar.title-admin",
+    "type": "java.lang.String",
+    "description": "Optional. It's shown on the left side of the navbar when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.title' value is used. ex: 'AWS instance manager (admin)'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.navbar.image-path",
+    "type": "java.lang.String",
+    "description": "Optional. It specifies the path of the image shown on the left side of the navbar. ex: '/images/bootstrap-logo.svg'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.navbar.image-path-account",
+    "type": "java.lang.String",
+    "description": "Optional. It specifies the path of the image shown on the left side of the navbar when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.image-path' value is used.  ex: '/images/bootstrap-logo.svg'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.navbar.image-path-admin",
+    "type": "java.lang.String",
+    "description": "Optional. It specifies the path of the image shown on the left side of the navbar when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.image-path' value is used.  ex: '/images/bootstrap-logo.svg'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.navbar.default-page-path",
+    "type": "java.lang.String",
+    "description": "Optional. It specifies the path of the destination page. ex: '/public/show/page?id=home'"
+  }
+]}
