@@ -42,16 +42,16 @@ public class SplibThymeleafMessageUtil {
    * @return String
    */
   public String get(Locale locale, String id, String... args) {
-    
+
     // Return blank when id is empty.
     if (StringUtils.isEmpty(id)) {
       return "";
     }
-    
+
     boolean hasMsg = PropertyFileUtil.hasMessage(id);
     boolean hasStr = PropertyFileUtil.hasString(id);
     boolean hasItem = PropertyFileUtil.hasItemName(id);
-    
+
     // Return id when id not exist in both.
     if (!hasMsg && !hasStr && !hasItem) {
       return id;
@@ -63,9 +63,39 @@ public class SplibThymeleafMessageUtil {
 
     } else if (hasStr) {
       return PropertyFileUtil.getString(id, args);
-      
+
     } else {
       return PropertyFileUtil.getItemName(locale, id);
     }
+  }
+
+  /**
+   * Returns whether properties files have a message with id.
+   * 
+   * @param id id
+   * @return boolean
+   */
+  public boolean has(String id) {
+
+    // Return blank when id is empty.
+    if (StringUtils.isEmpty(id)) {
+      return false;
+    }
+
+    boolean hasMsg = PropertyFileUtil.hasMessage(id);
+    boolean hasStr = PropertyFileUtil.hasString(id);
+    boolean hasItem = PropertyFileUtil.hasItemName(id);
+
+    return hasMsg || hasStr || hasItem;
+  }
+
+  /**
+   * Returns value from id.
+   * 
+   * @param id id
+   * @return String
+   */
+  public String getValueOrElse(Locale locale, String id, String defaultValue, String... args) {
+    return has(id) ? get(locale, id, args) : defaultValue;
   }
 }
