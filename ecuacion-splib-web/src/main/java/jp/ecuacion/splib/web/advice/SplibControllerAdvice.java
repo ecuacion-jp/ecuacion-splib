@@ -18,7 +18,6 @@ package jp.ecuacion.splib.web.advice;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import jp.ecuacion.splib.web.bean.MessagesBean;
-import jp.ecuacion.splib.web.bean.SplibModelAttributes;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
@@ -37,8 +36,8 @@ public class SplibControllerAdvice {
   @Autowired
   private HttpServletRequest request;
 
-  @Autowired
-  private SplibModelAttributes modelAttr;
+  // @Autowired
+  // private _old_SplibModelAttributes modelAttr;
 
   @Autowired
   private SplibUtil util;
@@ -68,8 +67,8 @@ public class SplibControllerAdvice {
     // url pathを追加。thymeleafでrequestの直接使用が不可になり、urlなどの使用はcontrollerでのmodelへの設定が推奨とのこと。
     model.addAttribute("loginState", util.getLoginState());
 
-    // 個別appの中で、全画面共通で使用したいparameterを設定。
-    modelAttr.addAllToModel(model);
+    // // 個別appの中で、全画面共通で使用したいparameterを設定。
+    // modelAttr.addAllToModel(model);
   }
 
   private void recoverRequestParametersFromRedirectContextId(Model model) {

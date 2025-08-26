@@ -64,15 +64,14 @@
 			
 			<div class="table-responsive">
 				<table class="table table-striped text-nowrap table-bordered">
-					<thead class="text-white bg-color-tbl-header" th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-							th:with="form=${__${function + 'SearchForm'}__}"  th:object="${__${function + 'SearchForm'}__}">
+					<thead th:with="form=${__${function + 'SearchForm'}__}"  th:object="${__${function + 'SearchForm'}__}">
 						<tr>
 
 							<div layout:fragment="list-table-header-content"></div>
 
 						</tr>
 					</thead>
-					<tbody>
+					<tbody style="--bs-table-bg: transparent;">
 						<th:block th:each="rec : ${__${function + 'ListForm'}__.recList}" th:object="${rec}"
 									th:with="form=${__${function + 'ListForm'}__}">
 

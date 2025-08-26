@@ -61,4 +61,26 @@ public class SplibThymeleafPropertiesUtil {
   public String getValueOrElse(String id, String defaultValue) {
     return has(id) ? get(id) : defaultValue;
   }
+
+  /**
+   * Returns loginState dependent value.
+   * 
+   * <p>When you set 'test.key1' to id,
+   *     it recognize 'test.key1' as a default key, 'test.key1-account' for account loginState
+   *     and 'test.key1-admin' for admin loginState.</p>
+   * 
+   * @param loginState loginState
+   * @param id id
+   * @param defaultValue defaultValue
+   * @return value
+   */
+  public String getLoginStateDependentValueOrElse(String loginState, String id,
+      String defaultValue) {
+    String value = getValueOrElse(id, defaultValue);
+    String accountValue = getValueOrElse(id + "-account", defaultValue);
+    String adminValue = getValueOrElse(id + "-admin", defaultValue);
+
+    return loginState.equals("account") ? accountValue
+        : (loginState.equals("admin") ? adminValue : value);
+  }
 }

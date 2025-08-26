@@ -46,9 +46,10 @@
 								When you set 'mb=3' to options, it turns into 'class="mb-3"'. It's valid only when createsComponentIdDiv == true.
  	 */-->
 	<div th:fragment="internalAllCommonComponent(contentsOfAllCommon, createsComponentIdDiv, options)" th:remove="tag">
-		<th:block th:with="componentId=${@optUtil.getValueOrElse(options, 'componentId', null)},
-				mtClass=${@optUtil.hasKey(options, 'mt') ? 'mt-' + @optUtil.getValue(options, 'mt') : ''},
-				mbClass=${@optUtil.hasKey(options, 'mb') ? 'mb-' + @optUtil.getValue(options, 'mb') : ''},
+		<th:block th:with="
+				componentId=${@optUtil.getValueOrElse(options, 'componentId', null)}
+				,mtClass=${@optUtil.hasKey(options, 'mt') ? 'mt-' + @optUtil.getValue(options, 'mt') : ''}
+				,mbClass=${@optUtil.hasKey(options, 'mb') ? 'mb-' + @optUtil.getValue(options, 'mb') : ''}
 				">
 			<div th:if="${createsComponentIdDiv}" th:id="${componentId}" th:classappend="${mtClass} + ' ' + ${mbClass}">
 				<th:block th:replace="${contentsOfAllCommon}" />
@@ -368,7 +369,7 @@
 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentstaticTableBodyWithLines}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentstaticTableBodyWithLines" th:remove="tag">
-			<tbody th:id="${componentId}">
+			<tbody th:id="${componentId}" style="--bs-table-bg: transparent;">
 				<div th:replace="~{ :: internalStaticTableLines(${linesOfCellElements}, false, ${options})}"></div>
 			</tbody>
 		</div></th:block>
@@ -384,7 +385,7 @@
 		<div th:replace="~{ :: internalTableCommonComponent(~{ :: fragmentStaticTableBodyWithArrayOfLines}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentStaticTableBodyWithArrayOfLines" th:remove="tag">
-			<tbody th:id="${componentId}">
+			<tbody th:id="${componentId}" style="--bs-table-bg: transparent;">
 				<th:block th:each="linesOfCellElements : ${arrayOfLinesOfCellElements}">
 					<div th:replace="~{ :: internalStaticTableLines(${linesOfCellElements}, false, ${options})}"></div>
 				</th:block>
@@ -419,42 +420,54 @@
 			</th:block>
 		</div></th:block>
 	</div>
+
+	<div th:fragment="internalNavbarItem(isSubMenuItem, method, options)" th:remove="tag">
+		<th:block th:with="method=${#strings.isEmpty(method) ? 'get' : method}">
+			<th:block th:if="${method == 'none'}">
+				<span class="dropdown-item-text" style="white-space: nowrap" th:text="${labelString}"></span>
+			</th:block>
+			<th:block th:if="${method == 'post'}">
+				<form method="post" name="navbarForm" th:action="${href}">
+					<a th:class="${isSubMenuItem ? 'dropdown-item' : 'nav-link'}" href="javascript:navbarForm.submit()" th:text="${labelString}"></a>
+				</form>
+			</th:block>
+			<th:block th:if="${method != 'none' and method != 'post'}">
+				<a th:class="${isSubMenuItem ? 'dropdown-item' : 'nav-link'}" th:href="${href}" th:text="${labelString}"></a>
+			</th:block>
+		</th:block>
+	</div>
+	
 	
 	<!--/* navbarRoot */-->
 	<!--/* parameters:
 		- contentsOfNavBarRoot		contents passed from the caller.
 		- title						navbar title.
 		- imagePath					navbar image path.
+		- defaultPagePath			navbar default destination page path when the title or image is clicked.
+		- contentsOfNavBarRootRight contents placed at the right sice of the navbar and passed from the caller.
 	 */-->
 	<!--/* options:
-		- navbarTitleAccount		navbar title for account login.
-		- navbarTitleAdmin			navbar title for admin login.
-		- navbarImagePathAccount	navbar image path for account login.
-		- navbarImagePathAdmin		navbar image path for admin login.
+		- backgroundColorClass		Specifies background-color with class name. ex. bg-secondary
+		- isBackgroundGradient		Specifies whether isBackgroundGradient.
  	 */-->
  	<div th:fragment="navbarRoot(contentsOfNavBarRootLeft, title, imagePath, defaultPagePath, contentsOfNavBarRootRight, options)" th:remove="tag">
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavBarRoot}, ${label}, ${options})}"></div>
-
 		<th:block th:if="false"><div th:fragment="fragmentNavBarRoot" th:remove="tag">
 			<th:block th:with="
-					navbarBgColor=${loginState == 'account' ? navbarBgColorAccount : (loginState == 'admin' ? navbarBgColorAdmin : navbarBgColor)},
-					navbarTitleAccount=${@optUtil.getValueOrElse(options, 'navbarTitleAccount', title)},
-					navbarTitleAdmin=${@optUtil.getValueOrElse(options, 'navbarTitleAdmin', title)},
-					navbarTitle=${loginState == 'account' ? navbarTitleAccount : (loginState == 'admin' ? navbarTitleAdmin : title)},
-					navbarImagePathAccount=${@optUtil.getValueOrElse(options, 'navbarImagePathAccount', imagePath)},
-					navbarImagePathAdmin=${@optUtil.getValueOrElse(options, 'navbarImagePathAdmin', imagePath)},
-					navbarImagePath=${loginState == 'account' ? navbarImagePathAccount : (loginState == 'admin' ? navbarImagePathAdmin : imagePath)},
+					navbarBgColor=${@optUtil.getValueOrElse(options, 'backgroundColorClass', '')}
+					, bsBgGradientOption=${@optUtil.getValueOrElse(options, 'isBackgroundGradient', null)},
+					bsBgGradient=${bsBgGradientOption} != null ? ${bsBgGradientOption} : ${bsBgGradient}
 					">
 				<nav class="navbar navbar-expand-md navbar-dark"
-						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
+						th:classappend="${(bsBgGradient ? 'bg-gradient' : '') 
+						+ ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
 					<div class="container-fluid">
-						<a class="navbar-brand" th:href="@{__${defaultPagePath}__}">
-							<th:block th:if="${navbarImagePath != ''}">
-								<img th:src="@{__${navbarImagePath}__}" width="30" height="24" th:classappend="${navbarTitle == '' ? '' : 'd-inline-block align-text-top'}">
+						<a class="navbar-brand" th:href="${defaultPagePath == '' ? null : defaultPagePath}">
+							<th:block th:if="${imagePath != ''}">
+								<img th:src="${imagePath}" width="30" height="24" th:classappend="${navbarTitle == '' ? '' : 'd-inline-block align-text-top'}">
 							</th:block>
-							<th:block th:if="${navbarTitle != ''}">
-								<span th:text="${navbarTitle}"></span>
+							<th:block th:if="${title != ''}">
+								<span th:text="${title}"></span>
 							</th:block>
 						</a>
 						
@@ -464,7 +477,7 @@
 							</button>
 				
 							<div class="collapse navbar-collapse" id="navbarText">
-								<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+								<ul class="navbar-nav me-auto mb-2 mb-lg-0" th:with="isPositionRight=false">
 
 									<th:block th:replace="${contentsOfNavBarRootLeft}" />
 
@@ -473,7 +486,7 @@
 						</div>
 						
 						<div class="ml-auto">
-							<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+							<ul class="navbar-nav me-auto mb-2 mb-lg-0" th:with="isPositionRight=true">
 							
 								<th:block th:replace="${contentsOfNavBarRootRight}" />
 
@@ -485,14 +498,17 @@
 			</th:block>
 		</div></th:block>
 	</div>
-		
+
 	<!--/* navbarMenu: A menu link (not dropdown) placed on navigation bars. */-->
+	<!--/* options:
+		- method		Specifies the submit method. It can take 'get', 'post' or 'none' (no transision. just a label)
+ 	 */-->
 	<div th:fragment="navbarMenuItem(href, label, options)" th:remove="tag">
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavBarMenuItem}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavBarMenuItem" th:remove="tag">
 			<li class="nav-item" th:id="${componentId}" style="margin-left: 20px">
-				<a class="nav-link" th:href="${href}" th:text="${labelString}"></a>
+				 <div th:replace="~{ :: internalNavbarItem(false, ${@optUtil.getValueOrElse(options, 'method', 'get')}, ${options})}"></div>
 			</li>
 		</div></th:block>
 	</div>
@@ -502,13 +518,22 @@
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarSubMenu}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarSubMenu" th:remove="tag">
-			<li class="nav-item dropdown" th:id="${componentId}" style="margin-left: 20px">
-				<a class="nav-link dropdown-toggle" href="#" role="button" 
-						data-bs-toggle="dropdown" aria-expanded="false" th:text="${labelString}"></a>
-				<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown"
+			<li class="nav-item dropdown" th:id="${componentId}" style="margin-left: 20px" 
+					th:with="imagePath=${@optUtil.getValueOrElse(options, 'imagePath', '')}">
+					
+				<a th:if="${imagePath == ''}" class="nav-link dropdown-toggle" href="#" role="button" 
+						data-bs-toggle="dropdown" aria-expanded="false" th:text="${labelString}" />
+				<a th:if="${imagePath != ''}" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+					<img th:src="${imagePath}" alt="" width="27" height="27" style="filter: brightness(1) invert(1);" />
+				</a>
+				
+				<ul class="dropdown-menu dropdown-menu-dark" 
 						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)}">
-						<th:block th:replace="${menuItems}" />
+						+ ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)
+						+ ' ' + (isPositionRight ? 'dropdown-menu-end' : '')}">
+						
+					<th:block th:replace="${menuItems}" />
+
 				</ul>
 			</li>
 		</div></th:block>
@@ -519,7 +544,29 @@
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownMenuItem}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuItem" th:remove="tag">
-			<li th:id="${componentId}"><a class="dropdown-item" th:href="${href}" th:text="${labelString}"></a></li>
+			<li th:id="${componentId}">
+				 <div th:replace="~{ :: internalNavbarItem(true, ${@optUtil.getValueOrElse(options, 'method', 'get')}, ${options})}"></div>
+			</li>
+		</div></th:block>
+	</div>
+
+	<!--/* navbarDropDownSubMenu */-->
+	<div th:fragment="navbarDropDownSubMenu(label, menuItems, options)" th:remove="tag">
+		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownSubMenu}, ${label}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownSubMenu" th:remove="tag">
+			<li th:id="${componentId}">
+				<a class="dropdown-item" href="#">
+					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
+					<div style="text-align: right;" th:text="${options.contains('direction=left') ? '&ltrif;' : '&rtrif;'}">︎</div>
+				</a>
+				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark bg-gradient bg-primary"
+						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
+						+ ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)
+						+ ' ' + (options.contains('direction=left') ? 'dropdown-submenu-left' : '')}">
+					<th:block th:replace="${menuItems}" />
+				</ul>
+			</li>
 		</div></th:block>
 	</div>
 
@@ -545,113 +592,6 @@
 				<div class="ms-3" style="font-weight: bold" th:text="${'&lt; &nbsp;' + labelString + '&nbsp; &gt;'}"></div>
 			</small></li>
 		</div>
-	</div>
-
-	<!--/* navbarDropDownSubMenu */-->
-	<div th:fragment="navbarDropDownSubMenu(label, menuItems, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownSubMenu}, ${label}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownSubMenu" th:remove="tag">
-			<li th:id="${componentId}">
-				<a class="dropdown-item" href="#">
-					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
-					<div style="text-align: right;" th:text="${options.contains('direction=left') ? '&ltrif;' : '&rtrif;'}">︎</div>
-				</a>
-				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark bg-gradient bg-primary"
-						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-						+ ' ' + (navbarBgColor == null ? 'bg-color-navbar' : navbarBgColor)
-						+ ' ' + (options.contains('direction=left') ? 'dropdown-submenu-left' : '')}">
-					<th:block th:replace="${menuItems}" />
-				</ul>
-			</li>
-		</div></th:block>
-	</div>
-	 
-	<!--/* 
-		###process result message components.
-	 */-->
-	 
-	<!--/* messages */-->
-	<div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentMessages}, true, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentMessages" th:remove="tag">
-			<div class="mt-5 mb-5">
-				<!-- messages from url parameter -->
-				<div class="all-error-messages-list-wrapper text-danger">
-					<div class="bg-color-msg-error-bg p-2 rounded-1" 
-							th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null}">
-						<div th:replace="~{ :: freeSpace(~{ ::free-space-login-messages}, '')}"></div>
-					</div>
-				</div>
-				<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
-					<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
-					<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
-					<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
-					<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
-				</div></th:block>
-				<!-- messages from ${messagesBean} -->
-				<div th:object="${messagesBean}">
-					<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
-						<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-						<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-					</div>
-					<div class="all-error-messages-list-wrapper text-danger">
-						<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
-							<!--/* in the case of showing item related message here */-->
-							<th:block th:if="${showsMessagesLinkedToItemsAtTheTop}">
-								<div class="all-error-messages-list-ul">
-									<div th:replace="~{ :: internalDisplayMessages(*{errorMessages})}"></div>
-								</div>
-							</th:block>
-							<!--/* in the case of showing item related message at each item */-->
-							<th:block th:if="${showsMessagesLinkedToItemsAtEachItem}">
-								<ul class="all-error-messages-list-ul">
-									<!--/* showing non-item-related messages */-->
-									<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
-										<div th:replace="~{ :: internalDisplayMessages(*{errorMessagesNotLinkedToItems})}"></div>
-									</th:block>
-									<!--/* showing a message that says there's an error at some of the items */-->
-									<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
-										<div th:replace="~{ :: internalDisplayMessages(${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
-									</th:block>
-								</ul>
-							</th:block>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div></th:block>
-	</div>
-
-	<!--/* message displaying internal common component */-->
-	<div th:fragment="internalDisplayMessages(errorMessages)" th:remove="tag">
-		<table th:each="message : ${errorMessages}" style="width: 100%;">
-			<tr>
-				<td style="vertical-align:top; width: 20px"><div style="margin-left: 10px; margin-right: 10px;">- </div></td>
-				<td colspan="2"><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[
-						${#strings.contains(message, #strings.unescapeJava('\n\n')) ? 
-						#strings.substring(message, 0, #strings.indexOf(message, #strings.unescapeJava('\n\n'))) : message}]]</div></td>
-			</tr>
-			
-			<!--/* 
-				subMessage feature.
-				See the following for error reasons:\n\nreason1: xxx\nreason2: xxx
-				-> 
-				- See the following for error reasons:
-				  - reason1: xxx
-				  - reason2: xxx
-			 */-->
-			<th:block th:if="${#strings.contains(message, #strings.unescapeJava('\n\n'))}">
-				<th:block th:each="subMessage : ${#strings.arraySplit(#strings.substring(message, #strings.indexOf(message, #strings.unescapeJava('\n\n'))), #strings.unescapeJava('\n'))}">
-					<tr>
-						<td></td>
-						<td style="vertical-align:top; width: 10px"><div style="margin-right: 10px">- </div></td>
-						<td><div class="all-error-messages-list-li" style="white-space: pre-wrap">[[${subMessage}]]</div></td>
-					</tr>
-				</th:block>
-			</th:block>
-		</table>
 	</div>
 
 	<!--/* 
@@ -844,7 +784,7 @@
 							<th:block th:replace="${allInputCcontents}" />
 							
 							<!--/* field messages */-->
-							<th:block th:if="${showsMessagesLinkedToItemsAtEachItem} and ${needsFieldEmssages}">
+							<th:block th:if="${@propUtil.getValueOrElse('jp.ecuacion.splib.web.process-result-message.shown-at-each-item', true)} and ${needsFieldEmssages}">
 								<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${recordPropertyPath}__') != null}"
 									th:classappend="${@optUtil.hasKey(options, 'componentType') and @optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
 									th:each="message : ${messagesBean.getErrorMessages('__${recordPropertyPath}__')}">[[${message}]]</div>
@@ -1178,7 +1118,7 @@
 		### general-form-page button
 	 */-->
 
-	<!--/* internal common navBar component. */-->
+	<!--/* internal common button component. */-->
 	<div th:fragment="internalButtonCommonComponent(id, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, true, ${options})}"></div>
 
@@ -1424,13 +1364,15 @@
 				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
 			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 				<th:block th:if="${@optUtil.hasThSortable(options)}">
-					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
+					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
+							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
 							style="cursor: pointer" th:text="#{__${labelFieldName}__}" 
 							th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
 							onClick="list(this.dataset.item, this.dataset.direction);"></th>
 		 		</th:block>
 		 		<th:block th:if="${!@optUtil.hasThSortable(options)}">
-					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
+					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
+							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
 							th:text="#{__${labelFieldName}__}"></th>
 		 		</th:block>
 	 	</th:block>
@@ -1438,7 +1380,9 @@
 	
 	<!--/* th with label string */-->
 	<div th:fragment="thFreeText(label, options)" th:remove="tag">
-		<th scope="col" class="text-center" th:text="${@msgUtil.get(#locale, label)}"></th>
+		<th scope="col" class="text-center text-white bg-color-tbl-header"  
+				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
+				th:text="${@msgUtil.get(#locale, label)}"></th>
 	</div>
 	
 	<!-- update button -->
