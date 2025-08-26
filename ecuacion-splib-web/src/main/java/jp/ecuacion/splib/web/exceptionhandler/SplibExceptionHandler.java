@@ -254,8 +254,8 @@ public abstract class SplibExceptionHandler {
       String[] propertyPaths = propertyPathList.toArray(new String[propertyPathList.size()]);
 
       // message
-      Boolean msgAtItem =
-          (Boolean) getModel().getAttribute(SplibWebConstants.KEY_MODEL_MESSAGES_AT_ITEMS);
+      Boolean msgAtItem = Boolean.valueOf(PropertyFileUtil
+          .getApplication("jp.ecuacion.splib.web.process-result-message.shown-at-each-item"));
       boolean needsItemName = msgAtItem == null ? true : !msgAtItem;
       String message =
           ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale(), needsItemName).get(0);
