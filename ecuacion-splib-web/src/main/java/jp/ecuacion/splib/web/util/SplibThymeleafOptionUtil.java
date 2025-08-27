@@ -15,13 +15,9 @@
  */
 package jp.ecuacion.splib.web.util;
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -36,70 +32,18 @@ import org.springframework.stereotype.Component;
 @Component("optUtil")
 public class SplibThymeleafOptionUtil {
 
-  private HttpServletRequest request;
-
   private DetailLogger detailLog = new DetailLogger(this);
 
   /**
    * Constructs a new instance.
-   * 
-   * @param request request
    */
-  public SplibThymeleafOptionUtil(HttpServletRequest request) {
-    this.request = request;
-  }
-
-  /**
-   * Provides message string shown when the delete button pressed.
-   * 
-   * <p>itemDisplayedOnDeleteには、通常は一つのitemを指定するが、"itemA,itemB"のように複数の項目を指定することも可能。 （natural
-   * keyが複数の項目からなる場合に使用） その場合は、(itemA, itemB) : (1, 2) のように括弧で括った形で表現</p>
-   */
-  public String getDeleteConfirmMessage(String rootRecordName, String itemDisplayedOnDelete) {
-    List<String> fieldNameList = new ArrayList<>();
-
-    for (String item : itemDisplayedOnDelete.split(",")) {
-      // itemDisplayedOnDeleteに"."が2つ以上ある場合はメッセージ表示に適さないのでパスを短くする
-      while (true) {
-        if (item.split("\\.").length <= 2) {
-          break;
-        }
-
-        item = item.substring(item.indexOf(".") + 1);
-      }
-
-      // 指定されたfieldが実はSystemCommonEntityに定義されている場合を救っておく。
-      if (!PropertyFileUtil.hasItemName(item)) {
-        String field = item.contains(".") ? item.substring(item.lastIndexOf(".") + 1) : item;
-        String commonItem = "SystemCommonEntity." + field;
-        if (PropertyFileUtil.hasItemName(commonItem)) {
-          item = commonItem;
-        }
-      }
-
-      fieldNameList
-          .add(PropertyFileUtil.getItemName(request.getLocale(), rootRecordName + "." + item));
-    }
-
-    boolean multiple = fieldNameList.size() > 1;
-
-    StringBuilder fieldNameSb = new StringBuilder();
-    for (String str : fieldNameList) {
-      fieldNameSb.append(", " + str);
-    }
-
-    String fieldNames =
-        (multiple ? "（" : "") + fieldNameSb.toString().substring(2) + (multiple ? "）" : "");
-
-    return PropertyFileUtil.getMessage(request.getLocale(),
-        "jp.ecuacion.splib.web.common.message.deleteConfirmation",
-        new String[] {fieldNames.toString()});
+  public SplibThymeleafOptionUtil() {
   }
 
   /**
    * Creates Map from option csv.
    * 
-   * <p>When duplicated keys exists, former one is overrided and ignored.</p>
+   * <p>When duplicated keys exist, former one is overrided and ignored.</p>
    * 
    * @param optionCsv optionCsv
    * @return Map
@@ -108,7 +52,7 @@ public class SplibThymeleafOptionUtil {
 
     Map<String, String> rtnMap = new HashMap<>();
 
-    // optionCsvが空の場合は終了
+    // Finish when optionCsv is empty.
     if (optionCsv == null || optionCsv.equals("")) {
       return rtnMap;
     }
@@ -125,7 +69,7 @@ public class SplibThymeleafOptionUtil {
         key = option;
       }
 
-      // 多少の間違いを拾うため、全てのkeyの文字をlowerCaseにしておく
+      // Change key string to lowercase to ignore case mistakes.
       String lowerCaseKey = key.toLowerCase();
 
       // if the key already exists in the map, the value is updated and output log.
@@ -173,85 +117,5 @@ public class SplibThymeleafOptionUtil {
     } else {
       return defaultValue;
     }
-  }
-
-  /**
-   * Returns whether the options contain disabled.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean isDisabled(String options) {
-    return hasKey(options, "disabled");
-  }
-
-  /**
-   * Returns whether the options contain deleted.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean isDeleted(String options) {
-    return hasKey(options, "deleted");
-  }
-
-  // /**
-  // * Returns whether the options contain forSwitch.
-  // *
-  // * @param options options
-  // * @return boolean
-  // */
-  // public boolean isForSwitch(String options) {
-  // return hasKey(options, "forSwitch");
-  // }
-
-  /**
-   * Returns whether the options contain noEmptyOption.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean needsEmptyOption(String options) {
-    return !hasKey(options, "noEmptyOption");
-  }
-
-  /**
-   * Returns whether the options contain onClickJs.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean needsOnclickJs(String options) {
-    return hasKey(options, "onClickJs");
-  }
-
-  /**
-   * Returns whether the options contain linkUrl.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean hasLinkUrl(String options) {
-    return hasKey(options, "linkUrl");
-  }
-
-  /**
-   * Returns linkUrl.
-   * 
-   * @param options options
-   * @return linkUrl
-   */
-  public String getLinkUrl(String options) {
-    return getValue(options, "linkUrl");
-  }
-
-  /**
-   * Returns whether the options contain thSortable.
-   * 
-   * @param options options
-   * @return boolean
-   */
-  public boolean hasThSortable(String options) {
-    return hasKey(options, "thSortable");
   }
 }
