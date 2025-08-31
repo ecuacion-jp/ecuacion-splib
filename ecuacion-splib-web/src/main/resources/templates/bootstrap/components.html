@@ -1375,14 +1375,14 @@
 				<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
-							style="cursor: pointer" th:text="#{__${labelFieldName}__}" 
+							style="cursor: pointer" th:text="${@msgUtil.get(#locale, labelFieldName)}" 
 							th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
 							onClick="list(this.dataset.item, this.dataset.direction);"></th>
 		 		</th:block>
 		 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
-							th:text="#{__${labelFieldName}__}"></th>
+							th:text="${@msgUtil.get(#locale, labelFieldName)}"></th>
 		 		</th:block>
 	 	</th:block>
 	</div>
@@ -1436,7 +1436,7 @@
 	<div th:fragment="tdReadOnlyNumber(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="value=${rec.getValue(itemPropertyPath)},
 				needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
-			<div th:replace="~{ :: tdReadOnlyCustomizable(${((needsCommas && @strUtil.isNumberFormat(value)) ? #numbers.formatDecimal(value, 1, 'COMMA', 0, 'POINT')
+			<div th:replace="~{ :: tdReadOnlyCustomizable(${(needsCommas ? #numbers.formatDecimal(value, 1, 'COMMA', 0, 'POINT')
 					: value)}, 'right', ${options})}"></div>
 		</th:block>
 	</div>
@@ -1481,7 +1481,7 @@
 				<th:block th:with="id=${recordName + '.' + fieldName + '_' + idValue},value=${rec.getValue(itemPropertyPath)},
 						needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 					<input th:type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}"
-							th:value="${(needsCommas && @strUtil.isNumberFormat(value)) ? #numbers.formatDecimal(#strings.replace(value, ',', ''), 1, 'COMMA', 0, 'POINT') : value}"
+							th:value="${(needsCommas) ? #numbers.formatDecimal(#strings.replace(value, ',', ''), 1, 'COMMA', 0, 'POINT') : value}"
 							class="text-end form-control-sm fs-6 text-dark"
 							th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
 							th:readonly="${isReadOnly}">
