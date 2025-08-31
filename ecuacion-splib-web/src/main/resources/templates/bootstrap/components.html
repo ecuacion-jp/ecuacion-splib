@@ -83,8 +83,8 @@
  		
 		<th:block th:if="false"><div th:fragment="fragmentMessageCommonComponent" th:remove="tag">
 			<div class="text-dark" 
-					th:with="titleString=${@msgUtil.get(#locale, title)},
-					messageString=${@msgUtil.get(#locale, message)},
+					th:with="titleString=${@msgUtil.getValue(#locale, title)},
+					messageString=${@msgUtil.getValue(#locale, message)},
 					isSelectable=${@optUtil.hasKey(options, 'selectable')}">
 
 				<th:block th:replace="${contents}" />
@@ -276,7 +276,7 @@
 					bgColor=${@optUtil.getValueOrElse(options, 'backgroundColor', '')},
 					bgColorStyle=${bgColor == '' ? '' : 'background-color: ' + bgColor + '; '},
 					class=${'align-middle fs-6'},
-					text=${@msgUtil.get(#locale, string)},
+					text=${@msgUtil.getValue(#locale, string)},
 					textAlignment=${'text-' + @optUtil.getValueOrElse(options, 'textAlignment', isHeader ? 'center' : 'left')},
 					style=${'white-space: pre-wrap; ' + textColorStyle + bgColorStyle},
 					rowspan=${@optUtil.getValueOrElse(options, 'rowspan', 1)},
@@ -415,7 +415,7 @@
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavbarCommonComponent}, false, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarCommonComponent" th:remove="tag">
-			<th:block th:with="labelString=${@msgUtil.get(#locale, '__${label}__')}">
+			<th:block th:with="labelString=${@msgUtil.getValue(#locale, '__${label}__')}">
 				<th:block th:replace="${contents}" />
 			</th:block>
 		</div></th:block>
@@ -613,7 +613,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
 			<button th:attr="name=${name}, type=${submits ? 'submit' : null}" th:id="${@optUtil.getValueOrElse(options, 'id', null)}"
-					th:text="${@msgUtil.get(#locale, label)}"
+					th:text="${@msgUtil.getValue(#locale, label)}"
 					class="btn text-white" 
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}
 							+ ' ' + ${@optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')}
@@ -786,7 +786,7 @@
 							<th:block th:if="${needsLabel}"
 									th:with="displayName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 								<label th:for="${inputId}" class="form-label text-dark">
-									[[${@msgUtil.get(#locale, '__${displayName}__')}]] [[${labelPostfix + ' '}]]<span class="text-danger" th:if="${required}">*</span>
+									[[${@msgUtil.getValue(#locale, '__${displayName}__')}]] [[${labelPostfix + ' '}]]<span class="text-danger" th:if="${required}">*</span>
 								</label>
 							</th:block>
 
@@ -1021,7 +1021,7 @@
 			<th:block th:with="photoData=*{__${recordPropertyPath + 'RegisteredBase64'}__}">
 				<th:block th:if="${!#strings.isEmpty(photoData)}">
 					<br>
-					[[${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhoto.registeredPhoto')}]]
+					[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhoto.registeredPhoto')}]]
 					<img class="img-fluid" th:src="${photoData}" style="border: 1px solid #000;">
 				</th:block>
 			</th:block>
@@ -1039,11 +1039,11 @@
 			<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
 			<div class="mt-2"></div>
 			<button th:id="${'allowance-' + inputId}" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient" 
-					th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.photoShootingButtonLabel')}"></button>
+					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.photoShootingButtonLabel')}"></button>
 			<button th:id="${'capture-' + inputId}" type="button" style="vertical-align: center;" class="btn btn-sm btn-color-btn text-white bg-gradient"
-					th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.shootButtonLabel')}"></button>
+					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.shootButtonLabel')}"></button>
 			<button th:id="${'recapture-' + inputId}" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient"
-					th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.reshootButtonLabel')}"></button>
+					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.reshootButtonLabel')}"></button>
 		
 			<script>
 				const video = document.getElementById('video-[[${inputId}]]');
@@ -1239,14 +1239,14 @@
 	<div th:fragment="searchButton(options)" th:remove="tag">
 		<button type="submit" name="search" class="btn btn-color-btn text-white" 
 				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.search')}"></button>
+				th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.search')}"></button>
 	</div>
 
 	<!--/* searchConditionClearButton */-->
 	<div th:fragment="searchConditionClearButton(options)" th:remove="tag">
 		<button type="submit" name="conditionClear" class="btn btn-color-btn text-white" 
 				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.conditionClear')}"></button>
+				th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.conditionClear')}"></button>
 	</div>
 	
 	<!--/* 
@@ -1283,7 +1283,7 @@
 						<button class="text-white btn btn-color-paging-btn dropdown-toggle mb-3" 
 								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 								type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-							[[${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.label.recordsInScreen')}]]
+							[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.recordsInScreen')}]]
 						</button>
 						<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
 							<li><a class="dropdown-item" href="javascript:listFromRecordsInScreen(5)">5</a></li>
@@ -1375,14 +1375,14 @@
 				<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
-							style="cursor: pointer" th:text="${@msgUtil.get(#locale, labelFieldName)}" 
+							style="cursor: pointer" th:text="${@msgUtil.getValue(#locale, labelFieldName)}" 
 							th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
 							onClick="list(this.dataset.item, this.dataset.direction);"></th>
 		 		</th:block>
 		 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
-							th:text="${@msgUtil.get(#locale, labelFieldName)}"></th>
+							th:text="${@msgUtil.getValue(#locale, labelFieldName)}"></th>
 		 		</th:block>
 	 	</th:block>
 	</div>
@@ -1391,7 +1391,7 @@
 	<div th:fragment="thFreeText(label, options)" th:remove="tag">
 		<th scope="col" class="text-center text-white bg-color-tbl-header"  
 				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
-				th:text="${@msgUtil.get(#locale, label)}"></th>
+				th:text="${@msgUtil.getValue(#locale, label)}"></th>
 	</div>
 	
 	<!-- update button -->
@@ -1502,7 +1502,7 @@
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 					th:data-version="${version}"
 					onClick="update('listForm', this.id, this.dataset.version);"
-					th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.update')}"
+					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.update')}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 		</td>
@@ -1515,7 +1515,7 @@
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 					th:data-form-name="listForm" th:data-item="${recordValueDisplayedOnDelete}" th:data-version="${version}"
 					th:onClick="return del(this.dataset.formName, this.id, this.dataset.item, this.dataset.version);" 
-					th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.delete')}"
+					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.delete')}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 		</td>

@@ -35,67 +35,67 @@ public class SplibThymeleafMessageUtil {
   public SplibThymeleafMessageUtil() {}
 
   /**
-   * Gets message or itemName from the specified id.
+   * Returns whether properties files have a message with key.
    * 
-   * @param locale locale
-   * @param id id
-   * @return String
-   */
-  public String get(Locale locale, String id, String... args) {
-
-    // Return blank when id is empty.
-    if (StringUtils.isEmpty(id)) {
-      return "";
-    }
-
-    boolean hasMsg = PropertyFileUtil.hasMessage(id);
-    boolean hasStr = PropertyFileUtil.hasString(id);
-    boolean hasItem = PropertyFileUtil.hasItemName(id);
-
-    // Return id when id not exist in both.
-    if (!hasMsg && !hasStr && !hasItem) {
-      return id;
-    }
-
-    // Even when hasMsg == false && hasItem = false, Exception doesn't emerge.
-    if (hasMsg) {
-      return PropertyFileUtil.getMessage(locale, id, args);
-
-    } else if (hasStr) {
-      return PropertyFileUtil.getString(id, args);
-
-    } else {
-      return PropertyFileUtil.getItemName(locale, id);
-    }
-  }
-
-  /**
-   * Returns whether properties files have a message with id.
-   * 
-   * @param id id
+   * @param key key
    * @return boolean
    */
-  public boolean has(String id) {
+  public boolean hasKey(String key) {
 
     // Return blank when id is empty.
-    if (StringUtils.isEmpty(id)) {
+    if (StringUtils.isEmpty(key)) {
       return false;
     }
 
-    boolean hasMsg = PropertyFileUtil.hasMessage(id);
-    boolean hasStr = PropertyFileUtil.hasString(id);
-    boolean hasItem = PropertyFileUtil.hasItemName(id);
+    boolean hasMsg = PropertyFileUtil.hasMessage(key);
+    boolean hasStr = PropertyFileUtil.hasString(key);
+    boolean hasItem = PropertyFileUtil.hasItemName(key);
 
     return hasMsg || hasStr || hasItem;
   }
 
   /**
-   * Returns value from id.
+   * Gets message or itemName from the specified key.
    * 
-   * @param id id
+   * @param locale locale
+   * @param key key
    * @return String
    */
-  public String getValueOrElse(Locale locale, String id, String defaultValue, String... args) {
-    return has(id) ? get(locale, id, args) : defaultValue;
+  public String getValue(Locale locale, String key, String... args) {
+
+    // Return blank when id is empty.
+    if (StringUtils.isEmpty(key)) {
+      return "";
+    }
+
+    boolean hasMsg = PropertyFileUtil.hasMessage(key);
+    boolean hasStr = PropertyFileUtil.hasString(key);
+    boolean hasItem = PropertyFileUtil.hasItemName(key);
+
+    // Return id when id not exist in both.
+    if (!hasMsg && !hasStr && !hasItem) {
+      return key;
+    }
+
+    // Even when hasMsg == false && hasItem = false, Exception doesn't emerge.
+    if (hasMsg) {
+      return PropertyFileUtil.getMessage(locale, key, args);
+
+    } else if (hasStr) {
+      return PropertyFileUtil.getString(key, args);
+
+    } else {
+      return PropertyFileUtil.getItemName(locale, key);
+    }
+  }
+
+  /**
+   * Returns value from the argument key.
+   * 
+   * @param key key
+   * @return String
+   */
+  public String getValueOrElse(Locale locale, String key, String defaultValue, String... args) {
+    return hasKey(key) ? getValue(locale, key, args) : defaultValue;
   }
 }
