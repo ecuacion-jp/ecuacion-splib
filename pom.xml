@@ -101,7 +101,6 @@
 				</plugin>
 
 				<!-- pom.xmlからproject.versionを取得しsrc/main/resources/version.propertiesに格納する処理で必要 -->
-				<!-- warのprojectのみで使用 -->
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
@@ -116,7 +115,7 @@
 								<goal>exec</goal>
 							</goals>
 							<configuration>
-								<executable>../../ecuacion-internal-lib/ecuacion-internal-lib-tools/scripts/code-generator/create-version-properties.sh</executable>
+								<executable>../../ecuacion-build-tools/create-version-properties.sh</executable>
 							</configuration>
 						</execution>
 					</executions>

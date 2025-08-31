@@ -558,12 +558,12 @@
 			<li th:id="${componentId}">
 				<a class="dropdown-item" href="#">
 					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
-					<div style="text-align: right;" th:text="${options.contains('direction=left') ? '&ltrif;' : '&rtrif;'}">︎</div>
+					<div style="text-align: right;" th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
 				</a>
 				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark bg-gradient bg-primary"
 						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
 						+ ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)
-						+ ' ' + (options.contains('direction=left') ? 'dropdown-submenu-left' : '')}">
+						+ ' ' + (@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : '')}">
 					<th:block th:replace="${menuItems}" />
 				</ul>
 			</li>
@@ -598,17 +598,32 @@
 		### base-page button components.
 	 */-->
 
-	<!--/* button */-->
-	<div th:fragment="button(id, label, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButton}, true, ${options})}"></div>
+	<!--/* internalButtonCommonComponent */-->
+	<!--/* parameters:
+		- name					Specifies name attribute of the component.
+		- label					Specifies the label of the component.
+		- submits				Specifies whether the button submits a form.
+ 	 */-->
+	<!--/* options:
+		- id					Specifies id attribute of the component.
+		- backgroundColorClass	Specifies the color of the background of the component
+ 	 */-->
+	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, true, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentButton" th:remove="tag">
-		<!--/* 
-			<button th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:text="${label}"></button>
-		 */-->
+		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
+			<button th:attr="name=${name}, type=${submits ? 'submit' : null}" th:id="${@optUtil.getValueOrElse(options, 'id', null)}"
+					th:text="${@msgUtil.get(#locale, label)}"
+					class="btn text-white" 
+					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}
+							+ ' ' + ${@optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')}
+							"></button>
 		</div></th:block>
+	</div>
+
+	<!--/* scriptButton */-->
+	<div th:fragment="scriptButton(id, label, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalButtonCommonComponent(null, ${label}, false, 'id=' + ${id} + ',' + ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -617,18 +632,14 @@
 
 	<!--/* sendZoneOffset */-->
 	<div th:fragment="sendZoneOffset(options)" th:remove="tag">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		<input type="hidden" id="zoneOffsetParams" th:data-url="@{/public/zoneOffset}">
 		<script>
-		$(function() {
 			var offset = new Date().getTimezoneOffset();
 			var url = document.getElementById('zoneOffsetParams').dataset.url;
-			$.ajax(url + '?zoneOffset=' + offset,
-				{
-					type: 'get'
-				}
-			)
-		});
+			var req = new XMLHttpRequest();
+
+			req.open('GET', url + '?zoneOffset=' + offset, true);
+			req.send(null);
 		</script>
 	</div>
 
@@ -664,7 +675,7 @@
 						[[${@exUtil.systemError(msg)}]]
 					</th:block>
 	
-					<!--/* subFunction, ctrlSubFunctionの挙動については#454参照。  */-->
+					<!--/* Check #454 to understand how subFunction and ctrlSubFunction work. */-->
 					<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
 							th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 							th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
@@ -672,13 +683,12 @@
 							th:object="${__${javaFormName}__}">
 						<input type="hidden" name="transactionToken" th:value="${transactionToken}">
 				
-						<!--/* controller側からmodelに渡すformm名が間違えている場合にいつもここでエラーになるが、設定したform名が取得できずdebugしているので、
-						       赤字でエラー表示しつつform名を出力 */-->
+						<!--/* Show the form name with an error message to easily understand that the form name passed from controller to model is wrong. */-->
 						<h1 style="color: red" th:if="${__${function + #strings.capitalize(subFunction) + 'Form'}__} == null">
 							form: [[${function + #strings.capitalize(subFunction) + 'Form'}]] is null.
 						</h1> 
 						
-						<!--/* confirmedWarningsで、formの外からボタンクリックが必要なためform名を保持しておく */-->
+						<!--/* Store form name to click button outside the form with confirmedWarnings. */-->
 						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
 						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="*{confirmedWarnings}">
 			 			<input type="hidden" name="submitOnChangeToRefresh">
@@ -837,7 +847,7 @@
 				th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
 				th:data-html-form-name="${htmlFormName}"
 				onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
-			<option th:if="${@optUtil.needsEmptyOption(options)}" th:selected="${inputValue == null || inputValue == ''}"></option>
+			<option th:if="${!@optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
 			<th:block th:each="pair : ${pairs}">
 				<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
 			</th:block>
@@ -1117,31 +1127,30 @@
 	<!--/* 
 		### general-form-page button
 	 */-->
+	
+	<!--/* internalSubmitButtonCommonComponent */-->
+	<div th:fragment="internalSubmitButtonCommonComponent(name, label, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, ${options})}"></div>
+	</div>
 
-	<!--/* internal common button component. */-->
-	<div th:fragment="internalButtonCommonComponent(id, label, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, true, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
-			<button type="submit" th:id="${@optUtil.hasKey(options, 'id') ? id : null}" th:name="${id}" class="btn btn-color-btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:text="${@msgUtil.get(#locale, label)}"></button>
-		</div></th:block>
+	<!--/* submitButton */-->
+	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
+		<div th:replace="~{ :: internalSubmitButtonCommonComponent(${name}, ${label}, ${options})}"></div>
 	</div>
 	
-	<!--/* common button */-->
-	<div th:fragment="commonPrimaryButton(id, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent(${id}, ${label}, ${options})}"></div>
+	<!--/* common button: deprecated  */-->
+	<div th:fragment="commonPrimaryButton(name, label, options)" th:remove="tag">
+		<div th:replace="~{ :: internalSubmitButtonCommonComponent(${name}, ${label}, ${options})}"></div>
 	</div>
 
 	<!--/* backButton */-->
 	<div th:fragment="backButton(options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
+		<div th:replace="~{ :: internalSubmitButtonCommonComponent('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
 	</div>
 	
 	<!--/* inter-button space */-->
 	<span th:fragment="interButtonSpace(options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent(~{ :: fragmentInterButtonSpace}, ${options})}"></div>
+		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInterButtonSpace}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInterButtonSpace" th:remove="tag">
 			<span>&nbsp;&nbsp;&nbsp;</span>
@@ -1363,14 +1372,14 @@
 		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
 			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getDisplayName('__${rootRecordName}__', '__${itemPropertyPath}__')}">
-				<th:block th:if="${@optUtil.hasThSortable(options)}">
+				<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
 							style="cursor: pointer" th:text="#{__${labelFieldName}__}" 
 							th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
 							onClick="list(this.dataset.item, this.dataset.direction);"></th>
 		 		</th:block>
-		 		<th:block th:if="${!@optUtil.hasThSortable(options)}">
+		 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
 							th:text="#{__${labelFieldName}__}"></th>
@@ -1406,11 +1415,11 @@
 	<div th:fragment="tdReadOnlyCustomizable(value, position, options)" th:remove="tag">
 		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
 				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
-				th:classappend="${(deleted != null && deleted) || @optUtil.isDeleted(options)} ? 'text-deleted' : 'text-dark'">
-			<th:block th:if="${@optUtil.hasLinkUrl(options)}">
-				<a th:href="${@optUtil.getLinkUrl(options)}" target="_blank">[[${value}]]</a>
+				th:classappend="${(deleted != null && deleted) || @optUtil.hasKey(options, 'deleted')} ? 'text-deleted' : 'text-dark'">
+			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl')}">
+				<a th:href="${@optUtil.get(options, 'linkUrl')}" target="_blank">[[${value}]]</a>
 			</th:block>
-			<th:block th:if="${@optUtil.hasLinkUrl(options) == false}">
+			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl') == false}">
 				[[${value}]]
 			</th:block>
 		</td>
@@ -1494,7 +1503,7 @@
 					th:data-version="${version}"
 					onClick="update('listForm', this.id, this.dataset.version);"
 					th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.update')}"
-					th:disabled=${@optUtil.isDisabled(options)}>
+					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 		</td>
 	</div>
@@ -1507,7 +1516,7 @@
 					th:data-form-name="listForm" th:data-item="${recordValueDisplayedOnDelete}" th:data-version="${version}"
 					th:onClick="return del(this.dataset.formName, this.id, this.dataset.item, this.dataset.version);" 
 					th:text="${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.common.button.delete')}"
-					th:disabled=${@optUtil.isDisabled(options)}>
+					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 		</td>
 	</div>
@@ -1519,9 +1528,9 @@
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 					th:data-version="${version}"
 					th:text="#{__${itemPropertyPath}__}"
-					th:disabled=${@optUtil.isDisabled(options)}>
+					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
-			<th:block th:if="${@optUtil.needsOnclickJs(options)}">
+			<th:block th:if="${@optUtil.hasKey(options, 'onClickJs')}">
 				<script th:inline="javascript">
 					onTdButtonClick(/*[[${itemPropertyPath}]], [[${id}]]*/);
 				</script>
@@ -1548,7 +1557,7 @@
 	<div th:fragment="scriptFortdDeleteButton(rootRecordName, idFieldName, versionFieldName, itemDisplayedOnDelete, options)" th:remove="tag">
 		<script th:with="id=${rootRecordName + '.' + idFieldName},versionId=${rootRecordName + '.' + versionFieldName}">
 		function del(formName, id, recordName, version) {
-			var message = "[[${@optUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete)}]]" + " " + recordName;
+			var message = "[[${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete)}]]" + " " + recordName;
 			var bl = confirm(message);
 			if (!bl) return false;
 			
@@ -1566,12 +1575,12 @@
 
 	<!--/* showInsertFormButton */-->
 	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
+		<div th:replace="~{ :: internalSubmitButtonCommonComponent('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
 	</div>
 
 	<!--/* insertOrUpdateButton */-->
 	<div th:fragment="insertOrUpdateButton(isInsert, options)" th:remove="tag">
-		<div th:replace="~{ :: internalButtonCommonComponent('insertOrUpdate', 
+		<div th:replace="~{ :: internalSubmitButtonCommonComponent('insertOrUpdate', 
 				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, ${options})}"></div>
 	</div>
 </body>
