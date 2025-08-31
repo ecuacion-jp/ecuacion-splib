@@ -1,6 +1,6 @@
 <!--
 
-    Copyright 諱ｯ 2012 ecuacion.jp (info@ecuacion.jp)
+	Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
 		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 		layout:decorate="~{bootstrap/page-general-narrow}"
-		th:with="title=${@msgUtil.get(#locale, 'jp.ecuacion.splib.web.config.title')}">
+		th:with="title=${@ms@msgUtil.getValue(cale, 'jp.ecuacion.splib.web.config.title')}">
 
 <body>
 	<div layout:fragment="form-content" th:remove="tag">
