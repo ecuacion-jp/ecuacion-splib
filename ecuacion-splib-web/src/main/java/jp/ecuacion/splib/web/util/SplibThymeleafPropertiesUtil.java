@@ -19,10 +19,9 @@ import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.stereotype.Component;
 
 /**
- * thymeleaf側から呼ばれる想定のクラス。localeを加味したメッセージ表示を実施.
+ * Offers access to application[...].properties. It's supposed to called from thymeleaf.
  * 
- * <p>裏ではPropertyFileUtilを呼び出しているのみ。PropertyFileUtilの機能が使える分#{...} より協力。 
- *     ただし、#{...}で問題ない部分はそれを使っても問題なし。</p>
+ * <p>It calls PropertyFileUtil inside.</p>
  */
 @Component("propUtil")
 public class SplibThymeleafPropertiesUtil {
@@ -33,52 +32,53 @@ public class SplibThymeleafPropertiesUtil {
   public SplibThymeleafPropertiesUtil() {}
 
   /**
-   * Returns value from id.
+   * Returns a boolean whether application[...].properties has the argument key.
    * 
-   * @param id id
-   * @return String
+   * @param key key
+   * @return boolean
    */
-  public String get(String id) {
-    return PropertyFileUtil.getApplication(id);
+  public boolean hasKey(String key) {
+    return PropertyFileUtil.hasApplication(key);
   }
 
   /**
-   * Returns value from id.
+   * Returns value from the argument key.
    * 
-   * @param id id
+   * @param key key
    * @return String
    */
-  public boolean has(String id) {
-    return PropertyFileUtil.hasApplication(id);
+  public String getValue(String key) {
+    return PropertyFileUtil.getApplication(key);
   }
 
   /**
-   * Returns value from id.
+   * Returns value from the argument key 
+   *     or defaultValue when the key does not exist in application[...].properties.
    * 
-   * @param id id
-   * @return String
+   * @param key key
+   * @return value
    */
-  public String getValueOrElse(String id, String defaultValue) {
-    return has(id) ? get(id) : defaultValue;
+  public String getValueOrElse(String key, String defaultValue) {
+    return hasKey(key) ? getValue(key) : defaultValue;
   }
 
   /**
    * Returns loginState dependent value.
    * 
-   * <p>When you set 'test.key1' to id,
+   * <p>When you set 'test.key1' to "key" argument,
    *     it recognize 'test.key1' as a default key, 'test.key1-account' for account loginState
    *     and 'test.key1-admin' for admin loginState.</p>
    * 
    * @param loginState loginState
-   * @param id id
+   * @param key key
    * @param defaultValue defaultValue
    * @return value
    */
-  public String getLoginStateDependentValueOrElse(String loginState, String id,
+  public String getLoginStateDependentValueOrElse(String loginState, String key,
       String defaultValue) {
-    String value = getValueOrElse(id, defaultValue);
-    String accountValue = getValueOrElse(id + "-account", defaultValue);
-    String adminValue = getValueOrElse(id + "-admin", defaultValue);
+    String value = getValueOrElse(key, defaultValue);
+    String accountValue = getValueOrElse(key + "-account", defaultValue);
+    String adminValue = getValueOrElse(key + "-admin", defaultValue);
 
     return loginState.equals("account") ? accountValue
         : (loginState.equals("admin") ? adminValue : value);
