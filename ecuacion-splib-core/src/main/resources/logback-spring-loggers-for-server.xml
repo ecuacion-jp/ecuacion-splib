@@ -27,6 +27,11 @@
 		<appender-ref ref="app-detail-appender" />
 	</logger>
 
+	<!-- logger name の default 値をxxx とすることで、未指定の際に無駄に出力されることを防ぐ -->
+	<logger name="${app-root:-xxx}" level="${loglevel-app:-error}">
+		<appender-ref ref="app-detail-appender" />
+	</logger>
+
 	<!-- 画面のアクセス先URLを表示するログ。これはapplogに出しておきたい。 -->
 	<logger name="org.springframework.security" level="${loglevel-security}">
 		<appender-ref ref="app-detail-appender" />
