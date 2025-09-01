@@ -1127,25 +1127,10 @@
 	<!--/* 
 		### general-form-page button
 	 */-->
-	
-	<!--/* internalSubmitButtonCommonComponent */-->
-	<div th:fragment="internalSubmitButtonCommonComponent(name, label, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, ${options})}"></div>
-	</div>
 
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSubmitButtonCommonComponent(${name}, ${label}, ${options})}"></div>
-	</div>
-	
-	<!--/* common button: deprecated  */-->
-	<div th:fragment="commonPrimaryButton(name, label, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSubmitButtonCommonComponent(${name}, ${label}, ${options})}"></div>
-	</div>
-
-	<!--/* backButton */-->
-	<div th:fragment="backButton(options)" th:remove="tag">
-		<div th:replace="~{ :: internalSubmitButtonCommonComponent('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
+ 		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, ${options})}"></div>
 	</div>
 	
 	<!--/* inter-button space */-->
@@ -1156,6 +1141,23 @@
 			<span>&nbsp;&nbsp;&nbsp;</span>
 		</div></th:block>
 	</span>
+
+
+
+	<!--/* 
+		###
+		### edit-page components
+		###
+	 */-->
+
+	<!--/* 
+		### edit-page button
+	 */-->
+
+	<!--/* backButton */-->
+	<div th:fragment="backButton(options)" th:remove="tag">
+		<div th:replace="~{ :: submitButton('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
+	</div>
 
 
 
@@ -1575,12 +1577,12 @@
 
 	<!--/* showInsertFormButton */-->
 	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
-		<div th:replace="~{ :: internalSubmitButtonCommonComponent('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
+		<div th:replace="~{ :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
 	</div>
 
 	<!--/* insertOrUpdateButton */-->
 	<div th:fragment="insertOrUpdateButton(isInsert, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSubmitButtonCommonComponent('insertOrUpdate', 
+		<div th:replace="~{ :: submitButton('insertOrUpdate', 
 				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, ${options})}"></div>
 	</div>
 </body>
