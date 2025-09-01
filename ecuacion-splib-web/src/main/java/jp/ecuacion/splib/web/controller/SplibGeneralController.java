@@ -734,7 +734,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
           SplibExceptionHandler#handleInputValidationExceptionに来ているのにerrorListにエラー項目が存在しません。
           rootRecoordNameと同一のnameを持ったsubmitボタンを押した場合に発生する模様。
           （例：rootRecordNameをappとした場合、以下のようなボタンを作成する場合に発生）
-          <div th:replace="~{bootstrap/components :: commonPrimaryButton('app', ...)}"></div>
+          <div th:replace="~{bootstrap/components :: submitButton('app', ...)}"></div>
 
           textなどの情報は、GETでいうと、request paramの中で"app.desc=..."のように記載されるが、そのparameterの中で
           spring mvcだとボタン名が"app="と出る。
