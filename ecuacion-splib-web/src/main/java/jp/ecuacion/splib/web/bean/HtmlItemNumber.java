@@ -41,27 +41,48 @@ public class HtmlItemNumber extends HtmlItem {
   }
   
   @Override
+  @Deprecated
   public HtmlItemNumber required(boolean isRequired) {
     return (HtmlItemNumber) super.required(isRequired);
   }
 
   @Override
+  @Deprecated
   public HtmlItemNumber required(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isRequired) {
     return (HtmlItemNumber) super.required(authKind, authString, isRequired);
   }
 
   @Override
-  @Deprecated
+  public HtmlItemNumber notEmpty() {
+    return (HtmlItemNumber) super.notEmpty();
+  }
+  
+  @Override
   public HtmlItemNumber isNotEmpty(boolean isNotEmpty) {
-    return (HtmlItemNumber) super.required(isNotEmpty);
+    return (HtmlItemNumber) super.isNotEmpty(isNotEmpty);
   }
 
   @Override
-  @Deprecated
   public HtmlItemNumber isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
-    return (HtmlItemNumber) super.required(authKind, authString, isNotEmpty);
+    return (HtmlItemNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
+  }
+
+  @Override
+  public HtmlItemNumber notEmptyOnSearch() {
+    return (HtmlItemNumber) super.notEmptyOnSearch();
+  }
+  
+  @Override
+  public HtmlItemNumber isNotEmptyOnSearch(boolean isNotEmpty) {
+    return (HtmlItemNumber) super.isNotEmptyOnSearch(isNotEmpty);
+  }
+
+  @Override
+  public HtmlItemNumber isNotEmptyOnSearch(HtmlItemConditionKeyEnum authKind, String authString,
+      boolean isNotEmpty) {
+    return (HtmlItemNumber) super.isNotEmptyOnSearch(authKind, authString, isNotEmpty);
   }
 
   /**
