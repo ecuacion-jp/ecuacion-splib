@@ -609,7 +609,7 @@
 		- backgroundColorClass	Specifies the color of the background of the component
  	 */-->
 	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, false, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
 			<button th:attr="name=${name}, type=${submits ? 'submit' : null}" th:id="${@optUtil.getValueOrElse(options, 'id', null)}"
@@ -625,6 +625,15 @@
 	<div th:fragment="scriptButton(id, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalButtonCommonComponent(null, ${label}, false, 'id=' + ${id} + ',' + ${options})}"></div>
 	</div>
+	
+	<!--/* inter-button space */-->
+	<span th:fragment="interButtonSpace(options)" th:remove="tag">
+		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInterButtonSpace}, false, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentInterButtonSpace" th:remove="tag">
+			<span>&nbsp;&nbsp;&nbsp;</span>
+		</div></th:block>
+	</span>
 	
 	<!--/* 
 		### base-page script components.
@@ -1132,15 +1141,6 @@
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, ${options})}"></div>
 	</div>
-	
-	<!--/* inter-button space */-->
-	<span th:fragment="interButtonSpace(options)" th:remove="tag">
-		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentInterButtonSpace}, ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="fragmentInterButtonSpace" th:remove="tag">
-			<span>&nbsp;&nbsp;&nbsp;</span>
-		</div></th:block>
-	</span>
 
 
 

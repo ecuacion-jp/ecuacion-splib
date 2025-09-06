@@ -19,7 +19,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
 		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 		layout:decorate="~{bootstrap/page-general-narrow}"
-		th:with="title=${@ms@msgUtil.getValue(cale, 'jp.ecuacion.splib.web.config.title')}">
+		th:with="title=${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.config.title')}">
 
 <body>
 	<div layout:fragment="form-content" th:remove="tag">
