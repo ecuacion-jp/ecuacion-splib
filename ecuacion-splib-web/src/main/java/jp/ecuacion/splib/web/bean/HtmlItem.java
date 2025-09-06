@@ -42,27 +42,14 @@ public class HtmlItem {
   protected String itemPropertyPath;
 
   /**
-   * Is a class part (= left part) of itemKindId. (like "acc" from itemKindId: "acc.name")
-   * 
-   * <p>It can be {@code null}, then {@code rootRecordName} obtained from context is used.</p>
-   */
-  protected String itemKindIdClass;
-
-  /**
-   * Is a field part (= right part) of itemKindId. (like "name" from itemKindId: "acc.name")
-   */
-  @Nonnull
-  protected String itemKindIdField;
-
-  /**
-   * Is a class part (= left part) of itemNameKey. (like "acc" from itemKindId: "acc.name")
+   * Is a class part (= left part) of itemNameKey. (like "acc" from itemNameKey: "acc.name")
    * 
    * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
    */
   protected String itemNameKeyClass;
 
   /**
-   * Is a field part (= right part) of itemNameKey. (like "name" from itemKindId: "acc.name")
+   * Is a field part (= right part) of itemNameKey. (like "name" from itemNameKey: "acc.name")
    * 
    * <p>The display name can be obtained by referring {@code item_names.properties} with it.</p>
    */
@@ -109,11 +96,11 @@ public class HtmlItem {
         ? itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf("."))
         : null;
 
-    this.itemKindIdClass = itemPropertyPathClass == null ? null
+    this.itemNameKeyClass = itemPropertyPathClass == null ? null
         : (itemPropertyPathClass.contains(".")
             ? itemPropertyPathClass.substring(itemPropertyPathClass.lastIndexOf(".") + 1)
             : itemPropertyPathClass);
-    this.itemKindIdField = itemPropertyPath.contains(".")
+    this.itemNameKeyField = itemPropertyPath.contains(".")
         ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf(".") + 1)
         : itemPropertyPath;
   }
@@ -123,27 +110,13 @@ public class HtmlItem {
   }
 
   /**
-   * Returns itemKindId.
-   * 
-   * <p>itemKindId is built from itemKindIdClass and itemKindIdField.<br>
-   * When itemKindIdClass is {@code null}, rootRecordName is used as itemKindIdClass instead.</p>
-   * 
-   * @param rootRecordName rootRecordName
-   * @return itemKindId
-   */
-  public String getItemKindId(String rootRecordName) {
-    return (StringUtils.isEmpty(itemKindIdClass) ? rootRecordName : itemKindIdClass) + "."
-        + itemKindIdField;
-  }
-
-  /**
    * Sets {@code itemNameKey} and returns this for method chain.
    * 
-   * <p>The format of itemNameKey is the same as itemKindId, which is like "acc.name",
+   * <p>The format of itemNameKey is the same as itemNameKey, which is like "acc.name",
    *     always has one dot (not more than one) in the middle of the string.<br>
    *     But the argument of the method can be like "name".
-   *     In that case itemKindIdClass is used instead. 
-   *     When itemKindIdClass is {@code null}, rootRecordName is used instead.</p>
+   *     In that case itemNameKeyClass is used instead. 
+   *     When itemNameKeyClass is {@code null}, rootRecordName is used instead.</p>
    * 
    * @param itemNameKey itemNameKey
    * @return HtmlItem
@@ -163,14 +136,13 @@ public class HtmlItem {
    * Returns {@code itemNameKey} value.
    * 
    * <p>Its value is {@code null} means 
-   *     the item's original itemKindId is equal to itemNameKey.</p>
+   *     the item's original itemNameKey is equal to itemNameKey.</p>
    * 
-   * @return itemKindIdFieldForName
+   * @return itemNameKeyFieldForName
    */
   public String getItemNameKey(String rootRecordName) {
-    String classPart = !StringUtils.isEmpty(itemNameKeyClass) ? itemNameKeyClass
-        : (!StringUtils.isEmpty(itemKindIdClass) ? itemKindIdClass : rootRecordName);
-    String fieldPart = !StringUtils.isEmpty(itemNameKeyField) ? itemNameKeyField : itemKindIdField;
+    String classPart = !StringUtils.isEmpty(itemNameKeyClass) ? itemNameKeyClass : rootRecordName;
+    String fieldPart = itemNameKeyField;
 
     return classPart + "." + fieldPart;
   }

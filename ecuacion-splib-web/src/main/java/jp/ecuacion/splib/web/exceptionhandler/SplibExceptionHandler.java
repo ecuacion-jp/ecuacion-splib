@@ -110,17 +110,17 @@ public abstract class SplibExceptionHandler {
    */
   @Nonnull
   private String addItemDisplayNames(@RequireNonnull String message,
-      @Nonnull String... itemKindIds) {
+      @Nonnull String... itemNameKeys) {
     if (message.contains("{0}")) {
       message = MessageFormat.format(message,
-          getItemDisplayNames(ObjectsUtil.requireSizeNonZero(itemKindIds)));
+          getItemDisplayNames(ObjectsUtil.requireSizeNonZero(itemNameKeys)));
     }
 
     return message;
   }
 
   @Nonnull
-  private String getItemDisplayNames(@RequireNonnull String[] itemKindIds) {
+  private String getItemDisplayNames(@RequireNonnull String[] itemNameKeys) {
     StringBuilder sb = new StringBuilder();
     final String prependParenthesis = PropertyFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.itemName.prependParenthesis");
@@ -130,11 +130,11 @@ public abstract class SplibExceptionHandler {
         "jp.ecuacion.splib.web.common.message.itemName.separator");
 
     boolean is1stTime = true;
-    for (String itemKindId : ObjectsUtil.requireNonNull(itemKindIds)) {
+    for (String itemNameKey : ObjectsUtil.requireNonNull(itemNameKeys)) {
 
       // itemNameがmessages.propertiesにあったらそれに置き換える
-      if (PropertyFileUtil.hasItemName(itemKindId)) {
-        itemKindId = PropertyFileUtil.getItemName(request.getLocale(), itemKindId);
+      if (PropertyFileUtil.hasItemName(itemNameKey)) {
+        itemNameKey = PropertyFileUtil.getItemName(request.getLocale(), itemNameKey);
       }
 
       if (is1stTime) {
@@ -144,7 +144,7 @@ public abstract class SplibExceptionHandler {
         sb.append(separator);
       }
 
-      sb.append(prependParenthesis + itemKindId + appendParenthesis);
+      sb.append(prependParenthesis + itemNameKey + appendParenthesis);
     }
 
     return sb.toString();
@@ -241,17 +241,18 @@ public abstract class SplibExceptionHandler {
     for (SingleAppException saex : exList) {
 
       // propertyPaths
-      List<String> propertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
-          .map(itemKindId -> StringUtils.uncapitalize(itemKindId)).toList();
+      List<String> itemPropertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
+          .map(itemPropertyPath -> StringUtils.uncapitalize(itemPropertyPath)).toList();
 
       // Add rootRecord plus dot(.) if BizLogicAppException
-      if (saex instanceof BizLogicAppException && propertyPathList.size() > 0
-          && !propertyPathList.get(0).startsWith(getController().getRootRecordName() + ".")) {
-        propertyPathList = propertyPathList.stream()
+      if (saex instanceof BizLogicAppException && itemPropertyPathList.size() > 0
+          && !itemPropertyPathList.get(0).startsWith(getController().getRootRecordName() + ".")) {
+        itemPropertyPathList = itemPropertyPathList.stream()
             .map(path -> getController().getRootRecordName() + "." + path).toList();
       }
 
-      String[] propertyPaths = propertyPathList.toArray(new String[propertyPathList.size()]);
+      String[] itemPropertyPaths =
+          itemPropertyPathList.toArray(new String[itemPropertyPathList.size()]);
 
       // message
       Boolean msgAtItem = Boolean.valueOf(PropertyFileUtil
@@ -266,7 +267,7 @@ public abstract class SplibExceptionHandler {
         // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
         // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
         List<String> itemNameKeyList = new ArrayList<>();
-        for (String propertyPath : ObjectsUtil.requireNonNull(propertyPaths)) {
+        for (String propertyPath : ObjectsUtil.requireNonNull(itemPropertyPaths)) {
           HtmlItem item =
               ((RecordInterface) getForms()[0].getRootRecord(getController().getRootRecordName()))
                   .getHtmlItem(getController().getRootRecordName(), propertyPath);
@@ -277,7 +278,7 @@ public abstract class SplibExceptionHandler {
             itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
       }
 
-      messagesBean.setErrorMessage(message, propertyPaths);
+      messagesBean.setErrorMessage(message, itemPropertyPaths);
     }
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
@@ -324,7 +325,7 @@ public abstract class SplibExceptionHandler {
       Model newModel) {
     RedirectException redirectException = null;
 
-    // Setupu model if it's new.
+    // Setup model if it's new.
     Model model = getModel();
     if (model == null) {
       model = newModel;

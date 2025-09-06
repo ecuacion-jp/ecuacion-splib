@@ -50,7 +50,7 @@ public abstract class SplibSearchListService
     <FST extends SplibSearchForm, FLT extends SplibListForm<?>>
     extends SplibGeneral2FormsService<FST, FLT> {
   //@formatter:on
-  
+
   /**
    * Deletes the record.
    * 
@@ -83,24 +83,25 @@ public abstract class SplibSearchListService
   protected List<? extends SplibRecord> getSortedList(List<? extends SplibRecord> listToSort,
       SplibSearchForm searchForm, String[] needsNumberSortItems) {
 
-    String itemKindId = searchForm.getSortItemWithDefault();
+    String itemPropertyPath = searchForm.getSortItemWithDefault();
     boolean isDesc = searchForm.getDirection().equals(SplibSearchForm.DIRECTION_DESC);
 
     int directionVal = isDesc ? -1 : 1;
 
-    if (Arrays.asList(needsNumberSortItems).contains(itemKindId)) {
+    if (Arrays.asList(needsNumberSortItems).contains(itemPropertyPath)) {
       return listToSort.stream()
           .sorted(
-              (rec1, rec2) -> directionVal * (Integer.valueOf((String) rec1.getValue(itemKindId))
-                  .compareTo(Integer.valueOf((String) rec2.getValue(itemKindId)))))
+              (rec1,
+                  rec2) -> directionVal * (Integer.valueOf((String) rec1.getValue(itemPropertyPath))
+                      .compareTo(Integer.valueOf((String) rec2.getValue(itemPropertyPath)))))
           .toList();
 
     } else {
       return listToSort.stream()
-          // #658: rec1.getValue(itemKindId) がnullの場合を考慮
-          .sorted((rec1, rec2) -> rec1.getValue(itemKindId) == null ? -1 * directionVal
-              : directionVal * ((String) rec1.getValue(itemKindId))
-                  .compareTo((String) rec2.getValue(itemKindId)))
+          // #658: rec1.getValue(itemPropertyPath) がnullの場合を考慮
+          .sorted((rec1, rec2) -> rec1.getValue(itemPropertyPath) == null ? -1 * directionVal
+              : directionVal * ((String) rec1.getValue(itemPropertyPath))
+                  .compareTo((String) rec2.getValue(itemPropertyPath)))
           .toList();
     }
   }
