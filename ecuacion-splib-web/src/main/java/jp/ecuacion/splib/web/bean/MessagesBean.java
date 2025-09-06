@@ -45,11 +45,11 @@ public class MessagesBean {
    */
   private List<ErrorMessageBean> errorMessageList = new ArrayList<>();
 
-  private List<String> getErrorMessageList(String itemName) {
+  private List<String> getErrorMessageList(String itemPropertyPath) {
     List<String> returnList = new ArrayList<>();
 
     for (ErrorMessageBean bean : errorMessageList) {
-      if (bean.getItemNameSet().contains(itemName)) {
+      if (bean.getItemPropertyPathSet().contains(itemPropertyPath)) {
         returnList.add(bean.message);
       }
     }
@@ -77,10 +77,10 @@ public class MessagesBean {
    * Sets error message.
    * 
    * @param message message
-   * @param itemKindIds itemKindIds
+   * @param itemPropertyPaths itemPropertyPaths
    */
-  public void setErrorMessage(String message, String... itemKindIds) {
-    errorMessageList.add(new ErrorMessageBean(message, itemKindIds));
+  public void setErrorMessage(String message, String... itemPropertyPaths) {
+    errorMessageList.add(new ErrorMessageBean(message, itemPropertyPaths));
   }
 
   /**
@@ -97,65 +97,65 @@ public class MessagesBean {
   }
 
   /**
-   * Obtains all the messages related to the specified itemKindId.
+   * Obtains all the messages related to the specified itemPropertyPath.
    */
-  public List<String> getErrorMessages(String itemKindId) {
-    return getErrorMessageList(itemKindId);
+  public List<String> getErrorMessages(String itemPropertyPath) {
+    return getErrorMessageList(itemPropertyPath);
   }
 
   /**
-   * Obtains all the messages with itemKindId specified.
+   * Obtains all the messages with itemPropertyPath specified.
    */
   public List<String> getErrorMessagesLinkedToItems() {
-    return errorMessageList.stream().filter(e -> e.getItemNameSet().size() > 0)
+    return errorMessageList.stream().filter(e -> e.getItemPropertyPathSet().size() > 0)
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
 
   /**
-   * Obtains all the messages without itemKindId specified.
+   * Obtains all the messages without itemPropertyPath specified.
    */
   public List<String> getErrorMessagesNotLinkedToItems() {
-    return errorMessageList.stream().filter(e -> e.getItemNameSet().size() == 0)
+    return errorMessageList.stream().filter(e -> e.getItemPropertyPathSet().size() == 0)
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
 
   /**
    * Returns invalid class string if the item is invalid.
    * 
-   * @param itemKindId itemKindId
+   * @param itemPropertyPath itemPropertyPath
    * @return String
    */
-  public String isValid(String itemKindId) {
-    return (getErrorMessageList(itemKindId).size() > 0) ? "is-invalid" : "";
+  public String isValid(String itemPropertyPath) {
+    return (getErrorMessageList(itemPropertyPath).size() > 0) ? "is-invalid" : "";
   }
 
   /**
-   * Stores the pair of error messages and itemKindIds.
+   * Stores the pair of error messages and itemPropertyPaths.
    * 
-   * <p>The pair can be (message : itemKindId) = 1:1, 1:0, 1:n.</p>
+   * <p>The pair can be (message : itemPropertyPath) = 1:1, 1:0, 1:n.</p>
    */
   static class ErrorMessageBean {
     private String message;
 
-    private Set<String> itemNameSet = new HashSet<>();
+    private Set<String> itemPropertyPathSet = new HashSet<>();
 
     public ErrorMessageBean(String message) {
       this.message = message;
     }
 
-    public ErrorMessageBean(String message, String... itemName) {
+    public ErrorMessageBean(String message, String... itemPropertyPaths) {
       this.message = message;
-      this.itemNameSet =
-          new HashSet<String>(Arrays.asList(itemName == null ? new String[] {} : itemName).stream()
-              .map(itemKindId -> StringUtils.uncapitalize(itemKindId)).toList());
+      this.itemPropertyPathSet = new HashSet<String>(
+          Arrays.asList(itemPropertyPaths == null ? new String[] {} : itemPropertyPaths).stream()
+              .map(itemPropertyPath -> StringUtils.uncapitalize(itemPropertyPath)).toList());
     }
 
     public String getMessage() {
       return message;
     }
 
-    public Set<String> getItemNameSet() {
-      return itemNameSet;
+    public Set<String> getItemPropertyPathSet() {
+      return itemPropertyPathSet;
     }
   }
 

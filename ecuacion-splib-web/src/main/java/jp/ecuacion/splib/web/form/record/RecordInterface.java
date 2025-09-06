@@ -58,7 +58,7 @@ public interface RecordInterface {
   HtmlItem[] getHtmlItems();
 
   /**
-  * Returns whether the itemKindId needs comma.
+  * Returns whether the propertyPath needs comma.
   *
   * @param propertyPath propertyPath
   * @return boolean
