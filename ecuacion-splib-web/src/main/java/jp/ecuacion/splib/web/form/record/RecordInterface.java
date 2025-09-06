@@ -188,7 +188,7 @@ public interface RecordInterface {
    */
   default List<String> getRequiredFieldsOnSearch(String loginState, RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
-        .filter(item -> item.getRequiredOnSearch(loginState, bean))
+        .filter(item -> item.getIsNotEmptyOnSearch(loginState, bean))
         .map(item -> item.getItemPropertyPath()).toList();
   }
 
