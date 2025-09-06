@@ -771,7 +771,7 @@
 					propertyPathField=${itemPropertyPath.contains('.') 
 					? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
 					itemNameKeyClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}">
-				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField}, itemKindId=${itemNameKeyClass + '.' + propertyPathField}">
+				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField}">
 					<th:block th:with="inputValue=*{__${recordPropertyPath}__}, inputName=${recordPropertyPath},
 							inputId=${@optUtil.getValueOrElse(options, 'id', htmlFormName + '.' + recordPropertyPath)},
 							isReadOnly=${@optUtil.hasKey(options, 'readonly')},
@@ -1199,7 +1199,7 @@
 				th:readonly="${isReadOnly}">
 		</div></th:block>
 	</div>
-	 
+
 	<div th:fragment="searchDate(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ ::searchDateInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
 
