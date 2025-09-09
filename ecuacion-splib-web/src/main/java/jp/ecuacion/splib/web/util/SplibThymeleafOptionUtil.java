@@ -74,7 +74,12 @@ public class SplibThymeleafOptionUtil {
 
       // if the key already exists in the map, the value is updated and output log.
       if (rtnMap.containsKey(lowerCaseKey)) {
-        detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
+        // Ignore empty key because it happens and it's not bad.
+        // (It happens when you set an option conditionally like:
+        //  options = 'a=b,' + (c == null ? '' : 'c=d')
+        if (!lowerCaseKey.equals("")) {
+          detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
+        }
       }
 
       rtnMap.put(lowerCaseKey, value);
