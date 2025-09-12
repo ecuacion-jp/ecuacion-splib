@@ -38,8 +38,8 @@ public abstract class SplibBaseController {
    */
   @InitBinder
   public void initBinder(WebDataBinder binder) {
-    // Change "" to null. This prevents java number properties receive "" from html.
-    // (item values always string in html)
+    // Change "" to null. This prevents java number properties (but String datatype in record class)
+    // receive "" from html. (item values always string in html)
     binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
 
     // Change "" / null to boolean value when html switch value is "" / null
@@ -64,33 +64,6 @@ public abstract class SplibBaseController {
         // setValue(Boolean.valueOf(text));
         super.setAsText(text);
       }
-
-      // // checkboxでは以下は発生しないはずなのだが一応対処
-      // if (text == null || text.equals("") || text.equals("null")) {
-      // setValue(null);
-      // return;
-      // }
-      //
-      // text = text.trim();
-      //
-      // // redmine #323対応により、複数の値がカンマ区切りで場合がある。その場合はtrueで返すのだが、
-      // // #323の前提はonとoffがくることなので、そうでない場合はエラーとする。
-      // List<String> list = Arrays.asList(text.split(","));
-      // if (list.size() > 1) {
-      // if (list.size() > 2) {
-      // throw new RuntimeException("Unpresumable.");
-      // }
-      //
-      // Collections.sort(list);
-      // if (!(list.get(0).equalsIgnoreCase("OFF") && list.get(1).equalsIgnoreCase("ON"))) {
-      // throw new RuntimeException("Unpresumable.");
-      // }
-      //
-      // setValue(Boolean.TRUE);
-      // return;
-      // }
-      //
-      // super.setAsText(text);
     }
   }
 }
