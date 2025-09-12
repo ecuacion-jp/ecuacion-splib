@@ -16,9 +16,6 @@
 package jp.ecuacion.splib.web.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomBooleanEditor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -35,15 +32,17 @@ public abstract class SplibBaseController {
   protected HttpServletRequest request;
 
   /**
-   * Provides the feature that the items in a request parameter changes all at once.
+   * Provides the feature that the item values in a request parameter changes all at once.
    * 
    * @param binder binder
    */
   @InitBinder
   public void initBinder(WebDataBinder binder) {
-    // 文字列項目の""をnullに変更。これにより、実際には数字だが””が来るなどを防げる。
+    // Change "" to null. This prevents java number properties (but String datatype in record class)
+    // receive "" from html. (item values always string in html)
     binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-    // Boolean項目で、offのときにnullでなくfalseとなるよう対応（redmine#323参照）
+
+    // Change "" / null to boolean value when html switch value is "" / null
     binder.registerCustomEditor(Boolean.class, new NullSupportCustomBooleanEditor());
   }
 
@@ -57,32 +56,14 @@ public abstract class SplibBaseController {
 
     @Override
     public void setAsText(@Nullable String text) throws IllegalArgumentException {
-      // checkboxでは以下は発生しないはずなのだが一応対処
+      // return false when submitted value is "" / null
       if (text == null || text.equals("") || text.equals("null")) {
-        setValue(null);
-        return;
+        setValue(false);
+
+      } else {
+        // setValue(Boolean.valueOf(text));
+        super.setAsText(text);
       }
-
-      text = text.trim();
-
-      // redmine #323対応により、複数の値がカンマ区切りで場合がある。その場合はtrueで返すのだが、
-      // #323の前提はonとoffがくることなので、そうでない場合はエラーとする。
-      List<String> list = Arrays.asList(text.split(","));
-      if (list.size() > 1) {
-        if (list.size() > 2) {
-          throw new RuntimeException("Unpresumable.");
-        }
-
-        Collections.sort(list);
-        if (!(list.get(0).equalsIgnoreCase("OFF") && list.get(1).equalsIgnoreCase("ON"))) {
-          throw new RuntimeException("Unpresumable.");
-        }
-
-        setValue(Boolean.TRUE);
-        return;
-      }
-
-      super.setAsText(text);
     }
   }
 }

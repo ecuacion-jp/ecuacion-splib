@@ -55,7 +55,8 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @Controller
 @Scope("prototype")
-@RequestMapping(value = {"/public/show", "/public/adminShow", "/account/show", "/admin/show"})
+@RequestMapping(value = {"/public/show", "/public/adminShow", "/account/show", "/admin/show",
+    "/ecuacion/public/show"})
 public class ShowPageController extends SplibBaseController {
 
   @Autowired
