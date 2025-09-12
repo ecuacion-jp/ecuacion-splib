@@ -20,7 +20,7 @@ package jp.ecuacion.splib.web.form;
  */
 public abstract class SplibEditForm extends SplibGeneralForm {
 
-  /** Stores whetherr insert or update. */
+  /** Stores whether the edit request is insert or update. */
   protected Boolean isInsert;
 
   public Boolean isInsert() {
