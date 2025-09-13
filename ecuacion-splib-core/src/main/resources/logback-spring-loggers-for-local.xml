@@ -34,6 +34,12 @@
 		<appender-ref ref="app-detail-appender" />
 	</logger>
 
+	<!-- 画面のアクセス先URLを表示するログ。これはapplogに出しておきたい。 -->
+	<logger name="org.springframework.security" level="${loglevel-security}">
+		<appender-ref ref="app-detail-appender" />
+		<appender-ref ref="app-console" />
+	</logger>
+
 	<!-- SQL logが、application.propertiesでloglevelを変更できそうに見えるが変更されないので抜き出しのためここで定義。 -->
 	<logger name="org.hibernate.SQL" level="${loglevel-sql}">
 		<appender-ref ref="app-console" />
