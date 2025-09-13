@@ -1421,7 +1421,7 @@
 				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
 				th:classappend="${(deleted != null && deleted) || @optUtil.hasKey(options, 'deleted')} ? 'text-deleted' : 'text-dark'">
 			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl')}">
-				<a th:href="${@optUtil.get(options, 'linkUrl')}" target="_blank">[[${value}]]</a>
+				<a th:href="${@optUtil.getValue(options, 'linkUrl')}" target="_blank">[[${value}]]</a>
 			</th:block>
 			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl') == false}">
 				[[${value}]]
