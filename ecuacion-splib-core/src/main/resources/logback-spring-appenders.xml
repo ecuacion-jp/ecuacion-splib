@@ -42,15 +42,16 @@
 			<fileNamePattern>${archivefile-path}-all-detail-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>
-		
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>${loglevel-spring}</level>
-		</filter>
-		
+				
 		<encoder>
 			<charset>UTF-8</charset>
 			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
+		
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>${loglevel-root}</level>
+		</filter>
+
 	</appender>
 
 	<appender name="app-detail-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
