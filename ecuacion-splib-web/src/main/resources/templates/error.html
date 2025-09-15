@@ -32,18 +32,21 @@
 </head>
 <body>
 	<div layout:fragment="base-content" th:remove="tag">
-		<form method="GET" th:action="@{/} + ${@propUtil.getValue('jp.ecuacion.splib.web.home-page')}">
-			 <div class="mt-2 ml-3">
-				<div th:replace="~{bootstrap/components :: subtitle(${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.systemError.title')}, '')}"></div>
-				<p>
-				[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.systemError.desc')}]]
-				</p>
-				<br>
-				<div style="text-align: center">
-					<td th:replace="~{bootstrap/components :: submitButton('systemError', ${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.systemError.button.gotoLoginPage')}, '')}"></td>
-				</div>
+		 <div class="mt-2 ml-3">
+			<div th:replace="~{bootstrap/components :: subtitle(${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.systemError.title')}, '')}"></div>
+			<p>
+			[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.systemError.desc')}]]
+			</p>
+			<br>
+			<div style="text-align: center">
+				<div th:replace="~{bootstrap/components :: scriptButton('systemError', 'jp.ecuacion.splib.web.systemError.button.gotoLoginPage', '')}"></div>
+				<script th:with="urlPathTmp=${@propUtil.getValue('jp.ecuacion.splib.web.home-page')},
+					urlPathWithOutContextPath=${#strings.startsWith(urlPathTmp, '/') ? urlPathTmp : '/' + urlPathTmp},
+					urlPath=@{${urlPathWithOutContextPath}}">
+				   document.getElementById('systemError').addEventListener('click', function() {location.href='[[${urlPath}]]';});
+				</script>
 			</div>
-		</form>
+		</div>
 	</div>
 </body>
 </html>
