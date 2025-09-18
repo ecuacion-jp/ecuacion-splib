@@ -17,9 +17,9 @@
 
 -->
 <!DOCTYPE xml>
-<configuration>
+<included>
 
 	<logger name="summary-logger" level="INFO">
 		<appender-ref ref="summary-appender" />
 	</logger>
-</configuration>
+</included>
