@@ -17,10 +17,10 @@
 
 -->
 <!DOCTYPE xml>
-<configuration>
+<included>
 
 	<logger name="summary-logger" level="INFO">
 		<appender-ref ref="app-console" />
 		<appender-ref ref="summary-appender" />
 	</logger>
-</configuration>
+</included>
