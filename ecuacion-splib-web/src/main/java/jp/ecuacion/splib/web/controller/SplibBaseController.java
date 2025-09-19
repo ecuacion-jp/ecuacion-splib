@@ -56,12 +56,19 @@ public abstract class SplibBaseController {
 
     @Override
     public void setAsText(@Nullable String text) throws IllegalArgumentException {
-      // return false when submitted value is "" / null
       if (text == null || text.equals("") || text.equals("null")) {
+        // return false when submitted value is "" / null
         setValue(false);
 
+      } else if (text.contains(",")) {
+        // The cheat written in the url below will create a value "off,on" ...
+        // https://stackoverflow.com/questions/1809494/post-unchecked-html-checkboxes
+        // 
+        // In that case the first value should be ignored.
+        String[] arr = text.split(",");
+        super.setAsText(arr[arr.length - 1]);
+
       } else {
-        // setValue(Boolean.valueOf(text));
         super.setAsText(text);
       }
     }
