@@ -820,8 +820,12 @@
 	</div>
 
 	<!--/* internalAllHtmlInputComponent. */-->
+	<!--/* options: 
+			- value			string	specifies 'value' attribute. Used to hide confidential strings.
+	*/-->
 	<div th:fragment="internalAllHtmlInputComponent(position)" th:remove="tag">
-		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}"
+		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" 
+				th:value="${@optUtil.hasKey(options, 'value') ? @msgUtil.getValue(#locale, @optUtil.getValue(options, 'value')) : inputValue}"
 				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{__${recordPropertyPathClass}__.getStringLength('__${propertyPathField}__')}"
 				th:classappend="${isReadOnly ? 'form-control-plaintext' : 'form-control'}
 						+ ' ' + ${position == 'right' ? 'text-end' : ''}
