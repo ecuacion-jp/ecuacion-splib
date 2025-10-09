@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.core.form.record;
+package jp.ecuacion.splib.core.record;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
-import jp.ecuacion.splib.core.form.record.SplibRecord;
+import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.form.record.SearchRecordInterface;
 import jp.ecuacion.splib.web.form.record.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.form.record.StringMatchingConditionBean.StringMatchingPatternEnum;

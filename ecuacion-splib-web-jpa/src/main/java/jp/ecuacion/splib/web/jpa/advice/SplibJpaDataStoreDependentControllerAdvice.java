@@ -15,7 +15,7 @@
  */
 package jp.ecuacion.splib.web.jpa.advice;
 
-import jp.ecuacion.splib.core.form.record.SplibRecord;
+import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.jpa.bean.SplibControllerAdviceInfoBean;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
 import jp.ecuacion.splib.web.advice.SplibDataStoreDependentControllerAdvice;

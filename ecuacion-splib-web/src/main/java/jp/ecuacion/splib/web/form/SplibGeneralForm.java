@@ -24,7 +24,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
-import jp.ecuacion.splib.core.form.record.SplibRecord;
+import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;

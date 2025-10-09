@@ -17,7 +17,7 @@ package jp.ecuacion.splib.web.form;
 
 import java.util.ArrayList;
 import java.util.List;
-import jp.ecuacion.splib.core.form.record.SplibRecord;
+import jp.ecuacion.splib.core.record.SplibRecord;
 
 /**
  * Stores data for list.

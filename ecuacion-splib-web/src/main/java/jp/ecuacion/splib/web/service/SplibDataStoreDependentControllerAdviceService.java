@@ -15,7 +15,7 @@
  */
 package jp.ecuacion.splib.web.service;
 
-import jp.ecuacion.splib.core.form.record.SplibRecord;
+import jp.ecuacion.splib.core.record.SplibRecord;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
