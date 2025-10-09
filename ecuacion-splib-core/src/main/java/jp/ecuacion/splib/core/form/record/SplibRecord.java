@@ -52,20 +52,21 @@ public abstract class SplibRecord {
   /**
    * Gets value.
    * 
-   * @param itemName itemName
+   * @param itemPropertyPath itemName
    * @return Object
    */
-  public Object getValue(String itemName) {
+  public Object getValue(String itemPropertyPath) {
     Object rtn = null;
 
     try {
-      if (itemName.contains(".")) {
-        String recordName = itemName.substring(0, itemName.indexOf("."));
-        String fieldName = itemName.substring(itemName.indexOf(".") + 1);
+      if (itemPropertyPath.contains(".")) {
+        String recordName = itemPropertyPath.substring(0, itemPropertyPath.indexOf("."));
+        String fieldName = itemPropertyPath.substring(itemPropertyPath.indexOf(".") + 1);
 
         Method m = this.getClass().getMethod("get" + StringUtils.capitalize(recordName));
 
-        // そもそもrelationのrecordの値がnullの場合は、それにgetValueするとNullPointerになるのでその前に返す
+        // In the case of relationRec == null NullPointerException occurs when getValue method is called, 
+        // so return null before it happens in that case.
         SplibRecord relationRec = (SplibRecord) m.invoke(this);
         if (relationRec == null) {
           return null;
@@ -74,8 +75,8 @@ public abstract class SplibRecord {
         rtn = (relationRec).getValue(fieldName);
 
       } else {
-        Method m = this.getClass().getMethod("get" + StringUtils.capitalize(itemName));
-        // Stringの場合とSplibJpaRecordの場合があるが、Objectで返すだけなので条件分岐は不要。
+        // The case that the value which is wanted to obtain is hold in this record.
+        Method m = this.getClass().getMethod("get" + StringUtils.capitalize(itemPropertyPath));
         rtn = m.invoke(this);
       }
 
