@@ -19,7 +19,7 @@ module jp.ecuacion.splib.core {
   exports jp.ecuacion.splib.core.constant;
   exports jp.ecuacion.splib.core.container;
   exports jp.ecuacion.splib.core.exceptionhandler;
-  exports jp.ecuacion.splib.core.form.record;
+  exports jp.ecuacion.splib.core.record;
   
   opens jp.ecuacion.splib.core.config to spring.core;
 

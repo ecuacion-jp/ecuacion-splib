@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.core.form.record;
+package jp.ecuacion.splib.core.record;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -65,8 +65,8 @@ public abstract class SplibRecord {
 
         Method m = this.getClass().getMethod("get" + StringUtils.capitalize(recordName));
 
-        // In the case of relationRec == null NullPointerException occurs when getValue method is called, 
-        // so return null before it happens in that case.
+        // In the case of relationRec == null NullPointerException occurs 
+        // when getValue method is called, so return null before it happens in that case.
         SplibRecord relationRec = (SplibRecord) m.invoke(this);
         if (relationRec == null) {
           return null;
