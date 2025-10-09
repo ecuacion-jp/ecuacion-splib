@@ -65,8 +65,8 @@ public abstract class SplibRecord {
 
         Method m = this.getClass().getMethod("get" + StringUtils.capitalize(recordName));
 
-        // In the case of relationRec == null NullPointerException occurs when getValue method is called, 
-        // so return null before it happens in that case.
+        // In the case of relationRec == null NullPointerException occurs 
+        // when getValue method is called, so return null before it happens in that case.
         SplibRecord relationRec = (SplibRecord) m.invoke(this);
         if (relationRec == null) {
           return null;
