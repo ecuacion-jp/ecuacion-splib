@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.form.record;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
-import jp.ecuacion.splib.core.form.record.SplibRecord;
+import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.bean.HtmlItem;
 
 /**

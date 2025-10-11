@@ -15,7 +15,7 @@
  */
 package jp.ecuacion.splib.web.advice;
 
-import jp.ecuacion.splib.core.form.record.SplibRecord;
+import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.service.SplibDataStoreDependentControllerAdviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
