@@ -106,7 +106,7 @@ public abstract class SplibExceptionHandler {
   }
 
   /*
-   * "{0}"がmessageに含まれる場合はitemName（複数項目ある場合は複数項目）で置き換える。
+   * Replace "{0}" in a message with item names.
    */
   @Nonnull
   private String addItemDisplayNames(@RequireNonnull String message,
@@ -132,7 +132,7 @@ public abstract class SplibExceptionHandler {
     boolean is1stTime = true;
     for (String itemNameKey : ObjectsUtil.requireNonNull(itemNameKeys)) {
 
-      // itemNameがmessages.propertiesにあったらそれに置き換える
+      // Replace itemNameKey with itemName if itemNameKey exists in messages.properties.
       if (PropertyFileUtil.hasItemName(itemNameKey)) {
         itemNameKey = PropertyFileUtil.getItemName(request.getLocale(), itemNameKey);
       }
@@ -237,7 +237,7 @@ public abstract class SplibExceptionHandler {
       exList.add((SingleAppException) exception);
     }
 
-    // exList内のexceptionを一つずつ処理
+    // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
 
       // propertyPaths
