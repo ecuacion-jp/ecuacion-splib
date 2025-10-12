@@ -251,15 +251,18 @@ public abstract class SplibGeneralForm {
 
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
-      String rootRecordFieldName = rootRecordField.getName();
+      String rootRecordName = rootRecordField.getName();
       RecordInterface rootRecord = (RecordInterface) getRootRecord(rootRecordField);
 
-      for (String notEmptyField : getRequiredFields(rootRecord, loginState, bean)) {
-        Object value = ((SplibRecord) rootRecord).getValue(notEmptyField);
+      for (String notEmptyItemPropertyPath : getRequiredFields(rootRecord, loginState, bean)) {
+        Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
           rtnSet.add(new ConstraintViolationBean(validationClass + ".message", validationClass,
-              this.getClass().getCanonicalName(), rootRecordFieldName + "." + notEmptyField));
+              this.getClass().getCanonicalName(),
+              rootRecordName + "." + notEmptyItemPropertyPath,
+              rootRecord.getHtmlItem(rootRecordName, notEmptyItemPropertyPath)
+                  .getItemNameKey(rootRecordName)));
         }
       }
     }
