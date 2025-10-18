@@ -42,19 +42,6 @@ public class HtmlItemString extends HtmlItem {
   }
 
   @Override
-  @Deprecated
-  public HtmlItemString required(boolean isRequired) {
-    return (HtmlItemString) super.required(isRequired);
-  }
-
-  @Override
-  @Deprecated
-  public HtmlItemString required(HtmlItemConditionKeyEnum authKind, String authString,
-      boolean isRequired) {
-    return (HtmlItemString) super.required(authKind, authString, isRequired);
-  }
-
-  @Override
   public HtmlItemString notEmpty() {
     return (HtmlItemString) super.notEmpty();
   }

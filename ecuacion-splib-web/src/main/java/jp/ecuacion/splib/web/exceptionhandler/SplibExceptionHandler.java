@@ -240,19 +240,23 @@ public abstract class SplibExceptionHandler {
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
 
-      // propertyPaths
-      List<String> itemPropertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
-          .map(itemPropertyPath -> StringUtils.uncapitalize(itemPropertyPath)).toList();
+      // // propertyPaths
+      // List<String> itemPropertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
+      // .map(itemPropertyPath -> StringUtils.uncapitalize(itemPropertyPath)).toList();
 
       // Add rootRecord plus dot(.) if BizLogicAppException
-      if (saex instanceof BizLogicAppException && itemPropertyPathList.size() > 0
-          && !itemPropertyPathList.get(0).startsWith(getController().getRootRecordName() + ".")) {
-        itemPropertyPathList = itemPropertyPathList.stream()
-            .map(path -> getController().getRootRecordName() + "." + path).toList();
+      List<String> recordPropertyPathList = new ArrayList<>();
+      if (saex instanceof BizLogicAppException) {
+        for (String itemPropertyPath : saex.getItemPropertyPaths()) {
+          if (!itemPropertyPath.startsWith(getController().getRootRecordName() + ".")) {
+            recordPropertyPathList
+                .add(getController().getRootRecordName() + "." + itemPropertyPath);
+          }
+        }
       }
 
       String[] itemPropertyPaths =
-          itemPropertyPathList.toArray(new String[itemPropertyPathList.size()]);
+          recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
 
       // message
       Boolean msgAtItem = Boolean.valueOf(PropertyFileUtil
@@ -270,7 +274,7 @@ public abstract class SplibExceptionHandler {
         for (String propertyPath : ObjectsUtil.requireNonNull(itemPropertyPaths)) {
           HtmlItem item =
               ((RecordInterface) getForms()[0].getRootRecord(getController().getRootRecordName()))
-                  .getHtmlItem(getController().getRootRecordName(), propertyPath);
+                  .getHtmlItem(propertyPath);
           itemNameKeyList.add(item.getItemNameKey(getController().getRootRecordName()));
         }
 
@@ -282,7 +286,9 @@ public abstract class SplibExceptionHandler {
     }
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
-    return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
+    return
+
+    appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
   }
 
   /**

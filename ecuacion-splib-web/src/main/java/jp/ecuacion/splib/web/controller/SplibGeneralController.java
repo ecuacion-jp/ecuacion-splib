@@ -762,7 +762,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     Set<String> keySetWithNotEmpty = new HashSet<>();
 
     for (ConstraintViolationBean cv : cvList) {
-      String key = cv.getFieldPropertyPaths()[0].toString();
+      String key = cv.getItemPropertyPaths()[0].toString();
       if (duplicateCheckMap.get(key) == null) {
         duplicateCheckMap.put(key, new HashSet<>());
       }
@@ -795,8 +795,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       @Override
       public int compare(ConstraintViolationBean f1, ConstraintViolationBean f2) {
         // 項目名で比較
-        int result = f1.getFieldPropertyPaths()[0].toString()
-            .compareTo(f2.getFieldPropertyPaths()[0].toString());
+        int result = f1.getItemPropertyPaths()[0].toString()
+            .compareTo(f2.getItemPropertyPaths()[0].toString());
         if (result != 0) {
           return result;
         }
