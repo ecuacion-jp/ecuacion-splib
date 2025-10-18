@@ -31,10 +31,10 @@
 		<version>3.5.6</version>
 	</parent>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 		<!-- maven-compiler-plugin referred properties (no need to plugin definition) -->
-		<maven.compiler.target>21</maven.compiler.target>
-		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>25</maven.compiler.target>
+		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
