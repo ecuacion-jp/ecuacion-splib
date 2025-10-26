@@ -19,7 +19,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.channels.OverlappingFileLockException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,14 +29,11 @@ import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
-import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
@@ -47,7 +43,6 @@ import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.form.record.RecordInterface;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,51 +98,6 @@ public abstract class SplibExceptionHandler {
   @Nonnull
   private Model getModel() {
     return (Model) request.getAttribute(SplibWebConstants.KEY_MODEL);
-  }
-
-  /*
-   * Replace "{0}" in a message with item names.
-   */
-  @Nonnull
-  private String addItemDisplayNames(@RequireNonnull String message,
-      @Nonnull String... itemNameKeys) {
-    if (message.contains("{0}")) {
-      message = MessageFormat.format(message,
-          getItemDisplayNames(ObjectsUtil.requireSizeNonZero(itemNameKeys)));
-    }
-
-    return message;
-  }
-
-  @Nonnull
-  private String getItemDisplayNames(@RequireNonnull String[] itemNameKeys) {
-    StringBuilder sb = new StringBuilder();
-    final String prependParenthesis = PropertyFileUtil.getMessage(request.getLocale(),
-        "jp.ecuacion.splib.web.common.message.itemName.prependParenthesis");
-    final String appendParenthesis = PropertyFileUtil.getMessage(request.getLocale(),
-        "jp.ecuacion.splib.web.common.message.itemName.appendParenthesis");
-    final String separator = PropertyFileUtil.getMessage(request.getLocale(),
-        "jp.ecuacion.splib.web.common.message.itemName.separator");
-
-    boolean is1stTime = true;
-    for (String itemNameKey : ObjectsUtil.requireNonNull(itemNameKeys)) {
-
-      // Replace itemNameKey with itemName if itemNameKey exists in messages.properties.
-      if (PropertyFileUtil.hasItemName(itemNameKey)) {
-        itemNameKey = PropertyFileUtil.getItemName(request.getLocale(), itemNameKey);
-      }
-
-      if (is1stTime) {
-        is1stTime = false;
-
-      } else {
-        sb.append(separator);
-      }
-
-      sb.append(prependParenthesis + itemNameKey + appendParenthesis);
-    }
-
-    return sb.toString();
   }
 
   private @Nonnull ModelAndView appExceptionFinalHandler(@Nonnull SplibGeneralController<?> ctrl,
@@ -247,9 +197,6 @@ public abstract class SplibExceptionHandler {
       String message =
           ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale(), needsItemName).get(0);
 
-      // propertyPaths
-      String[] itemPropertyPaths = saex.getItemPropertyPaths();
-
       List<String> recordPropertyPathList = new ArrayList<>();
       for (String itemPropertyPath : saex.getItemPropertyPaths()) {
         if (!itemPropertyPath.startsWith(getController().getRootRecordName() + ".")) {
@@ -262,23 +209,6 @@ public abstract class SplibExceptionHandler {
 
       String[] recordPropertyPaths =
           recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
-
-      if (saex instanceof ValidationAppException) {
-        // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
-        // それでも{0}が残っている場合はfieldsの値を元に項目名を埋める。
-        // BizLogicAppExceptionの場合はこのロジックに入らず「{0}」のメッセージがそのまま出てもらって構わない
-        // （システムエラーになるのは微妙）のでValidationAppExceptionに限定する。
-        List<String> itemNameKeyList = new ArrayList<>();
-        for (String propertyPath : ObjectsUtil.requireNonNull(itemPropertyPaths)) {
-          HtmlItem item =
-              ((RecordInterface) getForms()[0].getRootRecord(getController().getRootRecordName()))
-                  .getHtmlItem(propertyPath);
-          itemNameKeyList.add(item.getItemNameKey(getController().getRootRecordName()));
-        }
-
-        message = addItemDisplayNames(message,
-            itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
-      }
 
       messagesBean.setErrorMessage(message, recordPropertyPaths);
     }
