@@ -133,7 +133,7 @@ public class HtmlItem extends EclibItem {
   }
 
   /**
-   * Sets isRequiredOnSearch with the conditions of 
+   * Sets isNotEmptyOnSearch with the conditions of 
    *     {@code HtmlItemConditionKeyEnum}, {@code authString}.
    * 
    * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
