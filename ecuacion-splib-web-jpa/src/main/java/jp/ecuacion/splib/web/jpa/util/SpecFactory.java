@@ -40,6 +40,7 @@ public class SpecFactory<T extends EclibEntity> {
    * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意.
    * fieldは"name", "parentRecord.id", "parentRecord.childRecord.id"など関連のrecordを含めて記載可能。
    */
+  @SuppressWarnings("unused")
   public Specification<T> equals(String field, Object value) {
 
     return (root, query, cb) -> {
@@ -73,6 +74,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
+  @SuppressWarnings("unused")
   public Specification<T> stringEqualsIgnoringCase(String entity, String field, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField =
@@ -100,6 +102,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
+  @SuppressWarnings("unused")
   public Specification<T> stringEquals(String entity, String field, String value,
       boolean ignoresCase) {
     return (root, query, cb) -> {
@@ -131,6 +134,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
+  @SuppressWarnings("unused")
   public Specification<T> stringNotEquals(String entity, String field, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField =
@@ -302,6 +306,7 @@ public class SpecFactory<T extends EclibEntity> {
     return stringEndsWith(entity, field, value, true);
   }
 
+  @SuppressWarnings("unused")
   private Specification<T> stringSearchPattern(String entity, String field, String value,
       String criteriaValue, boolean ignoresCase) {
     return (root, query, cb) -> {
@@ -337,6 +342,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
+  @SuppressWarnings("unused")
   public Specification<T> localDateEqualToOrLessThan(String entity, String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       Expression<LocalDate> criteriaField =
@@ -353,6 +359,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
+  @SuppressWarnings("unused")
   public Specification<T> localDateEqualToOrGreaterThan(String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       return cb.or(cb.equal(root.get(field).as(LocalDate.class), date),
@@ -367,6 +374,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
+  @SuppressWarnings("unused")
   public Specification<T> localDateEqualToOrGreaterThan(String entity, String field,
       LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
