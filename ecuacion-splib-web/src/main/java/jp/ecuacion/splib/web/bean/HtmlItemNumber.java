@@ -39,19 +39,6 @@ public class HtmlItemNumber extends HtmlItem {
   public HtmlItemNumber itemNameKey(String itemNameKey) {
     return (HtmlItemNumber) super.itemNameKey(itemNameKey);
   }
-  
-  @Override
-  @Deprecated
-  public HtmlItemNumber required(boolean isRequired) {
-    return (HtmlItemNumber) super.required(isRequired);
-  }
-
-  @Override
-  @Deprecated
-  public HtmlItemNumber required(HtmlItemConditionKeyEnum authKind, String authString,
-      boolean isRequired) {
-    return (HtmlItemNumber) super.required(authKind, authString, isRequired);
-  }
 
   @Override
   public HtmlItemNumber notEmpty() {
