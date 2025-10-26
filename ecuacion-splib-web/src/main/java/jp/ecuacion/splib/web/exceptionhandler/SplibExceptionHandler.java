@@ -240,30 +240,28 @@ public abstract class SplibExceptionHandler {
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
 
-      // // propertyPaths
-      // List<String> itemPropertyPathList = Arrays.asList(saex.getItemPropertyPaths()).stream()
-      // .map(itemPropertyPath -> StringUtils.uncapitalize(itemPropertyPath)).toList();
-
-      // Add rootRecord plus dot(.) if BizLogicAppException
-      List<String> recordPropertyPathList = new ArrayList<>();
-      if (saex instanceof BizLogicAppException) {
-        for (String itemPropertyPath : saex.getItemPropertyPaths()) {
-          if (!itemPropertyPath.startsWith(getController().getRootRecordName() + ".")) {
-            recordPropertyPathList
-                .add(getController().getRootRecordName() + "." + itemPropertyPath);
-          }
-        }
-      }
-
-      String[] itemPropertyPaths =
-          recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
-
       // message
       Boolean msgAtItem = Boolean.valueOf(PropertyFileUtil
           .getApplication("jp.ecuacion.splib.web.process-result-message.shown-at-each-item"));
       boolean needsItemName = msgAtItem == null ? true : !msgAtItem;
       String message =
           ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale(), needsItemName).get(0);
+
+      // propertyPaths
+      String[] itemPropertyPaths = saex.getItemPropertyPaths();
+
+      List<String> recordPropertyPathList = new ArrayList<>();
+      for (String itemPropertyPath : saex.getItemPropertyPaths()) {
+        if (!itemPropertyPath.startsWith(getController().getRootRecordName() + ".")) {
+          recordPropertyPathList.add(getController().getRootRecordName() + "." + itemPropertyPath);
+
+        } else {
+          recordPropertyPathList.add(itemPropertyPath);
+        }
+      }
+
+      String[] recordPropertyPaths =
+          recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
 
       if (saex instanceof ValidationAppException) {
         // messageは既にmessage.propertiesのメッセージを取得し、パラメータも埋めた状態だが、
@@ -282,13 +280,11 @@ public abstract class SplibExceptionHandler {
             itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
       }
 
-      messagesBean.setErrorMessage(message, itemPropertyPaths);
+      messagesBean.setErrorMessage(message, recordPropertyPaths);
     }
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
-    return
-
-    appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
+    return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
   }
 
   /**
