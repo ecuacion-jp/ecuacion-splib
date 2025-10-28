@@ -56,7 +56,9 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
    *     But it's not enough because when you call {@code save()}, 
    *     updates derived from "dirty checking" processed right before the hook procedure processed.
    *     That's why in this method "detach()" firstly to disable "dirty checking",
-   *     then save to prevent key duplication on update.
+   *     then save to prevent key duplication on update.<br><br>
+   *     Strictly speaking, {@code detach()} is not needed on insert, 
+   *     but "insertOrUpdate" method is created for simplicity.
    * </p>
    */
   protected <T> void insertOrUpdate(SplibRepository<T, Long> repo, T e) {
