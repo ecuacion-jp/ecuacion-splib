@@ -16,8 +16,6 @@
 package jp.ecuacion.splib.web.jpa.controller;
 
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jp.ecuacion.splib.web.controller.SplibSearchListController;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
@@ -39,9 +37,6 @@ public abstract class SplibSearchListJpaController
     S extends SplibSearchListJpaService<FST, FLT, ?>> 
     extends SplibSearchListController<FST, FLT, S> {
   //@formatter:on
-
-  @PersistenceContext
-  private EntityManager em;
 
   /**
    * Construct a new instance with {@code function}.
@@ -65,7 +60,6 @@ public abstract class SplibSearchListJpaController
   @Override
   public String page(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    getService().setEntityManager(em);
 
     return super.page(model, searchForm, listForm, loginUser);
   }

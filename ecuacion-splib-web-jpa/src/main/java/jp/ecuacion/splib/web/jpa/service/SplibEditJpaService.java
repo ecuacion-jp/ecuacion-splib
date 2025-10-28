@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
@@ -31,9 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 public abstract class SplibEditJpaService<F extends SplibEditForm, E extends EclibEntity>
     extends SplibEditService<F> implements SplibJpaServiceInterface<E> {
 
+  @PersistenceContext
   protected EntityManager em;
-
-  public void setEntityManager(EntityManager em) {
-    this.em = em;
-  }
 }
