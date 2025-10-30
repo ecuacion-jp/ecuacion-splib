@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.web.form;
 
 import jakarta.validation.Valid;
-import jp.ecuacion.splib.web.form.record.LoginRecord;
+import jp.ecuacion.splib.web.record.LoginRecord;
 
 /**
  * Stores data for login.

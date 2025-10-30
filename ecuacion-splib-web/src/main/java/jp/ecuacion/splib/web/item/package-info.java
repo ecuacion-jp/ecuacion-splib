@@ -13,23 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form;
-
-import jp.ecuacion.splib.web.record.ConfigRecord;
 
 /**
- * Stores data for config.
+ * Provides Items and ItemContainers.
  */
-public class ConfigForm extends SplibGeneralForm {
-  
-  private ConfigRecord config = new ConfigRecord();
-
-  public ConfigRecord getConfig() {
-    return config;
-  }
-
-  public void setConfig(ConfigRecord config) {
-    this.config = config;
-  }
-  
-}
+package jp.ecuacion.splib.web.item;
