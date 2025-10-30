@@ -25,7 +25,8 @@ module jp.ecuacion.splib.web {
   exports jp.ecuacion.splib.web.exception;
   exports jp.ecuacion.splib.web.exceptionhandler;
   exports jp.ecuacion.splib.web.form;
-  exports jp.ecuacion.splib.web.form.record;
+  exports jp.ecuacion.splib.web.item;
+  exports jp.ecuacion.splib.web.record;
   exports jp.ecuacion.splib.web.service;
   exports jp.ecuacion.splib.web.util;
 

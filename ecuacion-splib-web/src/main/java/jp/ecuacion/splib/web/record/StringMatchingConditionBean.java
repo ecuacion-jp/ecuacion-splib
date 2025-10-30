@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form.record;
+package jp.ecuacion.splib.web.record;
 
 /**
  * Stores string match condition for search function.

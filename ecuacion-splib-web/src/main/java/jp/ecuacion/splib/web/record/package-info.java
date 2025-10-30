@@ -17,4 +17,4 @@
 /**
  * Provides records.
  */
-package jp.ecuacion.splib.web.form.record;
+package jp.ecuacion.splib.web.record;

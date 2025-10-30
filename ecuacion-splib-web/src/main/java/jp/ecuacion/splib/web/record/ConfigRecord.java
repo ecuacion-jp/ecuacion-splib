@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form.record;
+package jp.ecuacion.splib.web.record;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.bean.HtmlItem;
+import jp.ecuacion.splib.web.item.SplibWebItemContainer;
 
 /**
  * Is a record for configController.
  */
-public class ConfigRecord extends SplibRecord implements RecordInterface {
+public class ConfigRecord extends SplibRecord implements SplibWebItemContainer {
   private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 
   @Override

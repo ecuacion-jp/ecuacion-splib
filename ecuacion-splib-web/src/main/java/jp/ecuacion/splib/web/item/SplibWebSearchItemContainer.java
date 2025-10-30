@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form.record;
+package jp.ecuacion.splib.web.item;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -22,11 +22,12 @@ import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.HtmlItemString;
+import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
 
 /**
  * Has features related web environment and search function.
  */
-public interface SearchRecordInterface extends RecordInterface {
+public interface SplibWebSearchItemContainer extends SplibWebItemContainer {
 
   /** 項目ごとのsearch patternを返す。全項目を設定する必要はなく、検索で使用する項目のみで良い. */
   default Map<String, StringMatchingConditionBean> getSearchPatterns() {

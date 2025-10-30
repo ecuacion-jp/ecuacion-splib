@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form.record;
+package jp.ecuacion.splib.web.item;
 
 import java.util.Arrays;
 import java.util.List;
-import jp.ecuacion.lib.core.record.EclibRecord;
-import jp.ecuacion.lib.core.record.item.EclibItem;
+import jp.ecuacion.lib.core.item.EclibItem;
+import jp.ecuacion.lib.core.item.EclibItemContainer;
 import jp.ecuacion.splib.web.bean.HtmlItem;
 import jp.ecuacion.splib.web.bean.HtmlItemNumber;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
@@ -27,7 +27,7 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 /**
  * Has features related web environment.
  */
-public interface RecordInterface extends EclibRecord {
+public interface SplibWebItemContainer extends EclibItemContainer {
 
   /**
    * Returns HtmlItem.
