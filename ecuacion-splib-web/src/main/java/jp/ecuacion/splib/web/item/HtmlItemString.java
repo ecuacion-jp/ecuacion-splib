@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.bean;
+package jp.ecuacion.splib.web.item;
 
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean.StringMatchingPatternEnum;

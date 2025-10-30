@@ -19,7 +19,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.record.SplibRecord;
-import jp.ecuacion.splib.web.bean.HtmlItem;
+import jp.ecuacion.splib.web.item.HtmlItem;
 import jp.ecuacion.splib.web.item.SplibWebItemContainer;
 
 /**
