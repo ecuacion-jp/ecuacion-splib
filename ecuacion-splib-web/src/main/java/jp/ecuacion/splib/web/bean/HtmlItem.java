@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.bean;
 import java.util.ArrayList;
 import java.util.List;
 import jp.ecuacion.lib.core.annotation.RequireNonempty;
-import jp.ecuacion.lib.core.record.item.EclibItem;
+import jp.ecuacion.lib.core.item.EclibItem;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
 /**

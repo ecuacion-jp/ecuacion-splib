@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form.record;
+package jp.ecuacion.splib.web.record;
 
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.bean.HtmlItem;
+import jp.ecuacion.splib.web.item.SplibWebItemContainer;
 
 /**
  * Is a record for loginController.
  */
-public class LoginRecord extends SplibRecord implements RecordInterface {
+public class LoginRecord extends SplibRecord implements SplibWebItemContainer {
 
   @Override
   public HtmlItem[] getHtmlItems() {
