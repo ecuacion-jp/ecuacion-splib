@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -48,6 +49,7 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
   @Autowired
   private HttpServletRequest request;
 
+  @PersistenceContext
   protected EntityManager em;
 
   //
@@ -67,10 +69,6 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
   protected LocalDate localDate(String date) {
     return (date == null || date.equals("")) ? null
         : LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-  }
-
-  public void setEntityManager(EntityManager em) {
-    this.em = em;
   }
 
   /**

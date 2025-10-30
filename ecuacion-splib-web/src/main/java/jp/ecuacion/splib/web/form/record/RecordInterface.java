@@ -122,36 +122,7 @@ public interface RecordInterface extends EclibRecord {
    * @param bean bean
    * @return {@code List<String>}
    */
-  @Deprecated
-  default List<String> getRequiredFields(String loginState, RolesAndAuthoritiesBean bean) {
-    return Arrays.asList(getHtmlItems()).stream()
-        .filter(item -> item.getIsNotEmpty(loginState, bean))
-        .map(item -> item.getItemPropertyPath()).toList();
-  }
-
-  /**
-   * Returns whether isNotEmpty or not.
-   * 
-   * @param fieldId fieldId
-   * @param loginState loginState
-   * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
-   * @return boolean
-   */
-  @Deprecated
-  default boolean isRequired(String fieldId, String loginState, String rolesOrAuthoritiesString) {
-    SplibSecurityUtil.RolesAndAuthoritiesBean bean =
-        new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
-    return getRequiredFields(loginState, bean).contains(fieldId);
-  }
-
-  /**
-   * Obtrains NotEmpty fields.
-   * 
-   * @param loginState loginState
-   * @param bean bean
-   * @return {@code List<String>}
-   */
-  default List<String> getRequiredFieldsOnSearch(String loginState, RolesAndAuthoritiesBean bean) {
+  default List<String> getNotEmptyOnSearchFields(String loginState, RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
         .filter(item -> item.getIsNotEmptyOnSearch(loginState, bean))
         .map(item -> item.getItemPropertyPath()).toList();
@@ -165,10 +136,10 @@ public interface RecordInterface extends EclibRecord {
    * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
    * @return boolean
    */
-  default boolean isRequiredOnSearch(String fieldId, String loginState,
+  default boolean isNotEmptyOnSearch(String fieldId, String loginState,
       String rolesOrAuthoritiesString) {
     SplibSecurityUtil.RolesAndAuthoritiesBean bean =
         new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
-    return getRequiredFieldsOnSearch(loginState, bean).contains(fieldId);
+    return getNotEmptyOnSearchFields(loginState, bean).contains(fieldId);
   }
 }

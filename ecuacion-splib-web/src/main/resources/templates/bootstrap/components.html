@@ -1180,7 +1180,7 @@
 	<div th:fragment="internalSearchInputCommonComponent(itemPropertyPath, searchInputContents, labelPostfix, options)" th:remove="tag">
 		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentSearchInputCommonComponent}, ~{bootstrap/components :: nullFragment}, 
-		*{__${rootRecordName}__.isRequiredOnSearch('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
+		*{__${rootRecordName}__.isNotEmptyOnSearch('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
 		true, true, ${labelPostfix}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentSearchInputCommonComponent" th:remove="tag">
