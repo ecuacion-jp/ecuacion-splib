@@ -20,8 +20,6 @@ import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
-import jp.ecuacion.splib.web.bean.HtmlItem;
-import jp.ecuacion.splib.web.bean.HtmlItemString;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
 
 /**
