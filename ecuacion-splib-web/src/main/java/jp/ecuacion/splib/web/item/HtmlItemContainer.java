@@ -31,7 +31,7 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 /**
  * Has features related web environment.
  */
-public interface SplibWebItemContainer extends EclibItemContainer {
+public interface HtmlItemContainer extends EclibItemContainer {
 
   /**
    * Returns HtmlItem.
