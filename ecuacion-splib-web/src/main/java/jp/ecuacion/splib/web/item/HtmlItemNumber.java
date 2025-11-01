@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.web.item;
 
 /**
- * Is used for number field.
+ * Is used for number item.
  */
 public class HtmlItemNumber extends HtmlItem {
 

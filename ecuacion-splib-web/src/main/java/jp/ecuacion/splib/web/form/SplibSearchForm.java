@@ -328,8 +328,8 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   @Override
-  protected List<String> getNotEmptyFields(SplibWebItemContainer rootRecord, String loginState,
-      RolesAndAuthoritiesBean bean) {
-    return rootRecord.getNotEmptyOnSearchFields(loginState, bean);
+  protected List<String> getNotEmptyItemPropertyPathList(SplibWebItemContainer rootRecord,
+      String loginState, RolesAndAuthoritiesBean bean) {
+    return rootRecord.getNotEmptyOnSearchItemPropertyPathList(loginState, bean);
   }
 }

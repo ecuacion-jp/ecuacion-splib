@@ -30,12 +30,12 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 public class HtmlItem extends EclibItem {
 
   /**
-   * Shows whether the field allows empty.
+   * Shows whether an item allows empty.
    * 
    * <p>When this value is {@code true}, required validation is executed on server side,
-   *     and shows "required" mark on the component in the html page.</p>
+   *     and "required" mark is shown on the component in the html page.</p>
    * 
-   * <p>It doesn't depend on the data type.</p>
+   * <p>It doesn't depend on the data type. You can use this for number or any other data type.</p>
    * 
    * <p>The default value is preset: {@code false}. So the value becomes {@code false} 
    *     if you don't set this value.</p>
@@ -54,10 +54,8 @@ public class HtmlItem extends EclibItem {
   public HtmlItem(String itemPropertyPath) {
     super(itemPropertyPath);
   }
-
-  /**
-   * Sets itemNameKey and returns self for method chain.
-   */
+  
+  @Override
   public HtmlItem itemNameKey(@RequireNonempty String itemNameKey) {
     return (HtmlItem) super.itemNameKey(itemNameKey);
   }
@@ -73,9 +71,7 @@ public class HtmlItem extends EclibItem {
   }
 
   /**
-   * Sets isNotEmpty.
-   * 
-   * <p>Set {@code true} when you want to the item is not empty.</p>
+   * Sets isNotEmpty to {@code isNotEmpty}.
    * 
    * @param isNotEmpty isNotEmpty
    * @return HtmlItem
@@ -86,7 +82,8 @@ public class HtmlItem extends EclibItem {
   }
 
   /**
-   * Sets isNotEmpty with the conditions of {@code HtmlItemConditionKeyEnum}, {@code authString}.
+   * Sets isNotEmpty to {@code isNotEmpty} 
+   *     with the conditions of {@code HtmlItemConditionKeyEnum}, {@code authString}.
    * 
    * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
    * 
