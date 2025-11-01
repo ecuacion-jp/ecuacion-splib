@@ -19,7 +19,7 @@ import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean.StringMatchingPatternEnum;
 
 /**
- * Is used for string field.
+ * Is used for string item.
  */
 public class HtmlItemString extends HtmlItem {
 
@@ -29,7 +29,7 @@ public class HtmlItemString extends HtmlItem {
    * Constructs a new instance.
    * 
    * @see HtmlItem
-   * @param itemPropertyPath propertyPath
+   * @param itemPropertyPath itemPropertyPath
    */
   public HtmlItemString(String itemPropertyPath) {
     super(itemPropertyPath);

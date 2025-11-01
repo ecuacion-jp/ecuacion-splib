@@ -254,7 +254,8 @@ public abstract class SplibGeneralForm {
       String rootRecordName = rootRecordField.getName();
       SplibWebItemContainer rootRecord = (SplibWebItemContainer) getRootRecord(rootRecordField);
 
-      for (String notEmptyItemPropertyPath : getNotEmptyFields(rootRecord, loginState, bean)) {
+      for (String notEmptyItemPropertyPath : getNotEmptyItemPropertyPathList(rootRecord, loginState,
+          bean)) {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
@@ -273,8 +274,8 @@ public abstract class SplibGeneralForm {
    * <p>This became a independent method because some form doesn't use "notEmpty()".
    *     For example, searchForm uses "notEmptyOnSearch()", not "notEmpty()".</p>
    */
-  protected List<String> getNotEmptyFields(SplibWebItemContainer rootRecord, String loginState,
-      RolesAndAuthoritiesBean bean) {
-    return rootRecord.getNotEmptyFields(loginState, bean);
+  protected List<String> getNotEmptyItemPropertyPathList(SplibWebItemContainer rootRecord,
+      String loginState, RolesAndAuthoritiesBean bean) {
+    return rootRecord.getNotEmptyItemPropertyPathList(loginState, bean);
   }
 }
