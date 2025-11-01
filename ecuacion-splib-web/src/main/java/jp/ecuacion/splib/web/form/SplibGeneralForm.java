@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
-import jp.ecuacion.splib.web.item.SplibWebItemContainer;
+import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.springframework.validation.BindingResult;
 
@@ -252,7 +252,7 @@ public abstract class SplibGeneralForm {
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
       String rootRecordName = rootRecordField.getName();
-      SplibWebItemContainer rootRecord = (SplibWebItemContainer) getRootRecord(rootRecordField);
+      HtmlItemContainer rootRecord = (HtmlItemContainer) getRootRecord(rootRecordField);
 
       for (String notEmptyItemPropertyPath : getNotEmptyItemPropertyPathList(rootRecord, loginState,
           bean)) {
@@ -274,7 +274,7 @@ public abstract class SplibGeneralForm {
    * <p>This became a independent method because some form doesn't use "notEmpty()".
    *     For example, searchForm uses "notEmptyOnSearch()", not "notEmpty()".</p>
    */
-  protected List<String> getNotEmptyItemPropertyPathList(SplibWebItemContainer rootRecord,
+  protected List<String> getNotEmptyItemPropertyPathList(HtmlItemContainer rootRecord,
       String loginState, RolesAndAuthoritiesBean bean) {
     return rootRecord.getNotEmptyItemPropertyPathList(loginState, bean);
   }

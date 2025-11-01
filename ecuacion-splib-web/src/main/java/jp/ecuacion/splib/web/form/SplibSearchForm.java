@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
-import jp.ecuacion.splib.web.item.SplibWebItemContainer;
+import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -328,7 +328,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   @Override
-  protected List<String> getNotEmptyItemPropertyPathList(SplibWebItemContainer rootRecord,
+  protected List<String> getNotEmptyItemPropertyPathList(HtmlItemContainer rootRecord,
       String loginState, RolesAndAuthoritiesBean bean) {
     return rootRecord.getNotEmptyOnSearchItemPropertyPathList(loginState, bean);
   }

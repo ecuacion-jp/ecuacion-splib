@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.record.SplibRecord;
-import jp.ecuacion.splib.web.item.SplibWebItemContainer;
+import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean.StringMatchingPatternEnum;
 import org.apache.commons.lang3.StringUtils;
@@ -394,7 +394,7 @@ public class SpecFactory<T extends EclibEntity> {
   public List<Specification<T>> addStringSearchConditions(SplibRecord rec) {
     List<Specification<T>> list = new ArrayList<>();
 
-    for (Map.Entry<String, StringMatchingConditionBean> entry : ((SplibWebItemContainer) rec)
+    for (Map.Entry<String, StringMatchingConditionBean> entry : ((HtmlItemContainer) rec)
         .getSearchPatterns().entrySet()) {
       String key = entry.getKey();
       String entity = key.contains(".") ? key.substring(0, key.indexOf(".")) : null;
