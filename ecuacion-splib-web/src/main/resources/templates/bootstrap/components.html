@@ -862,7 +862,10 @@
 				onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
 			<option th:if="${!@optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
 			<th:block th:each="pair : ${pairs}">
-				<option th:value="${pair[0]}" th:selected="${pair[0] == inputValue}">[[${pair[1]}]]</option>
+				<!--/* in case of select from boolean, inputValue (received from form) is boolean.
+				       since 'true' == true is false in thymeleaf, data type of inputValue is changed to string
+				       by #strings.trim(). */-->
+				<option th:value="${pair[0]}" th:selected="${pair[0] == #strings.trim(inputValue)}">[[${pair[1]}]]</option>
 			</th:block>
 		</select>
 	</div>
