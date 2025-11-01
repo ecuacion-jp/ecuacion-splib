@@ -310,12 +310,12 @@ public class SpecFactory<T extends EclibEntity> {
   }
 
   /**
-   * add all the search conditions with string values.
+   * add all the search conditions which are sure how to search from the kind of HtmlItem.
    * 
    * @param rec rec
    * @return {@code List<Specification<T>>}
    */
-  public List<Specification<T>> addStringSearchConditions(SplibRecord rec) {
+  public List<Specification<T>> addExplicitSearchConditions(SplibRecord rec) {
     List<Specification<T>> list = new ArrayList<>();
 
     for (HtmlItem item : ((HtmlItemContainer) rec).getHtmlItems()) {
@@ -326,7 +326,7 @@ public class SpecFactory<T extends EclibEntity> {
         value = (Object) rec.getValue(propertyPath);
       } catch (EclibRuntimeException ex) {
         if (ex.getCause() instanceof NoSuchMethodException) {
-          // items with unexistent itemPropertyPath is allowed. 
+          // items with unexistent itemPropertyPath is allowed.
           // no exception thrown and skip the rest.
           continue;
 
@@ -334,7 +334,7 @@ public class SpecFactory<T extends EclibEntity> {
           throw ex;
         }
       }
-      
+
       if (item instanceof HtmlItemString) {
         HtmlItemString stringItem = ((HtmlItemString) item);
 
