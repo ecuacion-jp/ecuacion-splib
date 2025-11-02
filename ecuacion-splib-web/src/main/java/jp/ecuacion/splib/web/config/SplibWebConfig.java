@@ -17,10 +17,13 @@ package jp.ecuacion.splib.web.config;
 
 import jakarta.servlet.SessionTrackingMode;
 import java.util.Collections;
+import jp.ecuacion.splib.web.interceptor.LoggingInterceptor;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Provides configs for web.
@@ -29,13 +32,10 @@ import org.springframework.context.annotation.Configuration;
  *     to avoid jsessionId from emerging in url.</p>
  */
 @Configuration
-@ComponentScan(basePackages = "jp.ecuacion.splib.core.config"
-    + ",jp.ecuacion.splib.web.advice"
-    + ",jp.ecuacion.splib.web.controller"
-    + ",jp.ecuacion.splib.web.service"
-    + ",jp.ecuacion.splib.web.util"
-  )
-public class SplibWebConfig {
+@ComponentScan(basePackages = "jp.ecuacion.splib.core.config" + ",jp.ecuacion.splib.web.advice"
+    + ",jp.ecuacion.splib.web.controller" + ",jp.ecuacion.splib.web.service"
+    + ",jp.ecuacion.splib.web.util")
+public class SplibWebConfig implements WebMvcConfigurer {
 
   /*
    * Sometimes ";" + jsessionId summgles into urls, spring detects unknown character ";"
@@ -60,5 +60,15 @@ public class SplibWebConfig {
     };
 
     return initializer;
+  }
+
+  @Bean
+  LoggingInterceptor logInterceptor() {
+    return new LoggingInterceptor();
+  }
+
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(logInterceptor());
   }
 }
