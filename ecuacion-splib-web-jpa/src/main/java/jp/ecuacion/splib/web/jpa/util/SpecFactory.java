@@ -17,14 +17,17 @@ package jp.ecuacion.splib.web.jpa.util;
 
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.record.SplibRecord;
-import jp.ecuacion.splib.web.item.SplibWebSearchItemContainer;
-import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
+import jp.ecuacion.splib.web.item.HtmlItem;
+import jp.ecuacion.splib.web.item.HtmlItemContainer;
+import jp.ecuacion.splib.web.item.HtmlItemSelect;
+import jp.ecuacion.splib.web.item.HtmlItemString;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean.StringMatchingPatternEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
@@ -41,15 +44,10 @@ public class SpecFactory<T extends EclibEntity> {
    * fieldは"name", "parentRecord.id", "parentRecord.childRecord.id"など関連のrecordを含めて記載可能。
    */
   @SuppressWarnings("unused")
-  public Specification<T> equals(String field, Object value) {
+  public Specification<T> equals(String propertyPath, Object value) {
 
     return (root, query, cb) -> {
-      // entityの"."の区切り分ループ
-      String[] entities = field.split("\\.");
-      Path<?> path = root;
-      for (int i = 0; i < entities.length; i++) {
-        path = path.get(entities[i]);
-      }
+      Path<?> path = getPath(root, propertyPath, value);
 
       return (value == null || (value instanceof String && ((String) value).equals("")) ? null
           : cb.equal(path, value));
@@ -59,26 +57,14 @@ public class SpecFactory<T extends EclibEntity> {
   /**
    * Returns Specification for stringEqualsIgnoringCase.
    * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  public Specification<T> stringEqualsIgnoringCase(String field, String value) {
-    return stringEqualsIgnoringCase(null, field, value);
-  }
-
-  /**
-   * Returns Specification for stringEqualsIgnoringCase.
-   * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
   @SuppressWarnings("unused")
-  public Specification<T> stringEqualsIgnoringCase(String entity, String field, String value) {
+  public Specification<T> stringEqualsIgnoringCase(String propertyPath, String value) {
     return (root, query, cb) -> {
-      Expression<String> criteriaField =
-          entity == null ? root.get(field) : root.get(entity).get(field);
+      Expression<String> criteriaField = getPath(root, propertyPath, value);
       return StringUtils.isEmpty(value) ? null
           : cb.equal(cb.upper(criteriaField), value.toUpperCase());
     };
@@ -87,27 +73,14 @@ public class SpecFactory<T extends EclibEntity> {
   /**
    * Returns Specification for stringEquals.
    * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  public Specification<T> stringEquals(String field, String value, boolean ignoresCase) {
-    return stringEquals(null, field, value, ignoresCase);
-  }
-
-  /**
-   * Returns Specification for stringEquals.
-   * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
   @SuppressWarnings("unused")
-  public Specification<T> stringEquals(String entity, String field, String value,
-      boolean ignoresCase) {
+  public Specification<T> stringEquals(String propertyPath, String value, boolean ignoresCase) {
     return (root, query, cb) -> {
-      Expression<String> criteriaFieldTmp =
-          entity == null ? root.get(field) : root.get(entity).get(field);
+      Expression<String> criteriaFieldTmp = getPath(root, propertyPath, value);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
       String criteriaValue = ignoresCase ? value.toUpperCase() : value;
@@ -119,26 +92,14 @@ public class SpecFactory<T extends EclibEntity> {
   /**
    * Returns Specification for stringNotEquals.
    * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  public Specification<T> stringNotEquals(String field, String value) {
-    return stringNotEquals(null, field, value);
-  }
-
-  /**
-   * Returns Specification for stringNotEquals.
-   * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
   @SuppressWarnings("unused")
-  public Specification<T> stringNotEquals(String entity, String field, String value) {
+  public Specification<T> stringNotEquals(String propertyPath, String value) {
     return (root, query, cb) -> {
-      Expression<String> criteriaField =
-          entity == null ? root.get(field) : root.get(entity).get(field);
+      Expression<String> criteriaField = getPath(root, propertyPath, value);
       String criteriaValue = value;
 
       return StringUtils.isEmpty(value) ? null : cb.notEqual(criteriaField, criteriaValue);
@@ -148,117 +109,72 @@ public class SpecFactory<T extends EclibEntity> {
   /**
    * Returns Specification for stringContains.
    * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringContains(String field, String value) {
-    return stringContains(null, field, value, false);
+  public Specification<T> stringContains(String propertyPath, String value) {
+    return stringContains(propertyPath, value, false);
   }
 
-  /**
-   * Returns Specification for stringContains.
-   * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  public Specification<T> stringContains(String entity, String field, String value) {
-    return stringContains(entity, field, value, false);
-  }
-
-  private Specification<T> stringContains(String entity, String field, String value,
-      boolean ignoresCase) {
-    return stringSearchPattern(entity, field, value, "%" + value + "%", ignoresCase);
+  private Specification<T> stringContains(String propertyPath, String value, boolean ignoresCase) {
+    return stringSearchPattern(propertyPath, value, "%" + value + "%", ignoresCase);
   }
 
   /**
    * Returns Specification for stringContainsIgnoringCase.
    * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringContainsIgnoringCase(String field, String value) {
-    return stringContains(null, field, value, true);
-  }
-
-  /**
-   * Returns Specification for stringContainsIgnoringCase.
-   * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  public Specification<T> stringContainsIgnoringCase(String entity, String field, String value) {
-    return stringContains(entity, field, value, true);
+  public Specification<T> stringContainsIgnoringCase(String propertyPath, String value) {
+    return stringContains(propertyPath, value, true);
   }
 
   /**
    * Returns Specification for stringStartsWith.
    * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringStartsWith(String field, String value) {
-    return stringStartsWith(null, field, value, false);
+  public Specification<T> stringStartsWith(String propertyPath, String value) {
+    return stringStartsWith(propertyPath, value, false);
   }
 
   /**
    * Returns Specification for stringStartsWith.
    * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringStartsWith(String entity, String field, String value) {
-    return stringStartsWith(entity, field, value, false);
-  }
-
-  /**
-   * Returns Specification for stringStartsWith.
-   * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  private Specification<T> stringStartsWith(String entity, String field, String value,
+  private Specification<T> stringStartsWith(String propertyPath, String value,
       boolean ignoresCase) {
-    return stringSearchPattern(entity, field, value, value + "%", ignoresCase);
+    return stringSearchPattern(propertyPath, value, value + "%", ignoresCase);
   }
 
   /**
    * Returns Specification for stringStartsWithIgnoringCase.
    * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringStartsWithIgnoringCase(String field, String value) {
-    return stringStartsWith(null, field, value, true);
+  public Specification<T> stringStartsWithIgnoringCase(String propertyPath, String value) {
+    return stringStartsWith(propertyPath, value, true);
   }
 
   /**
-   * Returns Specification for stringStartsWithIgnoringCase.
+   * Returns Specification for stringEndsWith.
    * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringStartsWithIgnoringCase(String entity, String field, String value) {
-    return stringStartsWith(entity, field, value, true);
-  }
-
-  /**
-   * Returns Specification for stringStartsWithIgnoringCase.
-   * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  public Specification<T> stringEndsWith(String field, String value) {
-    return stringEndsWith(null, field, value, false);
+  public Specification<T> stringEndsWith(String propertyPath, String value) {
+    return stringEndsWith(propertyPath, value, false);
   }
 
   /**
@@ -268,54 +184,30 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringEndsWith(String entity, String field, String value) {
-    return stringEndsWith(entity, field, value, false);
-  }
-
-  /**
-   * Returns Specification for stringEndsWith.
-   * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  private Specification<T> stringEndsWith(String entity, String field, String value,
-      boolean ignoresCase) {
-    return stringSearchPattern(entity, field, value, "%" + value, ignoresCase);
+  private Specification<T> stringEndsWith(String propertyPath, String value, boolean ignoresCase) {
+    return stringSearchPattern(propertyPath, value, "%" + value, ignoresCase);
   }
 
   /**
    * Returns Specification for stringEndsWithIgnoringCase.
    * 
-   * @param field field
+   * @param propertyPath propertyPath
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringEndsWithIgnoringCase(String field, String value) {
-    return stringEndsWith(null, field, value, true);
-  }
-
-  /**
-   * Returns Specification for stringEndsWithIgnoringCase.
-   * 
-   * @param field field
-   * @param value value
-   * @return {@code Specification<T>}
-   */
-  public Specification<T> stringEndsWithIgnoringCase(String entity, String field, String value) {
-    return stringEndsWith(entity, field, value, true);
+  public Specification<T> stringEndsWithIgnoringCase(String propertyPath, String value) {
+    return stringEndsWith(propertyPath, value, true);
   }
 
   @SuppressWarnings("unused")
-  private Specification<T> stringSearchPattern(String entity, String field, String value,
+  private Specification<T> stringSearchPattern(String propertyPath, String value,
       String criteriaValue, boolean ignoresCase) {
     return (root, query, cb) -> {
       if (StringUtils.isEmpty(value)) {
         return null;
       }
 
-      Expression<String> criteriaFieldTmp =
-          entity == null ? root.get(field) : root.get(entity).get(field);
+      Expression<String> criteriaFieldTmp = getPath(root, propertyPath, value);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
       String finalCriteriaValue = ignoresCase ? criteriaValue.toUpperCase() : criteriaValue;
@@ -385,39 +277,82 @@ public class SpecFactory<T extends EclibEntity> {
     };
   }
 
+  @SuppressWarnings("unused")
+  private Specification<T> selectSearchPattern(String propertyPath, String value,
+      String criteriaValue, boolean ignoresCase) {
+    return (root, query, cb) -> {
+      if (StringUtils.isEmpty(value)) {
+        return null;
+      }
+
+      Path<String> criteriaFieldTmp = getPath(root, propertyPath, value);
+      Expression<String> criteriaField =
+          ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
+      String finalCriteriaValue = ignoresCase ? criteriaValue.toUpperCase() : criteriaValue;
+
+      return cb.like((criteriaField), finalCriteriaValue);
+    };
+  }
+
+  private <X> Path<X> getPath(Root<T> root, String propertyPath, X value) {
+    // Loop the number of "." in propertyPath
+    String[] fields = propertyPath.split("\\.");
+    Path<X> path = null;
+    for (int i = 0; i < fields.length; i++) {
+      if (path == null) {
+        path = root.get(fields[i]);
+      } else {
+        path = path.get(fields[i]);
+      }
+    }
+
+    return path;
+  }
+
   /**
-   * add all the search conditions with string values.
+   * add all the search conditions which are sure how to search from the kind of HtmlItem.
    * 
    * @param rec rec
    * @return {@code List<Specification<T>>}
    */
-  public List<Specification<T>> addStringSearchConditions(SplibRecord rec) {
+  public List<Specification<T>> addExplicitSearchConditions(SplibRecord rec) {
     List<Specification<T>> list = new ArrayList<>();
 
-    for (Map.Entry<String, StringMatchingConditionBean> entry : ((SplibWebSearchItemContainer) rec)
-        .getSearchPatterns().entrySet()) {
-      String key = entry.getKey();
-      String entity = key.contains(".") ? key.substring(0, key.indexOf(".")) : null;
-      String field = key.contains(".") ? key.substring(key.indexOf(".") + 1) : key;
+    for (HtmlItem item : ((HtmlItemContainer) rec).getHtmlItems()) {
+      String propertyPath = item.getItemPropertyPath();
+      Object value = null;
 
-      if (entry.getValue().getStringSearchPatternEnum() == StringMatchingPatternEnum.EXACT) {
-        list.add(stringEquals(entity, field, (String) rec.getValue(entry.getKey()),
-            entry.getValue().isIgnoresCase()));
+      try {
+        value = (Object) rec.getValue(propertyPath);
+      } catch (EclibRuntimeException ex) {
+        if (ex.getCause() instanceof NoSuchMethodException) {
+          // items with unexistent itemPropertyPath is allowed.
+          // no exception thrown and skip the rest.
+          continue;
 
-      } else if (entry.getValue()
-          .getStringSearchPatternEnum() == StringMatchingPatternEnum.PARTIAL) {
-        list.add(stringContains(entity, field, (String) rec.getValue(entry.getKey()),
-            entry.getValue().isIgnoresCase()));
+        } else {
+          throw ex;
+        }
+      }
 
-      } else if (entry.getValue()
-          .getStringSearchPatternEnum() == StringMatchingPatternEnum.PREFIX) {
-        list.add(stringStartsWith(entity, field, (String) rec.getValue(entry.getKey()),
-            entry.getValue().isIgnoresCase()));
+      if (item instanceof HtmlItemString) {
+        HtmlItemString stringItem = ((HtmlItemString) item);
 
-      } else if (entry.getValue()
-          .getStringSearchPatternEnum() == StringMatchingPatternEnum.POSTFIX) {
-        list.add(stringEndsWith(entity, field, (String) rec.getValue(entry.getKey()),
-            entry.getValue().isIgnoresCase()));
+        if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.EXACT) {
+          list.add(stringEquals(propertyPath, (String) value, stringItem.isIgnoresCase()));
+
+        } else if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.PARTIAL) {
+          list.add(stringContains(propertyPath, (String) value, stringItem.isIgnoresCase()));
+
+        } else if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.PREFIX) {
+          list.add(stringStartsWith(propertyPath, (String) value, stringItem.isIgnoresCase()));
+
+        } else if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.POSTFIX) {
+          list.add(stringEndsWith(propertyPath, (String) value, stringItem.isIgnoresCase()));
+        }
+
+      } else if (item instanceof HtmlItemSelect) {
+        list.add(equals(propertyPath, value));
       }
     }
 

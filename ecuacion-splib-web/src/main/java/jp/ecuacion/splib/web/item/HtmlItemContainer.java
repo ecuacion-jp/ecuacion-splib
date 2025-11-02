@@ -16,16 +16,22 @@
 package jp.ecuacion.splib.web.item;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import jp.ecuacion.lib.core.item.EclibItem;
 import jp.ecuacion.lib.core.item.EclibItemContainer;
+import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.StringUtil;
+import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
 /**
  * Has features related web environment.
  */
-public interface SplibWebItemContainer extends EclibItemContainer {
+public interface HtmlItemContainer extends EclibItemContainer {
 
   /**
    * Returns HtmlItem.
@@ -46,8 +52,8 @@ public interface SplibWebItemContainer extends EclibItemContainer {
   /**
    * Merge htmlItems.
    */
-  default HtmlItem[] mergeHtmlItems(HtmlItem[] fields1, HtmlItem[] fields2) {
-    EclibItem[] items = mergeItems(fields1, fields2);
+  default HtmlItem[] mergeHtmlItems(HtmlItem[] items1, HtmlItem[] items2) {
+    EclibItem[] items = mergeItems(items1, items2);
     List<HtmlItem> list = Arrays.asList(items).stream().map(item -> (HtmlItem) item).toList();
     return list.toArray(new HtmlItem[list.size()]);
   }
@@ -72,11 +78,11 @@ public interface SplibWebItemContainer extends EclibItemContainer {
   /**
   * Returns whether the propertyPath needs comma.
   *
-  * @param propertyPath propertyPath
+  * @param itemPropertyPath itemPropertyPath
   * @return boolean
   */
-  default boolean needsCommas(String rootRecordName, String propertyPath) {
-    HtmlItem item = getHtmlItem(propertyPath);
+  default boolean needsCommas(String rootRecordName, String itemPropertyPath) {
+    HtmlItem item = getHtmlItem(itemPropertyPath);
 
     if (item == null || !(item instanceof HtmlItemNumber)) {
       return false;
@@ -93,7 +99,8 @@ public interface SplibWebItemContainer extends EclibItemContainer {
    * @param bean bean
    * @return {@code List<String>}
    */
-  default List<String> getNotEmptyFields(String loginState, RolesAndAuthoritiesBean bean) {
+  default List<String> getNotEmptyItemPropertyPathList(String loginState,
+      RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
         .filter(item -> item.getIsNotEmpty(loginState, bean))
         .map(item -> item.getItemPropertyPath()).toList();
@@ -102,15 +109,16 @@ public interface SplibWebItemContainer extends EclibItemContainer {
   /**
    * Returns whether isNotEmpty or not.
    * 
-   * @param fieldId fieldId
+   * @param itemPropertyPath itemPropertyPath
    * @param loginState loginState
    * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
    * @return boolean
    */
-  default boolean isNotEmpty(String fieldId, String loginState, String rolesOrAuthoritiesString) {
+  default boolean isNotEmpty(String itemPropertyPath, String loginState,
+      String rolesOrAuthoritiesString) {
     SplibSecurityUtil.RolesAndAuthoritiesBean bean =
         new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
-    return getNotEmptyFields(loginState, bean).contains(fieldId);
+    return getNotEmptyItemPropertyPathList(loginState, bean).contains(itemPropertyPath);
   }
 
   /**
@@ -120,7 +128,8 @@ public interface SplibWebItemContainer extends EclibItemContainer {
    * @param bean bean
    * @return {@code List<String>}
    */
-  default List<String> getNotEmptyOnSearchFields(String loginState, RolesAndAuthoritiesBean bean) {
+  default List<String> getNotEmptyOnSearchItemPropertyPathList(String loginState,
+      RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
         .filter(item -> item.getIsNotEmptyOnSearch(loginState, bean))
         .map(item -> item.getItemPropertyPath()).toList();
@@ -129,15 +138,54 @@ public interface SplibWebItemContainer extends EclibItemContainer {
   /**
    * Returns whether isNotEmpty or not.
    * 
-   * @param fieldId fieldId
+   * @param itemPropertyPath itemPropertyPath
    * @param loginState loginState
    * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
    * @return boolean
    */
-  default boolean isNotEmptyOnSearch(String fieldId, String loginState,
+  default boolean isNotEmptyOnSearch(String itemPropertyPath, String loginState,
       String rolesOrAuthoritiesString) {
     SplibSecurityUtil.RolesAndAuthoritiesBean bean =
         new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
-    return getNotEmptyOnSearchFields(loginState, bean).contains(fieldId);
+    return getNotEmptyOnSearchItemPropertyPathList(loginState, bean).contains(itemPropertyPath);
+  }
+
+  /** Returns search pattern for each item. */
+  default Map<String, StringMatchingConditionBean> getSearchPatterns() {
+    Map<String, StringMatchingConditionBean> map = new HashMap<>();
+
+    HtmlItem[] htmlItems = getHtmlItems();
+    for (HtmlItem item : htmlItems) {
+      if (item instanceof HtmlItemString
+          && ((HtmlItemString) item).getStringSearchPatternEnum() != null) {
+        HtmlItemString itemStr = (HtmlItemString) item;
+        map.put(item.getItemPropertyPath(), new StringMatchingConditionBean(
+            itemStr.getStringSearchPatternEnum(), itemStr.isIgnoresCase()));
+      }
+    }
+
+    return map;
+  }
+
+  /**
+   * Gets SearchPatternComment.
+   * 
+   * @param locale locale
+   * @param itemPropertyPath itemPropertyPath
+   * @return String
+   */
+  default String getSearchPatternComment(Locale locale, String itemPropertyPath) {
+    StringMatchingConditionBean bean = getSearchPatterns().get(itemPropertyPath);
+    if (bean == null) {
+      throw new RuntimeException("The stringMatchingCondition of the field '" + itemPropertyPath
+          + "' not set'. At least you need to add '" + itemPropertyPath
+          + "' to the getHtmlItems() in 'xxxSearchRecord or it's parent Record.");
+    }
+
+    String commentMessageId =
+        StringUtil.getLowerCamelFromSnake(bean.getStringSearchPatternEnum().toString());
+
+    return PropertyFileUtil.getMessage(locale,
+        "jp.ecuacion.splib.web.common.label.searchPattern." + commentMessageId + "Match");
   }
 }

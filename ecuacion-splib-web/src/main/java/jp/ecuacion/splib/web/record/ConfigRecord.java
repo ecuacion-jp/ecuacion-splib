@@ -20,12 +20,12 @@ import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
-import jp.ecuacion.splib.web.item.SplibWebItemContainer;
+import jp.ecuacion.splib.web.item.HtmlItemContainer;
 
 /**
  * Is a record for configController.
  */
-public class ConfigRecord extends SplibRecord implements SplibWebItemContainer {
+public class ConfigRecord extends SplibRecord implements HtmlItemContainer {
   private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 
   @Override

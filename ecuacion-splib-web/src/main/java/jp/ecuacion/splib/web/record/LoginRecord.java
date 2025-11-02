@@ -17,12 +17,12 @@ package jp.ecuacion.splib.web.record;
 
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
-import jp.ecuacion.splib.web.item.SplibWebItemContainer;
+import jp.ecuacion.splib.web.item.HtmlItemContainer;
 
 /**
  * Is a record for loginController.
  */
-public class LoginRecord extends SplibRecord implements SplibWebItemContainer {
+public class LoginRecord extends SplibRecord implements HtmlItemContainer {
 
   @Override
   public HtmlItem[] getHtmlItems() {
