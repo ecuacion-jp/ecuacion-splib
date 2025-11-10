@@ -59,6 +59,11 @@ public class HtmlItem extends EclibItem {
   public HtmlItem itemNameKey(@RequireNonempty String itemNameKey) {
     return (HtmlItem) super.itemNameKey(itemNameKey);
   }
+  
+  @Override
+  public HtmlItem hideValue() {
+    return (HtmlItem) super.hideValue();
+  }
 
   /**
    * Sets isNotEmpty == true, which means you want the item to be not empty.
