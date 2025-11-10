@@ -39,6 +39,11 @@ public class HtmlItemNumber extends HtmlItem {
   public HtmlItemNumber itemNameKey(String itemNameKey) {
     return (HtmlItemNumber) super.itemNameKey(itemNameKey);
   }
+  
+  @Override
+  public HtmlItemNumber hideValue() {
+    return (HtmlItemNumber) super.hideValue();
+  }
 
   @Override
   public HtmlItemNumber notEmpty() {

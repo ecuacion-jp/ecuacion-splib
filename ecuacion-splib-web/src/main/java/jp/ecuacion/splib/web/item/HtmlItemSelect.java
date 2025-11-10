@@ -34,6 +34,15 @@ public class HtmlItemSelect extends HtmlItem {
   public HtmlItemSelect itemNameKey(String itemNameKey) {
     return (HtmlItemSelect) super.itemNameKey(itemNameKey);
   }
+  
+  /**
+   * This is defined just like other HtmlItems but it doesn't seem to be needed
+   * because it's impossible to select an option with value hidden.
+   */
+  @Override
+  public HtmlItemString hideValue() {
+    return (HtmlItemString) super.hideValue();
+  }
 
   @Override
   public HtmlItemSelect notEmpty() {
