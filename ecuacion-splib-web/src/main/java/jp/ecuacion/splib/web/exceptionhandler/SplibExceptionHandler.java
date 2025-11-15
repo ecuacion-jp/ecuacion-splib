@@ -262,23 +262,18 @@ public abstract class SplibExceptionHandler {
       newModel.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
     }
 
-    if (exception instanceof RedirectException) {
-      redirectException = (RedirectToHomePageException) exception;
+    if (!StringUtils.isEmpty(exception.getMessage())) {
+      detailLog.info(exception.getMessage());
+    }
+
+    if (exception instanceof NoResourceFoundException) {
+      String path = ((NoResourceFoundException) exception).getResourcePath();
+
+      redirectException = new RedirectToHomePageException(
+          "jp.ecuacion.splib.web.common.message.NoResourceFoundException", path);
 
     } else {
-      if (!StringUtils.isEmpty(exception.getMessage())) {
-        detailLog.info(exception.getMessage());
-      }
-
-      if (exception instanceof NoResourceFoundException) {
-        String path = ((NoResourceFoundException) exception).getResourcePath();
-
-        redirectException = new RedirectToHomePageException(
-            "jp.ecuacion.splib.web.common.message.NoResourceFoundException", path);
-
-      } else {
-        redirectException = new RedirectToHomePageException();
-      }
+      redirectException = (RedirectException) exception;
     }
 
     // Logging
