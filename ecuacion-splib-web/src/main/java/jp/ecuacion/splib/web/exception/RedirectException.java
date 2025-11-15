@@ -46,7 +46,7 @@ public class RedirectException extends RuntimeException {
    * @param redirectPath redirectPath like "/account/instancePowerStatus/searchList/page".
    */
   public RedirectException(String redirectPath) {
-
+    this.redirectPath = redirectPath;
   }
 
   /**
