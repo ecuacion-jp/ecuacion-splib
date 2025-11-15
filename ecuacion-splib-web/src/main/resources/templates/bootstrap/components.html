@@ -806,9 +806,9 @@
 							
 							<!--/* field messages */-->
 							<th:block th:if="${@propUtil.getValueOrElse('jp.ecuacion.splib.web.process-result-message.shown-at-each-item', true)} and ${needsFieldEmssages}">
-								<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${recordPropertyPath}__') != null}"
+								<div class="text-danger" th:if="${messagesBean.getErrorMessagesAtEachItem('__${recordPropertyPath}__').size() > 0}"
 									th:classappend="${@optUtil.hasKey(options, 'componentType') and @optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
-									th:each="message : ${messagesBean.getErrorMessages('__${recordPropertyPath}__')}">[[${message}]]</div>
+									th:each="message : ${messagesBean.getErrorMessagesAtEachItem('__${recordPropertyPath}__')}">[[${message}]]</div>
 							</th:block>
 							
 							<!--/* postfix content */-->

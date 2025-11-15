@@ -22,6 +22,7 @@ import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
@@ -29,6 +30,7 @@ import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
+import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -167,9 +169,6 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleAppException(@Nonnull AppException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
-    MessagesBean messagesBean =
-        ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
-
     // MultipleAppExceptionも考慮し例外を複数持つ
     List<SingleAppException> exList = new ArrayList<>();
 
@@ -187,15 +186,12 @@ public abstract class SplibExceptionHandler {
       exList.add((SingleAppException) exception);
     }
 
+    MessageSetter msgSetter = new MessageSetter();
+    MessagesBean messagesBean =
+        ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
+
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
-
-      // message
-      Boolean msgAtItem = Boolean.valueOf(PropertyFileUtil
-          .getApplication("jp.ecuacion.splib.web.process-result-message.shown-at-each-item"));
-      boolean needsItemName = msgAtItem == null ? true : !msgAtItem;
-      String message =
-          ExceptionUtil.getAppExceptionMessageList(saex, request.getLocale(), needsItemName).get(0);
 
       List<String> recordPropertyPathList = new ArrayList<>();
       for (String itemPropertyPath : saex.getItemPropertyPaths()) {
@@ -210,8 +206,10 @@ public abstract class SplibExceptionHandler {
       String[] recordPropertyPaths =
           recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
 
-      messagesBean.setErrorMessage(message, recordPropertyPaths);
+      msgSetter.setMessage(messagesBean, saex, request.getLocale(), recordPropertyPaths);
     }
+
+    msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale());
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
@@ -292,8 +290,11 @@ public abstract class SplibExceptionHandler {
     if (!StringUtils.isEmpty(redirectException.getMessageId())) {
       MessagesBean messagesBean =
           ((MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
-      messagesBean.setErrorMessage(PropertyFileUtil.getMessage(request.getLocale(),
-          redirectException.getMessageId(), redirectException.getMessageArgs()));
+
+      // Change exception into BizLogicAppException to let MessageSetter to accept the exception.
+      BizLogicAppException blaex = new BizLogicAppException(redirectException.getMessageId(),
+          redirectException.getMessageArgs());
+      new MessageSetter().setMessage(messagesBean, blaex, request.getLocale());
     }
 
     // redirect
@@ -321,5 +322,54 @@ public abstract class SplibExceptionHandler {
 
     Model mdl = getModel() == null ? model : getModel();
     return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
+  }
+
+  private static class MessageSetter {
+
+    private static boolean needsMsgAtItem = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
+        "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
+    private static boolean needsMsgAtTop = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
+        "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
+
+    public void setMessage(MessagesBean messagesBean, SingleAppException saex, Locale locale,
+        String... recordPropertyPaths) {
+
+      // Throw an exception when both needsMsgAtItem and needsMsgAtTop are false.
+      if (!needsMsgAtItem && !needsMsgAtTop) {
+        String msg = "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
+            + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.";
+        throw new EclibRuntimeException(msg);
+      }
+
+      // message
+      String messageAtItem = null;
+      String messageAtTop = null;
+      if (needsMsgAtItem) {
+        messageAtItem = ExceptionUtil.getAppExceptionMessageList(saex, locale, false).get(0);
+
+        // showsAtEachItem == false even if needsMsgAtItem == true
+        // when recordPropertyPaths.length == 0
+        messagesBean.setErrorMessage(messageAtItem, recordPropertyPaths.length != 0,
+            recordPropertyPaths);
+      }
+
+      if (needsMsgAtTop) {
+        messageAtTop = ExceptionUtil.getAppExceptionMessageList(saex, locale, true).get(0);
+
+        // Skip the message when needsMsgAtItem is also true and recordPropertyPaths.length == 0
+        // because it's exactly the same as the one with needsMsgAtItem
+        // (Technically the message string can be changed but it is supposed to mean the same thing)
+        if (!(needsMsgAtItem && recordPropertyPaths.length == 0)) {
+          messagesBean.setErrorMessage(messageAtTop, false, recordPropertyPaths);
+        }
+      }
+    }
+
+    public void addMessageThatSaysThereIsAnError(MessagesBean messagesBean, Locale locale) {
+      if (needsMsgAtItem && !needsMsgAtTop) {
+        String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
+        messagesBean.setErrorMessage(PropertyFileUtil.getMessage(locale, key), false);
+      }
+    }
   }
 }
