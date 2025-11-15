@@ -45,18 +45,6 @@ public class MessagesBean {
    */
   private List<ErrorMessageBean> errorMessageList = new ArrayList<>();
 
-  private List<String> getErrorMessageList(String itemPropertyPath) {
-    List<String> returnList = new ArrayList<>();
-
-    for (ErrorMessageBean bean : errorMessageList) {
-      if (bean.getItemPropertyPathSet().contains(itemPropertyPath)) {
-        returnList.add(bean.message);
-      }
-    }
-
-    return returnList;
-  }
-
   public boolean getNeedsSuccessMessage() {
     return needsSuccessMessage;
   }
@@ -79,8 +67,9 @@ public class MessagesBean {
    * @param message message
    * @param itemPropertyPaths itemPropertyPaths
    */
-  public void setErrorMessage(String message, String... itemPropertyPaths) {
-    errorMessageList.add(new ErrorMessageBean(message, itemPropertyPaths));
+  public void setErrorMessage(String message, boolean isShownAtEachItem,
+      String... itemPropertyPaths) {
+    errorMessageList.add(new ErrorMessageBean(message, isShownAtEachItem, itemPropertyPaths));
   }
 
   /**
@@ -97,25 +86,45 @@ public class MessagesBean {
   }
 
   /**
-   * Obtains all the messages related to the specified itemPropertyPath.
-   */
-  public List<String> getErrorMessages(String itemPropertyPath) {
-    return getErrorMessageList(itemPropertyPath);
+  * Obtains all the messages related to the specified itemPropertyPath.
+  */
+  private String[] getErrorMessages(String itemPropertyPath) {
+    List<String> returnList = new ArrayList<>();
+
+    for (ErrorMessageBean bean : errorMessageList) {
+      if (bean.getItemPropertyPathSet().contains(itemPropertyPath)) {
+        returnList.add(bean.message);
+      }
+    }
+
+    return returnList.toArray(new String[returnList.size()]);
   }
 
   /**
    * Obtains all the messages with itemPropertyPath specified.
    */
-  public List<String> getErrorMessagesLinkedToItems() {
-    return errorMessageList.stream().filter(e -> e.getItemPropertyPathSet().size() > 0)
+  public List<String> getErrorMessagesAtEachItem() {
+    return errorMessageList.stream()
+        .filter(e -> e.getIsShownAtEachItem() && e.getItemPropertyPathSet().size() > 0)
+        .map(e -> e.getMessage()).collect(Collectors.toList());
+  }
+
+  /**
+   * Obtains all the messages with itemPropertyPath specified.
+   */
+  public List<String> getErrorMessagesAtEachItem(String itemPropertyPath) {
+    return errorMessageList.stream()
+        .filter(e -> e.getIsShownAtEachItem() && e.getItemPropertyPathSet().size() > 0)
+        .filter(e -> e.getItemPropertyPathSet().contains(itemPropertyPath))
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
 
   /**
    * Obtains all the messages without itemPropertyPath specified.
    */
-  public List<String> getErrorMessagesNotLinkedToItems() {
-    return errorMessageList.stream().filter(e -> e.getItemPropertyPathSet().size() == 0)
+  public List<String> getErrorMessagesAtTheTop() {
+    return errorMessageList.stream()
+        .filter(e -> !(e.getIsShownAtEachItem() && e.getItemPropertyPathSet().size() > 0))
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
 
@@ -126,7 +135,7 @@ public class MessagesBean {
    * @return String
    */
   public String isValid(String itemPropertyPath) {
-    return (getErrorMessageList(itemPropertyPath).size() > 0) ? "is-invalid" : "";
+    return (getErrorMessages(itemPropertyPath).length > 0) ? "is-invalid" : "";
   }
 
   /**
@@ -136,15 +145,17 @@ public class MessagesBean {
    */
   static class ErrorMessageBean {
     private String message;
-
+    private boolean isShownAtEachItem;
     private Set<String> itemPropertyPathSet = new HashSet<>();
 
     public ErrorMessageBean(String message) {
       this.message = message;
     }
 
-    public ErrorMessageBean(String message, String... itemPropertyPaths) {
+    public ErrorMessageBean(String message, boolean isShownAtEachItem,
+        String... itemPropertyPaths) {
       this.message = message;
+      this.isShownAtEachItem = isShownAtEachItem;
       this.itemPropertyPathSet = new HashSet<String>(
           Arrays.asList(itemPropertyPaths == null ? new String[] {} : itemPropertyPaths).stream()
               .map(itemPropertyPath -> StringUtils.uncapitalize(itemPropertyPath)).toList());
@@ -152,6 +163,10 @@ public class MessagesBean {
 
     public String getMessage() {
       return message;
+    }
+
+    public boolean getIsShownAtEachItem() {
+      return isShownAtEachItem;
     }
 
     public Set<String> getItemPropertyPathSet() {
