@@ -794,7 +794,7 @@
 							<!--/* label */-->
 							<th:block th:if="${needsLabel}"
 									th:with="itemNameKey=*{__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
-								<label th:for="${inputId}" class="form-label text-dark">
+								<label th:for="${inputId}" class="form-label text-dark mb-0">
 									[[${@msgUtil.getValue(#locale, '__${itemNameKey}__') + labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
 									[[${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? ' ' + @msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitOnChangeToRefresh') : ''}]]
