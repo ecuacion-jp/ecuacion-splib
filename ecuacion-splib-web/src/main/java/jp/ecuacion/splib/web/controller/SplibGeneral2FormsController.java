@@ -80,6 +80,7 @@ public abstract class SplibGeneral2FormsController
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     prepare(model, loginUser, form1, form2);
     getService().page(form1, form2, loginUser);
+    getService().prepareForm(form1, form2, loginUser);
     return getDefaultHtmlPageName();
   }
 
