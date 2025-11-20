@@ -630,9 +630,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     // formは配列でも取得できるよう、別途配列のままrequestにも格納しておく
     model.addAttribute(SplibWebConstants.KEY_FORMS, forms);
 
-    // submitされない、毎回再設定が必要な値（selectの選択肢一覧など）を設定
-    // getService().prepareForm(new ArrayList<>(Arrays.asList(forms)), loginUser);
-
     // エラー処理のためにmodelにcontrollerを格納
     model.addAttribute(SplibWebConstants.KEY_CONTROLLER, this);
 
