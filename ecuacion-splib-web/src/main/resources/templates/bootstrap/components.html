@@ -1143,6 +1143,23 @@
 		</div></th:block>
 	</div>
 	
+	<!--/* component for captcha */-->
+	<!--/* 
+		- When itemPropertyPath is "sampleField", image data should be put in "sampleFieldImageData"
+		  amd input string in "sampleField"
+		- Put BASE64 String with "data:image/xxx;base64, prefix" to the field that itemPropertyPath + "ImageData" specifies. 
+	*/-->
+	<div  th:fragment="inputCaptcha(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputCaptcha}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentInputCaptcha" th:remove="tag">
+			<img class="img-fluid mb-2" th:src="*{__${rootRecordName}__.__${itemPropertyPath}__ImageData}" style="border: 1px solid #000;">
+
+			<div th:with="type=text,needsMaxLength=false,isReadOnly=false">
+				<div th:replace="~{ :: internalAllHtmlInputComponent('left')}"></div>
+			</div>
+		</div></th:block>
+	</div>
 	<!--/* 
 		### general-form-page button
 	 */-->
