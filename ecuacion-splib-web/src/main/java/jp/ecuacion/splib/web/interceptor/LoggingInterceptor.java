@@ -2,7 +2,9 @@ package jp.ecuacion.splib.web.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import jp.ecuacion.lib.core.logging.DetailLogger;
+import jp.ecuacion.lib.core.util.StringUtil;
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -17,9 +19,12 @@ public class LoggingInterceptor implements HandlerInterceptor {
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
-    detailLog.debug("session ID: " + request.getSession().getId() + ", thread ID: "
-        + Thread.currentThread().threadId() + " : request process started. request: "
-        + request.getRequestURI());
+    List<String> paramList = request.getParameterMap().entrySet().stream()
+        .map(e -> e.getKey() + "=" + StringUtil.getCsv(e.getValue())).toList();
+
+    detailLog.debug(getPrefix(request) + "request process started. request: "
+        + request.getRequestURI() + (paramList.size() == 0 ? ""
+            : ", parameters: " + StringUtil.getSeparatedValuesString(paramList, "&")));
 
     return true;
   }
@@ -27,14 +32,17 @@ public class LoggingInterceptor implements HandlerInterceptor {
   @Override
   public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
       @Nullable ModelAndView modelAndView) throws Exception {
-    detailLog.debug("session ID: " + request.getSession().getId() + ", thread ID: "
-        + Thread.currentThread().threadId() + " : request process finished.");
+    detailLog.debug(getPrefix(request) + "request process finished.");
   }
 
   @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
       Object handler, Exception ex) throws Exception {
-    detailLog.debug("session ID: " + request.getSession().getId() + ", thread ID: "
-        + Thread.currentThread().threadId() + " : view rendering finished.");
+    detailLog.debug(getPrefix(request) + "view rendering finished.");
+  }
+
+  private String getPrefix(HttpServletRequest request) {
+    return "session ID: " + request.getSession().getId() + ", thread ID: "
+        + Thread.currentThread().threadId() + " : ";
   }
 }
