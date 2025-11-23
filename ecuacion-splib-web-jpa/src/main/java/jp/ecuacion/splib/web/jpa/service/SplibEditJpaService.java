@@ -61,8 +61,8 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
    *     but "insertOrUpdate" method is created for simplicity.
    * </p>
    */
-  protected <T> void insertOrUpdate(SplibRepository<T, Long> repo, T e) {
+  protected <T> T insertOrUpdate(SplibRepository<T, Long> repo, T e) {
     em.detach(e);
-    repo.save(e);
+    return repo.save(e);
   }
 }

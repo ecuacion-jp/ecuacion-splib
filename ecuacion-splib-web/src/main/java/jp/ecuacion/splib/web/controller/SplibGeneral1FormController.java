@@ -78,6 +78,7 @@ public abstract class SplibGeneral1FormController
       throws Exception {
     prepare(model, loginUser, form);
     getService().page(form, loginUser);
+    getService().prepareForm(form, loginUser);
     return getDefaultHtmlPageName();
   }
 

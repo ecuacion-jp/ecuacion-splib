@@ -794,7 +794,7 @@
 							<!--/* label */-->
 							<th:block th:if="${needsLabel}"
 									th:with="itemNameKey=*{__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
-								<label th:for="${inputId}" class="form-label text-dark">
+								<label th:for="${inputId}" class="form-label text-dark mb-0">
 									[[${@msgUtil.getValue(#locale, '__${itemNameKey}__') + labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
 									[[${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? ' ' + @msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitOnChangeToRefresh') : ''}]]
@@ -806,9 +806,9 @@
 							
 							<!--/* field messages */-->
 							<th:block th:if="${@propUtil.getValueOrElse('jp.ecuacion.splib.web.process-result-message.shown-at-each-item', true)} and ${needsFieldEmssages}">
-								<div class="text-danger" th:if="${messagesBean.getErrorMessages('__${recordPropertyPath}__') != null}"
+								<div class="text-danger" th:if="${messagesBean.getErrorMessagesAtEachItem('__${recordPropertyPath}__').size() > 0}"
 									th:classappend="${@optUtil.hasKey(options, 'componentType') and @optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
-									th:each="message : ${messagesBean.getErrorMessages('__${recordPropertyPath}__')}">[[${message}]]</div>
+									th:each="message : ${messagesBean.getErrorMessagesAtEachItem('__${recordPropertyPath}__')}">[[${message}]]</div>
 							</th:block>
 							
 							<!--/* postfix content */-->
@@ -942,6 +942,18 @@
 				th:maxlength="*{__${recordPropertyPathClass}__.getStringLength('__${propertyPathField}__')}" 
 				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(recordPropertyPath)}" 
 				th:readonly="${isReadOnly}" rows="3">
+			</textarea>
+		</div></th:block>
+	</div>
+
+	<!--/* textarea which shows docments like service agreement. */-->
+ 	<div th:fragment="inputDocumentViewer(itemPropertyPath, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputDocumentViewer}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentInputDocumentViewer" th:remove="tag">
+			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
+				class="form-control input-document-viewer-design" 
+				th:readonly=true rows="15">
 			</textarea>
 		</div></th:block>
 	</div>
@@ -1143,6 +1155,23 @@
 		</div></th:block>
 	</div>
 	
+	<!--/* component for captcha */-->
+	<!--/* 
+		- When itemPropertyPath is "sampleField", image data should be put in "sampleFieldImageData"
+		  amd input string in "sampleField"
+		- Put BASE64 String with "data:image/xxx;base64, prefix" to the field that itemPropertyPath + "ImageData" specifies. 
+	*/-->
+	<div  th:fragment="inputCaptcha(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputCaptcha}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentInputCaptcha" th:remove="tag">
+			<img class="img-fluid mb-2" th:src="*{__${rootRecordName}__.__${itemPropertyPath}__ImageData}" style="border: 1px solid #000;">
+
+			<div th:with="type=text,needsMaxLength=false,isReadOnly=false">
+				<div th:replace="~{ :: internalAllHtmlInputComponent('left')}"></div>
+			</div>
+		</div></th:block>
+	</div>
 	<!--/* 
 		### general-form-page button
 	 */-->

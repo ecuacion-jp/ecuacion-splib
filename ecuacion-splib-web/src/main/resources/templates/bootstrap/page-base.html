@@ -168,31 +168,21 @@
 				</div></th:block>
 				<!-- messages from ${messagesBean} -->
 				<div th:object="${messagesBean}">
+					<!--/* success message */-->
 					<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
 						<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
 						<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
 					</div>
+
+					<!--/* error message */-->
 					<div class="all-error-messages-list-wrapper text-danger">
 						<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
-							<!--/* in the case of showing item related message here */-->
-							<th:block th:if="${@propUtil.getValueOrElse('jp.ecuacion.splib.web.process-result-message.shown-at-the-top', false)}">
-								<div class="all-error-messages-list-ul">
-									<div th:replace="~{ :: internalDisplayMessages(*{errorMessages})}"></div>
-								</div>
-							</th:block>
-							<!--/* in the case of showing item related message at each item */-->
-							<th:block th:if="${@propUtil.getValueOrElse('jp.ecuacion.splib.web.process-result-message.shown-at-each-item', true)}">
-								<ul class="all-error-messages-list-ul">
-									<!--/* showing non-item-related messages */-->
-									<th:block th:if="*{errorMessagesNotLinkedToItems.size() > 0}">
-										<div th:replace="~{ :: internalDisplayMessages(*{errorMessagesNotLinkedToItems})}"></div>
-									</th:block>
-									<!--/* showing a message that says there's an error at some of the items */-->
-									<th:block th:if="*{errorMessagesLinkedToItems.size() > 0}">
-										<div th:replace="~{ :: internalDisplayMessages(${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist')})}"></div>
-									</th:block>
-								</ul>
-							</th:block>
+							<ul class="all-error-messages-list-ul">
+								<!--/* showing non-item-related messages */-->
+								<th:block th:if="*{errorMessagesAtTheTop.size() > 0}">
+									<div th:replace="~{ :: internalDisplayMessages(*{errorMessagesAtTheTop})}"></div>
+								</th:block>
+							</ul>
 						</div>
 					</div>
 				</div>
