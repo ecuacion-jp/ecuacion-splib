@@ -946,6 +946,18 @@
 		</div></th:block>
 	</div>
 
+	<!--/* textarea which shows docments like service agreement. */-->
+ 	<div th:fragment="inputDocumentViewer(itemPropertyPath, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputDocumentViewer}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentInputDocumentViewer" th:remove="tag">
+			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
+				class="form-control input-document-viewer-design" 
+				th:readonly=true rows="15">
+			</textarea>
+		</div></th:block>
+	</div>
+
 	<!--/* checkbox (switch) */-->
 	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
  		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputSwitch}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
