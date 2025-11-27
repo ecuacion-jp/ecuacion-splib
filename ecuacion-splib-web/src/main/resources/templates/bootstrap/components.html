@@ -424,15 +424,15 @@
 	<div th:fragment="internalNavbarItem(isSubMenuItem, method, options)" th:remove="tag">
 		<th:block th:with="method=${#strings.isEmpty(method) ? 'get' : method}">
 			<th:block th:if="${method == 'none'}">
-				<span class="dropdown-item-text" style="white-space: nowrap" th:text="${labelString}"></span>
+				<span class="dropdown-item-text nav-link" style="white-space: nowrap" th:text="${labelString}"></span>
 			</th:block>
 			<th:block th:if="${method == 'post'}">
 				<form method="post" name="navbarForm" th:action="${href}">
-					<a th:class="${isSubMenuItem ? 'dropdown-item' : 'nav-link'}" href="javascript:navbarForm.submit()" th:text="${labelString}"></a>
+					<a th:class="${isSubMenuItem ? 'dropdown-item nav-link' : 'nav-link'}" href="javascript:navbarForm.submit()" th:text="${labelString}"></a>
 				</form>
 			</th:block>
 			<th:block th:if="${method != 'none' and method != 'post'}">
-				<a th:class="${isSubMenuItem ? 'dropdown-item' : 'nav-link'}" th:href="${href}" th:text="${labelString}"></a>
+				<a th:class="${isSubMenuItem ? 'dropdown-item nav-link' : 'nav-link'}" th:href="${href}" th:text="${labelString}"></a>
 			</th:block>
 		</th:block>
 	</div>
@@ -544,7 +544,7 @@
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownMenuItem}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuItem" th:remove="tag">
-			<li th:id="${componentId}">
+			<li th:id="${componentId}" class="nav-item">
 				 <div th:replace="~{ :: internalNavbarItem(true, ${@optUtil.getValueOrElse(options, 'method', 'get')}, ${options})}"></div>
 			</li>
 		</div></th:block>
@@ -1331,12 +1331,12 @@
 								type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
 							[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.recordsInScreen')}]]
 						</button>
-						<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-							<li><a class="dropdown-item" href="javascript:listFromRecordsInScreen(5)">5</a></li>
-							<li><a class="dropdown-item" href="javascript:listFromRecordsInScreen(10)">10</a></li>
-							<li><a class="dropdown-item" href="javascript:listFromRecordsInScreen(20)">20</a></li>
-							<li><a class="dropdown-item" href="javascript:listFromRecordsInScreen(50)">50</a></li>
-							<li><a class="dropdown-item" href="javascript:listFromRecordsInScreen(100)">100</a></li>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(5)">5</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(10)">10</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(20)">20</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(50)">50</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(100)">100</a></li>
 						</ul>
 					</div>
 				</div>
