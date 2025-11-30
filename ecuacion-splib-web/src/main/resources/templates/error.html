@@ -33,10 +33,7 @@
 <body>
 	<div layout:fragment="base-content" th:remove="tag">
 		 <div class="mt-2 ml-3">
-			<div th:replace="~{bootstrap/components :: subtitle(${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.systemError.title')}, '')}"></div>
-			<p>
-			[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.systemError.desc')}]]
-			</p>
+			<div th:replace="~{bootstrap/components :: paragraphWithSubtitle('jp.ecuacion.splib.web.systemError.title', 'jp.ecuacion.splib.web.systemError.desc', '')}"></div>
 			<br>
 			<div style="text-align: center">
 				<div th:replace="~{bootstrap/components :: scriptButton('systemError', 'jp.ecuacion.splib.web.systemError.button.gotoLoginPage', '')}"></div>
