@@ -44,7 +44,7 @@ public class SplibJpaDataStoreDependentControllerAdvice
   }
 
   @Override
-  protected void executeForAccount(SplibRecord loginAcc) {
+  protected void executeForAccountBelongingToGroup(SplibRecord loginAcc) {
     Object accGroupId = service.getGroupId(loginAcc);
     // SoftDeleteAdviceで使用するためgroupIdを保管
     SplibControllerAdviceInfoBean.setGroupId(accGroupId);

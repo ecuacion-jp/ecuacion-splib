@@ -30,7 +30,7 @@ public abstract class SplibDataStoreDependentControllerAdviceService {
    * @param loginUser UserDetails
    * @return logged-in account in {@code SplibRecord} data type
    */
-  public abstract SplibRecord getLoginAcc(UserDetails loginUser);
+  public abstract SplibRecord getAccGeneral(UserDetails loginUser);
 
   /**
    * Obtains logged-in admin account 
@@ -39,7 +39,7 @@ public abstract class SplibDataStoreDependentControllerAdviceService {
    * @param loginUser UserDetails
    * @return logged-in admin account in {@code SplibRecord} data type
    */
-  public abstract SplibRecord getAdminLoginAcc(UserDetails loginUser);
+  public abstract SplibRecord getAccAdmin(UserDetails loginUser);
 
   /**
    * Obtains group ID from logged-in account in {@code SplibRecord} data type.
