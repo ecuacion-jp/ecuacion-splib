@@ -53,21 +53,19 @@ public abstract class SplibDataStoreDependentControllerAdvice {
     // 未loginの場合は終了。systemAdmin roleが存在する場合はsystemAdmin扱いで処理
     if (loginUser == null) {
       return;
-      
-    } else if (loginUser.getAuthorities().stream().map(e -> e.getAuthority())
-        .filter(auth -> auth.startsWith("ROLE_ADMIN")).toList().size() > 0) {
-
-      SplibRecord adminLoginAcc = service.getAdminLoginAcc(loginUser);
-      model.addAttribute("loginAcc", adminLoginAcc);
-
-      executeForAdminAccount(adminLoginAcc);
-
-    } else {
-      SplibRecord loginAcc = service.getLoginAcc(loginUser);
-      model.addAttribute("loginAcc", loginAcc);
-      
-      executeForAccount(loginAcc);
     }
+
+    SplibRecord loginAcc = null;
+    boolean isAdmin = loginUser.getAuthorities().stream().map(e -> e.getAuthority())
+        .filter(auth -> auth.startsWith("ROLE_ADMIN")).toList().size() > 0;
+
+    loginAcc = isAdmin ? service.getAccAdmin(loginUser) : service.getAccGeneral(loginUser);
+
+    if (!isAdmin) {
+      executeForAccountBelongingToGroup(loginAcc);
+    }
+
+    model.addAttribute("loginAcc", loginAcc);
   }
 
   /**
@@ -79,16 +77,9 @@ public abstract class SplibDataStoreDependentControllerAdvice {
   }
 
   /**
-   * Additional procedure for general accounts can be define by overriding the method.
+   * Additional procedure for accounts belonging to group can be define by overriding the method.
    */
-  protected void executeForAdminAccount(SplibRecord adminAcc) {
-    
-  }
+  protected void executeForAccountBelongingToGroup(SplibRecord acc) {
 
-  /**
-   * Additional procedure for admin accounts can be define by overriding the method.
-   */
-  protected void executeForAccount(SplibRecord acc) {
-    
   }
 }
