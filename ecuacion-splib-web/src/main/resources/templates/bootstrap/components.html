@@ -1506,7 +1506,7 @@
 	
 	<!--/* td readOnly enum text */-->
 	<div th:fragment="tdReadOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
-		<th:block th:with="value=${rec.get__${#strings.capitalize(itemPropertyPath)}__Name(#locale)}">
+		<th:block th:with="value=${rec.__${@strUtil.getMethodName(itemPropertyPath)}__Name(#locale)}">
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>

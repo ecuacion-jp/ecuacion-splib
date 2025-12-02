@@ -50,8 +50,16 @@ public class SplibThymeleafStringUtil {
   /** 
    * Change string like acc -> getAccList, acc.name -> getAcc().getNameList.
    */
-  public String selectListMethodNameForEnum(String itemName) {
-    String[] strs = itemName.split("\\.");
+  public String selectListMethodNameForEnum(String itemPropertyPath) {
+
+    return getMethodName(itemPropertyPath) + "List";
+  }
+
+  /**
+   * Change string like acc -> getAcc, acc.name -> getAcc().getName.
+   */
+  public String getMethodName(String itemPropertyPath) {
+    String[] strs = itemPropertyPath.split("\\.");
 
     boolean is1st = true;
     StringBuilder rtn = new StringBuilder();
@@ -69,6 +77,6 @@ public class SplibThymeleafStringUtil {
       rtn.append(StringUtils.capitalize(str));
     }
 
-    return "get" + rtn.toString() + "List";
+    return "get" + rtn.toString();
   }
 }
