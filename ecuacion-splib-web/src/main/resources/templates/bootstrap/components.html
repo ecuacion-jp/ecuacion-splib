@@ -1026,7 +1026,7 @@
 	 */-->
 	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputSelectComponent(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* component for file upload */-->
@@ -1274,7 +1274,7 @@
 
 	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 
 	<!--/* 
@@ -1417,7 +1417,7 @@
 	<div th:fragment="thCustomizable(itemPropertyPath, position, options)" th:remove="tag">
 		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
-			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=*{__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
+			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=${listForm.__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
 				<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
@@ -1506,7 +1506,7 @@
 	
 	<!--/* td readOnly enum text */-->
 	<div th:fragment="tdReadOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
-		<th:block th:with="value=${rec.get__${#strings.capitalize(itemPropertyPath)}__Name(#locale)}">
+		<th:block th:with="value=${rec.__${@strUtil.getMethodName(itemPropertyPath)}__Name(#locale)}">
 			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>

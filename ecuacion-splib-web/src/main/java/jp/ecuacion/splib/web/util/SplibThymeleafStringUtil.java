@@ -19,20 +19,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
- * thymeleaf側から呼ばれる想定のクラス。thymeleaf上で必要となる文字列処理を実施.
+ * Is a string util called from thymeleaf.
  */
 @Component("strUtil")
 public class SplibThymeleafStringUtil {
-  
+
   /** 
-   * acc -> getAccList, acc.name -> getAcc_NameListに変更.
+   * Change string like acc -> getAccList, acc.name -> getAcc_NameList.
    * 
-   * <p>"_"はrelation使用時のrepositoryの使用方法に準じた。</p>
+   * <p>"_" is derived from repository query method definition  when relation is used.</p>
    */
   public String selectListMethodName(String itemName) {
-    // "."で区切ったリストを作り、そのそれぞれの先頭をcapitalizeし、その後でリストの文字列を"_"を間に入れて結合。
     String[] strs = itemName.split("\\.");
-    
+
     boolean is1st = true;
     StringBuilder rtn = new StringBuilder();
     for (String str : strs) {
@@ -41,10 +40,43 @@ public class SplibThymeleafStringUtil {
       } else {
         rtn.append("_");
       }
-      
+
       rtn.append(StringUtils.capitalize(str));
     }
-    
+
     return "get" + rtn.toString() + "List";
+  }
+
+  /** 
+   * Change string like acc -> getAccList, acc.name -> getAcc().getNameList.
+   */
+  public String selectListMethodNameForEnum(String itemPropertyPath) {
+
+    return getMethodName(itemPropertyPath) + "List";
+  }
+
+  /**
+   * Change string like acc -> getAcc, acc.name -> getAcc().getName.
+   */
+  public String getMethodName(String itemPropertyPath) {
+    String[] strs = itemPropertyPath.split("\\.");
+
+    boolean is1st = true;
+    StringBuilder rtn = new StringBuilder();
+    for (int i = 0; i < strs.length; i++) {
+      String str = strs[i];
+
+      if (is1st) {
+        is1st = false;
+
+      } else {
+
+        rtn.append("().get");
+      }
+
+      rtn.append(StringUtils.capitalize(str));
+    }
+
+    return "get" + rtn.toString();
   }
 }

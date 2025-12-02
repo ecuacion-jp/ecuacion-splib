@@ -64,7 +64,7 @@
 			
 			<div class="table-responsive">
 				<table class="table table-striped text-nowrap table-bordered">
-					<thead th:with="form=${__${function + 'SearchForm'}__}"  th:object="${__${function + 'SearchForm'}__}">
+					<thead th:with="form=${__${function + 'SearchForm'}__},listForm=${__${function + 'ListForm'}__}"  th:object="${__${function + 'SearchForm'}__}">
 						<tr>
 
 							<div layout:fragment="list-table-header-content"></div>
