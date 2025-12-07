@@ -42,8 +42,9 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
    * <p>In jpa or spring data jpa world, what you have to do to insert is to 
    *     {@code repository.save(e)}.<br>
    *     And no need to do anything to update thanks to "dirty checking"
-   *     (jpa automatically detects and updates changes of managed entities on commit).<br><br>
-   *     But the feature of the library conflicts with dirty checking fefature.<br>
+   *     (jpa automatically detects and updates changes of managed entities on commit).</p>
+   * 
+   * <p>But the feature of the library conflicts with the dirty checking feature.<br>
    *     The library supports "soft delete flag" feature, which should delete key-duplicated 
    *     soft-deleted record on insert or update.<br><br>
    *     We can hook "insert" and delete duplicated soft-deleted record
@@ -61,8 +62,13 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
    *     but "insertOrUpdate" method is created for simplicity.
    * </p>
    */
-  protected <T> T insertOrUpdate(SplibRepository<T, Long> repo, T e) {
-    em.detach(e);
-    return repo.save(e);
+  protected <T extends EclibEntity> T insertOrUpdate(SplibRepository<T, ?> repo, T e) {
+    if (em.contains(e)) {
+      repo.save(e);
+      return e;
+      
+    } else {
+      return repo.save(e);
+    }
   }
 }
