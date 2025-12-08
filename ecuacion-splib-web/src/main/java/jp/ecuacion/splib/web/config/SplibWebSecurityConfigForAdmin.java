@@ -16,14 +16,29 @@
 package jp.ecuacion.splib.web.config;
 
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.bean.AuthorizationBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  *  Provides the abstract SecurityConfig class for admin.
@@ -37,7 +52,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public abstract class SplibWebSecurityConfigForAdmin {
 
   /**
-   * Defines the string for the role "ACCOUNT_FULL_ACCESS".
+   * Defines the string for the role "ADMIN_FULL_ACCESS".
    */
   public static final String ADMIN_FULL_ACCESS = "ADMIN_FULL_ACCESS";
 
@@ -76,6 +91,9 @@ public abstract class SplibWebSecurityConfigForAdmin {
    */
   protected abstract String getAccessDeniedPage();
 
+  @Autowired
+  UserDetailsService userDetailsService;
+
   /**
    * Adds security settings to the {@code HttpSecurity} object. 
    * 
@@ -96,21 +114,28 @@ public abstract class SplibWebSecurityConfigForAdmin {
         .passwordParameter("adminLogin.password").defaultSuccessUrl(getDefaultSuccessUrl(), true)
         .failureUrl("/public/adminLogin/page?error"));
 
+    // for impersonate login
+    http.authorizeHttpRequests(
+        requests -> requests.requestMatchers("/admin/switchUser").hasRole(ADMIN_FULL_ACCESS));
+
     http.authorizeHttpRequests(
         requests -> requests.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
             .permitAll().requestMatchers("/public/admin*/**").permitAll());
 
-    // 管理者など、ログイン後の/admin配下の全画面が閲覧可能としたいroleは、ADMIN_FULL_ACCESSのroleを設定すればOK。
+    // Reserved role: ADMIN_FULL_ACCESS can be used if you want an account to have the open
+    // permission to all page for like group administrator.
     List<AuthorizationBean> roleList = getRoleInfo() == null ? new ArrayList<>() : getRoleInfo();
     roleList.add(new AuthorizationBean("/admin/**", ADMIN_FULL_ACCESS));
     for (AuthorizationBean bean : roleList) {
-      // 画面別の細かい設定に対して、ADMIN_FULL_ACCESSも設定しておかないとその画面にADMIN_FULL_ACCESSでアクセス不可となる。
-      // 本来は個々のApp側できちんとやるべき話かもしれないが、わかりにくい仕組みなのでsplib側でADMIN_FULL_ACCESSを補完する機能を保持しておく。
+
+      // ADMIN_FULL_ACCESS needs to be added to Authorization settings for each page to keep the
+      // permission to access the page.
+      // It might be a each app's task but this is an complecated functions so the permission for
+      // ADMIN_FULL_ACCESS is automatically granted here.
       http.authorizeHttpRequests(requests -> requests.requestMatchers(bean.getRequestMatchers())
           .hasAnyRole(bean.addAndGetRolesOrAuthorities(ADMIN_FULL_ACCESS)));
     }
 
-    // roleとauthorityを組み合わせたテストはできていないので、その実施時に適切に動かなかった場合は要修正・・・
     if (getAuthorityInfo() != null) {
       for (AuthorizationBean bean : getAuthorityInfo()) {
         http.authorizeHttpRequests(requests -> requests.requestMatchers(bean.getRequestMatchers())
@@ -124,5 +149,55 @@ public abstract class SplibWebSecurityConfigForAdmin {
     http.exceptionHandling(handling -> handling.accessDeniedPage(getAccessDeniedPage()));
 
     return http.build();
+  }
+
+  /**
+   *  for impersonate login.
+   */
+  @Bean
+  @ConditionalOnProperty(name = "jp.ecuacion.splib.web.switch-user.enabled", havingValue = "true",
+      matchIfMissing = false)
+  SwitchUserFilter switchUserFilter() {
+    SwitchUserFilter filter = new SwitchUserFilter();
+    // /admin/impersonateLogin/action
+    filter.setUserDetailsService(userDetailsService);
+    filter.setUsernameParameter("adminLogin.username");
+    // filter.setSwitchUserUrl("/admin/switchUser");
+    filter.setSwitchUserMatcher(
+        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/admin/switchUser"));
+    // filter.setExitUserUrl("/account/exitUser");
+    filter.setExitUserMatcher(
+        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/account/exitUser"));
+    // filter.setTargetUrl("/account/cloudService/searchList/page");
+    filter.setSuccessHandler(new CustomLoginSuccessHandler());
+    // filter.setSwitchFailureUrl("/public/error");
+    filter.setFailureHandler(new CustomLoginFailureHandler());
+
+    return filter;
+  }
+
+  private static class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
+    @Override
+    public void onAuthenticationSuccess(final HttpServletRequest request,
+        final HttpServletResponse response, final Authentication authentication)
+        throws IOException, ServletException {
+
+      if (request.getRequestURI().endsWith("/admin/switchUser")) {
+        response.sendRedirect(
+            PropertyFileUtil.getApplication("jp.ecuacion.splib.web.switch-user.switch-url"));
+
+      } else {
+        response.sendRedirect(
+            PropertyFileUtil.getApplication("jp.ecuacion.splib.web.switch-user.exit-url"));
+      }
+    }
+  }
+
+  private static class CustomLoginFailureHandler implements AuthenticationFailureHandler {
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+        AuthenticationException exception) throws IOException, ServletException {
+      response.sendRedirect("jp.ecuacion.splib.web.switch-user.exit-url");
+    }
   }
 }
