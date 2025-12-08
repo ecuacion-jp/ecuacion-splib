@@ -154,18 +154,21 @@
 		<th:block th:if="false"><div th:fragment="fragmentMessages" th:remove="tag">
 			<div class="mt-5 mb-5">
 				<!-- messages from url parameter -->
-				<div class="all-error-messages-list-wrapper text-danger">
-					<div class="bg-color-msg-error-bg p-2 rounded-1" 
-							th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null}">
-						<div th:replace="~{ :: freeSpace(~{ ::free-space-login-messages}, '')}"></div>
+				<div class="all-error-messages-list-wrapper text-danger"
+						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
+								|| param.switchUserSuccess != null || param.switchUserFailure != null || param.switchUserExit != null}">
+					<div class="bg-color-msg-error-bg p-2 rounded-1">
+						<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
+						<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
+						<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
+						<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
+						<!--/* switchUser */-->
+						<div th:if="${param.switchUserSuccess}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.success')}"></div>
+						<div th:if="${param.switchUserFailure}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.failure')}"></div>
+						<div th:if="${param.switchUserExit}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.exit')}"></div>
 					</div>
 				</div>
-				<th:block th:if="false"><div th:fragment="free-space-login-messages" th:remove="tag">
-					<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
-					<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
-					<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
-					<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
-				</div></th:block>
+
 				<!-- messages from ${messagesBean} -->
 				<div th:object="${messagesBean}">
 					<!--/* success message */-->
