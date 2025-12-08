@@ -15,6 +15,8 @@
  */
 package jp.ecuacion.splib.jpa.advice;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.Optional;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.jpa.bean.SplibControllerAdviceInfoBean;
@@ -35,6 +37,8 @@ public abstract class SplibSoftDeleteAdvice {
 
   @Autowired
   private SplibJpaFilterUtil filterUtil;
+  @PersistenceContext
+  private EntityManager em;
 
   /**
    * Provides the entrypoint of the feature.
@@ -47,7 +51,7 @@ public abstract class SplibSoftDeleteAdvice {
     beforeAdvice((EclibEntity) joinPoint.getArgs()[0],
         (SplibRepository<EclibEntity, ?>) joinPoint.getThis());
   }
-  
+
   /*
    * soft deleteされた状態のレコードがある状態でsave(insert)しようとしたときに、重複エラーが発生しないため
    * 既存レコードを削除する。
@@ -66,16 +70,23 @@ public abstract class SplibSoftDeleteAdvice {
 
     filterUtil.enableAllFilters(groupId);
   }
-  
-  private void physicalDeleteSoftDeletedRecords(EclibEntity entity,
-      SplibRepository<EclibEntity, ?> repo) {
+
+  private <T extends EclibEntity> void physicalDeleteSoftDeletedRecords(T entity,
+      SplibRepository<T, ?> repo) {
+
+    boolean isUpdate = em.contains(entity);
+
     if (entity.hasSoftDeleteField()) {
+
+      if (isUpdate) {
+        // Detach the entity once to disable dirty checking.
+        em.detach(entity);
+      }
+
       // 同一IDで削除済みのレコード存在チェック。あれば削除。（surrogate key strategyでは発生する場面は考えにくいが）
-      Optional<EclibEntity> result = repo.findByIdAndSoftDeleteFieldTrueFromAllGroups(entity);
+      Optional<T> result = repo.findByIdAndSoftDeleteFieldTrueFromAllGroups(entity);
       if (result.isPresent()) {
-        
         repo.delete(result.get());
-        // sessionのfilterを変更しているからなのか、ここでflushしないとdeleteが実施されずduplicate keyエラーになる。
         repo.flush();
       }
 
@@ -84,9 +95,13 @@ public abstract class SplibSoftDeleteAdvice {
         result = repo.findByNaturalKeyAndSoftDeleteFieldTrueFromAllGroups(entity);
         if (result.isPresent()) {
           repo.delete(result.get());
-          // sessionのfilterを変更しているからなのか、ここでflushしないとdeleteが実施されずduplicate keyエラーになる。
           repo.flush();
         }
+      }
+
+      if (isUpdate) {
+        // Reattach the entity once detached.
+        entity = em.merge(entity);
       }
     }
   }
