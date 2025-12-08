@@ -103,20 +103,25 @@ public abstract class SplibWebSecurityConfig {
     http.authorizeHttpRequests(
         requests -> requests.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
             .permitAll().requestMatchers("/public/**").permitAll()
-            .requestMatchers("/ecuacion/public/**").permitAll());
+            .requestMatchers("/ecuacion/public/**").permitAll()
+            // Used when impersonated users exit
+            .requestMatchers("/account/exitUser").permitAll());
 
-    // 管理者など、ログイン後の/account配下の全画面が閲覧可能としたいroleは、ACCOUNT_FULL_ACCESSのroleを設定すればOK。
+    // Reserved role: ACCOUNT_FULL_ACCESS can be used if you want an account to have the open
+    // permission to all page for like group administrator.
     List<AuthorizationBean> roleList =
         getRoleInfo() == null ? new ArrayList<>() : new ArrayList<>(getRoleInfo());
     roleList.add(new AuthorizationBean("/account/**", ACCOUNT_FULL_ACCESS));
     for (AuthorizationBean bean : roleList) {
-      // 画面別の細かい設定に対して、ACCOUNT_FULL_ACCESSも設定しておかないとその画面にACCOUNT_FULL_ACCESSでアクセス不可となる。
-      // 本来は個々のApp側できちんとやるべき話かもしれないが、わかりにくい仕組みなのでsplib側でACCOUNT_FULL_ACCESSを補完する機能を保持しておく。
+
+      // ACCOUNT_FULL_ACCESS needs to be added to Authorization settings for each page to keep the
+      // permission to access the page.
+      // It might be a each app's task but this is an complecated functions so the permission for
+      // ACCOUNT_FULL_ACCESS is automatically granted here.
       http.authorizeHttpRequests(requests -> requests.requestMatchers(bean.getRequestMatchers())
           .hasAnyRole(bean.addAndGetRolesOrAuthorities(ACCOUNT_FULL_ACCESS)));
     }
 
-    // roleとauthorityを組み合わせたテストはできていないので、その実施時に適切に動かなかった場合は要修正・・・
     if (getAuthorityInfo() != null) {
       for (AuthorizationBean bean : getAuthorityInfo()) {
         http.authorizeHttpRequests(requests -> requests.requestMatchers(bean.getRequestMatchers())
