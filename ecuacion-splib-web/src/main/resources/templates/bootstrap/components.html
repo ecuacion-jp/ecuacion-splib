@@ -1449,6 +1449,11 @@
 	<div th:fragment="thDeleteButton(options)" th:remove="tag">
 		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.delete', ${options})}"></div>
 	</div>
+	
+	<!-- switch user button -->
+	<div th:fragment="thSwitchUserButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.switchUser.switchButton', ${options})}"></div>
+	</div>
 
 	<!--/* 
 		### The followings are td components.
@@ -1566,6 +1571,19 @@
 			</button>
 		</td>
 	</div>
+	
+	<!--/* inline switch user button */-->
+	<div th:fragment="tdSwitchUserButton(username, options)" th:remove="tag">
+		<td class="text-center p-1 align-middle" height="0px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+			<button type="button" class="btn btn-sm btn-color-btn text-white" 
+					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+					th:data-username="${username}"
+					th:onClick="return switchUser(this.dataset.username);" 
+					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.switchButton')}"
+					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
+			</button>
+		</td>
+	</div>
 
 	<!--/* general button */-->
 	<div th:fragment="tdButton(itemPropertyPath, id, version, options)" th:remove="tag">
@@ -1584,12 +1602,12 @@
 		</td>
 	</div>
 	
-	<!--/* hidden input for inline button. 上のいずれかのinline buttonを配置する場合は、同一form内にこれを一つ（tableなどのループの外に）置く。中身はただのhiddenだがわかりやすくするため。 */-->
+	<!--/* hidden input for inline button. Put it in the list form. Put only one of this. */-->
 	<div th:fragment="hiddenForInlineButtons(rootRecordName, idFieldName, options)" th:remove="tag">
 		<input type="hidden" th:id="${rootRecordName + '.' + idFieldName}" th:name="${rootRecordName + '.' + idFieldName}">
 	</div>
 	
-	<!--/* javaScript for inline update button. inline update buttonを配置するならこれも併せて配置。通常ページの一番下に配置。  */-->
+	<!--/* javaScript for inline update button. Use with tdUpdateButton. Put it at "bottom-space" part in a page template.  */-->
 	<div th:fragment="scriptFortdUpdateButton(rootRecordName, idFieldName, versionFieldName, options)" th:remove="tag">
 		<script th:with="id=${rootRecordName + '.' + idFieldName},versionId=${rootRecordName + '.' + versionFieldName}">
 		function update(formName, id, version) {
@@ -1599,7 +1617,7 @@
 		</script>
 	</div>
 
-	<!--/* javaScript for inline delete button. inline delete buttonを配置するならこれも併せて配置。通常ページの一番下に配置。  */-->
+	<!--/* javaScript for inline delete button.  Use with tdDeleteButton. Put it at "bottom-space" part in a page template.  */-->
 	<div th:fragment="scriptFortdDeleteButton(rootRecordName, idFieldName, versionFieldName, itemDisplayedOnDelete, options)" th:remove="tag">
 		<script th:with="id=${rootRecordName + '.' + idFieldName},versionId=${rootRecordName + '.' + versionFieldName}">
 		function del(formName, id, recordName, version) {
@@ -1611,6 +1629,19 @@
 			document.forms[formName].elements["[[${versionId}]]"].value = version;
 
 			return true;
+		}
+		</script>
+	</div>
+
+	<!--/* javaScript for inline switch user. Use with tdSwitchUserButton. Put it at "bottom-space" part in a page template.  */-->
+	<div th:fragment="scriptFortdSwitchUserButton(options)" th:remove="tag">
+		<form id="switchUserForm" method="GET" action="/admin/switchUser">
+			<input type="hidden" id="adminLogin.username" name="adminLogin.username">
+		</form>
+		<script>
+		function switchUser(username) {
+			document.getElementById("adminLogin.username").value = username;
+			document.getElementById("switchUserForm").submit();
 		}
 		</script>
 	</div>
