@@ -18,8 +18,8 @@ package jp.ecuacion.splib.batch.listener;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobExecutionListener;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.listener.JobExecutionListener;
 import org.springframework.stereotype.Component;
 
 /**

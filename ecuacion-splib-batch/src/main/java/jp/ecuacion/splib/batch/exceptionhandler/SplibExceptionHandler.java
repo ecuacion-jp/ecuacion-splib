@@ -27,8 +27,8 @@ import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import org.springframework.batch.repeat.RepeatContext;
-import org.springframework.batch.repeat.exception.ExceptionHandler;
+import org.springframework.batch.infrastructure.repeat.RepeatContext;
+import org.springframework.batch.infrastructure.repeat.exception.ExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

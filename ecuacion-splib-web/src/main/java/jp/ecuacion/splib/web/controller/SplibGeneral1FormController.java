@@ -19,7 +19,7 @@ import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;

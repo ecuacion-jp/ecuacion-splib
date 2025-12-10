@@ -42,6 +42,7 @@ module jp.ecuacion.splib.web {
   requires transitive spring.security.config;
   requires transitive spring.web;
   requires transitive spring.webmvc;
+  requires transitive spring.boot.webmvc;
 
   requires transitive jp.ecuacion.splib.core;
 
@@ -51,5 +52,7 @@ module jp.ecuacion.splib.web {
   requires thymeleaf;
   requires jakarta.annotation;
   requires transitive org.apache.tomcat.embed.core;
+  requires spring.boot.security;
+  requires org.jspecify;
 
 }
