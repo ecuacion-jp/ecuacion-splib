@@ -19,7 +19,7 @@ import jp.ecuacion.splib.batch.exceptionhandler.SplibExceptionHandler;
 import jp.ecuacion.splib.batch.listener.SplibJobExecutionListener;
 import jp.ecuacion.splib.batch.listener.SplibStepExecutionListener;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.builder.TaskletStepBuilder;

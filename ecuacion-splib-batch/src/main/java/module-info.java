@@ -30,7 +30,7 @@ module jp.ecuacion.splib.batch {
 
   requires jakarta.annotation;
   requires spring.beans;
-  requires spring.batch.core;
+  requires transitive spring.batch.core;
   requires org.slf4j;
   requires org.aspectj.weaver;
   requires spring.tx;
