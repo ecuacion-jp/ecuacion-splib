@@ -80,6 +80,16 @@ footer{
     line-height: 1.2;        /* çsÇÃçÇÇ≥ */
 }
 
+/* tooltip */
+
+.bs-tooltip {
+	--bs-tooltip-bg: var(--bs-primary);
+}
+
+.tooltip-icon {
+	fill: var(--bs-primary);
+}
+
 /************************************/
 /***** speech balloons for comments *****/
 /************************************/

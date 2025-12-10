@@ -1,82 +1,99 @@
-{"properties": [
-  {
-    "name": "jp.ecuacion.splib.web.home-page",
-    "type": "java.lang.String",
-    "description": "Required. It's used to specify the destination page from system error page. ex: 'public/show/page?id=home'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.title",
-    "type": "java.lang.String",
-    "description": "Optional. It's shown on the left side of the navbar. It can be localized by being defined at messages.properties. ex: 'AWS instance manager'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.title-account",
-    "type": "java.lang.String",
-    "description": "Optional. It's shown on the left side of the navbar when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.title' value is used. It can be localized by being defined at messages.properties. ex: 'AWS instance manager (logged in)'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.title-admin",
-    "type": "java.lang.String",
-    "description": "Optional. It's shown on the left side of the navbar when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.title' value is used. It can be localized by being defined at messages.properties. ex: 'AWS instance manager (admin)'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.image-path",
-    "type": "java.lang.String",
-    "description": "Optional. It specifies the path of the image shown on the left side of the navbar. ex: '/images/bootstrap-logo.svg'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.image-path-account",
-    "type": "java.lang.String",
-    "description": "Optional. It specifies the path of the image shown on the left side of the navbar when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.image-path' value is used.  ex: '/images/bootstrap-logo.svg'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.image-path-admin",
-    "type": "java.lang.String",
-    "description": "Optional. It specifies the path of the image shown on the left side of the navbar when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.image-path' value is used.  ex: '/images/bootstrap-logo.svg'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.default-page-path",
-    "type": "java.lang.String",
-    "description": "Optional. It specifies the path of the destination page. ex: '/public/show/page?id=home'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.default-page-path-account",
-    "type": "java.lang.String",
-    "description": "Optional. It specifies the path of the destination page when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.default-page-path' value is used.  ex: '/public/show/page?id=home'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.default-page-path-admin",
-    "type": "java.lang.String",
-    "description": "Optional. It specifies the path of the destination page when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.default-page-path' value is used.  ex: '/public/show/page?id=home'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.navbar.background-color-class",
-    "type": "java.lang.Boolean",
-    "description": "Optional. It specifies the background color class of navbar. It's mainly used to clarify the environment (used in non-product environment). The default value is 'bg-color-navbar'."
-  },
-  {
-    "name": "jp.ecuacion.splib.web.bootstrap.is-background-gradient",
-    "type": "java.lang.Boolean",
-    "description": "Optional. It specifies whether the background of bootstrap components are gradient. default value is false."
-  },
-  {
-    "name": "jp.ecuacion.splib.web.body.background-color",
-    "type": "java.lang.String",
-    "description": "Optional. It specifies the background-color of the page in the app. default value is '' (means white)."
-  },
-  {
-    "name": "jp.ecuacion.splib.web.body.background-image",
-    "type": "java.lang.Boolean",
-    "description": "Optional. It specifies the background-image of the page in the app. It's assumed to use linear-gradient color. default value is '' (means white)."
-  },
-  {
-    "name": "jp.ecuacion.splib.web.process-result-message.shown-at-the-top",
-    "type": "java.lang.String",
-    "description": "A description for 'jp.ecuacion.splib.web.message.shown-at-the-top'"
-  },
-  {
-    "name": "jp.ecuacion.splib.web.process-result-message.shown-at-each-item",
-    "type": "java.lang.String",
-    "description": "A description for 'jp.ecuacion.splib.web.message.shown-at-each-item'"
-  }
-]}
+{
+	"properties": [
+		{
+			"name": "jp.ecuacion.splib.web.home-page",
+			"type": "java.lang.String",
+			"description": "Required. It's used to specify the destination page from system error page. ex: 'public/show/page?id=home'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.title",
+			"type": "java.lang.String",
+			"description": "Optional. It's shown on the left side of the navbar. It can be localized by being defined at messages.properties. ex: 'AWS instance manager'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.title-account",
+			"type": "java.lang.String",
+			"description": "Optional. It's shown on the left side of the navbar when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.title' value is used. It can be localized by being defined at messages.properties. ex: 'AWS instance manager (logged in)'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.title-admin",
+			"type": "java.lang.String",
+			"description": "Optional. It's shown on the left side of the navbar when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.title' value is used. It can be localized by being defined at messages.properties. ex: 'AWS instance manager (admin)'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.image-path",
+			"type": "java.lang.String",
+			"description": "Optional. It specifies the path of the image shown on the left side of the navbar. ex: '/images/bootstrap-logo.svg'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.image-path-account",
+			"type": "java.lang.String",
+			"description": "Optional. It specifies the path of the image shown on the left side of the navbar when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.image-path' value is used.  ex: '/images/bootstrap-logo.svg'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.image-path-admin",
+			"type": "java.lang.String",
+			"description": "Optional. It specifies the path of the image shown on the left side of the navbar when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.image-path' value is used.  ex: '/images/bootstrap-logo.svg'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.default-page-path",
+			"type": "java.lang.String",
+			"description": "Optional. It specifies the path of the destination page. ex: '/public/show/page?id=home'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.default-page-path-account",
+			"type": "java.lang.String",
+			"description": "Optional. It specifies the path of the destination page when the site is in the state of login. If it's not specified, 'jp.ecuacion.splib.web.navbar.default-page-path' value is used.  ex: '/public/show/page?id=home'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.default-page-path-admin",
+			"type": "java.lang.String",
+			"description": "Optional. It specifies the path of the destination page when the site is in the state of admin login. If it's not specified, 'jp.ecuacion.splib.web.navbar.default-page-path' value is used.  ex: '/public/show/page?id=home'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.navbar.background-color-class",
+			"type": "java.lang.Boolean",
+			"description": "Optional. It specifies the background color class of navbar. It's mainly used to clarify the environment (used in non-product environment). The default value is 'bg-color-navbar'."
+		},
+		{
+			"name": "jp.ecuacion.splib.web.bootstrap.is-background-gradient",
+			"type": "java.lang.Boolean",
+			"description": "Optional. It specifies whether the background of bootstrap components are gradient. default value is false."
+		},
+		{
+			"name": "jp.ecuacion.splib.web.body.background-color",
+			"type": "java.lang.String",
+			"description": "Optional. It specifies the background-color of the page in the app. default value is '' (means white)."
+		},
+		{
+			"name": "jp.ecuacion.splib.web.body.background-image",
+			"type": "java.lang.Boolean",
+			"description": "Optional. It specifies the background-image of the page in the app. It's assumed to use linear-gradient color. default value is '' (means white)."
+		},
+		{
+			"name": "jp.ecuacion.splib.web.process-result-message.shown-at-the-top",
+			"type": "java.lang.String",
+			"description": "A description for 'jp.ecuacion.splib.web.message.shown-at-the-top'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.process-result-message.shown-at-each-item",
+			"type": "java.lang.String",
+			"description": "A description for 'jp.ecuacion.splib.web.message.shown-at-each-item'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.switch-user.enabled",
+			"type": "java.lang.String",
+			"description": "A description for 'jp.ecuacion.splib.web.uses-switch-user'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.switch-user.switch-url",
+			"type": "java.lang.String",
+			"description": "A description for 'jp.ecuacion.splib.web.uses-switch-user'"
+		},
+		{
+			"name": "jp.ecuacion.splib.web.switch-user.exit-url",
+			"type": "java.lang.String",
+			"description": "A description for 'jp.ecuacion.splib.web.uses-switch-user'"
+		}
+	]
+}
