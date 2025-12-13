@@ -794,15 +794,15 @@
 							<!--/* label */-->
 							<th:block th:if="${needsLabel}"
 									th:with="itemNameKey=*{__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
-								<label th:for="${inputId}" class="form-label text-dark mb-0" 
-										th:data-bs-toggle="${@optUtil.hasKey(options, 'tooltip') ? 'tooltip' : ' '}" 
-										th:data-bs-title="${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'tooltip', ''))}"
-										data-bs-custom-class="bs-tooltip"
-										th:data-tooltip-sanitize="${@optUtil.getValueOrElse(options, 'tooltipSanitize', true)}">
+								<label th:for="${inputId}" class="form-label text-dark mb-0">
 									[[${@msgUtil.getValue(#locale, '__${itemNameKey}__') + labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
 									[[${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? ' ' + @msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitOnChangeToRefresh') : ''}]]
-									<span th:if="${@optUtil.hasKey(options, 'tooltip')}">
+									<span th:if="${@optUtil.hasKey(options, 'tooltip')}"
+											th:data-bs-toggle="${@optUtil.hasKey(options, 'tooltip') ? 'tooltip' : ' '}" 
+											th:data-bs-title="${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'tooltip', ''))}"
+											th:data-tooltip-sanitize="${@optUtil.getValueOrElse(options, 'tooltipSanitize', true)}"
+											data-bs-custom-class="bs-tooltip">
 										<svg width="20" height="20">
 											<circle cx="8" cy="8" r="8" class="tooltip-icon" />
 											<text x="8" y="9" font-family="Rokkitt" font-weight="bold" font-size="15" fill="white"
@@ -840,8 +840,8 @@
 		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" 
 				th:value="${@optUtil.hasKey(options, 'value') ? @msgUtil.getValue(#locale, @optUtil.getValue(options, 'value')) : inputValue}"
 				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{__${recordPropertyPathClass}__.getStringLength('__${propertyPathField}__')}"
-				class="text-dark"
-				th:classappend="${isReadOnly ? 'form-control-plaintext' : 'form-control'}
+				class="form-control text-dark"
+				th:classappend="${isReadOnly ? 'input-read-only' : ''}
 						+ ' ' + ${position == 'right' ? 'text-end' : ''}
 						+ ' ' + ${messagesBean.isValid(recordPropertyPath)}" 
 				th:readonly="${isReadOnly}">
@@ -869,7 +869,9 @@
 		</th:block>
 	
 		<select th:id="${inputId}" th:name="${inputName}"
-				class="form-select text-dark" th:classappend="${messagesBean.isValid(recordPropertyPath)}"
+				class="form-select text-dark" 
+				th:classappend="${isReadOnly ? 'input-read-only' : ''}
+				 + ' ' + ${messagesBean.isValid(recordPropertyPath)}"
 				th:disabled="${isReadOnly}"
 				th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
 				th:data-html-form-name="${htmlFormName}"
