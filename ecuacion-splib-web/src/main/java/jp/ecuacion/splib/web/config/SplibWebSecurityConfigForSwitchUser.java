@@ -87,7 +87,7 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     filter.setSuccessHandler(new CustomLoginSuccessHandler(getSwitchingUserDonePagePath(),
         getExitingUserDonePagePath()));
     // filter.setSwitchFailureUrl("/public/error");
-    filter.setFailureHandler(new CustomLoginFailureHandler(getExitingUserDonePagePath()));
+    filter.setFailureHandler(new CustomLoginFailureHandler(getSwitchingUserFailurePagePath()));
 
     return filter;
   }
