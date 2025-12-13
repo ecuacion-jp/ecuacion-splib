@@ -164,19 +164,24 @@
 				<!-- messages from url parameter -->
 				<div class="all-error-messages-list-wrapper text-danger"
 						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
-								|| param.switchUserSuccess != null || param.switchUserFailure != null || param.switchUserExit != null}">
+								|| param.switchUserFailure != null}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
 						<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
 						<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
 						<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
 						<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
 						<!--/* switchUser */-->
-						<div th:if="${param.switchUserSuccess}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.success')}"></div>
 						<div th:if="${param.switchUserFailure}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.failure')}"></div>
+					</div>
+				</div>
+				<div class="all-error-messages-list-wrapper text-success"
+						th:if="${param.switchUserSuccess != null || param.switchUserExit != null}">
+					<div class="bg-color-msg-error-bg p-2 rounded-1">
+						<div th:if="${param.switchUserSuccess}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.success')}"></div>
 						<div th:if="${param.switchUserExit}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.exit')}"></div>
 					</div>
 				</div>
-
+				
 				<!-- messages from ${messagesBean} -->
 				<div th:object="${messagesBean}">
 					<!--/* success message */-->
