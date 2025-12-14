@@ -165,7 +165,7 @@
 				<!--/* error */-->
 				<div class="all-error-messages-list-wrapper text-danger"
 						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
-								|| param.switchUserFailure != null}">
+								or param.switchUserFailure != null or param.logoutDoneBecauseMailAddressChanged != null}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
 						<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
 						<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
