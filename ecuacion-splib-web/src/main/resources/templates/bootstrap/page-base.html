@@ -161,7 +161,8 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentMessages" th:remove="tag">
 			<div class="mt-5 mb-5">
-				<!-- messages from url parameter -->
+				<!--/* messages from url parameter */-->
+				<!--/* error */-->
 				<div class="all-error-messages-list-wrapper text-danger"
 						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
 								|| param.switchUserFailure != null}">
@@ -172,8 +173,11 @@
 						<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
 						<!--/* switchUser */-->
 						<div th:if="${param.switchUserFailure}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.failure')}"></div>
+						<!--/* mailAddress changed */-->
+						<div th:if="${param.logoutDoneBecauseMailAddressChanged}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.logoutDoneBecauseMailAddressChanged')}"></div>
 					</div>
 				</div>
+				<!--/* success */-->
 				<div class="all-error-messages-list-wrapper text-success"
 						th:if="${param.switchUserSuccess != null || param.switchUserExit != null}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
