@@ -63,12 +63,13 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
    * </p>
    */
   protected <T extends EclibEntity> T insertOrUpdate(SplibRepository<T, ?> repo, T e) {
-    if (em.contains(e)) {
-      repo.save(e);
-      return e;
-      
-    } else {
-      return repo.save(e);
-    }
+    // if (em.contains(e)) {
+    // return repo.save(e);
+    //
+    // } else {
+    // return repo.save(e);
+    // }
+
+    return repo.save(e);
   }
 }

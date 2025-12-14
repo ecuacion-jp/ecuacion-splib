@@ -18,7 +18,6 @@ package jp.ecuacion.splib.web.controller;
 import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
@@ -60,6 +59,8 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
   @Autowired
   private SplibUtil util;
+
+  private static final String KEY_ERROR_OCCURS_WHILE_SEARCHING = "errorWhileSearching";
 
   /**
    * Construct a new instance with {@code function}.
@@ -114,8 +115,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     getService().prepareForm(searchForm, listForm, loginUser);
 
     // Do not search when search condition has errors
-    MessagesBean mb = (MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
-    if (mb.getErrorMessages().size() == 0) {
+    Boolean errorOccursWhileSearching =
+        (Boolean) model.getAttribute(KEY_ERROR_OCCURS_WHILE_SEARCHING);
+    if (errorOccursWhileSearching == null || !errorOccursWhileSearching) {
       getService().page(searchForm, listForm, loginUser);
 
     } else {
@@ -149,8 +151,16 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     // by not calling ".../searchList/page" but ".../searchList/action?search"
     // to validate searchForm.
     prepareForm(searchForm, listForm, loginUser);
-    
-    prepare(model, searchForm.validate(null), listForm);
+
+    try {
+      prepare(model, searchForm.validate(null), listForm);
+
+    } catch (AppException ae) {
+      // Add sign that shows error occurs while searching.
+      model.addAttribute(KEY_ERROR_OCCURS_WHILE_SEARCHING, true);
+      throw ae;
+    }
+
     return redirectToSamePageTakingOverModel(model);
   }
 

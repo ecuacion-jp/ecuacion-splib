@@ -4,6 +4,9 @@
 	color: #aaa !important;
 }
 
+.input-read-only, .input-read-only:focus, .input-read-only:disabled {
+	background-color: #e3e3e3;
+}
 
 /* footerŠÖ˜A */
 

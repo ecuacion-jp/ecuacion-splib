@@ -30,10 +30,10 @@ public class DatetimeFormatParameters {
   private String timeFormat = "HH:mm:ss";
 
   /**
-   * Constructs a new instance.
+   * Constructs a new default instance.
    */
   public DatetimeFormatParameters() {
-
+    zoneOffset = ZoneOffset.UTC;
   }
 
   /**
