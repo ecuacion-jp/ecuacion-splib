@@ -470,29 +470,29 @@
 								<span th:text="${title}"></span>
 							</th:block>
 						</a>
-						
-						<div class="container">
-							<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-								<span class="navbar-toggler-icon"></span>
-							</button>
-				
-							<div class="collapse navbar-collapse" id="navbarText">
-								<ul class="navbar-nav me-auto mb-2 mb-lg-0" th:with="isPositionRight=false">
+						<th:block th:if="${@optUtil.getValueOrElse(options, 'showsNavbarMenuItems', 'true')}">
+							<div class="container">
+								<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+									<span class="navbar-toggler-icon"></span>
+								</button>
+					
+								<div class="collapse navbar-collapse" id="navbarText">
+									<ul class="navbar-nav me-auto mb-2 mb-lg-0" th:with="isPositionRight=false">
 
-									<th:block th:replace="${contentsOfNavBarRootLeft}" />
+										<th:block th:replace="${contentsOfNavBarRootLeft}" />
 
+									</ul>
+								</div>
+							</div>
+							
+							<div class="ml-auto">
+								<ul class="navbar-nav me-auto mb-2 mb-lg-0" th:with="isPositionRight=true">
+								
+									<th:block th:replace="${contentsOfNavBarRootRight}" />
+	
 								</ul>
 							</div>
-						</div>
-						
-						<div class="ml-auto">
-							<ul class="navbar-nav me-auto mb-2 mb-lg-0" th:with="isPositionRight=true">
-							
-								<th:block th:replace="${contentsOfNavBarRootRight}" />
-
-							</ul>
-						</div>
-								
+						</th:block>								
 					</div>
 				</nav>
 			</th:block>
@@ -968,31 +968,36 @@
 		<th:block th:if="false"><div th:fragment="fragmentInputDocumentViewer" th:remove="tag">
 			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
 				class="form-control input-document-viewer-design text-dark"
-				th:readonly=true rows="15">
+				th:readonly=true rows="20">
 			</textarea>
 		</div></th:block>
 	</div>
 
+	<!--/* checkbox */-->
+	<div th:fragment="inputCheckbox(itemPropertyPath, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckbox(false)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
+	</div>
+
 	<!--/* checkbox (switch) */-->
 	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputSwitch}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckbox(true)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
+	</div>
 
-		<th:block th:if="false"><div th:fragment="fragmentInputSwitch" th:remove="tag">
-			<div class="form-check form-switch mt-2">
-				<th:block th:if="${isReadOnly}">
-					<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
-				</th:block>
-				<div>
-					<!--/* https://stackoverflow.com/questions/1809494/post-unchecked-html-checkboxes */-->
-					<input th:if="${!isReadOnly}" type="hidden" th:name="${inputName}" value="off">
-					<input th:id="${inputId}" th:name="${isReadOnly ? '' : inputName}"
-						class="form-check-input align-bottom mb-1" type="checkbox" 
-						th:checked="${inputValue}"
-						th:classappend="${messagesBean.isValid(recordPropertyPath)}"
-						th:disabled="${isReadOnly}">
-				</div>
+	<div th:fragment="fragmentInputCheckbox(isFormSwitch)" th:remove="tag">
+		<div class="form-check mt-2" th:classappend="${isFormSwitch ? 'form-switch' : ''}">
+			<th:block th:if="${isReadOnly}">
+				<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
+			</th:block>
+			<div>
+				<!--/* https://stackoverflow.com/questions/1809494/post-unchecked-html-checkboxes */-->
+				<input th:if="${!isReadOnly}" type="hidden" th:name="${inputName}" value="off">
+				<input th:id="${inputId}" th:name="${isReadOnly ? '' : inputName}"
+					class="form-check-input align-bottom mb-1" type="checkbox" 
+					th:checked="${inputValue}"
+					th:classappend="${messagesBean.isValid(recordPropertyPath)}"
+					th:disabled="${isReadOnly}">
 			</div>
-		</div></th:block>
+		</div>
 	</div>
 	 
 	<!--/* checkbox */-->
