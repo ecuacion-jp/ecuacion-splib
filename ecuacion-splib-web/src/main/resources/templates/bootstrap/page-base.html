@@ -57,7 +57,8 @@
 				defaultPagePath=${(!#strings.isEmpty(defaultPagePathTmp) && !#strings.startsWith(defaultPagePathTmp, '/') ? '/' : '') + defaultPagePathTmp},
 				optionBgColor=${@propUtil.getValueOrElse('jp.ecuacion.splib.web.navbar.background-color-class', '')},
 				options=(${optionBgColor} == '' ? '' : ('backgroundColorClass=' + ${optionBgColor})) + ',' 
-						+ (${bsBgGradient} == '' ? '' : ('isBackgroundGradient=' + ${bsBgGradient}))
+						+ (${bsBgGradient} == '' ? '' : ('isBackgroundGradient=' + ${bsBgGradient})) + ','
+						+ ${showsNavbarMenuItems == false ? 'showsNavbarMenuItems=false' : ''}
 				">
 			<div th:replace="~{bootstrap/components :: navbarRoot(~{ :: fragmentNavbarBasePage}, 
 					${title}, ${imagePath}, ${defaultPagePath},	~{ :: fragmentNavbarBasePageRight}, ${options})}"></div>
