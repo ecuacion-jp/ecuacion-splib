@@ -72,8 +72,8 @@
 						</tr>
 					</thead>
 					<tbody style="--bs-table-bg: transparent;">
-						<th:block th:each="rec : ${__${function + 'ListForm'}__.recList}" th:object="${rec}"
-									th:with="form=${__${function + 'ListForm'}__}">
+						<th:block th:each="rec, recStat : ${__${function + 'ListForm'}__.recList}" th:object="${rec}"
+									th:with="form=${__${function + 'ListForm'}__},recList=${__${function + 'ListForm'}__.recList}">
 
 								<div layout:fragment="list-table-body-content"></div>
 
