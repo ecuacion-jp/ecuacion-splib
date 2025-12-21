@@ -833,6 +833,9 @@
 	</div>
 
 	<!--/* internalAllHtmlInputComponent. */-->
+	<!--/* external paramters:
+			- 
+	 */-->
 	<!--/* options: 
 			- value			string	specifies 'value' attribute. Used to hide confidential strings.
 	*/-->
@@ -1542,54 +1545,43 @@
 			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${itemPropertyPath}__}" disabled>
 		</td>
 	</div>
-	
+
+	<!--/* internalTdInputCommon */-->
+	<div th:fragment="internalTdInputInsideTdCommon(itemPropertyPath, position, options)" th:remove="tag">
+		<th:block th:with="index=${recStat.index},isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
+			<th:block th:with="inputId='recList' + ${index} + '.' + ${itemPropertyPath},
+					inputName='recList[' + ${index} + '].' + ${itemPropertyPath},
+					inputValue=${recList[__${index}__].__${itemPropertyPath}__},
+					needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
+
+				<div th:replace="~{ :: internalAllHtmlInputComponent(${position})}"></div>
+
+			</th:block>
+		</th:block>
+	</div>
+
+	<!--/* internalTdInputCommon */-->
+	<div th:fragment="internalTdInputCommon(itemPropertyPath, position, options)" th:remove="tag">
+		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ${position}, ${options})}"></div>
+		</td>
+	</div>	
+
 	<!--/* inline input text */-->
 	<div th:fragment="tdInputText(itemPropertyPath, options)" th:remove="tag">
-		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<th:block th:with="index=${recStat.index},recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
-					fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
-					isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
-				<th:block th:with="id=${'recList' + index + '.' + itemPropertyPath},
-						name=${'recList[' + __${index}__ + '].' + itemPropertyPath},
-						value=${recList[__${index}__].__${itemPropertyPath}__}">
-
-					<input th:type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}"	th:name="${name}"
-							th:value="${(needsCommas != null && needsCommas) ? #numbers.formatDecimal(#strings.replace(value, ',', ''), 1, 'COMMA', 0, 'POINT') : value}"
-							class="text-start form-control-sm fs-6 text-dark"
-							th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
-							th:readonly="${isReadOnly}">
-
-				</th:block>
-			</th:block>
-		</td>
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, 'left', ${options})}"></div>
 	</div>
 	
 	<!--/* inline input number */-->
 	<div th:fragment="tdInputNumber(itemPropertyPath, options)" th:remove="tag">
-		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<th:block th:with="index=${recStat.index},recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
-					fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
-					isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
-				<th:block th:with="id=${'recList' + index + '.' + itemPropertyPath},
-						name=${'recList[' + __${index}__ + '].' + itemPropertyPath},
-						value=${recList[__${index}__].__${itemPropertyPath}__},
-						needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
-						
-					<input th:type="text" th:id="${@optUtil.hasKey(options, 'id') ? id : null}"	th:name="${name}"
-							th:value="${(needsCommas) ? #numbers.formatDecimal(#strings.replace(value, ',', ''), 1, 'COMMA', 0, 'POINT') : value}"
-							class="text-end form-control-sm fs-6 text-dark"
-							th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(id)}" 
-							th:readonly="${isReadOnly}">
-
-					<th:block th:if="${needsCommas}">
-						<script th:inline="javascript">
-							addNumberFormatFunction(/*[[${id}]]*/);
-						</script>
-					</th:block>
-
-				</th:block>
-			</th:block>
-		</td>
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, 'right', ${options})}"></div>
+	</div>
+	
+	<!--/* inline input hidden */-->
+	<div th:fragment="tdInputHidden(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="type=hidden">
+			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, null, ${options})}"></div>
+		</th:block>
 	</div>
 
 	<!--/* inline update button */-->
