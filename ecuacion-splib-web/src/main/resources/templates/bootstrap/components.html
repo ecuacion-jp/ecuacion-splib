@@ -864,8 +864,8 @@
 		</th:block>
 	</div>
 
-	<!--/* internalAllHtmSelectComponent. */-->
-	<div th:fragment="internalAllHtmSelectComponent" th:remove="tag">
+	<!--/* internalAllHtmlSelectComponent. */-->
+	<div th:fragment="internalAllHtmlSelectComponent" th:remove="tag">
 		<!--/* disabled is used because select component does not have readonly readOnly attribute */-->
 		<th:block th:if="${isReadOnly}">
 			<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? recordPropertyPath : null}" th:name="${recordPropertyPath}" th:value="${inputValue}">
@@ -887,6 +887,24 @@
 				<option th:value="${pair[0]}" th:selected="${pair[0] == #strings.trim(inputValue)}">[[${pair[1]}]]</option>
 			</th:block>
 		</select>
+	</div>
+	
+	<!--/* internalAllHtmlCheckboxComponent. */-->
+	<div th:fragment="internalAllHtmlCheckboxComponent(isFormSwitch)" th:remove="tag">
+		<div class="form-check mt-2" th:classappend="${isFormSwitch ? 'form-switch' : ''}">
+			<th:block th:if="${isReadOnly}">
+				<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
+			</th:block>
+			<div>
+				<!--/* https://stackoverflow.com/questions/1809494/post-unchecked-html-checkboxes */-->
+				<input th:if="${!isReadOnly}" type="hidden" th:name="${inputName}" value="off">
+				<input th:id="${inputId}" th:name="${isReadOnly ? '' : inputName}"
+					class="form-check-input align-bottom mb-1" type="checkbox" 
+					th:checked="${inputValue}"
+					th:classappend="${messagesBean.isValid(recordPropertyPath)}"
+					th:disabled="${isReadOnly}">
+			</div>
+		</div>
 	</div>
 
 	<!--/* internalEditInputCommonComponent. */-->
@@ -978,29 +996,12 @@
 
 	<!--/* checkbox */-->
 	<div th:fragment="inputCheckbox(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckbox(false)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::internalAllHtmlCheckboxComponent(false)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
 	</div>
 
 	<!--/* checkbox (switch) */-->
 	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckbox(true)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
-	</div>
-
-	<div th:fragment="fragmentInputCheckbox(isFormSwitch)" th:remove="tag">
-		<div class="form-check mt-2" th:classappend="${isFormSwitch ? 'form-switch' : ''}">
-			<th:block th:if="${isReadOnly}">
-				<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
-			</th:block>
-			<div>
-				<!--/* https://stackoverflow.com/questions/1809494/post-unchecked-html-checkboxes */-->
-				<input th:if="${!isReadOnly}" type="hidden" th:name="${inputName}" value="off">
-				<input th:id="${inputId}" th:name="${isReadOnly ? '' : inputName}"
-					class="form-check-input align-bottom mb-1" type="checkbox" 
-					th:checked="${inputValue}"
-					th:classappend="${messagesBean.isValid(recordPropertyPath)}"
-					th:disabled="${isReadOnly}">
-			</div>
-		</div>
+ 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::internalAllHtmlCheckboxComponent(true)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
 	</div>
 	 
 	<!--/* checkbox */-->
@@ -1027,7 +1028,7 @@
 
 	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
 	<div th:fragment="internalEditInputSelectComponent(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlSelectComponent}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 	</div>
 	
 	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
@@ -1274,7 +1275,7 @@
 	
 	<!--/* internal common component */-->
 	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmSelectComponent}, '',  ${options})}"></div>
+		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlSelectComponent}, '',  ${options})}"></div>
 	</div>
 
 	<div th:fragment="searchSelect(itemPropertyPath, options)" th:remove="tag">
@@ -1547,41 +1548,46 @@
 	</div>
 
 	<!--/* internalTdInputCommon */-->
-	<div th:fragment="internalTdInputInsideTdCommon(itemPropertyPath, position, options)" th:remove="tag">
+	<div th:fragment="internalTdInputInsideTdCommon(itemPropertyPath, allInputCcontents, options)" th:remove="tag">
 		<th:block th:with="index=${recStat.index},isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
 			<th:block th:with="inputId='recList' + ${index} + '.' + ${itemPropertyPath},
 					inputName='recList[' + ${index} + '].' + ${itemPropertyPath},
 					inputValue=${recList[__${index}__].__${itemPropertyPath}__},
 					needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 
-				<div th:replace="~{ :: internalAllHtmlInputComponent(${position})}"></div>
+				<div th:replace="${allInputCcontents}"></div>
 
 			</th:block>
 		</th:block>
 	</div>
 
 	<!--/* internalTdInputCommon */-->
-	<div th:fragment="internalTdInputCommon(itemPropertyPath, position, options)" th:remove="tag">
-		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ${position}, ${options})}"></div>
+	<div th:fragment="internalTdInputCommon(itemPropertyPath, allInputCcontents, options)" th:remove="tag">
+		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ${allInputCcontents}, ${options})}"></div>
 		</td>
-	</div>	
+	</div>
 
 	<!--/* inline input text */-->
 	<div th:fragment="tdInputText(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, 'left', ${options})}"></div>
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('left')}, ${options})}"></div>
 	</div>
 	
 	<!--/* inline input number */-->
 	<div th:fragment="tdInputNumber(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, 'right', ${options})}"></div>
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('right')}, ${options})}"></div>
 	</div>
 	
 	<!--/* inline input hidden */-->
 	<div th:fragment="tdInputHidden(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="type=hidden">
-			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, null, ${options})}"></div>
+			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent(null)}, ${options})}"></div>
 		</th:block>
+	</div>
+
+	<!--/* inline input checkbox */-->
+	<div th:fragment="tdInputCheckbox(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{ :: internalAllHtmlCheckboxComponent(false)}, ${options})}"></div>
 	</div>
 
 	<!--/* inline update button */-->
