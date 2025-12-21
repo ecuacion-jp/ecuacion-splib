@@ -756,7 +756,7 @@
 	<!--/* parameters: 
 			- itemPropertyPath			String 		not empty	itemPropertyPath (recordPropertyPath NOT accepted)
 			- allInputContents			Fragment	not empty	a fragment of the component
-			- allInputPostfixCcontents	Fragment	empty OK	a fragment of the component
+			- allInputPostfixContents	Fragment	empty OK	a fragment of the component
 			- required					boolean		not null	a boolean which specifies whether the input component is required to input something.
 			- needsLabel				boolean		not null	a boolean which specifies whether the input component is required to input something.
 			- needsFieldEmssages		boolean		not null	a boolean which specifies whether the input component is required to input something.
@@ -770,7 +770,7 @@
 			                            'switch' is used in the fragment for now.
 			- readOnly		arbitrary	specifies whether the component is read-only.			                            
 	*/-->
-	<div th:fragment="internalAllInputCommonComponent(itemPropertyPath, allInputContents, allInputPostfixCcontents, required, needsLabel, needsFieldEmssages, 
+	<div th:fragment="internalAllInputCommonComponent(itemPropertyPath, allInputContents, allInputPostfixContents, required, needsLabel, needsFieldEmssages, 
 			labelPostfix, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false, ${options})}"></div>
 
@@ -823,7 +823,7 @@
 							</th:block>
 							
 							<!--/* postfix content */-->
-							<th:block th:replace="${allInputPostfixCcontents}" />
+							<th:block th:replace="${allInputPostfixContents}" />
 							
 						</div>
 					</th:block>
