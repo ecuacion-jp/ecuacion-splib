@@ -108,10 +108,10 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
         throws IOException, ServletException {
 
       if (request.getRequestURI().endsWith("/admin/switchUser")) {
-        response.sendRedirect(switchingUserDonePagePath);
+        response.sendRedirect(request.getContextPath() + switchingUserDonePagePath);
 
       } else {
-        response.sendRedirect(exitingUserDonePagePath);
+        response.sendRedirect(request.getContextPath() + exitingUserDonePagePath);
       }
     }
   }
@@ -127,7 +127,7 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
         AuthenticationException exception) throws IOException, ServletException {
-      response.sendRedirect(exitingUserDonePagePath);
+      response.sendRedirect(request.getContextPath() + exitingUserDonePagePath);
     }
   }
 }

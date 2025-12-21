@@ -755,8 +755,8 @@
 	<!--/* internalAllInputCommonComponent. */-->
 	<!--/* parameters: 
 			- itemPropertyPath			String 		not empty	itemPropertyPath (recordPropertyPath NOT accepted)
-			- allInputCcontents			Fragment	not empty	a fragment of the component
-			- allInputPostfixCcontents	Fragment	empty OK	a fragment of the component
+			- allInputContents			Fragment	not empty	a fragment of the component
+			- allInputPostfixContents	Fragment	empty OK	a fragment of the component
 			- required					boolean		not null	a boolean which specifies whether the input component is required to input something.
 			- needsLabel				boolean		not null	a boolean which specifies whether the input component is required to input something.
 			- needsFieldEmssages		boolean		not null	a boolean which specifies whether the input component is required to input something.
@@ -770,7 +770,7 @@
 			                            'switch' is used in the fragment for now.
 			- readOnly		arbitrary	specifies whether the component is read-only.			                            
 	*/-->
-	<div th:fragment="internalAllInputCommonComponent(itemPropertyPath, allInputCcontents, allInputPostfixCcontents, required, needsLabel, needsFieldEmssages, 
+	<div th:fragment="internalAllInputCommonComponent(itemPropertyPath, allInputContents, allInputPostfixContents, required, needsLabel, needsFieldEmssages, 
 			labelPostfix, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false, ${options})}"></div>
 
@@ -813,7 +813,7 @@
 							</th:block>
 
 							<!--/* content */-->
-							<th:block th:replace="${allInputCcontents}" />
+							<th:block th:replace="${allInputContents}" />
 							
 							<!--/* field messages */-->
 							<th:block th:if="${@propUtil.getValueOrElse('jp.ecuacion.splib.web.process-result-message.shown-at-each-item', true)} and ${needsFieldEmssages}">
@@ -823,7 +823,7 @@
 							</th:block>
 							
 							<!--/* postfix content */-->
-							<th:block th:replace="${allInputPostfixCcontents}" />
+							<th:block th:replace="${allInputPostfixContents}" />
 							
 						</div>
 					</th:block>
@@ -1548,23 +1548,23 @@
 	</div>
 
 	<!--/* internalTdInputCommon */-->
-	<div th:fragment="internalTdInputInsideTdCommon(itemPropertyPath, allInputCcontents, options)" th:remove="tag">
+	<div th:fragment="internalTdInputInsideTdCommon(itemPropertyPath, allInputContents, options)" th:remove="tag">
 		<th:block th:with="index=${recStat.index},isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
 			<th:block th:with="inputId='recList' + ${index} + '.' + ${itemPropertyPath},
 					inputName='recList[' + ${index} + '].' + ${itemPropertyPath},
 					inputValue=${recList[__${index}__].__${itemPropertyPath}__},
 					needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 
-				<div th:replace="${allInputCcontents}"></div>
+				<div th:replace="${allInputContents}"></div>
 
 			</th:block>
 		</th:block>
 	</div>
 
 	<!--/* internalTdInputCommon */-->
-	<div th:fragment="internalTdInputCommon(itemPropertyPath, allInputCcontents, options)" th:remove="tag">
+	<div th:fragment="internalTdInputCommon(itemPropertyPath, allInputContents, options)" th:remove="tag">
 		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ${allInputCcontents}, ${options})}"></div>
+			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ${allInputContents}, ${options})}"></div>
 		</td>
 	</div>
 
