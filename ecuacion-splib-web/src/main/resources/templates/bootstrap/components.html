@@ -556,11 +556,11 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownSubMenu" th:remove="tag">
 			<li th:id="${componentId}">
-				<a class="dropdown-item" href="#">
+				<a class="dropdown-item nav-link" href="#">
 					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
 					<div style="text-align: right;" th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
 				</a>
-				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark bg-gradient bg-primary"
+				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark"
 						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
 						+ ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)
 						+ ' ' + (@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : '')}">
