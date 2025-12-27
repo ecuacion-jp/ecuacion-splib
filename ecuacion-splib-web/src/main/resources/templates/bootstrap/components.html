@@ -1293,7 +1293,7 @@
 	 */-->
 	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${rootRecordName}__.__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 
 	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag">
