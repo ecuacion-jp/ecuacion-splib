@@ -780,10 +780,12 @@
 					propertyPathField=${itemPropertyPath.contains('.') 
 					? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
 					itemNameKeyClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}">
-				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField}">
-					<th:block th:with="inputValue=*{__${recordPropertyPath}__}, inputName=${recordPropertyPath},
+				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField},
+						isDisabled=${@optUtil.hasKey(options, 'disabled')},
+						isReadOnly=${@optUtil.hasKey(options, 'readonly') || isDisabled}">
+					<th:block th:with="inputValue=*{__${recordPropertyPath}__}, 
+							inputName=${isDisabled ? null : recordPropertyPath},
 							inputId=${@optUtil.getValueOrElse(options, 'id', htmlFormName + '.' + recordPropertyPath)},
-							isReadOnly=${@optUtil.hasKey(options, 'readonly')},
 							widthValue=${@optUtil.getValueOrElse(options, 'width', '')}, 
 							widthNumber=${@optUtil.hasKey(options, 'width') ? (widthValue == 'full' ? '12' : (widthValue == 'half' ? '6' : widthValue)) : ''}">
 		
