@@ -17,10 +17,16 @@ package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.lang.reflect.Method;
+import java.util.Locale;
+import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
+import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -71,5 +77,29 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
     // }
 
     return repo.save(e);
+  }
+
+  /**
+   * Offers duplicate check funtion.
+   */
+  protected <T, I> void duplicateInGroupCheck(ListCrudRepository<T, I> repo, Locale locale,
+      String checkTargetField, String checkTargetFieldItemNameKey, String checkTargetFieldValue,
+      String idFieldName, Object idValueOfSelf) throws BizLogicAppException {
+    if (repo.findAll().stream().filter(e -> !getValue(e, idFieldName).equals(idValueOfSelf))
+        .map(e -> getValue(e, checkTargetField)).toList().contains(checkTargetFieldValue)) {
+      throw new BizLogicAppException("COMMON_MSG_DUPLICATED",
+          PropertyFileUtil.getItemName(locale, checkTargetFieldItemNameKey))
+              .itemPropertyPaths(idFieldName);
+    }
+  }
+
+  private <T> Object getValue(T e, String fieldName) {
+    try {
+      Method getNameMethod = e.getClass().getMethod("get" + StringUtils.capitalize(fieldName));
+      return getNameMethod.invoke(e);
+
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
   }
 }
