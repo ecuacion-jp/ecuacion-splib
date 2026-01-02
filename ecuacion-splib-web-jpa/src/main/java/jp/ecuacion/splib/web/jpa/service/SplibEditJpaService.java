@@ -85,9 +85,11 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
   protected <T, I> void duplicateInGroupCheck(ListCrudRepository<T, I> repo, Locale locale,
       String checkTargetField, String checkTargetFieldItemNameKey, String checkTargetFieldValue,
       String idFieldName, Object idValueOfSelf) throws BizLogicAppException {
+    String msgId = "jp.ecuacion.splib.web.jpa.service.SplibEditJpaService.message.duplicated";
+
     if (repo.findAll().stream().filter(e -> !getValue(e, idFieldName).equals(idValueOfSelf))
         .map(e -> getValue(e, checkTargetField)).toList().contains(checkTargetFieldValue)) {
-      throw new BizLogicAppException("COMMON_MSG_DUPLICATED",
+      throw new BizLogicAppException(msgId,
           PropertyFileUtil.getItemName(locale, checkTargetFieldItemNameKey))
               .itemPropertyPaths(idFieldName);
     }
