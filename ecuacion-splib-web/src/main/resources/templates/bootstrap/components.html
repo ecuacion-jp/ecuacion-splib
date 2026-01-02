@@ -969,6 +969,11 @@
 	<div th:fragment="inputTime(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'time', ${options})}"></div>
 	</div>
+	
+	<!--/* inputDateTime (always disabled) */-->
+	<div th:fragment="inputDateTime(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'text', true, 'disabled,' + ${options})}"></div>
+	</div>
 
 	<!--/* textarea */-->
  	<div th:fragment="inputTextArea(itemPropertyPath, options)" th:remove="tag">
