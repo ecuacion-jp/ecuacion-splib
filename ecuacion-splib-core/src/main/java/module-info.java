@@ -15,6 +15,7 @@
  */
 module jp.ecuacion.splib.core {
   exports jp.ecuacion.splib.core.bean;
+  exports jp.ecuacion.splib.core.bl;
   exports jp.ecuacion.splib.core.config;
   exports jp.ecuacion.splib.core.constant;
   exports jp.ecuacion.splib.core.container;
@@ -27,6 +28,6 @@ module jp.ecuacion.splib.core {
   requires spring.beans;
   requires transitive spring.context;
   requires spring.core;
-  requires jp.ecuacion.lib.core;
+  requires transitive jp.ecuacion.lib.core;
   requires org.apache.commons.lang3;
 }

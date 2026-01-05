@@ -17,10 +17,16 @@ package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.lang.reflect.Method;
+import java.util.List;
+import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
+import jp.ecuacion.splib.core.bl.SplibCoreBl;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -71,5 +77,41 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
     // }
 
     return repo.save(e);
+  }
+
+  /**
+   * Offers duplicate check funtion.
+   */
+  protected <T, I> void duplicateInGroupCheck(ListCrudRepository<T, I> repo,
+      String checkTargetItemPropertyPath, String checkTargetFieldItemNameKey,
+      String checkTargetFieldValue, String idFieldName, I idValueOfSelf)
+      throws BizLogicAppException {
+
+    duplicateInListCheck(repo.findAll(), checkTargetItemPropertyPath, checkTargetFieldItemNameKey,
+        checkTargetFieldValue, idFieldName, idValueOfSelf);
+  }
+
+  /**
+   * Offers duplicate check funtion.
+   */
+  protected <T, I> void duplicateInListCheck(List<T> entityList, String checkTargetItemPropertyPath,
+      String checkTargetFieldItemNameKey, String checkTargetFieldValue, String idFieldName,
+      I idValueOfSelf) throws BizLogicAppException {
+    boolean bl = entityList.stream().filter(e -> !getValue(e, idFieldName).equals(idValueOfSelf))
+        .map(e -> getValue(e, checkTargetItemPropertyPath)).toList()
+        .contains(checkTargetFieldValue);
+
+    SplibCoreBl.throwExceptionWhenDuplicated(bl, new String[] {checkTargetItemPropertyPath},
+        new String[] {checkTargetFieldItemNameKey});
+  }
+
+  private <T> Object getValue(T e, String fieldName) {
+    try {
+      Method getNameMethod = e.getClass().getMethod("get" + StringUtils.capitalize(fieldName));
+      return getNameMethod.invoke(e);
+
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
   }
 }
