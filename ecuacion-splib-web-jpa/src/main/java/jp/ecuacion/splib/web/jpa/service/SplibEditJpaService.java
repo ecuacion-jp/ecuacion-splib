@@ -18,10 +18,10 @@ package jp.ecuacion.splib.web.jpa.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.lang.reflect.Method;
-import java.util.Locale;
+import java.util.List;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
+import jp.ecuacion.splib.core.bl.SplibCoreBl;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
@@ -82,17 +82,27 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
   /**
    * Offers duplicate check funtion.
    */
-  protected <T, I> void duplicateInGroupCheck(ListCrudRepository<T, I> repo, Locale locale,
-      String checkTargetField, String checkTargetFieldItemNameKey, String checkTargetFieldValue,
-      String idFieldName, Object idValueOfSelf) throws BizLogicAppException {
-    String msgId = "jp.ecuacion.splib.web.jpa.service.SplibEditJpaService.message.duplicated";
+  protected <T, I> void duplicateInGroupCheck(ListCrudRepository<T, I> repo,
+      String checkTargetItemPropertyPath, String checkTargetFieldItemNameKey,
+      String checkTargetFieldValue, String idFieldName, I idValueOfSelf)
+      throws BizLogicAppException {
 
-    if (repo.findAll().stream().filter(e -> !getValue(e, idFieldName).equals(idValueOfSelf))
-        .map(e -> getValue(e, checkTargetField)).toList().contains(checkTargetFieldValue)) {
-      throw new BizLogicAppException(msgId,
-          PropertyFileUtil.getItemName(locale, checkTargetFieldItemNameKey))
-              .itemPropertyPaths(idFieldName);
-    }
+    duplicateInListCheck(repo.findAll(), checkTargetItemPropertyPath, checkTargetFieldItemNameKey,
+        checkTargetFieldValue, idFieldName, idValueOfSelf);
+  }
+
+  /**
+   * Offers duplicate check funtion.
+   */
+  protected <T, I> void duplicateInListCheck(List<T> entityList, String checkTargetItemPropertyPath,
+      String checkTargetFieldItemNameKey, String checkTargetFieldValue, String idFieldName,
+      I idValueOfSelf) throws BizLogicAppException {
+    boolean bl = entityList.stream().filter(e -> !getValue(e, idFieldName).equals(idValueOfSelf))
+        .map(e -> getValue(e, checkTargetItemPropertyPath)).toList()
+        .contains(checkTargetFieldValue);
+
+    SplibCoreBl.throwExceptionWhenDuplicated(bl, new String[] {checkTargetItemPropertyPath},
+        new String[] {checkTargetFieldItemNameKey});
   }
 
   private <T> Object getValue(T e, String fieldName) {
