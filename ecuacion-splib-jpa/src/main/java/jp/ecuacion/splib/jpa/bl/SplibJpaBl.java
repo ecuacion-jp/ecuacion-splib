@@ -1,43 +1,31 @@
-/*
- * Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package jp.ecuacion.splib.web.jpa.service;
+package jp.ecuacion.splib.jpa.bl;
 
 import java.util.Optional;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
+import jp.ecuacion.splib.core.bl.SplibCoreBl;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 /**
- * Is used for optimistic locking procedure with JPA.
+ * Offers JPA related business logics.
  * 
- * @param <E> entity
+ * @param <E> Entity
+ * @param <I> Id of entity
+ * @param <V> Version of entity
  */
-public interface SplibJpaServiceInterface<E extends EclibEntity> {
+public abstract class SplibJpaBl<E extends EclibEntity, I, V> extends SplibCoreBl {
 
   /**
    * Is used for {@code findAndOptimisticLockingCheck()}.
    * 
    * <p>It obtains the repository for select record from database.
-   *     See {@link #findAndOptimisticLockingCheck(String, String...)}.</p>
+   *     See {@link #findAndOptimisticLockingCheck(I, V)}.</p>
    * 
    * @return repository
    */
-  public abstract SplibRepository<E, Long> getRepositoryForOptimisticLocking();
+  public abstract SplibRepository<E, I> getRepositoryForOptimisticLocking();
 
   /**
    * Is used for {@code findAndOptimisticLockingCheck()}.
@@ -45,7 +33,7 @@ public interface SplibJpaServiceInterface<E extends EclibEntity> {
    * <p>It obtains the versions for optimistic exclusive control.
    *     See {@link #findAndOptimisticLockingCheck(String, String...)}.</p>
    */
-  public abstract String[] getVersionsForOptimisticLocking(E e);
+  public abstract V getVersionForOptimisticLocking(E e);
 
   /**
    * 一覧画面から単票画面への遷移・編集時・削除時などで、楽観的排他制御チェックを行う処理。併せてDBからentityを取得する.
@@ -68,11 +56,8 @@ public interface SplibJpaServiceInterface<E extends EclibEntity> {
    * 呼ばれた先でさらに値を取得する必要がある。その追加取得したentityも、後続処理で使用する必要があるため注意。
    * </p>
    */
-  @Deprecated
-  public default E findAndOptimisticLockingCheck(String idOfRootRecord,
-      String... versionsInScreen) throws AppException {
-    Optional<E> optional =
-        getRepositoryForOptimisticLocking().findById(Long.valueOf(idOfRootRecord));
+  public E findAndOptimisticLockingCheck(I id, V version) throws AppException {
+    Optional<E> optional = getRepositoryForOptimisticLocking().findById(id);
 
     // 他のユーザがレコードを削除してしまい、削除フラグが立って検索できない状態になる場合がある。
     // それを見越して、指定のIDのデータが存在しない場合も排他制御エラーとする。
@@ -84,30 +69,20 @@ public interface SplibJpaServiceInterface<E extends EclibEntity> {
     E e = optional.get();
 
     // versionが異なる場合は楽観的排他制御エラーとする
-    if (!isVersionsTheSame(versionsInScreen, getVersionsForOptimisticLocking(e))) {
-      throw new ObjectOptimisticLockingFailureException("some class", idOfRootRecord);
+    if (!isVersionsTheSame(version, getVersionForOptimisticLocking(e))) {
+      throw new ObjectOptimisticLockingFailureException("some class", id);
     }
 
     return e;
   }
 
-  private boolean isVersionsTheSame(String[] vers1, String[] vers2) {
+  private boolean isVersionsTheSame(V vers1, V vers2) {
     // nullは不可とする。削除などにより値が無くなったのであれば、長さゼロの配列で。
     if (vers1 == null || vers2 == null) {
       throw new RuntimeException(
           "Optimistic Locking check cannot be done because version array is null.");
     }
-    
-    if (vers1.length != vers2.length) {
-      return false;
-    }
 
-    for (int i = 0; i < vers1.length; i++) {
-      if (!vers1[i].equals(vers2[i])) {
-        return false;
-      }
-    }
-
-    return true;
+    return vers1.equals(vers2);
   }
 }
