@@ -701,7 +701,8 @@
 						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
 						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="*{confirmedWarnings}">
 			 			<input type="hidden" name="submitOnChangeToRefresh">
-						<input type="hidden" th:name="${rootRecordName + '.' + (#strings.isEmpty(versionFieldName) ? 'version' : versionFieldName)}" th:value="${versionInitialValue}" />
+			 			<input type="hidden" th:name="${rootRecordName + '.ids'}" th:value="${ids}">
+						<input type="hidden" th:name="${rootRecordName + '.optimisticLockVersions'}" th:value="${versionInitialValue}" />
 
 						<th:block th:replace="${formContent}" />
 			
@@ -1600,10 +1601,11 @@
 	<!--/* inline update button */-->
 	<div th:fragment="tdUpdateButton(id, version, options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<button type="submit" th:id="'update_' + ${id}" name="showUpdateForm" class="btn btn-sm btn-color-btn text-white"
+			<button type="submit" name="showUpdateForm" class="btn btn-sm btn-color-btn text-white"
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+					th:data-id="${id}"
 					th:data-version="${version}"
-					onClick="update('listForm', this.id, this.dataset.version);"
+					onClick="update('listForm', this.dataset.id, this.dataset.version);"
 					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.update')}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
@@ -1615,8 +1617,10 @@
 		<td class="text-center p-1 align-middle" height="0px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<button type="submit" th:id="'delete_' + ${id}" name="delete" class="btn btn-sm btn-color-btn-danger text-white" 
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:data-form-name="listForm" th:data-item="${recordValueDisplayedOnDelete}" th:data-version="${version}"
-					th:onClick="return del(this.dataset.formName, this.id, this.dataset.item, this.dataset.version);" 
+					th:data-form-name="listForm" th:data-item="${recordValueDisplayedOnDelete}" 
+					th:data-id="${id}"
+					th:data-version="${version}"
+					th:onClick="return del(this.dataset.formName, this.dataset.id, this.dataset.item, this.dataset.version);" 
 					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.delete')}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
@@ -1660,9 +1664,9 @@
 	
 	<!--/* javaScript for inline update button. Use with tdUpdateButton. Put it at "bottom-space" part in a page template.  */-->
 	<div th:fragment="scriptFortdUpdateButton(rootRecordName, idFieldName, versionFieldName, options)" th:remove="tag">
-		<script th:with="id=${rootRecordName + '.' + idFieldName},versionId=${rootRecordName + '.' + versionFieldName}">
+		<script th:with="id=${rootRecordName + '.' + idFieldName},ids=${rootRecordName + '.ids'},versionId=${rootRecordName + '.optimisticLockVersions'}">
 		function update(formName, id, version) {
-			document.getElementById("[[${id}]]").value = id.replace('update_', '');
+			document.getElementById("[[${ids}]]").value = id;
 			document.forms[formName].elements["[[${versionId}]]"].value = version;
 		}
 		</script>
@@ -1670,13 +1674,13 @@
 
 	<!--/* javaScript for inline delete button.  Use with tdDeleteButton. Put it at "bottom-space" part in a page template.  */-->
 	<div th:fragment="scriptFortdDeleteButton(rootRecordName, idFieldName, versionFieldName, itemDisplayedOnDelete, options)" th:remove="tag">
-		<script th:with="id=${rootRecordName + '.' + idFieldName},versionId=${rootRecordName + '.' + versionFieldName}">
+		<script th:with="id=${rootRecordName + '.' + idFieldName},ids=${rootRecordName + '.ids'},versionId=${rootRecordName + '.optimisticLockVersions'}">
 		function del(formName, id, recordName, version) {
 			var message = "[[${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete)}]]" + " " + recordName;
 			var bl = confirm(message);
 			if (!bl) return false;
 			
-			document.getElementById("[[${id}]]").value = id.replace('delete_', '');
+			document.getElementById("[[${ids}]]").value = id;
 			document.forms[formName].elements["[[${versionId}]]"].value = version;
 
 			return true;
