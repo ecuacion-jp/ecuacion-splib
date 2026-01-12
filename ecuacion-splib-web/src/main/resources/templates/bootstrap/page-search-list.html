@@ -50,7 +50,7 @@
 				</div>
 				<div th:replace="~{bootstrap/components :: horizontalLine('')}"></div>
 			</th:block>
-			<input type="hidden" name="dataKind" th:value="*{dataKind}">
+			<input type="hidden" name="dataKind" th:value="${__${function + 'SearchForm'}__.dataKind}">
 			<input type="hidden" name="action" id="action">
 			<div th:replace="~{bootstrap/components :: sortPagingAndRecordsInScreen(${__${function + 'SearchForm'}__}, '')}"></div>
 		</div>
@@ -60,7 +60,7 @@
 		<div class="container-fluid">
 
  			<div th:replace="~{bootstrap/components :: hiddenForInlineButtons(${rootRecordName}, ${idFieldName2}, '')}"></div>
-			<input type="hidden" name="dataKind" th:value="*{dataKind}">
+			<input type="hidden" name="dataKind" th:value="${__${function + 'SearchForm'}__.dataKind}">
 			
 			<div class="table-responsive">
 				<table class="table table-striped text-nowrap table-bordered">

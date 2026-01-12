@@ -689,7 +689,7 @@
 							th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 							th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
 							th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
-							th:object="${__${javaFormName}__}">
+							th:object="${__${javaFormName + '.' + rootRecordName}__}">
 						<input type="hidden" name="transactionToken" th:value="${transactionToken}">
 				
 						<!--/* Show the form name with an error message to easily understand that the form name passed from controller to model is wrong. */-->
@@ -699,12 +699,12 @@
 						
 						<!--/* Store form name to click button outside the form with confirmedWarnings. */-->
 						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
-						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="*{confirmedWarnings}">
+						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="${javaFormName + '.' + confirmedWarnings}">
 			 			<input type="hidden" name="submitOnChangeToRefresh">
 			 			<input type="hidden" th:id="${htmlFormName + '.' + rootRecordName + '.ids'}" th:name="${rootRecordName + '.ids'}" 
-			 					th:value="*{__${rootRecordName + '.ids'}__}">
+			 					th:value="*{ids}">
 						<input type="hidden" th:id="${htmlFormName + '.' + rootRecordName + '.optimisticLockVersions'}" th:name="${rootRecordName + '.optimisticLockVersions'}" 
-								th:value="*{__${rootRecordName + '.optimisticLockVersions'}__}" />
+								th:value="*{optimisticLockVersions}" />
 
 						<th:block th:replace="${formContent}" />
 			
@@ -786,7 +786,7 @@
 				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField},
 						isDisabled=${@optUtil.hasKey(options, 'disabled')},
 						isReadOnly=${@optUtil.hasKey(options, 'readonly') || isDisabled}">
-					<th:block th:with="inputValue=*{__${recordPropertyPath}__}, 
+					<th:block th:with="inputValue=*{__${itemPropertyPath}__}, 
 							inputName=${isDisabled ? null : recordPropertyPath},
 							inputId=${@optUtil.getValueOrElse(options, 'id', htmlFormName + '.' + recordPropertyPath)},
 							widthValue=${@optUtil.getValueOrElse(options, 'width', '')}, 
@@ -798,7 +798,7 @@
 
 							<!--/* label */-->
 							<th:block th:if="${needsLabel}"
-									th:with="itemNameKey=*{__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
+									th:with="itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
 								<label th:for="${inputId}" class="form-label text-dark mb-0">
 									[[${@msgUtil.getValue(#locale, '__${itemNameKey}__') + labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
@@ -847,11 +847,11 @@
 	<div th:fragment="internalAllHtmlInputComponent(position)" th:remove="tag">
 		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" 
 				th:value="${@optUtil.hasKey(options, 'value') ? @msgUtil.getValue(#locale, @optUtil.getValue(options, 'value')) : inputValue}"
-				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{__${recordPropertyPathClass}__.getStringLength('__${propertyPathField}__')}"
+				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{getStringLength('__${propertyPathField}__')}"
 				class="form-control text-dark"
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
 						+ ' ' + ${position == 'right' ? 'text-end' : ''}
-						+ ' ' + ${messagesBean.isValid(recordPropertyPath)}" 
+						+ ' ' + ${messagesBean.isValid(itemPropertyPath)}" 
 				th:readonly="${isReadOnly}">
 	</div>
 
@@ -879,7 +879,7 @@
 		<select th:id="${inputId}" th:name="${inputName}"
 				class="form-select text-dark" 
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
-				 + ' ' + ${messagesBean.isValid(recordPropertyPath)}"
+				 + ' ' + ${messagesBean.isValid(itemPropertyPath)}"
 				th:disabled="${isReadOnly}"
 				th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
 				th:data-html-form-name="${htmlFormName}"
@@ -916,7 +916,7 @@
 	<div th:fragment="internalEditInputCommonComponent(itemPropertyPath, editInputContents, editInputContentsPostfix, options)" th:remove="tag">
 		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
  		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentEditInputCommonComponent}, ${editInputContentsPostfix}, 
- 				*{__${rootRecordName}__.isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
+ 				*{isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
  				 true, true, '',  ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentEditInputCommonComponent" th:remove="tag">
@@ -1042,12 +1042,12 @@
 	</div>
 	
 	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalEditInputSelectComponent(${itemPropertyPath}, *{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
+		<div th:replace="~{ :: internalEditInputSelectComponent(${itemPropertyPath}, *{__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
 	</div>
 	
 	<div th:fragment="inputSelectWithLocale(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputSelectComponent(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -1060,7 +1060,7 @@
 	 */-->
 	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputSelectComponent(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* component for file upload */-->
@@ -1199,7 +1199,7 @@
 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputCaptcha}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCaptcha" th:remove="tag">
-			<img class="img-fluid mb-2" th:src="*{__${rootRecordName}__.__${itemPropertyPath}__ImageData}" style="border: 1px solid #000;">
+			<img class="img-fluid mb-2" th:src="*{__${itemPropertyPath}__ImageData}" style="border: 1px solid #000;">
 
 			<div th:with="type=text,needsMaxLength=false,isReadOnly=false">
 				<div th:replace="~{ :: internalAllHtmlInputComponent('left')}"></div>
@@ -1248,7 +1248,7 @@
 	<div th:fragment="internalSearchInputCommonComponent(itemPropertyPath, searchInputContents, labelPostfix, options)" th:remove="tag">
 		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentSearchInputCommonComponent}, ~{bootstrap/components :: nullFragment}, 
-		*{__${rootRecordName}__.isNotEmptyOnSearch('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
+		*{isNotEmptyOnSearch('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
 		true, true, ${labelPostfix}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentSearchInputCommonComponent" th:remove="tag">
@@ -1258,7 +1258,7 @@
 	
 	<div th:fragment="searchText(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalSearchInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('left')}, 
-				*{__${rootRecordName}__.getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>
+				*{getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>
 	</div>
 
 	<div th:fragment="searchNumber(itemPropertyPath, options)" th:remove="tag">
@@ -1268,7 +1268,7 @@
 			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" th:name="${inputId}" th:value="${inputValue}"
 				class="text-end"
 				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(inputId)}"
-				th:maxlength="${isReadOnly} ? '' : *{__${recordPropertyPathClass}__.getStringLength('__${fieldName}__')}"
+				th:maxlength="${isReadOnly} ? '' : *{getStringLength('__${fieldName}__')}"
 				th:readonly="${isReadOnly}">
 		</div></th:block>
 	</div>
@@ -1290,7 +1290,7 @@
 
 	<div th:fragment="searchSelect(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
+				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -1303,12 +1303,12 @@
 	 */-->
 	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 
 	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath}, 
-				*{__${rootRecordName}__.__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 
 	<!--/* 
@@ -1601,12 +1601,12 @@
 	</div>
 
 	<!--/* inline update button */-->
-	<div th:fragment="tdUpdateButton(id, version, options)" th:remove="tag">
+	<div th:fragment="tdUpdateButton(options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<button type="submit" name="showUpdateForm" class="btn btn-sm btn-color-btn text-white"
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:data-id="${id}"
-					th:data-version="${version}"
+					th:data-id="*{ids}"
+					th:data-version="*{optimisticLockVersions}"
 					onClick="update('listForm', this.dataset.id, this.dataset.version);"
 					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.update')}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
@@ -1615,13 +1615,13 @@
 	</div>
 	
 	<!--/* inline delete button */-->
-	<div th:fragment="tdDeleteButton(id, recordValueDisplayedOnDelete, version, options)" th:remove="tag">
+	<div th:fragment="tdDeleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="0px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<button type="submit" th:id="'delete_' + ${id}" name="delete" class="btn btn-sm btn-color-btn-danger text-white" 
 					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 					th:data-form-name="listForm" th:data-item="${recordValueDisplayedOnDelete}" 
-					th:data-id="${id}"
-					th:data-version="${version}"
+					th:data-id="*{ids}"
+					th:data-version="*{optimisticLockVersions}"
 					th:onClick="return del(this.dataset.formName, this.dataset.id, this.dataset.item, this.dataset.version);" 
 					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.delete')}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
