@@ -31,6 +31,7 @@ import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
+import jp.ecuacion.lib.core.exception.unchecked.UncheckedAppException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -213,6 +214,22 @@ public abstract class SplibExceptionHandler {
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
+  }
+
+  /**
+   * Catches {@code UncheckedAppException}.
+   * 
+   * @param exception UncheckedAppException
+   * @param loginUser UserDetails
+   * @return ModelAndView
+   * @throws Exception Exception
+   */
+  @ExceptionHandler({UncheckedAppException.class})
+  public @Nonnull ModelAndView handleUncheckedAppException(@Nonnull UncheckedAppException exception,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+
+    // Treat as normal BizLogicAppException.
+    return handleAppException((AppException) exception.getCause(), loginUser);
   }
 
   /**
