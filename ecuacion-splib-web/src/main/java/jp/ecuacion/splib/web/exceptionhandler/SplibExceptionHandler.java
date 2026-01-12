@@ -191,6 +191,8 @@ public abstract class SplibExceptionHandler {
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
+    boolean hasDesignatedItemPropertyPathInBizLogicAppException = false;
+
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
 
@@ -208,9 +210,17 @@ public abstract class SplibExceptionHandler {
           recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
 
       msgSetter.setMessage(messagesBean, saex, request.getLocale(), recordPropertyPaths);
+
+      if (saex instanceof BizLogicAppException) {
+        String[] paths = ((BizLogicAppException) saex).getItemPropertyPaths();
+        if (paths != null && paths.length > 0) {
+          hasDesignatedItemPropertyPathInBizLogicAppException = true;
+        }
+      }
     }
 
-    msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale());
+    msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale(),
+        hasDesignatedItemPropertyPathInBizLogicAppException);
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
@@ -377,8 +387,9 @@ public abstract class SplibExceptionHandler {
       }
     }
 
-    public void addMessageThatSaysThereIsAnError(MessagesBean messagesBean, Locale locale) {
-      if (needsMsgAtItem && !needsMsgAtTop) {
+    public void addMessageThatSaysThereIsAnError(MessagesBean messagesBean, Locale locale,
+        boolean hasDesignatedItemPropertyPathInBizLogicAppException) {
+      if (needsMsgAtItem && !needsMsgAtTop && hasDesignatedItemPropertyPathInBizLogicAppException) {
         String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
         messagesBean.setErrorMessage(PropertyFileUtil.getMessage(locale, key), false);
       }
