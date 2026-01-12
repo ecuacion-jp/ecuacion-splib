@@ -701,8 +701,10 @@
 						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
 						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="*{confirmedWarnings}">
 			 			<input type="hidden" name="submitOnChangeToRefresh">
-			 			<input type="hidden" th:name="${rootRecordName + '.ids'}" th:value="${ids}">
-						<input type="hidden" th:name="${rootRecordName + '.optimisticLockVersions'}" th:value="${versionInitialValue}" />
+			 			<input type="hidden" th:id="${htmlFormName + '.' + rootRecordName + '.ids'}" th:name="${rootRecordName + '.ids'}" 
+			 					th:value="*{__${rootRecordName + '.ids'}__}">
+						<input type="hidden" th:id="${htmlFormName + '.' + rootRecordName + '.optimisticLockVersions'}" th:name="${rootRecordName + '.optimisticLockVersions'}" 
+								th:value="*{__${rootRecordName + '.optimisticLockVersions'}__}" />
 
 						<th:block th:replace="${formContent}" />
 			
@@ -1666,8 +1668,8 @@
 	<div th:fragment="scriptFortdUpdateButton(rootRecordName, idFieldName, versionFieldName, options)" th:remove="tag">
 		<script th:with="id=${rootRecordName + '.' + idFieldName},ids=${rootRecordName + '.ids'},versionId=${rootRecordName + '.optimisticLockVersions'}">
 		function update(formName, id, version) {
-			document.getElementById("[[${ids}]]").value = id;
-			document.forms[formName].elements["[[${versionId}]]"].value = version;
+			document.getElementById("[[${'listForm.' + ids}]]").value = id;
+			document.forms[formName].elements["[[${'listForm.' + versionId}]]"].value = version;
 		}
 		</script>
 	</div>
@@ -1680,8 +1682,8 @@
 			var bl = confirm(message);
 			if (!bl) return false;
 			
-			document.getElementById("[[${ids}]]").value = id;
-			document.forms[formName].elements["[[${versionId}]]"].value = version;
+			document.getElementById("[[${'listForm.' + ids}]]").value = id;
+			document.forms[formName].elements["[[${'listForm.' + versionId}]]"].value = version;
 
 			return true;
 		}

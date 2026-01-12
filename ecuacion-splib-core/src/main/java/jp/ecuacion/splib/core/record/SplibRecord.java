@@ -126,4 +126,14 @@ public abstract class SplibRecord {
 
     return rtnList;
   }
+  
+  /** default method. */
+  public String getIds() {
+    return "";
+  }
+  
+  /** default method. */
+  public String getOptimisticLockVersions() {
+    return "";
+  }
 }
