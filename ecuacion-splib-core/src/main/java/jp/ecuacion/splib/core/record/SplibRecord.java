@@ -16,9 +16,14 @@
 package jp.ecuacion.splib.core.record;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
+import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.apache.commons.lang3.StringUtils;
 
@@ -88,7 +93,7 @@ public abstract class SplibRecord {
 
         Method m = this.getClass().getMethod("get" + StringUtils.capitalize(fieldName));
 
-        // In the case of relationRec == null NullPointerException occurs 
+        // In the case of relationRec == null NullPointerException occurs
         // when getValue method is called, so return null before it happens in that case.
         SplibRecord relationRec = (SplibRecord) m.invoke(this);
         if (relationRec == null) {
@@ -108,5 +113,27 @@ public abstract class SplibRecord {
     }
 
     return rtn;
+  }
+
+  /**
+   * Returns boolean dropdown list.
+   */
+  protected List<String[]> getBooleanDropdownList(Locale locale, String fieldName, String options) {
+    List<String[]> rtnList = new ArrayList<>();
+
+    Arrays.asList(new String[] {"true", "false"}).stream().forEach(bl -> rtnList.add(
+        new String[] {bl, PropertyFileUtil.getMessage(locale, "boolean." + fieldName + "." + bl)}));
+
+    return rtnList;
+  }
+  
+  /** default method. */
+  public String getIds() {
+    return "";
+  }
+  
+  /** default method. */
+  public String getOptimisticLockVersions() {
+    return "";
   }
 }

@@ -31,6 +31,7 @@ import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
+import jp.ecuacion.lib.core.exception.unchecked.UncheckedAppException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -40,6 +41,7 @@ import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import jp.ecuacion.splib.web.controller.SplibEditController;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
@@ -190,6 +192,8 @@ public abstract class SplibExceptionHandler {
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
+    boolean hasDesignatedItemPropertyPathInBizLogicAppException = false;
+
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
 
@@ -207,12 +211,36 @@ public abstract class SplibExceptionHandler {
           recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
 
       msgSetter.setMessage(messagesBean, saex, request.getLocale(), recordPropertyPaths);
+
+      if (saex instanceof BizLogicAppException) {
+        String[] paths = ((BizLogicAppException) saex).getItemPropertyPaths();
+        if (paths != null && paths.length > 0) {
+          hasDesignatedItemPropertyPathInBizLogicAppException = true;
+        }
+      }
     }
 
-    msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale());
+    msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale(),
+        hasDesignatedItemPropertyPathInBizLogicAppException);
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
+  }
+
+  /**
+   * Catches {@code UncheckedAppException}.
+   * 
+   * @param exception UncheckedAppException
+   * @param loginUser UserDetails
+   * @return ModelAndView
+   * @throws Exception Exception
+   */
+  @ExceptionHandler({UncheckedAppException.class})
+  public @Nonnull ModelAndView handleUncheckedAppException(@Nonnull UncheckedAppException exception,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+
+    // Treat as normal BizLogicAppException.
+    return handleAppException((AppException) exception.getCause(), loginUser);
   }
 
   /**
@@ -226,12 +254,19 @@ public abstract class SplibExceptionHandler {
   @ExceptionHandler({OverlappingFileLockException.class})
   public @Nonnull ModelAndView handleOptimisticLockingFailureException(
       @Nonnull OverlappingFileLockException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
 
-    // Treat as normal BizLogicAppException
-    return handleAppException(
-        new BizLogicAppException("jp.ecuacion.splib.web.common.message.optimisticLocking"),
-        loginUser);
+    String msgId = "jp.ecuacion.splib.web.common.message.optimisticLocking";
+    if (getController() instanceof SplibEditController) {
+      String loginState = (String) getModel().getAttribute("loginState");
+      String path = "/" + loginState + "/" + getController().getFunction() + "/"
+          + getController().getDefaultDestSubFunctionOnNormalEnd() + "/"
+          + getController().getDefaultDestPageOnNormalEnd();
+      return handleRedirectNeededExceptions(new RedirectException(path, msgId), model);
+    } else {
+      // Treat as normal BizLogicAppException
+      return handleAppException(new BizLogicAppException(msgId), loginUser);
+    }
   }
 
   /**
@@ -360,8 +395,9 @@ public abstract class SplibExceptionHandler {
       }
     }
 
-    public void addMessageThatSaysThereIsAnError(MessagesBean messagesBean, Locale locale) {
-      if (needsMsgAtItem && !needsMsgAtTop) {
+    public void addMessageThatSaysThereIsAnError(MessagesBean messagesBean, Locale locale,
+        boolean hasDesignatedItemPropertyPathInBizLogicAppException) {
+      if (needsMsgAtItem && !needsMsgAtTop && hasDesignatedItemPropertyPathInBizLogicAppException) {
         String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
         messagesBean.setErrorMessage(PropertyFileUtil.getMessage(locale, key), false);
       }
