@@ -196,21 +196,7 @@ public abstract class SplibExceptionHandler {
 
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
-
-      List<String> recordPropertyPathList = new ArrayList<>();
-      for (String itemPropertyPath : saex.getItemPropertyPaths()) {
-        if (!itemPropertyPath.startsWith(getController().getRootRecordName() + ".")) {
-          recordPropertyPathList.add(getController().getRootRecordName() + "." + itemPropertyPath);
-
-        } else {
-          recordPropertyPathList.add(itemPropertyPath);
-        }
-      }
-
-      String[] recordPropertyPaths =
-          recordPropertyPathList.toArray(new String[recordPropertyPathList.size()]);
-
-      msgSetter.setMessage(messagesBean, saex, request.getLocale(), recordPropertyPaths);
+      msgSetter.setMessage(messagesBean, saex, request.getLocale(), saex.getItemPropertyPaths());
 
       if (saex instanceof BizLogicAppException) {
         String[] paths = ((BizLogicAppException) saex).getItemPropertyPaths();

@@ -26,10 +26,11 @@
 		th:with="subFunction='edit', formMethod='post'">
 
 <body>
-	<div layout:fragment="form-content" th:remove="tag">
+	<div layout:fragment="form-content" th:remove="tag" 
+			th:with="isInsert=${__${function + 'EditForm'}__.isInsert},dataKind=${__${function + 'EditForm'}__.dataKind}">
 		<div class="container-fluid mt-6">
-			<input type="hidden" name="isInsert" th:value="*{isInsert}">
-			<input type="hidden" name="dataKind" th:value="*{dataKind}">
+			<input type="hidden" name="isInsert" th:value="${isInsert}">
+			<input type="hidden" name="dataKind" th:value="${dataKind}">
 		
 			<div layout:fragment="edit-fields-content"></div>
 
