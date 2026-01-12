@@ -19,6 +19,7 @@ import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
 import jp.ecuacion.splib.web.util.SplibUtil;
@@ -94,7 +95,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    */
   @Override
   public String page(Model model, F form, @AuthenticationPrincipal UserDetails loginUser) {
-    throw new RuntimeException("\"page\" needs params.");
+    throw new RedirectToHomePageException("jp.ecuacion.splib.web.common.message.urlNotProper");
   }
 
   /**
