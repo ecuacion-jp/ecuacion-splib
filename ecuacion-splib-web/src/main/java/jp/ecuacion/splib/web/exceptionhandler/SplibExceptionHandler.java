@@ -41,6 +41,7 @@ import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import jp.ecuacion.splib.web.controller.SplibEditController;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
@@ -253,12 +254,19 @@ public abstract class SplibExceptionHandler {
   @ExceptionHandler({OverlappingFileLockException.class})
   public @Nonnull ModelAndView handleOptimisticLockingFailureException(
       @Nonnull OverlappingFileLockException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
 
-    // Treat as normal BizLogicAppException
-    return handleAppException(
-        new BizLogicAppException("jp.ecuacion.splib.web.common.message.optimisticLocking"),
-        loginUser);
+    String msgId = "jp.ecuacion.splib.web.common.message.optimisticLocking";
+    if (getController() instanceof SplibEditController) {
+      String loginState = (String) getModel().getAttribute("loginState");
+      String path = "/" + loginState + "/" + getController().getFunction() + "/"
+          + getController().getDefaultDestSubFunctionOnNormalEnd() + "/"
+          + getController().getDefaultDestPageOnNormalEnd();
+      return handleRedirectNeededExceptions(new RedirectException(path, msgId), model);
+    } else {
+      // Treat as normal BizLogicAppException
+      return handleAppException(new BizLogicAppException(msgId), loginUser);
+    }
   }
 
   /**
