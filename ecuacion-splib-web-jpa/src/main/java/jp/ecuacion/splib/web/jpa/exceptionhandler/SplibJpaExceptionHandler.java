@@ -21,6 +21,7 @@ import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -54,8 +55,8 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
   public ModelAndView handleObjectOptimisticLockingFailureException(
       ObjectOptimisticLockingFailureException exception,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    return super.handleOptimisticLockingFailureException(null, loginUser);
+      @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
+    return super.handleOptimisticLockingFailureException(null, loginUser, model);
   }
 
   /**
