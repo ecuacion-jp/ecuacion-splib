@@ -1,11 +1,16 @@
 package jp.ecuacion.splib.jpa.bl;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
+import jp.ecuacion.lib.core.item.EclibItemContainer;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.bl.SplibCoreBl;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 /**
@@ -84,5 +89,49 @@ public abstract class SplibJpaBl<E extends EclibEntity, I, V> extends SplibCoreB
     }
 
     return vers1.equals(vers2);
+  }
+
+  /**
+   * Offers duplicate check function.
+   */
+  protected <T> void internalDuplicateCheck(List<T> entityList, EclibItemContainer rec,
+      String itemNameKeyClass, String idItemPropertyPath, String... checkTargetItemPropertyPaths)
+      throws BizLogicAppException {
+    List<T> listWithoutMyself = entityList.stream()
+        .filter(e -> !getValue(e, idItemPropertyPath).equals(getValue(rec, idItemPropertyPath)))
+        .toList();
+
+    for (String path : checkTargetItemPropertyPaths) {
+      listWithoutMyself = listWithoutMyself.stream()
+          .filter(e -> getValue(e, path).equals(getValue(rec, path))).toList();
+    }
+
+    List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
+        .map(path -> rec.getItem(path).getItemNameKey(itemNameKeyClass)).toList();
+
+    SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0,
+        checkTargetItemPropertyPaths, itemNameKeys.toArray(new String[itemNameKeys.size()]));
+  }
+
+  /**
+   * Gets value from object with designated fieldName.
+   */
+  protected <T> Object getValue(T obj, String fieldName) {
+    try {
+      Method getNameMethod = null;
+
+      try {
+        getNameMethod = obj.getClass()
+            .getMethod("get" + StringUtils.capitalize(fieldName) + "OfEntityDataType");
+
+      } catch (NoSuchMethodException ex) {
+        getNameMethod = obj.getClass().getMethod("get" + StringUtils.capitalize(fieldName));
+      }
+
+      return getNameMethod.invoke(obj);
+
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
   }
 }
