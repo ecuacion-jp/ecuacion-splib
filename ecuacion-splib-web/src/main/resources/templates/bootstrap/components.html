@@ -1019,7 +1019,7 @@
 		<div th:replace="~{ :: internalEditInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckboxes}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCheckboxes" th:remove="tag">
-			<div class="form-check mt-2" th:each="option : *{__${recordPropertyPath + 'List'}__}">
+			<div class="form-check mt-2" th:each="option : *{__${itemPropertyPath + 'List'}__}">
 				<th:block th:with="optionId=${option[0]},optionLabel=${option[1]},optionOptions=${option.length == 2 ? '' : option[2]}">
 					<input th:id="${optionId}" class="form-check-input align-bottom mb-1" type="checkbox" 
 						th:name="${isReadOnly ? '' : recordPropertyPath}" 
