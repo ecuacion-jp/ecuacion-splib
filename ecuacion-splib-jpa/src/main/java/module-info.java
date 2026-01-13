@@ -34,4 +34,5 @@ module jp.ecuacion.splib.jpa {
   requires jp.ecuacion.lib.core;
   requires org.hibernate.orm.core;
   requires transitive org.aspectj.weaver;
+  requires org.apache.commons.lang3;
 }
