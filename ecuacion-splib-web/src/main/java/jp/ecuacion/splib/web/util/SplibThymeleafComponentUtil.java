@@ -57,10 +57,10 @@ public class SplibThymeleafComponentUtil {
         item = item.substring(item.indexOf(".") + 1);
       }
 
-      // 指定されたfieldが実はSystemCommonEntityに定義されている場合を救っておく。
+      // 指定されたfieldが実はSystemCommonに定義されている場合を救っておく。
       if (!PropertyFileUtil.hasItemName(item)) {
         String field = item.contains(".") ? item.substring(item.lastIndexOf(".") + 1) : item;
-        String commonItem = "SystemCommonEntity." + field;
+        String commonItem = "SystemCommon." + field;
         if (PropertyFileUtil.hasItemName(commonItem)) {
           item = commonItem;
         }
