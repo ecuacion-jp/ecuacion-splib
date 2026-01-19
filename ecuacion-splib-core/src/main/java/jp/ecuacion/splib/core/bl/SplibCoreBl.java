@@ -83,16 +83,24 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with list.
    */
-  protected <T> void internalChildExistenceCheck(List<T> list, String referingEntityMessageId)
+  public <T> void internalChildExistenceCheck(List<T> list, String entityMessageIdPart)
       throws BizLogicAppException {
-    internalChildExistenceCheck(list, referingEntityMessageId, null, null, null, null);
+    internalChildExistenceCheck(list, null, entityMessageIdPart);
   }
 
   /**
    * Offers child existence check with list.
    */
-  protected <T> void internalChildExistenceCheck(List<T> list, String referingEntityMessageId,
-      ChildExistenceCheckConditionBean[] conditions, String whatCannotBeDoneMessageId,
+  public <T> void internalChildExistenceCheck(List<T> list, String messageId,
+      String entityMessageIdPart) throws BizLogicAppException {
+    internalChildExistenceCheck(list, messageId, entityMessageIdPart, null, null, null);
+  }
+
+  /**
+   * Offers child existence check with list.
+   */
+  protected <T> void internalChildExistenceCheck(List<T> list, String messageId,
+      String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
       String referingRecordDataLabel, String recordSpecifyingFieldName)
       throws BizLogicAppException {
 
@@ -107,20 +115,18 @@ public class SplibCoreBl extends ReflectionUtil {
     if (list.size() > 0) {
       String msgCmnPrefix = "jp.ecuacion.splib.core.bl.SplibCoreBl.message";
       String msgPrefix = msgCmnPrefix + ".cannotBeDeletedBecauseOfReference";
-      String whatCannotBeDoneMsgIdPart =
-          whatCannotBeDoneMessageId == null ? msgCmnPrefix + "Part.deleted"
-              : whatCannotBeDoneMessageId;
+      String msgId = messageId != null ? messageId
+          : msgPrefix + (recordSpecifyingFieldName == null ? "" : "WithDetails");
+
       String referingRecordDataLabelMsgIdPart =
           referingRecordDataLabel == null ? msgCmnPrefix + "Part.targetData"
               : referingRecordDataLabel;
 
-      Arg[] args = recordSpecifyingFieldName == null
-          ? new Arg[] {Arg.message(referingEntityMessageId)}
-          : new Arg[] {Arg.message(referingEntityMessageId), Arg.message(whatCannotBeDoneMsgIdPart),
+      Arg[] args = recordSpecifyingFieldName == null ? new Arg[] {Arg.message(entityMessageIdPart)}
+          : new Arg[] {Arg.message(entityMessageIdPart),
               Arg.string(referingRecordDataLabelMsgIdPart),
               Arg.string(getValue(list.get(0), recordSpecifyingFieldName).toString())};
-      throw new BizLogicAppException(
-          msgPrefix + (recordSpecifyingFieldName == null ? "" : "WithDetails"), args);
+      throw new BizLogicAppException(msgId, args);
 
     }
   }
@@ -128,26 +134,34 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with optional.
    */
-  protected <T> void internalChildExistenceCheck(Optional<T> optional,
-      String referingEntityMessageId) throws BizLogicAppException {
-    internalChildExistenceCheck(optional, referingEntityMessageId, null, null, null, null);
+  public <T> void internalChildExistenceCheck(Optional<T> optional, String entityMessageIdPart)
+      throws BizLogicAppException {
+    internalChildExistenceCheck(optional, null, entityMessageIdPart);
   }
 
   /**
    * Offers child existence check with optional.
    */
-  protected <T> void internalChildExistenceCheck(Optional<T> optional,
-      String referingEntityMessageId, ChildExistenceCheckConditionBean[] conditions,
-      String whatCannotBeDoneMessageId, String referingRecordDataLabel,
-      String recordSpecifyingFieldName) throws BizLogicAppException {
+  public <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
+      String entityMessageIdPart) throws BizLogicAppException {
+    internalChildExistenceCheck(optional, messageId, entityMessageIdPart, null, null, null);
+  }
+
+  /**
+   * Offers child existence check with optional.
+   */
+  protected <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
+      String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
+      String referingRecordDataLabel, String recordSpecifyingFieldName)
+      throws BizLogicAppException {
     List<T> list = new ArrayList<>();
 
     if (optional.isPresent()) {
       list.add(optional.get());
     }
 
-    internalChildExistenceCheck(list, referingEntityMessageId, conditions,
-        whatCannotBeDoneMessageId, referingRecordDataLabel, recordSpecifyingFieldName);
+    internalChildExistenceCheck(list, null, entityMessageIdPart, conditions,
+        referingRecordDataLabel, recordSpecifyingFieldName);
   }
 
   /**
