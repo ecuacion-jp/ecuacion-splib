@@ -30,6 +30,7 @@ import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
+import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
 import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import jp.ecuacion.lib.core.exception.unchecked.UncheckedAppException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
@@ -192,22 +193,25 @@ public abstract class SplibExceptionHandler {
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-    boolean hasDesignatedItemPropertyPathInBizLogicAppException = false;
+    boolean isThereMessageWithItemPropertyPath = false;
 
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
       msgSetter.setMessage(messagesBean, saex, request.getLocale(), saex.getItemPropertyPaths());
 
-      if (saex instanceof BizLogicAppException) {
+      if (saex instanceof ValidationAppException) {
+        isThereMessageWithItemPropertyPath = true;
+        
+      } else if (saex instanceof BizLogicAppException) {
         String[] paths = ((BizLogicAppException) saex).getItemPropertyPaths();
         if (paths != null && paths.length > 0) {
-          hasDesignatedItemPropertyPathInBizLogicAppException = true;
+          isThereMessageWithItemPropertyPath = true;
         }
       }
     }
 
     msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale(),
-        hasDesignatedItemPropertyPathInBizLogicAppException);
+        isThereMessageWithItemPropertyPath);
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
@@ -382,8 +386,8 @@ public abstract class SplibExceptionHandler {
     }
 
     public void addMessageThatSaysThereIsAnError(MessagesBean messagesBean, Locale locale,
-        boolean hasDesignatedItemPropertyPathInBizLogicAppException) {
-      if (needsMsgAtItem && !needsMsgAtTop && hasDesignatedItemPropertyPathInBizLogicAppException) {
+        boolean isThereMessageWithItemPropertyPath) {
+      if (needsMsgAtItem && !needsMsgAtTop && isThereMessageWithItemPropertyPath) {
         String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
         messagesBean.setErrorMessage(PropertyFileUtil.getMessage(locale, key), false);
       }
