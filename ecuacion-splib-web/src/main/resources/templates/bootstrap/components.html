@@ -1608,7 +1608,7 @@
 					th:data-id="*{ids}"
 					th:data-version="*{optimisticLockVersions}"
 					onClick="update('listForm', this.dataset.id, this.dataset.version);"
-					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.update')}"
+					th:text="${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', 'jp.ecuacion.splib.web.common.button.update'))}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 		</td>
@@ -1623,7 +1623,7 @@
 					th:data-id="*{ids}"
 					th:data-version="*{optimisticLockVersions}"
 					th:onClick="return del(this.dataset.formName, this.dataset.id, this.dataset.item, this.dataset.version);" 
-					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.delete')}"
+					th:text="${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', 'jp.ecuacion.splib.web.common.button.delete'))}"
 					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 		</td>
