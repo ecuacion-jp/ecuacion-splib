@@ -197,17 +197,23 @@ public abstract class SplibExceptionHandler {
 
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
-      msgSetter.setMessage(messagesBean, saex, request.getLocale(), saex.getItemPropertyPaths());
+      String[] itemPropertyPaths = new String[] {};
 
       if (saex instanceof ValidationAppException) {
-        isThereMessageWithItemPropertyPath = true;
+        ValidationAppException vex = (ValidationAppException) saex;
+        if (!vex.isMessageWithItemName()) {
+          isThereMessageWithItemPropertyPath = true;
+          itemPropertyPaths = vex.getItemPropertyPaths();
+        }
         
       } else if (saex instanceof BizLogicAppException) {
-        String[] paths = ((BizLogicAppException) saex).getItemPropertyPaths();
-        if (paths != null && paths.length > 0) {
+        itemPropertyPaths = ((BizLogicAppException) saex).getItemPropertyPaths();
+        if (itemPropertyPaths != null && itemPropertyPaths.length > 0) {
           isThereMessageWithItemPropertyPath = true;
         }
       }
+      
+      msgSetter.setMessage(messagesBean, saex, request.getLocale(), itemPropertyPaths);
     }
 
     msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale(),
