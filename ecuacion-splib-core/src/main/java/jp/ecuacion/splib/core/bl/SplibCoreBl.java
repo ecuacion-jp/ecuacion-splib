@@ -99,6 +99,14 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with list.
    */
+  public <T> void internalChildExistenceCheck(List<T> list, String entityMessageIdPart,
+      ChildExistenceCheckConditionBean... conditions) throws BizLogicAppException {
+    internalChildExistenceCheck(list, null, entityMessageIdPart, conditions, null, null);
+  }
+
+  /**
+   * Offers child existence check with list.
+   */
   protected <T> void internalChildExistenceCheck(List<T> list, String messageId,
       String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
       String referingRecordDataLabel, String recordSpecifyingFieldName)
@@ -145,6 +153,14 @@ public class SplibCoreBl extends ReflectionUtil {
   public <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
       String entityMessageIdPart) throws BizLogicAppException {
     internalChildExistenceCheck(optional, messageId, entityMessageIdPart, null, null, null);
+  }
+
+  /**
+   * Offers child existence check with optional.
+   */
+  public <T> void internalChildExistenceCheck(Optional<T> optional, String entityMessageIdPart,
+      ChildExistenceCheckConditionBean... conditions) throws BizLogicAppException {
+    internalChildExistenceCheck(optional, null, entityMessageIdPart, conditions, null, null);
   }
 
   /**
