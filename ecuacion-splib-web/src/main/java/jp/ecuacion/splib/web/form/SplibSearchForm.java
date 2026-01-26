@@ -103,8 +103,8 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     this.requestFromSearchForm = requestFromSearchForm;
   }
 
-  public Boolean getNewlyCreated() {
-    return newlyCreated;
+  public boolean getNewlyCreated() {
+    return newlyCreated == null ? false : newlyCreated;
   }
 
   public void setNewlyCreated(Boolean newlyCreated) {

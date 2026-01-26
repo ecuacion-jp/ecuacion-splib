@@ -92,7 +92,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   @Override
   public String submitOnChangeToRefresh(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    
+
     searchForm = getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
@@ -232,9 +232,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
     String formName = getFunction() + "SearchForm";
     String key = getSessionKey(formName, searchForm);
-    
+
     if (searchForm != null) {
-      if (searchForm.getNewlyCreated() != null && searchForm.getNewlyCreated()) {
+      if (searchForm.getNewlyCreated()) {
         searchForm.setNewlyCreated(false);
       }
 
@@ -249,7 +249,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       // session.
       if (request.getSession().getAttribute(key) == null) {
         request.getSession().setAttribute(key, searchForm);
-        
+
         searchForm.setNewlyCreated(true);
       }
 
