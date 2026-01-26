@@ -41,6 +41,13 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * その検索条件を保管するのではなく保存済みの検索条件で検索したい。 この分岐を本フラグで対応。</p>
    */
   private boolean requestFromSearchForm;
+  
+  /**
+   * This is null right after the construction of the instance.
+   * In SplibSearchListController#getProperSearchForm(Model, FST) changes it to "true".
+   * Next time this passes the method above, it again changes to "false".
+   */
+  private Boolean newlyCreated;
 
   /**
    * Specifies whether the form is prepared, which means "prepareForm" method is applied.
@@ -94,6 +101,14 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
 
   public void setRequestFromSearchForm(boolean requestFromSearchForm) {
     this.requestFromSearchForm = requestFromSearchForm;
+  }
+
+  public Boolean getNewlyCreated() {
+    return newlyCreated;
+  }
+
+  public void setNewlyCreated(Boolean newlyCreated) {
+    this.newlyCreated = newlyCreated;
   }
 
   public String getSortItem() {
