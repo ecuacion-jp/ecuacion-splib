@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.controller;
 import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import jp.ecuacion.lib.core.exception.checked.AppException;
+import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
@@ -44,11 +45,10 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     extends SplibGeneral2FormsController<FST, FLT, S> {
   //@formatter:on
 
-
   /**
    * Is used when the search condition is cleared.
    * 
-   * <p>It's used only when the search condition clears, it's better to add {@code ＠Lazy},
+   * <p>It's used only when the search condition clears, it's better to add {@code @Lazy},
    * but it occurs an error at the cast procedure in
    * {@code jp.ecuacion.splib.web.jpa.service.SplibSearchListJpaService#getSpecs}.
    * Maybe a bug of spring mvc.
@@ -92,7 +92,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   @Override
   public String submitOnChangeToRefresh(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    // 最新searchFormをsessionに保存
+    
     searchForm = getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
@@ -204,7 +204,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   @GetMapping(value = "action", params = "conditionClear")
   public String searchConditionClear(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    // 情報をクリアするための設定を行う
+    // Clear info.
     String formName = getFunction() + "SearchForm";
     String sessionKey =
         formName + (searchForm.getDataKind() == null || searchForm.getDataKind().equals("") ? ""
@@ -232,23 +232,33 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
     String formName = getFunction() + "SearchForm";
     String key = getSessionKey(formName, searchForm);
+    
     if (searchForm != null) {
-      // 検索画面上で検索された場合はその条件を採用し保管。
-      // それ以外の場合（メニューのリンクなどから来た場合など）はmodelに設定されたものをそのまま使用。（ここでは何もしない）
+      if (searchForm.getNewlyCreated() != null && searchForm.getNewlyCreated()) {
+        searchForm.setNewlyCreated(false);
+      }
+
+      // Store the condition to the session when the search is executed on search page.
+      // In other situations (like when the request is submitted by the press of the url link)
+      // Do nothing here and use the saved condition in the session.
       if (searchForm.isRequestFromSearchForm()) {
         request.getSession().setAttribute(key, searchForm);
       }
 
-      // 初回アクセスでsessionに存在しない場合は引数のformを使用
+      // Use the argument searchFrom and save it to the session when the form is not saved in the
+      // session.
       if (request.getSession().getAttribute(key) == null) {
         request.getSession().setAttribute(key, searchForm);
+        
+        searchForm.setNewlyCreated(true);
       }
 
     } else {
-      // その前に検索しているはずなので、引数のsearchFormがnullで、かつsessionにも情報がない、という場合はあり得ない。
-      if (request.getSession().getAttribute(formName) == null) {
-        throw new RuntimeException("searchForm == null cannot be occurred.");
-      }
+      // I wonder this condition is not possible to happen now....
+      throw new EclibRuntimeException("Not used anymore I believe...");
+      // if (request.getSession().getAttribute(formName) == null) {
+      // throw new RuntimeException("searchForm == null cannot be occurred.");
+      // }
     }
 
     @SuppressWarnings("unchecked")
@@ -258,7 +268,6 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     return formUsedForSearch;
   }
 
-  /* fがnullの場合null Pointerが発生するためメソッド冒頭で定義することはできず、別メソッドとした。 */
   private String getSessionKey(String formName, FST searchForm) {
     return formName + (searchForm == null || searchForm.getDataKind() == null
         || searchForm.getDataKind().equals("") ? "" : "." + searchForm.getDataKind());
