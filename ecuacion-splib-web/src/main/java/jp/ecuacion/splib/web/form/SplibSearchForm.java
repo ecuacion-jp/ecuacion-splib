@@ -41,11 +41,16 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * その検索条件を保管するのではなく保存済みの検索条件で検索したい。 この分岐を本フラグで対応。</p>
    */
   private boolean requestFromSearchForm;
-  
+
   /**
-   * This is null right after the construction of the instance.
-   * In SplibSearchListController#getProperSearchForm(Model, FST) changes it to "true".
-   * Next time this passes the method above, it again changes to "false".
+   * Expresses whether the form is just created with no search conditions.
+   * 
+   * <p>Only when this is true, you should set initial search condition at your
+   *     searchListService#page().</p>
+   * 
+   * <p>This is null right after the first constructed with default initial condition.
+   *     In SplibSearchListController#getProperSearchForm(Model, FST) changes it to "true".
+   *     Next time this passes the method above, it again changes to "false".</p>
    */
   private Boolean newlyCreated;
 
@@ -103,8 +108,21 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     this.requestFromSearchForm = requestFromSearchForm;
   }
 
+  /** 
+   * Returns true when the search conditions in the form is newly created 
+   *     and it's the right time to set initial conditions at searchListService#page().
+   */
   public boolean getNewlyCreated() {
     return newlyCreated == null ? false : newlyCreated;
+  }
+
+  /** 
+   * "getNewlyCreated()" does not return null to simplify its usage from general users.
+   * Otherwise the code inside want to know if the value is null, 
+   * so the method obtaining raw value (means it may return null) prepared.
+   */
+  public Boolean getNewlyCreatedRawValue() {
+    return newlyCreated;
   }
 
   public void setNewlyCreated(Boolean newlyCreated) {
