@@ -1248,7 +1248,7 @@
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, 
- 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ? 
+ 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'false') == 'true' ? 
  						('dataAttr1=disabled-on-submit|true,dataAttr2=original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
  				+ ${options})}"></div>
 	</div>
