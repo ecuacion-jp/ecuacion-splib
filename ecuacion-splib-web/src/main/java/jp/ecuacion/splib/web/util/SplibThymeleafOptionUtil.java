@@ -15,9 +15,12 @@
  */
 package jp.ecuacion.splib.web.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
+import jp.ecuacion.lib.core.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -37,20 +40,26 @@ public class SplibThymeleafOptionUtil {
   /**
    * Constructs a new instance.
    */
-  public SplibThymeleafOptionUtil() {
-  }
+  public SplibThymeleafOptionUtil() {}
 
   /**
    * Creates Map from option csv.
    * 
-   * <p>When duplicated keys exist, former one is overrided and ignored.</p>
+   * <p>When duplicated keys exist, the result differs by the value of {@code allowsDuplicate}.</p>
    * 
-   * @param optionCsv optionCsv
-   * @return Map
+   * <ul>
+   * <li>When allowsDuplicateKey == false : maximum number of elements in the value list is one.<br>
+   *     when a key is duplicated (like key1 in 'key1=a,key2,key1=b'), 
+   *     former one is overrided and ignored and the latter one adopted 
+   *     (in the example above, key1=a is ignored and key1=b is adopted).</li>
+   * <li>When allowsDuplicateKey == true  : all the values are put into the value array.<br>
+   *     If option is like 'key1=a,key2,key1=b,key1=a',
+   *     then the value for key1 is {@code {'a', 'b', 'a')}}</li>
+   * </ul>
    */
-  private Map<String, String> optionMap(String optionCsv) {
+  private Map<String, List<String>> optionMap(String optionCsv, boolean allowsDuplicateKey) {
 
-    Map<String, String> rtnMap = new HashMap<>();
+    Map<String, List<String>> rtnMap = new HashMap<>();
 
     // Finish when optionCsv is empty.
     if (optionCsv == null || optionCsv.equals("")) {
@@ -69,20 +78,28 @@ public class SplibThymeleafOptionUtil {
         key = option;
       }
 
+      // Ignore empty key because it happens and it's not bad.
+      // (It happens when you set an option conditionally like:
+      // options = 'a=b,' + (c == null ? '' : 'c=d')
+      if (key.equals("")) {
+        continue;
+      }
+
       // Change key string to lowercase to ignore case mistakes.
       String lowerCaseKey = key.toLowerCase();
 
-      // if the key already exists in the map, the value is updated and output log.
-      if (rtnMap.containsKey(lowerCaseKey)) {
-        // Ignore empty key because it happens and it's not bad.
-        // (It happens when you set an option conditionally like:
-        //  options = 'a=b,' + (c == null ? '' : 'c=d')
-        if (!lowerCaseKey.equals("")) {
-          detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
-        }
+      if (!rtnMap.containsKey(lowerCaseKey)) {
+        rtnMap.put(lowerCaseKey, new ArrayList<>());
       }
 
-      rtnMap.put(lowerCaseKey, value);
+      // if the key already exists in the map and allowsDuplicateKey == false,
+      // the value is updated and output log.
+      if (rtnMap.get(lowerCaseKey).size() != 0 && !allowsDuplicateKey) {
+        rtnMap.get(lowerCaseKey).clear();
+        detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
+      }
+
+      rtnMap.get(lowerCaseKey).add(value);
     }
 
     return rtnMap;
@@ -92,7 +109,7 @@ public class SplibThymeleafOptionUtil {
    * Returns if specified key exists in options.
    */
   public boolean hasKey(String options, String key) {
-    return optionMap(options).containsKey(key.toLowerCase());
+    return optionMap(options, true).containsKey(key.toLowerCase());
   }
 
   /**
@@ -103,7 +120,10 @@ public class SplibThymeleafOptionUtil {
    * @return value
    */
   public String getValue(String options, String key) {
-    return optionMap(options).get(key.toLowerCase());
+    String lowerCaseKey = key.toLowerCase();
+    Map<String, List<String>> map = (optionMap(options, false));
+
+    return map.containsKey(lowerCaseKey) ? (map.get(lowerCaseKey)).get(0) : null;
   }
 
   /**
@@ -122,5 +142,101 @@ public class SplibThymeleafOptionUtil {
     } else {
       return defaultValue;
     }
+  }
+
+  /**
+   * Returns values obtained from the key as an array.
+   * 
+   * <p>When you want to give multiple options of the same key 
+   *     (like add 2 classes to an element), you are supposed to set 2 key-value pairs,
+   *     like 'classappend=class1,classapeend=class2'.
+   *     In this case getValues(options, 'classappend') return {'class1', 'class2'}.</p>
+   * 
+   * @param options options
+   * @param key key
+   * @return value
+   */
+  public String[] getValues(String options, String key) {
+    String lowerCaseKey = key.toLowerCase();
+    Map<String, List<String>> map = (optionMap(options, true));
+
+    if (map.containsKey(lowerCaseKey)) {
+      List<String> list = (map.get(lowerCaseKey));
+      return list.toArray(new String[list.size()]);
+
+    } else {
+      return new String[] {};
+    }
+  }
+
+  /**
+   * Returns values in space separated format. It's supposed to be used for class attributes.
+   */
+  public String getValuesInSpaceSeparetedFormat(String options, String key) {
+    return StringUtil.getSeparatedValuesString(getValues(options, key), " ");
+  }
+
+  private String getElementFromPsv(String option, int psvIndex) {
+
+    if (StringUtils.isEmpty(option)) {
+      return null;
+
+    } else if (option.split("\\|").length <= psvIndex) {
+      return null;
+
+    } else {
+      String value = option.split("\\|")[psvIndex];
+      // if the value is "null", return null.
+      return "null".equals(value) ? null : value;
+    }
+  }
+
+  /**
+   * Obtains an element string 
+   *     from designated ordinal number of pipe separated values (psv) format string
+   *     from designated index of multiple option values.
+   * 
+   * <p>For example, option: 'attr' is used for th:attr to add attribute dynamically to the tag.<br>
+   *     'attr' needs to have its key and value, so option format becomes 'attr=key1|value1'.<br>
+   *     (when a single option needs to have multiple different meaning string like key and value, 
+   *      option should be pipe separated format. <br>
+   *      When you want to list multiple strings of same meaning set xxx=yyy multiple times
+   *      (like 'classappend=mt-3,classappend=mb-3'))</p>
+   */
+  public String getElementFromPsv(String options, String key, int psvIndex) {
+    String option = getValue(options, key);
+    return getElementFromPsv(option, psvIndex);
+  }
+
+  /**
+   * Returns getElementFromPsv or else.
+   */
+  public String getElementFromPsvOrElse(String options, String key, int psvIndex,
+      String defaultValue) {
+    String element  = getElementFromPsv(options, key, psvIndex); 
+    return element == null ? defaultValue : element;
+  }
+
+  /**
+   * Obtains an element from an array of psv strings.
+   */
+  public String getElementFromValuesOfPsv(String options, String key, int arrayIndex,
+      int psvIndex) {
+    String[] array = getValues(options, key);
+    if (array.length <= arrayIndex) {
+      return null;
+
+    } else {
+      return getElementFromPsv(array[arrayIndex], psvIndex);
+    }
+  }
+
+  /**
+   * Obtains an element from an array of psv strings or else.
+   */
+  public String getElementFromValuesOfPsvOrElse(String options, String key, int arrayIndex,
+      int psvIndex, String defaultValue) {
+    String element = getElementFromValuesOfPsv(options, key, arrayIndex, psvIndex);
+    return element == null ? defaultValue : element;
   }
 }

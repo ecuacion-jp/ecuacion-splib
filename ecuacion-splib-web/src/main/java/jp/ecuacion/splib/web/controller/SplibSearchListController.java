@@ -142,7 +142,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @return URL
    * @throws Exception Exception
    */
-  @GetMapping(value = "action", params = "search")
+  @GetMapping(value = "action", params = "action=search")
   public String search(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
@@ -201,7 +201,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @return URL
    * @throws Exception Exception
    */
-  @GetMapping(value = "action", params = "conditionClear")
+  @GetMapping(value = "action", params = "action=conditionClear")
   public String searchConditionClear(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     // Clear info.
@@ -228,29 +228,40 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param searchForm searchForm
    * @return proper searchForm
    */
+  @SuppressWarnings("unchecked")
   protected FST getProperSearchForm(Model model, FST searchForm) {
 
     String formName = getFunction() + "SearchForm";
     String key = getSessionKey(formName, searchForm);
 
     if (searchForm != null) {
-      if (searchForm.getNewlyCreated()) {
-        searchForm.setNewlyCreated(false);
-      }
 
-      // Store the condition to the session when the search is executed on search page.
-      // In other situations (like when the request is submitted by the press of the url link)
-      // Do nothing here and use the saved condition in the session.
       if (searchForm.isRequestFromSearchForm()) {
-        request.getSession().setAttribute(key, searchForm);
-      }
-
-      // Use the argument searchFrom and save it to the session when the form is not saved in the
-      // session.
-      if (request.getSession().getAttribute(key) == null) {
+        // Argument saerchForm (= submitted by pressing search button in a search page) is adopted
+        // when isRequestFromSearchForm == true.
         request.getSession().setAttribute(key, searchForm);
 
-        searchForm.setNewlyCreated(true);
+        // You've got a search resquest means the condition is not newly created.
+        searchForm.setNewlyCreated(false);
+
+      } else {
+        // SearchForm in session is adopted when isRequestFromSearchForm == false
+        // (= accessed by URL or conditioon clear button pressed)
+
+        if (request.getSession().getAttribute(key) == null) {
+          // Add the argument form (= newly created form) to the session.
+          request.getSession().setAttribute(key, searchForm);
+        }
+
+        searchForm = (FST) request.getSession().getAttribute(key);
+
+        // Manage newlyCreated.
+        if (searchForm.getNewlyCreatedRawValue() == null) {
+          searchForm.setNewlyCreated(true);
+
+        } else if (searchForm.getNewlyCreatedRawValue()) {
+          searchForm.setNewlyCreated(false);
+        }
       }
 
     } else {
@@ -261,9 +272,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       // }
     }
 
-    @SuppressWarnings("unchecked")
-    FST formUsedForSearch =
-        (FST) request.getSession().getAttribute(getSessionKey(formName, searchForm));
+    FST formUsedForSearch = (FST) request.getSession().getAttribute(key);
 
     return formUsedForSearch;
   }
