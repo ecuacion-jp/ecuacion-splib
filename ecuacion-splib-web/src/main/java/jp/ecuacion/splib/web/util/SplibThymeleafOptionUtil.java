@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
+import jp.ecuacion.lib.core.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -108,7 +109,7 @@ public class SplibThymeleafOptionUtil {
    * Returns if specified key exists in options.
    */
   public boolean hasKey(String options, String key) {
-    return optionMap(options, false).containsKey(key.toLowerCase());
+    return optionMap(options, true).containsKey(key.toLowerCase());
   }
 
   /**
@@ -146,6 +147,11 @@ public class SplibThymeleafOptionUtil {
   /**
    * Returns values obtained from the key as an array.
    * 
+   * <p>When you want to give multiple options of the same key 
+   *     (like add 2 classes to an element), you are supposed to set 2 key-value pairs,
+   *     like 'classappend=class1,classapeend=class2'.
+   *     In this case getValues(options, 'classappend') return {'class1', 'class2'}.</p>
+   * 
    * @param options options
    * @param key key
    * @return value
@@ -159,7 +165,78 @@ public class SplibThymeleafOptionUtil {
       return list.toArray(new String[list.size()]);
 
     } else {
-      return null;
+      return new String[] {};
     }
+  }
+
+  /**
+   * Returns values in space separated format. It's supposed to be used for class attributes.
+   */
+  public String getValuesInSpaceSeparetedFormat(String options, String key) {
+    return StringUtil.getSeparatedValuesString(getValues(options, key), " ");
+  }
+
+  private String getElementFromPsv(String option, int psvIndex) {
+
+    if (StringUtils.isEmpty(option)) {
+      return null;
+
+    } else if (option.split("\\|").length <= psvIndex) {
+      return null;
+
+    } else {
+      String value = option.split("\\|")[psvIndex];
+      // if the value is "null", return null.
+      return "null".equals(value) ? null : value;
+    }
+  }
+
+  /**
+   * Obtains an element string 
+   *     from designated ordinal number of pipe separated values (psv) format string
+   *     from designated index of multiple option values.
+   * 
+   * <p>For example, option: 'attr' is used for th:attr to add attribute dynamically to the tag.<br>
+   *     'attr' needs to have its key and value, so option format becomes 'attr=key1|value1'.<br>
+   *     (when a single option needs to have multiple different meaning string like key and value, 
+   *      option should be pipe separated format. <br>
+   *      When you want to list multiple strings of same meaning set xxx=yyy multiple times
+   *      (like 'classappend=mt-3,classappend=mb-3'))</p>
+   */
+  public String getElementFromPsv(String options, String key, int psvIndex) {
+    String option = getValue(options, key);
+    return getElementFromPsv(option, psvIndex);
+  }
+
+  /**
+   * Returns getElementFromPsv or else.
+   */
+  public String getElementFromPsvOrElse(String options, String key, int psvIndex,
+      String defaultValue) {
+    String element  = getElementFromPsv(options, key, psvIndex); 
+    return element == null ? defaultValue : element;
+  }
+
+  /**
+   * Obtains an element from an array of psv strings.
+   */
+  public String getElementFromValuesOfPsv(String options, String key, int arrayIndex,
+      int psvIndex) {
+    String[] array = getValues(options, key);
+    if (array.length <= arrayIndex) {
+      return null;
+
+    } else {
+      return getElementFromPsv(array[arrayIndex], psvIndex);
+    }
+  }
+
+  /**
+   * Obtains an element from an array of psv strings or else.
+   */
+  public String getElementFromValuesOfPsvOrElse(String options, String key, int arrayIndex,
+      int psvIndex, String defaultValue) {
+    String element = getElementFromValuesOfPsv(options, key, arrayIndex, psvIndex);
+    return element == null ? defaultValue : element;
   }
 }

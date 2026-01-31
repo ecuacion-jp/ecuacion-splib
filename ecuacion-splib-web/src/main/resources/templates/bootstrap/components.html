@@ -44,13 +44,25 @@
 								When you set 'mt=3' to options, it turns into 'class="mt-3"'. It's valid only when createsComponentIdDiv == true.
 		- mb			integer Specifies the margin bottom value of the integrated component.
 								When you set 'mb=3' to options, it turns into 'class="mb-3"'. It's valid only when createsComponentIdDiv == true.
+		- attr					It's used for th:attr. Set like 'attr=key1|value1'.
  	 */-->
 	<div th:fragment="internalAllCommonComponent(contentsOfAllCommon, createsComponentIdDiv, options)" th:remove="tag">
 		<th:block th:with="
 				componentId=${@optUtil.getValueOrElse(options, 'componentId', null)}
 				,mtClass=${@optUtil.hasKey(options, 'mt') ? 'mt-' + @optUtil.getValue(options, 'mt') : ''}
 				,mbClass=${@optUtil.hasKey(options, 'mb') ? 'mb-' + @optUtil.getValue(options, 'mb') : ''}
+				,attr1Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 0, 0, 'attr1')}, attr1Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 0, 1)}
+				,attr2Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 1, 0, 'attr2')}, attr2Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 1, 1)}
+				,attr3Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 2, 0, 'attr3')}, attr3Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 2, 1)}
+				,attr4Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 3, 0, 'attr4')}, attr4Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 3, 1)}
+				,attr5Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 4, 0, 'attr5')}, attr5Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 4, 1)}
 				">
+
+			<!--/* maximux number of attr check */-->				
+			<th:block th:if="${@optUtil.getValues(options, 'attr').length > 5}">
+				[[${@exUtil.systemError('Maximum number of option: attr is 5.')}]]
+			</th:block>
+			
 			<div th:if="${createsComponentIdDiv}" th:id="${componentId}" th:classappend="${mtClass} + ' ' + ${mbClass}">
 				<th:block th:replace="${contentsOfAllCommon}" />
 			</div>
@@ -618,27 +630,14 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag"
 				th:with="id=${@optUtil.getValueOrElse(options, 'id', name)},
-						dataAttr1=${@optUtil.getValueOrElse(options, 'dataAttr1', 'dataAttr1Key|null')},
-						dataAttr2=${@optUtil.getValueOrElse(options, 'dataAttr2', 'dataAttr2Key|null')},
-						dataAttr3=${@optUtil.getValueOrElse(options, 'dataAttr3', 'dataAttr3Key|null')},
-						dataAttr1Key=${#strings.arraySplit(dataAttr1, '|')[0]},
-						dataAttr1Value=${#strings.arraySplit(dataAttr1, '|')[1]},
-						dataAttr1Value=${dataAttr1Value == null || dataAttr1Value == 'null' ? null : dataAttr1Value},
-						dataAttr2Key=${#strings.arraySplit(dataAttr2, '|')[0]},
-						dataAttr2Value=${#strings.arraySplit(dataAttr2, '|')[1]},
-						dataAttr2Value=${dataAttr2Value == null || dataAttr2Value == 'null' ? null : dataAttr2Value},
-						dataAttr3Key=${#strings.arraySplit(dataAttr3, '|')[0]},
-						dataAttr3Value=${#strings.arraySplit(dataAttr3, '|')[1]},
-						dataAttr3Value=${dataAttr3Value == null || dataAttr3Value == 'null' ? null : dataAttr3Value}
 				">
-			<button th:attr="type=${submits ? 'submit' : null},
-							${'data-' + dataAttr1Key}=${dataAttr1Value}, 
-							${'data-' + dataAttr2Key}=${dataAttr2Value}, 
-							${'data-' + dataAttr3Key}=${dataAttr3Value}"
-					th:name="${name}" th:id="${id}" 
+				
+			<button th:attr="${attr1Key}=${attr1Value}, ${attr2Key}=${attr2Value}, ${attr3Key}=${attr3Value}, ${attr4Key}=${attr4Value}, ${attr5Key}=${attr5Value}"
+					th:type="${submits ? 'submit' : 'button'}" th:name="${name}" th:id="${id}" 
 					class='btn text-white'
 					th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' 
-							+ @optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')}"
+							+ @optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} + ' ' 
+							+ ${@optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}"
 					th:text="${@msgUtil.getValue(#locale, label)}">
 			</button>
 			
@@ -740,7 +739,6 @@
 			 					th:value="*{ids}">
 						<input type="hidden" th:id="${htmlFormName + '.' + rootRecordName + '.optimisticLockVersions'}" th:name="${rootRecordName + '.optimisticLockVersions'}" 
 								th:value="*{optimisticLockVersions}" />
-
 						<th:block th:replace="${formContent}" />
 
 						<div th:replace="~{ :: internalWarnMessage('')}"></div>
@@ -1249,7 +1247,7 @@
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, 
  				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'false') == 'true' ? 
- 						('dataAttr1=disabled-on-submit|true,dataAttr2=original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
+ 						('attr=data-disabled-on-submit|true,attr=data-original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
  				+ ${options})}"></div>
 	</div>
 
@@ -1360,7 +1358,7 @@
 
 	<!--/* searchConditionClearButton */-->
 	<div th:fragment="searchConditionClearButton(options)" th:remove="tag">
-		<div th:replace="~{ :: submitButton('conditionClear', 'jp.ecuacion.splib.web.common.button.conditionClear', ${options})}"></div>
+		<div th:replace="~{ :: submitButton('conditionClear', 'jp.ecuacion.splib.web.common.button.conditionClear', 'disabledOnSubmit=true,' + ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -1394,11 +1392,8 @@
 				</div>
 				<div class="col-md-4" style="text-align:right; padding-right: 0px">
 					<div class="dropdown">
-						<button class="text-white btn btn-color-paging-btn dropdown-toggle mb-3" 
-								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-								type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-							[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.recordsInScreen')}]]
-						</button>
+						<div th:replace="~{ :: submitButton('searchAgain', 'jp.ecuacion.splib.web.common.label.recordsInScreen', 
+								'disabledOnSubmit=true,' + 'id=dropdownMenuButton1,attr=data-bs-toggle|dropdown,classappend=dropdown-toggle,classappend=mb-3' + ${options})}"></div>
 						<ul class="dropdown-menu">
 							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(5)">5</a></li>
 							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(10)">10</a></li>
@@ -1432,8 +1427,7 @@
 		<script>
 		function listFromRecordsInScreen(recordsInScreen) {
 			document.getElementById("recordsInScreen").value = recordsInScreen;
-			document.getElementById("action").value = "searchAgain";
-			document.searchForm.submit();
+			document.searchForm.requestSubmit(document.getElementById('dropdownMenuButton1')); 
 		}
 		</script>
 	</div>
@@ -1743,13 +1737,13 @@
 
 	<!--/* showInsertFormButton */-->
 	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
-		<div th:replace="~{ :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
+		<div th:replace="~{ :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', 'disabledOnSubmit=true,' + ${options})}"></div>
 	</div>
 
 	<!--/* insertOrUpdateButton */-->
 	<div th:fragment="insertOrUpdateButton(isInsert, options)" th:remove="tag">
 		<div th:replace="~{ :: submitButton('insertOrUpdate', 
-				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, ${options})}"></div>
+				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, 'disabledOnSubmit=true,' + ${options})}"></div>
 	</div>
 </body>
 </html>
