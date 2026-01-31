@@ -15,7 +15,9 @@
  */
 package jp.ecuacion.splib.web.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import org.apache.commons.lang3.StringUtils;
@@ -37,20 +39,26 @@ public class SplibThymeleafOptionUtil {
   /**
    * Constructs a new instance.
    */
-  public SplibThymeleafOptionUtil() {
-  }
+  public SplibThymeleafOptionUtil() {}
 
   /**
    * Creates Map from option csv.
    * 
-   * <p>When duplicated keys exist, former one is overrided and ignored.</p>
+   * <p>When duplicated keys exist, the result differs by the value of {@code allowsDuplicate}.</p>
    * 
-   * @param optionCsv optionCsv
-   * @return Map
+   * <ul>
+   * <li>When allowsDuplicateKey == false : maximum number of elements in the value list is one.<br>
+   *     when a key is duplicated (like key1 in 'key1=a,key2,key1=b'), 
+   *     former one is overrided and ignored and the latter one adopted 
+   *     (in the example above, key1=a is ignored and key1=b is adopted).</li>
+   * <li>When allowsDuplicateKey == true  : all the values are put into the value array.<br>
+   *     If option is like 'key1=a,key2,key1=b,key1=a',
+   *     then the value for key1 is {@code {'a', 'b', 'a')}}</li>
+   * </ul>
    */
-  private Map<String, String> optionMap(String optionCsv) {
+  private Map<String, List<String>> optionMap(String optionCsv, boolean allowsDuplicateKey) {
 
-    Map<String, String> rtnMap = new HashMap<>();
+    Map<String, List<String>> rtnMap = new HashMap<>();
 
     // Finish when optionCsv is empty.
     if (optionCsv == null || optionCsv.equals("")) {
@@ -69,20 +77,28 @@ public class SplibThymeleafOptionUtil {
         key = option;
       }
 
+      // Ignore empty key because it happens and it's not bad.
+      // (It happens when you set an option conditionally like:
+      // options = 'a=b,' + (c == null ? '' : 'c=d')
+      if (key.equals("")) {
+        continue;
+      }
+
       // Change key string to lowercase to ignore case mistakes.
       String lowerCaseKey = key.toLowerCase();
 
-      // if the key already exists in the map, the value is updated and output log.
-      if (rtnMap.containsKey(lowerCaseKey)) {
-        // Ignore empty key because it happens and it's not bad.
-        // (It happens when you set an option conditionally like:
-        //  options = 'a=b,' + (c == null ? '' : 'c=d')
-        if (!lowerCaseKey.equals("")) {
-          detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
-        }
+      if (!rtnMap.containsKey(lowerCaseKey)) {
+        rtnMap.put(lowerCaseKey, new ArrayList<>());
       }
 
-      rtnMap.put(lowerCaseKey, value);
+      // if the key already exists in the map and allowsDuplicateKey == false,
+      // the value is updated and output log.
+      if (rtnMap.get(lowerCaseKey).size() != 0 && !allowsDuplicateKey) {
+        rtnMap.get(lowerCaseKey).clear();
+        detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
+      }
+
+      rtnMap.get(lowerCaseKey).add(value);
     }
 
     return rtnMap;
@@ -92,7 +108,7 @@ public class SplibThymeleafOptionUtil {
    * Returns if specified key exists in options.
    */
   public boolean hasKey(String options, String key) {
-    return optionMap(options).containsKey(key.toLowerCase());
+    return optionMap(options, false).containsKey(key.toLowerCase());
   }
 
   /**
@@ -103,7 +119,10 @@ public class SplibThymeleafOptionUtil {
    * @return value
    */
   public String getValue(String options, String key) {
-    return optionMap(options).get(key.toLowerCase());
+    String lowerCaseKey = key.toLowerCase();
+    Map<String, List<String>> map = (optionMap(options, false));
+
+    return map.containsKey(lowerCaseKey) ? (map.get(lowerCaseKey)).get(0) : null;
   }
 
   /**
@@ -121,6 +140,26 @@ public class SplibThymeleafOptionUtil {
 
     } else {
       return defaultValue;
+    }
+  }
+
+  /**
+   * Returns values obtained from the key as an array.
+   * 
+   * @param options options
+   * @param key key
+   * @return value
+   */
+  public String[] getValues(String options, String key) {
+    String lowerCaseKey = key.toLowerCase();
+    Map<String, List<String>> map = (optionMap(options, true));
+
+    if (map.containsKey(lowerCaseKey)) {
+      List<String> list = (map.get(lowerCaseKey));
+      return list.toArray(new String[list.size()]);
+
+    } else {
+      return null;
     }
   }
 }
