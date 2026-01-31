@@ -142,7 +142,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @return URL
    * @throws Exception Exception
    */
-  @GetMapping(value = "action", params = "search")
+  @GetMapping(value = "action", params = "action=search")
   public String search(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
@@ -201,7 +201,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @return URL
    * @throws Exception Exception
    */
-  @GetMapping(value = "action", params = "conditionClear")
+  @GetMapping(value = "action", params = "action=conditionClear")
   public String searchConditionClear(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     // Clear info.

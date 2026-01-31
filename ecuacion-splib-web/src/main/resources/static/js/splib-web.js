@@ -68,3 +68,38 @@ function changeCurrencyToNumber(currency){
 		}
 	}
 }
+
+function doubleClickPreventionLockButtonsOnSubmit(event, form) {
+	
+	const buttons = form.querySelectorAll('button, input[type="submit"]');
+	buttons.forEach(button => {
+		if (event.submitter.dataset.disabledOnSubmit) {
+			button.disabled = true;
+
+			if (button === event.submitter) {
+				document.getElementById('action').value = event.submitter.name;
+				event.submitter.innerText = form.dataset.submittingMessage;
+				event.submitter.disabled = true;
+			}
+		}
+	});
+}
+
+function doubleClickPreventionUnlockButtonsOnBrowserBack(window) {
+
+	window.addEventListener('pageshow', function(event) {
+		// Means 'if the page is open by browser back'.
+		if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+			Array.from(document.forms).forEach(form => {
+				const buttons = form.querySelectorAll('button, input[type="submit"]');
+				buttons.forEach(button => {
+					if (button.dataset.disabledOnSubmit != null && button.dataset.disabledOnSubmit) {
+						button.disabled = false;
+						button.innerText = button.dataset.originalLabel;
+					}
+				});
+			});
+		}
+	});
+}
+

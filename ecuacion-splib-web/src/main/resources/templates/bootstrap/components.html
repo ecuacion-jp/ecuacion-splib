@@ -607,17 +607,50 @@
 	<!--/* options:
 		- id					Specifies id attribute of the component.
 		- backgroundColorClass	Specifies the color of the background of the component
+		- event			string	Specifies javascript event. It's designated by event name and the function called by it separated by '|',
+		                        like 'event=click|func'. 
+		                        'event name' and 'function' is used in 'addEventListener'.
+		                       	Multiple events can be used. 'event=click|func1,event=click|func2' calls func1 and func2 in this order.
+
  	 */-->
 	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, false, ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag">
-			<button th:attr="name=${name}, type=${submits ? 'submit' : null}" th:id="${@optUtil.getValueOrElse(options, 'id', null)}"
-					th:text="${@msgUtil.getValue(#locale, label)}"
-					class="btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}
-							+ ' ' + ${@optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')}
-							"></button>
+		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag"
+				th:with="id=${@optUtil.getValueOrElse(options, 'id', name)},
+						dataAttr1=${@optUtil.getValueOrElse(options, 'dataAttr1', 'dataAttr1Key|null')},
+						dataAttr2=${@optUtil.getValueOrElse(options, 'dataAttr2', 'dataAttr2Key|null')},
+						dataAttr3=${@optUtil.getValueOrElse(options, 'dataAttr3', 'dataAttr3Key|null')},
+						dataAttr1Key=${#strings.arraySplit(dataAttr1, '|')[0]},
+						dataAttr1Value=${#strings.arraySplit(dataAttr1, '|')[1]},
+						dataAttr1Value=${dataAttr1Value == null || dataAttr1Value == 'null' ? null : dataAttr1Value},
+						dataAttr2Key=${#strings.arraySplit(dataAttr2, '|')[0]},
+						dataAttr2Value=${#strings.arraySplit(dataAttr2, '|')[1]},
+						dataAttr2Value=${dataAttr2Value == null || dataAttr2Value == 'null' ? null : dataAttr2Value},
+						dataAttr3Key=${#strings.arraySplit(dataAttr3, '|')[0]},
+						dataAttr3Value=${#strings.arraySplit(dataAttr3, '|')[1]},
+						dataAttr3Value=${dataAttr3Value == null || dataAttr3Value == 'null' ? null : dataAttr3Value}
+				">
+			<button th:attr="type=${submits ? 'submit' : null},
+							${'data-' + dataAttr1Key}=${dataAttr1Value}, 
+							${'data-' + dataAttr2Key}=${dataAttr2Value}, 
+							${'data-' + dataAttr3Key}=${dataAttr3Value}"
+					th:name="${name}" th:id="${id}" 
+					class='btn text-white'
+					th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' 
+							+ @optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')}"
+					th:text="${@msgUtil.getValue(#locale, label)}">
+			</button>
+			
+			<th:block th:if="${@optUtil.hasKey(options, 'event')}">
+				<th:block th:each="event : ${@optUtil.getValues(options, 'event')}">
+					<script th:inline="javascript" th:with="eventKind=${#strings.arraySplit(event, '|')[0]}, func=${#strings.arraySplit(event, '|')[1]}">
+						document.getElementById('[(${id})]').addEventListener(/*[[${eventKind}]]*/ 'click',  
+								(e) => window[ /*[[${func}]]*/ 'func'](e, document.getElementById('[(${id})]')));
+					</script>
+				</th:block>
+			</th:block>
+			
 		</div></th:block>
 	</div>
 
@@ -673,9 +706,9 @@
 			<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
 				<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')},
 						javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
-	
+
 					<th:block th:replace="${topSpaceContent}" />
-	
+
 					<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
 					<th:block th:if="${__${javaFormName}__} == null"
 							th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '. 
@@ -683,20 +716,22 @@
 									Form is defined but not used (not set in the generics parameter of the controller definition sentence);'}">
 						[[${@exUtil.systemError(msg)}]]
 					</th:block>
-	
+
 					<!--/* Check #454 to understand how subFunction and ctrlSubFunction work. */-->
 					<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
 							th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 							th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
 							th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
-							th:object="${__${javaFormName + '.' + rootRecordName}__}">
+							th:object="${__${javaFormName + '.' + rootRecordName}__}"
+							onsubmit="doubleClickPreventionLockButtonsOnSubmit(event, this)"
+							th:data-submitting-message="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitting')}">
 						<input type="hidden" name="transactionToken" th:value="${transactionToken}">
-				
+
 						<!--/* Show the form name with an error message to easily understand that the form name passed from controller to model is wrong. */-->
 						<h1 style="color: red" th:if="${__${function + #strings.capitalize(subFunction) + 'Form'}__} == null">
 							form: [[${function + #strings.capitalize(subFunction) + 'Form'}]] is null.
 						</h1> 
-						
+
 						<!--/* Store form name to click button outside the form with confirmedWarnings. */-->
 						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
 						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="${javaFormName + '.' + confirmedWarnings}">
@@ -707,13 +742,13 @@
 								th:value="*{optimisticLockVersions}" />
 
 						<th:block th:replace="${formContent}" />
-			
+
 						<div th:replace="~{ :: internalWarnMessage('')}"></div>
-	
+
 		 			</form>
-					
+
 					<th:block th:replace="${bottomSpaceContent}" />
-			
+
 				</th:block>
 			</th:block>
 		</div></th:block>
@@ -1212,7 +1247,10 @@
 
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, 
+ 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ? 
+ 						('dataAttr1=disabled-on-submit|true,dataAttr2=original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
+ 				+ ${options})}"></div>
 	</div>
 
 
@@ -1317,16 +1355,12 @@
 
 	<!--/* searchButton */-->
 	<div th:fragment="searchButton(options)" th:remove="tag">
-		<button type="submit" name="search" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.search')}"></button>
+		<div th:replace="~{ :: submitButton('search', 'jp.ecuacion.splib.web.common.button.search', 'disabledOnSubmit=true,' + ${options})}"></div>
 	</div>
 
 	<!--/* searchConditionClearButton */-->
 	<div th:fragment="searchConditionClearButton(options)" th:remove="tag">
-		<button type="submit" name="conditionClear" class="btn btn-color-btn text-white" 
-				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.button.conditionClear')}"></button>
+		<div th:replace="~{ :: submitButton('conditionClear', 'jp.ecuacion.splib.web.common.button.conditionClear', ${options})}"></div>
 	</div>
 	
 	<!--/* 
