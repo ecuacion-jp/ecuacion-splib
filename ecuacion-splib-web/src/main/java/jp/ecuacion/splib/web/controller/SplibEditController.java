@@ -107,7 +107,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @return URL
    * @throws Exception Exception
    */
-  @GetMapping(value = "page", params = PARAM_INSERT)
+  @GetMapping(value = "page", params = "action=" + PARAM_INSERT)
   public String showInsertPage(Model model, F form, @AuthenticationPrincipal UserDetails loginUser)
       throws Exception {
     return pageCommon(model, form, loginUser, true);
@@ -122,7 +122,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @return URL
    * @throws Exception Exception
    */
-  @GetMapping(value = "page", params = PARAM_UPDATE)
+  @GetMapping(value = "page", params = "action=" + PARAM_UPDATE)
   public String showUpdatePage(Model model, F form, @AuthenticationPrincipal UserDetails loginUser)
       throws Exception {
     return pageCommon(model, form, loginUser, false);
@@ -156,7 +156,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @return URL
    * @throws Exception Exception
    */
-  @PostMapping(value = "action", params = "insertOrUpdate")
+  @PostMapping(value = "action", params = "action=insertOrUpdate")
   public String edit(@Validated F form, BindingResult result, Model model,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     addParamToParamListOnRedirectToSelf(form.isInsert() ? PARAM_INSERT : PARAM_UPDATE);
@@ -180,7 +180,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @param model Model
    * @return URL
    */
-  @PostMapping(value = "action", params = "back")
+  @PostMapping(value = "action", params = "action=back")
   public String back(@Validated F editForm, BindingResult result, Model model) {
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;
 

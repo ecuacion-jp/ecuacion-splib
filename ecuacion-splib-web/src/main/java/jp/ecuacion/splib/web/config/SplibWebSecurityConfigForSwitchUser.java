@@ -76,7 +76,7 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     SwitchUserFilter filter = new SwitchUserFilter();
     // /admin/impersonateLogin/action
     filter.setUserDetailsService(userDetailsService);
-    filter.setUsernameParameter("adminLogin.username");
+    filter.setUsernameParameter("switchUser.username");
     // filter.setSwitchUserUrl("/admin/switchUser");
     filter.setSwitchUserMatcher(
         PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/admin/switchUser"));

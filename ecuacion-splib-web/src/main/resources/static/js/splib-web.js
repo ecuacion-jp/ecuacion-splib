@@ -75,7 +75,7 @@ function doubleClickPreventionLockButtonsOnSubmit(event, form) {
 	buttons.forEach(button => {
 		if (button.dataset.disabledOnSubmit) {
 			if (button === event.submitter) {
-				document.getElementById('action').value = event.submitter.name;
+				form.elements['action'].value = event.submitter.name;
 				event.submitter.innerText = form.dataset.submittingMessage;
 			}
 			

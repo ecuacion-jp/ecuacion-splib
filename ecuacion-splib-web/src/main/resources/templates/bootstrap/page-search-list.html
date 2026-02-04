@@ -26,8 +26,6 @@
 		th:with="ctrlSubFunction='searchList'
 				, subFunction1='search', formMethod1='get'
 				, subFunction2='list', formMethod2='post'
-				, idFieldName2=${idFieldName}
-				, versionFieldName2=${versionFieldName}
 				, itemDisplayedOnDelete2=${itemDisplayedOnDelete}
 		">
 
@@ -51,15 +49,12 @@
 				<div th:replace="~{bootstrap/components :: horizontalLine('')}"></div>
 			</th:block>
 			<input type="hidden" name="dataKind" th:value="${__${function + 'SearchForm'}__.dataKind}">
-			<input type="hidden" name="action" id="action">
 			<div th:replace="~{bootstrap/components :: sortPagingAndRecordsInScreen(${__${function + 'SearchForm'}__}, '')}"></div>
 		</div>
 	</div>
 	
 	<div layout:fragment="form-content-2" th:remove="tag">
 		<div class="container-fluid">
-
- 			<div th:replace="~{bootstrap/components :: hiddenForInlineButtons(${rootRecordName}, ${idFieldName2}, '')}"></div>
 			<input type="hidden" name="dataKind" th:value="${__${function + 'SearchForm'}__.dataKind}">
 			
 			<div class="table-responsive">
@@ -89,8 +84,8 @@
 	</div>
 	
 	<div layout:fragment="scripts">
-		<div th:replace="~{bootstrap/components :: scriptFortdUpdateButton(${rootRecordName}, ${idFieldName2}, ${versionFieldName2}, '')}"></div>
-		<div th:replace="~{bootstrap/components :: scriptFortdDeleteButton(${rootRecordName}, ${idFieldName2}, ${versionFieldName2}, ${itemDisplayedOnDelete2}, '')}"></div>
+		<div th:replace="~{bootstrap/components :: scriptFortdUpdateButton(${rootRecordName}, '')}"></div>
+		<div th:replace="~{bootstrap/components :: scriptFortdDeleteButton(${rootRecordName}, ${itemDisplayedOnDelete2}, '')}"></div>
 		<div th:replace="~{bootstrap/components :: scriptForSortPagingAndRecordsInScreen('')}"></div>
 	</div>
 </body>
