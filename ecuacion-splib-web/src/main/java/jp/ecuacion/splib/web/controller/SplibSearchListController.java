@@ -292,7 +292,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @return URL
    * @throws Exception Exception
    */
-  @PostMapping(value = "action", params = "delete")
+  @PostMapping(value = "action", params = "action=delete")
   public String delete(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     prepare(model, loginUser, searchForm, listForm);
@@ -310,7 +310,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @return URL
    * @throws AppException AppException
    */
-  @PostMapping(value = "action", params = "showInsertForm")
+  @PostMapping(value = "action", params = "action=showInsertForm")
   public String showInsertForm(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws AppException {
     prepare(model, loginUser, searchForm, listForm);
@@ -327,7 +327,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @return URL
    * @throws AppException AppException
    */
-  @PostMapping(value = "action", params = "showUpdateForm")
+  @PostMapping(value = "action", params = "action=showUpdateForm")
   public String showUpdateForm(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws AppException {
     prepare(model, loginUser, searchForm, listForm);

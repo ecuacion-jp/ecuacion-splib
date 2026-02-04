@@ -56,11 +56,16 @@
 				,attr3Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 2, 0, 'attr3')}, attr3Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 2, 1)}
 				,attr4Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 3, 0, 'attr4')}, attr4Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 3, 1)}
 				,attr5Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 4, 0, 'attr5')}, attr5Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 4, 1)}
+				,attr6Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 5, 0, 'attr6')}, attr6Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 5, 1)}
+				,attr7Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 6, 0, 'attr7')}, attr7Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 6, 1)}
+				,attr8Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 7, 0, 'attr8')}, attr8Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 7, 1)}
+				,attr9Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 8, 0, 'attr9')}, attr9Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 8, 1)}
+				,attr10Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 9, 0, 'attr10')}, attr10Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 9, 1)}
 				">
 
 			<!--/* maximux number of attr check */-->				
-			<th:block th:if="${@optUtil.getValues(options, 'attr').length > 5}">
-				[[${@exUtil.systemError('Maximum number of option: attr is 5.')}]]
+			<th:block th:if="${@optUtil.getValues(options, 'attr').length > 10}">
+				[[${@exUtil.systemError('Maximum number of option: attr is 10.')}]]
 			</th:block>
 			
 			<div th:if="${createsComponentIdDiv}" th:id="${componentId}" th:classappend="${mtClass} + ' ' + ${mbClass}">
@@ -638,16 +643,15 @@
 					th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' 
 							+ @optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} + ' ' 
 							+ ${@optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}"
-					th:text="${@msgUtil.getValue(#locale, label)}">
+					th:text="${@msgUtil.getValue(#locale, label)}"
+					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 			
-			<th:block th:if="${@optUtil.hasKey(options, 'event')}">
-				<th:block th:each="event : ${@optUtil.getValues(options, 'event')}">
-					<script th:inline="javascript" th:with="eventKind=${#strings.arraySplit(event, '|')[0]}, func=${#strings.arraySplit(event, '|')[1]}">
-						document.getElementById('[(${id})]').addEventListener(/*[[${eventKind}]]*/ 'click',  
-								(e) => window[ /*[[${func}]]*/ 'func'](e, document.getElementById('[(${id})]')));
-					</script>
-				</th:block>
+			<th:block th:if="${@optUtil.hasKey(options, 'event')}" th:each="event : ${@optUtil.getValues(options, 'event')}">
+				<script th:inline="javascript" th:with="eventKind=${#strings.arraySplit(event, '|')[0]}, func=${#strings.arraySplit(event, '|')[1]}">
+					document.getElementById('[(${id})]').addEventListener(/*[[${eventKind}]]*/ 'click',  
+							(e) => window[ /*[[${func}]]*/ 'func'](e, document.getElementById('[(${id})]')));
+				</script>
 			</th:block>
 			
 		</div></th:block>
@@ -717,7 +721,7 @@
 					</th:block>
 
 					<!--/* Check #454 to understand how subFunction and ctrlSubFunction work. */-->
-					<form th:name="${htmlFormName}" th:id="${htmlFormName}" 
+					<form th:name="${javaFormName}" th:id="${javaFormName}" 
 							th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 							th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
 							th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
@@ -725,6 +729,7 @@
 							onsubmit="doubleClickPreventionLockButtonsOnSubmit(event, this)"
 							th:data-submitting-message="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitting')}">
 						<input type="hidden" name="transactionToken" th:value="${transactionToken}">
+						<input type="hidden" name="action">
 
 						<!--/* Show the form name with an error message to easily understand that the form name passed from controller to model is wrong. */-->
 						<h1 style="color: red" th:if="${__${function + #strings.capitalize(subFunction) + 'Form'}__} == null">
@@ -733,11 +738,11 @@
 
 						<!--/* Store form name to click button outside the form with confirmedWarnings. */-->
 						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
-						<input type="hidden" name="confirmedWarnings" th:data-html-form-name="${htmlFormName}" th:value="${javaFormName + '.' + confirmedWarnings}">
+						<input type="hidden" name="confirmedWarnings" th:value="${confirmedWarnings}">
 			 			<input type="hidden" name="submitOnChangeToRefresh">
-			 			<input type="hidden" th:id="${htmlFormName + '.' + rootRecordName + '.ids'}" th:name="${rootRecordName + '.ids'}" 
+			 			<input type="hidden" th:id="${javaFormName + '.' + rootRecordName + '.ids'}" th:name="${rootRecordName + '.ids'}" 
 			 					th:value="*{ids}">
-						<input type="hidden" th:id="${htmlFormName + '.' + rootRecordName + '.optimisticLockVersions'}" th:name="${rootRecordName + '.optimisticLockVersions'}" 
+						<input type="hidden" th:id="${javaFormName + '.' + rootRecordName + '.optimisticLockVersions'}" th:name="${rootRecordName + '.optimisticLockVersions'}" 
 								th:value="*{optimisticLockVersions}" />
 						<th:block th:replace="${formContent}" />
 
@@ -915,8 +920,7 @@
 				 + ' ' + ${messagesBean.isValid(itemPropertyPath)}"
 				th:disabled="${isReadOnly}"
 				th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
-				th:data-html-form-name="${htmlFormName}"
-				onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {document.forms[this.dataset.htmlFormName].elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
+				onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {this.form.elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
 			<option th:if="${!@optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
 			<th:block th:each="pair : ${pairs}">
 				<!--/* in case of select from boolean, inputValue (received from form) is boolean.
@@ -1246,7 +1250,7 @@
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
  		<div th:replace="~{ :: internalButtonCommonComponent(${name}, ${label}, true, 
- 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'false') == 'true' ? 
+ 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ? 
  						('attr=data-disabled-on-submit|true,attr=data-original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
  				+ ${options})}"></div>
 	</div>
@@ -1263,6 +1267,12 @@
 		### edit-page button
 	 */-->
 
+	<!--/* insertOrUpdateButton */-->
+	<div th:fragment="insertOrUpdateButton(isInsert, options)" th:remove="tag">
+		<div th:replace="~{ :: submitButton('insertOrUpdate', 
+				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, ${options})}"></div>
+	</div>
+	
 	<!--/* backButton */-->
 	<div th:fragment="backButton(options)" th:remove="tag">
 		<div th:replace="~{ :: submitButton('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
@@ -1395,11 +1405,11 @@
 						<div th:replace="~{ :: submitButton('searchAgain', 'jp.ecuacion.splib.web.common.label.recordsInScreen', 
 								'disabledOnSubmit=true,' + 'id=dropdownMenuButton1,attr=data-bs-toggle|dropdown,classappend=dropdown-toggle,classappend=mb-3' + ${options})}"></div>
 						<ul class="dropdown-menu">
-							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(5)">5</a></li>
-							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(10)">10</a></li>
-							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(20)">20</a></li>
-							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(50)">50</a></li>
-							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(100)">100</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 5)">5</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 10)">10</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 20)">20</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 50)">50</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 100)">100</a></li>
 						</ul>
 					</div>
 				</div>
@@ -1425,9 +1435,9 @@
 	
 	<div th:fragment="scriptForRecordsInScreen(options)" th:remove="tag">
 		<script>
-		function listFromRecordsInScreen(recordsInScreen) {
+		function listFromRecordsInScreen(button, recordsInScreen) {
 			document.getElementById("recordsInScreen").value = recordsInScreen;
-			document.searchForm.requestSubmit(document.getElementById('dropdownMenuButton1')); 
+			button.form.requestSubmit(document.getElementById('dropdownMenuButton1')); 
 		}
 		</script>
 	</div>
@@ -1628,92 +1638,68 @@
 		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{ :: internalAllHtmlCheckboxComponent(false)}, ${options})}"></div>
 	</div>
 
+	<!--/* showInsertFormButton */-->
+	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
+		<div th:replace="~{ :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
+	</div>
+
+	<!--/* tdSubmitButton */-->
+	<div th:fragment="tdSubmitButton(name, label, options)" th:remove="tag">
+		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+	 		<div th:replace="~{ :: submitButton(${name}, ${label}, 'classappend=btn-sm,' + ${options})}">
+	 		</div>
+		</td>
+	</div>
+	
+	<!--/* tdSubmitButtonWithIds */-->
+	<div th:fragment="tdSubmitButtonWithIds(name, label, onClickFunctionName, options)" th:remove="tag">
+		<div th:replace="~{ :: tdSubmitButton(${name}, ${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', label))},
+					'id=' + ${name} + '_' + *{ids} + ',event=click|' + ${onClickFunctionName} + ',' 
+					+ ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions} + ',' + ${options})}">
+		</div>
+	</div>
+
 	<!--/* inline update button */-->
 	<div th:fragment="tdUpdateButton(options)" th:remove="tag">
-		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<button type="submit" name="showUpdateForm" class="btn btn-sm btn-color-btn text-white"
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:data-id="*{ids}"
-					th:data-version="*{optimisticLockVersions}"
-					onClick="update('listForm', this.dataset.id, this.dataset.version);"
-					th:text="${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', 'jp.ecuacion.splib.web.common.button.update'))}"
-					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
-			</button>
-		</td>
+		<div th:replace="~{ :: tdSubmitButtonWithIds('showUpdateForm', 'jp.ecuacion.splib.web.common.button.update', 'update', ${options})}"></div>
 	</div>
 	
 	<!--/* inline delete button */-->
 	<div th:fragment="tdDeleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag">
-		<td class="text-center p-1 align-middle" height="0px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<button type="submit" th:id="'delete_' + ${id}" name="delete" class="btn btn-sm btn-color-btn-danger text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:data-form-name="listForm" th:data-item="${recordValueDisplayedOnDelete}" 
-					th:data-id="*{ids}"
-					th:data-version="*{optimisticLockVersions}"
-					th:onClick="return del(this.dataset.formName, this.dataset.id, this.dataset.item, this.dataset.version);" 
-					th:text="${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', 'jp.ecuacion.splib.web.common.button.delete'))}"
-					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
-			</button>
-		</td>
+		<div th:replace="~{ :: tdSubmitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete', 'del', 
+				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete} + ',' + ${options})}"></div>
 	</div>
 	
 	<!--/* inline switch user button */-->
 	<div th:fragment="tdSwitchUserButton(username, options)" th:remove="tag">
-		<td class="text-center p-1 align-middle" height="0px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<button type="button" class="btn btn-sm btn-color-btn text-white" 
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:data-username="${username}"
-					th:onClick="return switchUser(this.dataset.username);" 
-					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.switchButton')}"
-					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
-			</button>
-		</td>
-	</div>
-
-	<!--/* general button */-->
-	<div th:fragment="tdButton(itemPropertyPath, id, version, options)" th:remove="tag">
-		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-			<button type="submit" th:id="${itemPropertyPath} + '_' + ${id}" th:name="${itemPropertyPath}" class="btn btn-sm btn-color-btn text-white"
-					th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-					th:data-version="${version}"
-					th:text="#{__${itemPropertyPath}__}"
-					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
-			</button>
-			<th:block th:if="${@optUtil.hasKey(options, 'onClickJs')}">
-				<script th:inline="javascript">
-					onTdButtonClick(/*[[${itemPropertyPath}]], [[${id}]]*/);
-				</script>
-			</th:block>
-		</td>
-	</div>
-	
-	<!--/* hidden input for inline button. Put it in the list form. Put only one of this. */-->
-	<div th:fragment="hiddenForInlineButtons(rootRecordName, idFieldName, options)" th:remove="tag">
-		<input type="hidden" th:id="${rootRecordName + '.' + idFieldName}" th:name="${rootRecordName + '.' + idFieldName}">
+		<div th:replace="~{ :: tdSubmitButtonWithIds('switchUser', 'jp.ecuacion.splib.web.switchUser.switchButton', 'switchUser', 
+				'attr=data-username|' + ${username} + ',' + ${options})}"></div>
 	</div>
 	
 	<!--/* javaScript for inline update button. Use with tdUpdateButton. Put it at "bottom-space" part in a page template.  */-->
-	<div th:fragment="scriptFortdUpdateButton(rootRecordName, idFieldName, versionFieldName, options)" th:remove="tag">
-		<script th:with="id=${rootRecordName + '.' + idFieldName},ids=${rootRecordName + '.ids'},versionId=${rootRecordName + '.optimisticLockVersions'}">
-		function update(formName, id, version) {
-			document.getElementById("[[${'listForm.' + ids}]]").value = id;
-			document.forms[formName].elements["[[${'listForm.' + versionId}]]"].value = version;
+	<div th:fragment="scriptFortdUpdateButton(rootRecordName, options)" th:remove="tag">
+		<script th:with="ids=${rootRecordName + '.ids'},versions=${rootRecordName + '.optimisticLockVersions'}">
+		function update(event, button) {
+			document.forms[button.form.name].elements['[[${ids}]]'].value = button.dataset.ids;
+			document.forms[button.form.name].elements['[[${versions}]]'].value = button.dataset.versions;
 		}
 		</script>
 	</div>
 
 	<!--/* javaScript for inline delete button.  Use with tdDeleteButton. Put it at "bottom-space" part in a page template.  */-->
-	<div th:fragment="scriptFortdDeleteButton(rootRecordName, idFieldName, versionFieldName, itemDisplayedOnDelete, options)" th:remove="tag">
-		<script th:with="id=${rootRecordName + '.' + idFieldName},ids=${rootRecordName + '.ids'},versionId=${rootRecordName + '.optimisticLockVersions'}">
-		function del(formName, id, recordName, version) {
-			var message = "[[${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete)}]]" + " " + recordName;
+	<div th:fragment="scriptFortdDeleteButton(rootRecordName, itemDisplayedOnDelete, options)" th:remove="tag">
+		<script th:with="ids=${rootRecordName + '.ids'},versions=${rootRecordName + '.optimisticLockVersions'}">
+		function del(event, button) {
+			var message = "[[${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete)}]]" + " " + button.dataset.item;
 			var bl = confirm(message);
-			if (!bl) return false;
-			
-			document.getElementById("[[${'listForm.' + ids}]]").value = id;
-			document.forms[formName].elements["[[${'listForm.' + versionId}]]"].value = version;
 
-			return true;
+			if (bl) {
+				document.forms[button.form.name].elements['[[${ids}]]'].value = button.dataset.ids;
+				document.forms[button.form.name].elements['[[${versions}]]'].value = button.dataset.versions;
+
+			} else {
+				event.preventDefault();
+			}
 		}
 		</script>
 	</div>
@@ -1721,29 +1707,18 @@
 	<!--/* javaScript for inline switch user. Use with tdSwitchUserButton. Put it at "bottom-space" part in a page template.  */-->
 	<div th:fragment="scriptFortdSwitchUserButton(options)" th:remove="tag">
 		<form id="switchUserForm" method="GET" th:action="@{/admin/switchUser}">
-			<input type="hidden" id="adminLogin.username" name="adminLogin.username">
+			<input type="hidden" id="switchUser.username" name="switchUser.username">
 		</form>
 		<script>
-		function switchUser(username) {
-			document.getElementById("adminLogin.username").value = username;
+		function switchUser(event, button) {
+			// default submit not needed.
+			event.preventDefault();
+
+			document.getElementById("switchUser.username").value = button.dataset.username;
 			document.getElementById("switchUserForm").submit();
 		}
 		</script>
 	</div>
 
-	<!--/* 
-		### button.
-	 */-->
-
-	<!--/* showInsertFormButton */-->
-	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
-		<div th:replace="~{ :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', 'disabledOnSubmit=true,' + ${options})}"></div>
-	</div>
-
-	<!--/* insertOrUpdateButton */-->
-	<div th:fragment="insertOrUpdateButton(isInsert, options)" th:remove="tag">
-		<div th:replace="~{ :: submitButton('insertOrUpdate', 
-				${isInsert ? 'jp.ecuacion.splib.web.common.button.insert' : 'jp.ecuacion.splib.web.common.button.update'}, 'disabledOnSubmit=true,' + ${options})}"></div>
-	</div>
 </body>
 </html>
