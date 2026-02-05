@@ -159,7 +159,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
   @PostMapping(value = "action", params = "action=insertOrUpdate")
   public String edit(@Validated F form, BindingResult result, Model model,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    addParamToParamListOnRedirectToSelf(form.isInsert() ? PARAM_INSERT : PARAM_UPDATE);
+    addParamToParamListOnRedirectToSelf("action", form.isInsert() ? PARAM_INSERT : PARAM_UPDATE);
     prepare(model, loginUser, form.validate(result));
     getService().edit(form, loginUser);
 
@@ -167,7 +167,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
         redirectOnSuccess == null ? new ReturnUrlBean(this, util, true).showSuccessMessage()
             : redirectOnSuccess;
     redirectBean.putParam(SplibWebConstants.KEY_DATA_KIND, form.getDataKind());
-    redirectBean.putParam(PARAM_UPDATE, form.getDataKind());
+    redirectBean.putParam("action", PARAM_UPDATE);
 
     return redirectBean.getUrl();
   }
