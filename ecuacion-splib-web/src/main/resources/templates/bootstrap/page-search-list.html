@@ -24,7 +24,7 @@
 		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 		layout:decorate="~{bootstrap/page-general-2-forms}"
 		th:with="ctrlSubFunction='searchList'
-				, subFunction1='search', formMethod1='get'
+				, subFunction1='search', formMethod1='get', options1='transactionToken=false'
 				, subFunction2='list', formMethod2='post'
 				, itemDisplayedOnDelete2=${itemDisplayedOnDelete}
 		">

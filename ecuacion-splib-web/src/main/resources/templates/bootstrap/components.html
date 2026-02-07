@@ -658,17 +658,17 @@
 	<!--/* anchor */-->
 	 <div th:fragment="anchor(href, label, isButtonLook, options)" th:remove="tag">
 	 	<th:block th:if="${isButtonLook}">
-	 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentA}, ${options})}"></div>
+	 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentAButtonLook}, ${options})}"></div>
 				 	
-			<th:block th:if="false"><div th:fragment="fragmentA" th:remove="tag">
+			<th:block th:if="false"><div th:fragment="fragmentAButtonLook" th:remove="tag">
 				<a th:href=${href} th:class="${buttonLookClasses}">[[${label}]]</a>
 			</div></th:block>
 		</th:block>
 		
 	 	<th:block th:if="${!isButtonLook}">
-	 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentA}, ${options})}"></div>
+	 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentANoButtonLook}, ${options})}"></div>
 
-			<th:block th:if="false"><div th:fragment="fragmentA" th:remove="tag">
+			<th:block th:if="false"><div th:fragment="fragmentANoButtonLook" th:remove="tag">
 				<a th:href=${href}>[[${label}]]</a>
 			</div></th:block>
 	 	</th:block>
@@ -748,7 +748,7 @@
 
 	<!--/* generalForm */-->
 	<div th:fragment="generalForm(formContent, topSpaceContent, bottomSpaceContent
-			, formMethod, multipart, subFunction, versionFieldName, versionInitialValue, options)" th:remove="tag">
+			, formMethod, multipart, subFunction, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentGeneralForm}, true, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentGeneralForm" th:remove="tag">
@@ -774,7 +774,11 @@
 							th:object="${__${javaFormName + '.' + rootRecordName}__}"
 							onsubmit="doubleClickPreventionLockButtonsOnSubmit(event, this)"
 							th:data-submitting-message="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitting')}">
-						<input type="hidden" name="transactionToken" th:value="${transactionToken}">
+
+						<th:block th:if="${@optUtil.getValueOrElse(options, 'transactionToken', 'true') != 'false'}">
+							<input type="hidden" name="transactionToken" th:value="${transactionToken}">
+						</th:block>
+
 						<input type="hidden" name="action">
 
 						<!--/* Show the form name with an error message to easily understand that the form name passed from controller to model is wrong. */-->

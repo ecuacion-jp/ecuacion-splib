@@ -35,22 +35,22 @@
 		<th:block th:if="${multipleForms != null && multipleForms}">
 			<!--/* formの使用がゼロということはgeneral pageでは想定していないので、form1は必ず使用する前提であることからusesForm1のパラメータは存在しない。 */-->
 			<th th:replace="~{bootstrap/components :: generalForm(~{::internalForm1FormContent}, ~{::internalForm1TopSpaceContent}, ~{::internalForm1BottomSpaceContent}, 
-					${formMethod1}, ${multipart1}, ${subFunction1}, ${versionFieldName1}, ${versionInitialValue1}, '')}"></th>
+					${formMethod1}, ${multipart1}, ${subFunction1}, ${options1})}"></th>
 
 			<th:block th:if="${usesForm2 != null && usesForm2}">
 				<th th:replace="~{bootstrap/components :: generalForm(~{::internalForm2FormContent}, ~{::internalForm2TopSpaceContent}, ~{::internalForm2BottomSpaceContent}, 
-						${formMethod2}, ${multipart2}, ${subFunction2}, ${versionFieldName2}, ${versionInitialValue2}, '')}"></th>
+						${formMethod2}, ${multipart2}, ${subFunction2}, ${options2})}"></th>
 			</th:block>
 			
 			<th:block th:if="${usesForm3 != null && usesForm3}">
 				<th th:replace="~{bootstrap/components :: generalForm(~{::internalForm3FormContent}, ~{::internalForm3TopSpaceContent}, ~{::internalForm3BottomSpaceContent}, 
-						${formMethod3}, ${multipart3}, ${subFunction3}, ${versionFieldName3}, ${versionInitialValue3}, '')}"></th>
+						${formMethod3}, ${multipart3}, ${subFunction3}, ${options3})}"></th>
 			</th:block>
  		</th:block>
 
 		<th:block th:if="${multipleForms == null || !multipleForms}">
 			<th th:replace="~{bootstrap/components :: generalForm(~{::internalFormFormContent}, ~{::internalFormTopSpaceContent}, ~{::internalFormBottomSpaceContent}, 
-					${formMethod}, ${multipart}, ${subFunction}, ${versionFieldName}, ${versionInitialValue}, '')}"></th>
+					${formMethod}, ${multipart}, ${subFunction}, ${options})}"></th>
 		</th:block>
 
 		<div layout:fragment="bottom-space"></div>
