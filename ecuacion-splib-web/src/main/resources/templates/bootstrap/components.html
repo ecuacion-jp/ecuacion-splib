@@ -32,25 +32,40 @@
 		### common components
 	 */-->
 	 
-	<!--/* allComponentsExternalFrame */-->
+	<!--/* internalAllCommonComponent */-->
+	<!--/* 
+		 * Is a common part of components which stores common variables obtained from options.
+		 = It doesn't contain any main components.
+		 */-->
 	<!--/* parameters:
-		- createsComponentIdDiv:	If it's true, <div th:id="${componentId}"> is created. 
-		  If it's false (=you don't want to add 'id' attribute to div component), caller component need to implement component as id = ${componentId}. 
+		- contentsOfAllCommon		is a fragment which contains main contents.	
+		- createsComponentIdDiv		If it's true, <div th:id="${componentId}"> is created. 
+		  							If it's false (=you don't want to add 'id' attribute to div component), caller component need to implement component as id = ${componentId}. 
 	 */-->
 	<!--/* options:
-		- componentId	string	Specifies 'id' attribute of the whole integrated component. 
-								As default id value is the same as the value of name for html controls.
-		- mt			integer	Specifies the margin top value of the integrated component. 
-								When you set 'mt=3' to options, it turns into 'class="mt-3"'. It's valid only when createsComponentIdDiv == true.
-		- mb			integer Specifies the margin bottom value of the integrated component.
-								When you set 'mb=3' to options, it turns into 'class="mb-3"'. It's valid only when createsComponentIdDiv == true.
-		- attr					It's used for th:attr. Set like 'attr=key1|value1'.
+		- componentId	Specifies 'id' attribute of the whole integrated component. 
+						As default id value is the same as the value of name for html controls.
+		- mt			Specifies the margin top value of the integrated component. 
+						When you set 'mt=3' to options, it turns into 'class="mt-3"'. It's valid only when createsComponentIdDiv == true.
+						It's implemented in addition to classappend because it's appended not to the main component, but to the most outside tag. 
+		- mb			Specifies the margin bottom value of the integrated component.
+						When you set 'mb=3' to options, it turns into 'class="mb-3"'. It's valid only when createsComponentIdDiv == true.
+						It's implemented in addition to classappend because it's appended not to the main component, but to the most outside tag. 
+		- classappend   Appends designated class to main component.
+		                Multiple designation allowed like 'class=cls1,class=cls2'. 
+		- attr			Is used for th:attr. Set like 'attr=key1|value1'. 10 attrs tops.
+						This has 10 attrs, but each component does not need to have all 10 attrs because it's usually too much.
+		- event			Specifies javascript event. It's designated by event name and the function called by it separated by '|',
+		                like 'event=click|func'. 
+		                'event name' and 'function' is used in 'addEventListener'.
+		                Multiple events can be used. 'event=click|func1,event=click|func2' calls func1 and func2 in this order.
  	 */-->
 	<div th:fragment="internalAllCommonComponent(contentsOfAllCommon, createsComponentIdDiv, options)" th:remove="tag">
 		<th:block th:with="
 				componentId=${@optUtil.getValueOrElse(options, 'componentId', null)}
 				,mtClass=${@optUtil.hasKey(options, 'mt') ? 'mt-' + @optUtil.getValue(options, 'mt') : ''}
 				,mbClass=${@optUtil.hasKey(options, 'mb') ? 'mb-' + @optUtil.getValue(options, 'mb') : ''}
+				,classappend=' ' + ${@optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}
 				,attr1Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 0, 0, 'attr1')}, attr1Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 0, 1)}
 				,attr2Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 1, 0, 'attr2')}, attr2Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 1, 1)}
 				,attr3Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 2, 0, 'attr3')}, attr3Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 2, 1)}
@@ -74,6 +89,14 @@
 			<th:block th:if="${!createsComponentIdDiv}">
 				<th:block th:replace="${contentsOfAllCommon}" />
 			</th:block>
+			
+			<th:block th:if="${@optUtil.hasKey(options, 'event')}" th:each="event : ${@optUtil.getValues(options, 'event')}">
+				<script th:inline="javascript" th:with="eventKind=${#strings.arraySplit(event, '|')[0]}, func=${#strings.arraySplit(event, '|')[1]}">
+					document.getElementById('[(${id})]').addEventListener(/*[[${eventKind}]]*/ 'click',  
+							(e) => window[ /*[[${func}]]*/ 'func'](e, document.getElementById('[(${id})]')));
+				</script>
+			</th:block>
+			
 		</th:block>
 	</div>
 	
@@ -612,6 +635,46 @@
 	</div>
 
 	<!--/* 
+		### base-page buttonLook components.
+	 */-->
+	 
+	<!--/* internalButtonLookComponent */-->
+	<div th:fragment="internalButtonLookComponent(buttonLookContents, options)" th:remove="tag">
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonLookComponent}, false, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentButtonLookComponent" th:remove="tag"
+				th:with="buttonLookClasses=|btn text-white ${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'} 
+						${@optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} ${classappend}|">
+			
+			<th:block th:replace="${buttonLookContents}" />
+			
+		</div></th:block>
+	</div>
+
+	<!--/* 
+		### base-page button components.
+	 */-->
+	 
+	<!--/* anchor */-->
+	 <div th:fragment="anchor(href, label, isButtonLook, options)" th:remove="tag">
+	 	<th:block th:if="${isButtonLook}">
+	 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentAButtonLook}, ${options})}"></div>
+				 	
+			<th:block th:if="false"><div th:fragment="fragmentAButtonLook" th:remove="tag">
+				<a th:href=${href} th:class="${buttonLookClasses}">[[${label}]]</a>
+			</div></th:block>
+		</th:block>
+		
+	 	<th:block th:if="${!isButtonLook}">
+	 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentANoButtonLook}, ${options})}"></div>
+
+			<th:block th:if="false"><div th:fragment="fragmentANoButtonLook" th:remove="tag">
+				<a th:href=${href}>[[${label}]]</a>
+			</div></th:block>
+	 	</th:block>
+	 </div>
+
+	<!--/* 
 		### base-page button components.
 	 */-->
 
@@ -624,36 +687,19 @@
 	<!--/* options:
 		- id					Specifies id attribute of the component.
 		- backgroundColorClass	Specifies the color of the background of the component
-		- event			string	Specifies javascript event. It's designated by event name and the function called by it separated by '|',
-		                        like 'event=click|func'. 
-		                        'event name' and 'function' is used in 'addEventListener'.
-		                       	Multiple events can be used. 'event=click|func1,event=click|func2' calls func1 and func2 in this order.
-
  	 */-->
-	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonCommonComponent}, false, ${options})}"></div>
+	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag"
+			th:with="id=${@optUtil.getValueOrElse(options, 'id', name)}">
+ 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentButtonCommonComponent}, 'id=' + ${id} + ',' + ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag"
-				th:with="id=${@optUtil.getValueOrElse(options, 'id', name)},
-				">
-				
+				th:with="id=${@optUtil.getValueOrElse(options, 'id', name)}">
+
 			<button th:attr="${attr1Key}=${attr1Value}, ${attr2Key}=${attr2Value}, ${attr3Key}=${attr3Value}, ${attr4Key}=${attr4Value}, ${attr5Key}=${attr5Value}"
-					th:type="${submits ? 'submit' : 'button'}" th:name="${name}" th:id="${id}" 
-					class='btn text-white'
-					th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' 
-							+ @optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} + ' ' 
-							+ ${@optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}"
-					th:text="${@msgUtil.getValue(#locale, label)}"
-					th:disabled="${@optUtil.hasKey(options, 'disabled')}">
+					th:type="${submits ? 'submit' : 'button'}" th:name="${name}" th:id="${id}" th:classappend="${buttonLookClasses}"
+					th:text="${@msgUtil.getValue(#locale, label)}" th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
-			
-			<th:block th:if="${@optUtil.hasKey(options, 'event')}" th:each="event : ${@optUtil.getValues(options, 'event')}">
-				<script th:inline="javascript" th:with="eventKind=${#strings.arraySplit(event, '|')[0]}, func=${#strings.arraySplit(event, '|')[1]}">
-					document.getElementById('[(${id})]').addEventListener(/*[[${eventKind}]]*/ 'click',  
-							(e) => window[ /*[[${func}]]*/ 'func'](e, document.getElementById('[(${id})]')));
-				</script>
-			</th:block>
-			
+
 		</div></th:block>
 	</div>
 
@@ -702,7 +748,7 @@
 
 	<!--/* generalForm */-->
 	<div th:fragment="generalForm(formContent, topSpaceContent, bottomSpaceContent
-			, formMethod, multipart, subFunction, versionFieldName, versionInitialValue, options)" th:remove="tag">
+			, formMethod, multipart, subFunction, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentGeneralForm}, true, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentGeneralForm" th:remove="tag">
@@ -728,7 +774,11 @@
 							th:object="${__${javaFormName + '.' + rootRecordName}__}"
 							onsubmit="doubleClickPreventionLockButtonsOnSubmit(event, this)"
 							th:data-submitting-message="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitting')}">
-						<input type="hidden" name="transactionToken" th:value="${transactionToken}">
+
+						<th:block th:if="${@optUtil.getValueOrElse(options, 'transactionToken', 'true') != 'false'}">
+							<input type="hidden" name="transactionToken" th:value="${transactionToken}">
+						</th:block>
+
 						<input type="hidden" name="action">
 
 						<!--/* Show the form name with an error message to easily understand that the form name passed from controller to model is wrong. */-->
@@ -1243,6 +1293,7 @@
 			</div>
 		</div></th:block>
 	</div>
+
 	<!--/* 
 		### general-form-page button
 	 */-->
@@ -1253,6 +1304,10 @@
  				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ? 
  						('attr=data-disabled-on-submit|true,attr=data-original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
  				+ ${options})}"></div>
+	</div>
+
+	<div th:fragment="downloadButton(name, label, options)" th:remove="tag">
+ 		<div th:replace="~{ :: submitButton(${name}, ${label}, 'event=click|waitForDownloadToFinish,' + ${options})}"></div>
 	</div>
 
 

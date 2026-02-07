@@ -17,6 +17,8 @@ package jp.ecuacion.splib.web.controller;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -284,6 +286,18 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     public String mainRootRecordName() {
       return mainRootRecordName == null ? function : mainRootRecordName;
     }
+  }
+
+  @Autowired
+  protected HttpServletResponse response;
+
+  /**
+   * Adds a cookie for 'downloadButton' to know the download procedure is done.
+   */
+  protected void addCookieForDownloadButton() {
+    Cookie cookie = new Cookie("download_status", "completed");
+    cookie.setPath("/");
+    response.addCookie(cookie);
   }
 
   /**

@@ -15,7 +15,9 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jp.ecuacion.splib.web.form.ConfigForm;
+import jp.ecuacion.splib.web.controller.ConfigController.ConfigForm;
+import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import jp.ecuacion.splib.web.record.ConfigRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -35,5 +37,21 @@ public class ConfigController
    */
   public ConfigController() {
     super("config");
+  }
+
+  /**
+   * Stores data for config.
+   */
+  public static class ConfigForm extends SplibGeneralForm {
+
+    private ConfigRecord config = new ConfigRecord();
+
+    public ConfigRecord getConfig() {
+      return config;
+    }
+
+    public void setConfig(ConfigRecord config) {
+      this.config = config;
+    }
   }
 }
