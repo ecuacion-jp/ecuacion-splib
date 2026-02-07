@@ -644,7 +644,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonLookComponent" th:remove="tag"
 				th:with="buttonLookClasses=|btn text-white ${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'} 
-						${@optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} + ${classappend}|">
+						${@optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} ${classappend}|">
 			
 			<th:block th:replace="${buttonLookContents}" />
 			
@@ -688,8 +688,9 @@
 		- id					Specifies id attribute of the component.
 		- backgroundColorClass	Specifies the color of the background of the component
  	 */-->
-	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentButtonCommonComponent}, ${options})}"></div>
+	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag"
+			th:with="id=${@optUtil.getValueOrElse(options, 'id', name)}">
+ 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentButtonCommonComponent}, 'id=' + ${id} + ',' + ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag"
 				th:with="id=${@optUtil.getValueOrElse(options, 'id', name)}">
@@ -1288,6 +1289,7 @@
 			</div>
 		</div></th:block>
 	</div>
+
 	<!--/* 
 		### general-form-page button
 	 */-->
@@ -1298,6 +1300,10 @@
  				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ? 
  						('attr=data-disabled-on-submit|true,attr=data-original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
  				+ ${options})}"></div>
+	</div>
+
+	<div th:fragment="downloadButton(name, label, options)" th:remove="tag">
+ 		<div th:replace="~{ :: submitButton(${name}, ${label}, 'event=click|waitForDownloadToFinish,' + ${options})}"></div>
 	</div>
 
 

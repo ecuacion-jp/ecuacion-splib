@@ -102,3 +102,15 @@ function doubleClickPreventionUnlockButtonsOnBrowserBack(window) {
 	});
 }
 
+/** Defined as an property of a window to be called from window[]. */
+window.waitForDownloadToFinish = function(_event, _button) {
+	const intervalId = setInterval(function() {
+		let cookie = document.cookie;
+		if (cookie.includes("download_status=completed")) {
+			clearInterval(intervalId);
+			// delete cookie
+			document.cookie = 'download_status=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+			window.location.href = './page?success';
+		}
+	}, 1000);
+};
