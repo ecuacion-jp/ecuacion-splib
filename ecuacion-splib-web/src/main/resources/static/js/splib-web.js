@@ -114,3 +114,8 @@ window.waitForDownloadToFinish = function(_event, _button) {
 		}
 	}, 1000);
 };
+
+window.submitOnChangeToRefresh = function(_event, item) {
+	item.form.elements['submitOnChangeToRefresh'].value = 'true';
+	item.form.submit();
+};
