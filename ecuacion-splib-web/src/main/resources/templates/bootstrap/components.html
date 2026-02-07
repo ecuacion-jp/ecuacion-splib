@@ -1071,7 +1071,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTextArea" th:remove="tag">
 			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
-				th:maxlength="*{__${recordPropertyPathClass}__.getStringLength('__${propertyPathField}__')}" 
+				th:maxlength="*{getStringLength('__${propertyPathField}__')}" 
 				class="text-dark"
 				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(itemPropertyPath)}" 
 				th:readonly="${isReadOnly}" rows="3">
