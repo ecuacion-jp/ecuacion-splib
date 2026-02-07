@@ -294,7 +294,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   /**
    * Adds a cookie for 'downloadButton' to know the download procedure is done.
    */
-  protected void addDataForDownloadButton() {
+  protected void addCookieForDownloadButton() {
     Cookie cookie = new Cookie("download_status", "completed");
     cookie.setPath("/");
     response.addCookie(cookie);
