@@ -753,8 +753,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentGeneralForm" th:remove="tag">
 			<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
-				<th:block th:with="htmlFormName=${subFunction + (subFunction == '' ? 'form' : 'Form')},
-						javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
+				<th:block th:with="javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
 
 					<th:block th:replace="${topSpaceContent}" />
 
@@ -786,8 +785,6 @@
 							form: [[${function + #strings.capitalize(subFunction) + 'Form'}]] is null.
 						</h1> 
 
-						<!--/* Store form name to click button outside the form with confirmedWarnings. */-->
-						<input type="hidden" name="htmlFormName" th:value="${htmlFormName}">
 						<input type="hidden" name="confirmedWarnings" th:value="${confirmedWarnings}">
 			 			<input type="hidden" name="submitOnChangeToRefresh">
 			 			<input type="hidden" th:id="${javaFormName + '.' + rootRecordName + '.ids'}" th:name="${rootRecordName + '.ids'}" 
@@ -855,28 +852,32 @@
 			- options					String		not null	options for the component. When you don't need it, set blank('').
 	*/-->
 	<!--/* options: 
-			- id			arbitrary	specifies 'id' attribute of the html component. As default "htmlFormName + '.' + propertyPath"
+			- id			arbitrary	specifies 'id' attribute of the html component. As default "javaFormName + '.' + propertyPath"
 			- width			arbitrary	specifies width of the html component. values can be 'full' or 'half'.
 			- componentType	arbitrary	speciifes the kind of the component. Used to change the look or action by its type.
 			                            'switch' is used in the fragment for now.
 			- readOnly		arbitrary	specifies whether the component is read-only.			                            
 	*/-->
 	<div th:fragment="internalAllInputCommonComponent(itemPropertyPath, allInputContents, allInputPostfixContents, required, needsLabel, needsFieldEmssages, 
-			labelPostfix, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false, ${options})}"></div>
+			labelPostfix, options)" th:remove="tag" 
+			th:with="recordPropertyPathClass=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
+					propertyPathField=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
+					itemNameKeyClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}
+			">
 
-		<th:block th:if="false"><div th:fragment="fragmentAllInputCommonComponent" th:remove="tag">
-			<th:block th:with="recordPropertyPathClass=${itemPropertyPath.contains('.') 
-					? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
-					propertyPathField=${itemPropertyPath.contains('.') 
-					? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath},
-					itemNameKeyClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}">
+		<th:block th:with="id=${@optUtil.getValueOrElse(options, 'id', javaFormName + '.' + recordPropertyPathClass + '.' + propertyPathField)}">
+		
+			<!--/* submitOnChangeToRefresh should be the last event because it submits. */-->
+	 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false, 
+	 				 ${options} + ',' + ${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? 'event=change|submitOnChangeToRefresh' : ''})}"></div>				
+	
+			<th:block th:if="false"><div th:fragment="fragmentAllInputCommonComponent" th:remove="tag">
 				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField},
 						isDisabled=${@optUtil.hasKey(options, 'disabled')},
 						isReadOnly=${@optUtil.hasKey(options, 'readonly') || isDisabled}">
 					<th:block th:with="inputValue=*{__${itemPropertyPath}__}, 
 							inputName=${isDisabled ? null : recordPropertyPath},
-							inputId=${@optUtil.getValueOrElse(options, 'id', htmlFormName + '.' + recordPropertyPath)},
+							inputId=${id},
 							widthValue=${@optUtil.getValueOrElse(options, 'width', '')}, 
 							widthNumber=${@optUtil.hasKey(options, 'width') ? (widthValue == 'full' ? '12' : (widthValue == 'half' ? '6' : widthValue)) : ''}">
 		
@@ -921,8 +922,8 @@
 						</div>
 					</th:block>
 				</th:block>
-			</th:block>	
-		</div></th:block>
+			</div></th:block>
+		</th:block>
 	</div>
 
 	<!--/* internalAllHtmlInputComponent. */-->
@@ -963,14 +964,13 @@
 		<th:block th:if="${isReadOnly}">
 			<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? recordPropertyPath : null}" th:name="${recordPropertyPath}" th:value="${inputValue}">
 		</th:block>
-	
+
 		<select th:id="${inputId}" th:name="${inputName}"
 				class="form-select text-dark" 
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
 				 + ' ' + ${messagesBean.isValid(itemPropertyPath)}"
-				th:disabled="${isReadOnly}"
-				th:data-submit-on-change-to-refresh="${@optUtil.hasKey(options, 'submitOnChangeToRefresh')}"
-				onchange="if (this.dataset.submitOnChangeToRefresh == 'true') {this.form.elements['submitOnChangeToRefresh'].value = 'true'; this.form.submit();}">
+				th:disabled="${isReadOnly}">
+				
 			<option th:if="${!@optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
 			<th:block th:each="pair : ${pairs}">
 				<!--/* in case of select from boolean, inputValue (received from form) is boolean.
