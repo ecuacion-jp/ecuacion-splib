@@ -57,7 +57,7 @@ public class SplibThymeleafOptionUtil {
    *     then the value for key1 is {@code {'a', 'b', 'a')}}</li>
    * </ul>
    */
-  private Map<String, List<String>> optionMap(String optionCsv, boolean allowsDuplicateKey) {
+  private Map<String, List<String>> optionMap(String optionCsv, String duplicationCheckKey) {
 
     Map<String, List<String>> rtnMap = new HashMap<>();
 
@@ -94,7 +94,8 @@ public class SplibThymeleafOptionUtil {
 
       // if the key already exists in the map and allowsDuplicateKey == false,
       // the value is updated and output log.
-      if (rtnMap.get(lowerCaseKey).size() != 0 && !allowsDuplicateKey) {
+      if (rtnMap.get(lowerCaseKey).size() != 0 && duplicationCheckKey != null
+          && duplicationCheckKey.toLowerCase().equals(lowerCaseKey)) {
         rtnMap.get(lowerCaseKey).clear();
         detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
       }
@@ -106,10 +107,17 @@ public class SplibThymeleafOptionUtil {
   }
 
   /**
+   * Obtains map without checking duplication of keys.
+   */
+  private Map<String, List<String>> optionMap(String optionCsv) {
+    return optionMap(optionCsv, null);
+  }
+
+  /**
    * Returns if specified key exists in options.
    */
   public boolean hasKey(String options, String key) {
-    return optionMap(options, true).containsKey(key.toLowerCase());
+    return optionMap(options).containsKey(key.toLowerCase());
   }
 
   /**
@@ -121,7 +129,7 @@ public class SplibThymeleafOptionUtil {
    */
   public String getValue(String options, String key) {
     String lowerCaseKey = key.toLowerCase();
-    Map<String, List<String>> map = (optionMap(options, false));
+    Map<String, List<String>> map = (optionMap(options, key));
 
     return map.containsKey(lowerCaseKey) ? (map.get(lowerCaseKey)).get(0) : null;
   }
@@ -158,7 +166,7 @@ public class SplibThymeleafOptionUtil {
    */
   public String[] getValues(String options, String key) {
     String lowerCaseKey = key.toLowerCase();
-    Map<String, List<String>> map = (optionMap(options, true));
+    Map<String, List<String>> map = (optionMap(options));
 
     if (map.containsKey(lowerCaseKey)) {
       List<String> list = (map.get(lowerCaseKey));
@@ -213,7 +221,7 @@ public class SplibThymeleafOptionUtil {
    */
   public String getElementFromPsvOrElse(String options, String key, int psvIndex,
       String defaultValue) {
-    String element  = getElementFromPsv(options, key, psvIndex); 
+    String element = getElementFromPsv(options, key, psvIndex);
     return element == null ? defaultValue : element;
   }
 

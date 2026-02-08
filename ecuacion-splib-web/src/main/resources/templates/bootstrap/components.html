@@ -695,7 +695,8 @@
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag"
 				th:with="id=${@optUtil.getValueOrElse(options, 'id', name)}">
 
-			<button th:attr="${attr1Key}=${attr1Value}, ${attr2Key}=${attr2Value}, ${attr3Key}=${attr3Value}, ${attr4Key}=${attr4Value}, ${attr5Key}=${attr5Value}"
+			<button th:attr="${attr1Key}=${attr1Value}, ${attr2Key}=${attr2Value}, ${attr3Key}=${attr3Value}, ${attr4Key}=${attr4Value}, ${attr5Key}=${attr5Value},
+							 ${attr6Key}=${attr6Value}, ${attr7Key}=${attr7Value}, ${attr8Key}=${attr8Value}, ${attr9Key}=${attr9Value}, ${attr10Key}=${attr10Value}"
 					th:type="${submits ? 'submit' : 'button'}" th:name="${name}" th:id="${id}" th:classappend="${buttonLookClasses}"
 					th:text="${@msgUtil.getValue(#locale, label)}" th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
@@ -1699,6 +1700,14 @@
 		<div th:replace="~{ :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
 	</div>
 
+	<!--/* tdScriptButton */-->
+	<div th:fragment="tdScriptButton(id, label, options)" th:remove="tag">
+		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+	 		<div th:replace="~{ :: scriptButton(${id}, ${label}, 'classappend=btn-sm,' + ${options})}">
+	 		</div>
+		</td>
+	</div>
+
 	<!--/* tdSubmitButton */-->
 	<div th:fragment="tdSubmitButton(name, label, options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
@@ -1708,60 +1717,52 @@
 	</div>
 	
 	<!--/* tdSubmitButtonWithIds */-->
-	<div th:fragment="tdSubmitButtonWithIds(name, label, onClickFunctionName, options)" th:remove="tag">
+	<div th:fragment="tdSubmitButtonWithIds(name, label, options)" th:remove="tag">
 		<div th:replace="~{ :: tdSubmitButton(${name}, ${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', label))},
-					'id=' + ${name} + '_' + *{ids} + ',event=click|' + ${onClickFunctionName} + ',' 
-					+ ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions} + ',' + ${options})}">
+					'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions}
+					 + ',' + ${options} + ',event=click|tdSubmitButtonWithIds')}">
 		</div>
 	</div>
 
 	<!--/* inline update button */-->
 	<div th:fragment="tdUpdateButton(options)" th:remove="tag">
-		<div th:replace="~{ :: tdSubmitButtonWithIds('showUpdateForm', 'jp.ecuacion.splib.web.common.button.update', 'update', ${options})}"></div>
+		<div th:replace="~{ :: tdSubmitButtonWithIds('showUpdateForm', 'jp.ecuacion.splib.web.common.button.update', ${options})}"></div>
 	</div>
 	
 	<!--/* inline delete button */-->
 	<div th:fragment="tdDeleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag">
-		<div th:replace="~{ :: tdSubmitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete', 'del', 
-				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete} + ',' + ${options})}"></div>
+		<div th:replace="~{ :: tdSubmitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete',
+				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete}
+				+ ',attr=data-confirm-message|' + ${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}
+				+ ',' + ${options})}"></div>
 	</div>
 	
 	<!--/* inline switch user button */-->
 	<div th:fragment="tdSwitchUserButton(username, options)" th:remove="tag">
-		<div th:replace="~{ :: tdSubmitButtonWithIds('switchUser', 'jp.ecuacion.splib.web.switchUser.switchButton', 'switchUser', 
-				'attr=data-username|' + ${username} + ',' + ${options})}"></div>
+		<div th:replace="~{ :: tdScriptButton('switchUser', 'jp.ecuacion.splib.web.switchUser.switchButton', 
+				'attr=data-username|' + ${username} + ',' + ${options} + ',event=click|switchUser')}"></div>
 	</div>
 	
 	<!--/* javaScript for inline update button. Use with tdUpdateButton. Put it at "bottom-space" part in a page template.  */-->
-	<div th:fragment="scriptFortdUpdateButton(rootRecordName, options)" th:remove="tag">
+	<div th:fragment="scriptForTdSubmitButtonWithIds(rootRecordName, options)" th:remove="tag">
 		<script th:with="ids=${rootRecordName + '.ids'},versions=${rootRecordName + '.optimisticLockVersions'}">
-		function update(event, button) {
-			document.forms[button.form.name].elements['[[${ids}]]'].value = button.dataset.ids;
-			document.forms[button.form.name].elements['[[${versions}]]'].value = button.dataset.versions;
-		}
-		</script>
-	</div>
-
-	<!--/* javaScript for inline delete button.  Use with tdDeleteButton. Put it at "bottom-space" part in a page template.  */-->
-	<div th:fragment="scriptFortdDeleteButton(rootRecordName, itemDisplayedOnDelete, options)" th:remove="tag">
-		<script th:with="ids=${rootRecordName + '.ids'},versions=${rootRecordName + '.optimisticLockVersions'}">
-		function del(event, button) {
-			var message = "[[${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete)}]]" + " " + button.dataset.item;
-			var bl = confirm(message);
+		function tdSubmitButtonWithIds(event, button) {
+			var message = button.dataset.confirmMessage;
+			var bl = message == null ? true : confirm(message);
 
 			if (bl) {
-				document.forms[button.form.name].elements['[[${ids}]]'].value = button.dataset.ids;
-				document.forms[button.form.name].elements['[[${versions}]]'].value = button.dataset.versions;
+				button.form.elements['[[${ids}]]'].value = button.dataset.ids;
+				button.form.elements['[[${versions}]]'].value = button.dataset.versions;
 
 			} else {
 				event.preventDefault();
-			}
+			}		
 		}
 		</script>
 	</div>
 
 	<!--/* javaScript for inline switch user. Use with tdSwitchUserButton. Put it at "bottom-space" part in a page template.  */-->
-	<div th:fragment="scriptFortdSwitchUserButton(options)" th:remove="tag">
+	<div th:fragment="scriptForTdSwitchUserButton(options)" th:remove="tag">
 		<form id="switchUserForm" method="GET" th:action="@{/admin/switchUser}">
 			<input type="hidden" id="switchUser.username" name="switchUser.username">
 		</form>
