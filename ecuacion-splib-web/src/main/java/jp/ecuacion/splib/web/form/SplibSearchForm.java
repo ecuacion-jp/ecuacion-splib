@@ -153,8 +153,9 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   public Sort.Direction getDirectionEnum() {
-    return (direction != null && getDirection().equals(DIRECTION_DESC)) ? Direction.DESC
+    return (direction != null && direction.equals(DIRECTION_DESC)) ? Direction.DESC
         : Direction.ASC;
+
   }
 
   public void setDirection(String direction) {
