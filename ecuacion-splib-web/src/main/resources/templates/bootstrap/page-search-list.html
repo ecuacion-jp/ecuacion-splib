@@ -84,8 +84,7 @@
 	</div>
 	
 	<div layout:fragment="scripts">
-		<div th:replace="~{bootstrap/components :: scriptFortdUpdateButton(${rootRecordName}, '')}"></div>
-		<div th:replace="~{bootstrap/components :: scriptFortdDeleteButton(${rootRecordName}, ${itemDisplayedOnDelete2}, '')}"></div>
+		<div th:replace="~{bootstrap/components :: scriptForTdSubmitButtonWithIds(${rootRecordName}, '')}"></div>
 		<div th:replace="~{bootstrap/components :: scriptForSortPagingAndRecordsInScreen('')}"></div>
 	</div>
 </body>
