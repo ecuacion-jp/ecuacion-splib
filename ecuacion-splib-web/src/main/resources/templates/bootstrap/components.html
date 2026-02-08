@@ -1448,8 +1448,8 @@
 							<th:block th:each="pagerInfo : ${form.getPagerInfoList(#locale)}" th:object="${pagerInfo}" th:remove="tag">
 								<li class="page-item" th:classappend="*{status}">
 									<a th:if="*{isDisabled()}" class="page-link text-light" href="#" tabindex="-1" aria-disabled="true" th:text="*{displayString}"></a>
-									<a th:if="*{!isDisabled()}" class="page-link" th:data-page="*{goToPage}" 
-											href="#" onClick="listFromPage(this.dataset.page);" th:text="*{displayString}"></a>
+									<a th:if="*{!isDisabled()}" class="page-link" th:data-search-form-id="${function + 'SearchForm'}" th:data-page="*{goToPage}" 
+											href="#" onClick="listFromPage(document.getElementById(this.dataset.searchFormId), this.dataset.page);" th:text="*{displayString}"></a>
 								</li>
 							</th:block>
 						</ul>
@@ -1479,11 +1479,11 @@
 	<!--/* javaScript for inline update button. inline update buttonを配置するならこれも併せて配置。通常ページの一番下に配置。  */-->
 	<div th:fragment="scriptForThSortable(options)" th:remove="tag">
 		<script>
-		function list(sortItem, direction) {
+		function list(searchForm, sortItem, direction) {
 			document.getElementById("sortItem").value = sortItem;
 			document.getElementById("direction").value = direction;
-			document.getElementById("action").value = "searchAgain";
-			document.searchForm.submit();
+			searchForm.elements["action"].value = "searchAgain";
+			searchForm.submit();
 		}
 		</script>	
 	</div>
@@ -1499,10 +1499,10 @@
 
 	<div th:fragment="scriptForPagenation(options)" th:remove="tag">
 		<script>
-		function listFromPage(page) {
+		function listFromPage(form, page) {
 			document.getElementById("page").value = page;
-			document.getElementById("action").value = "searchAgain";
-			document.searchForm.submit();
+			form.elements["action"].value = "searchAgain";
+			form.submit();
 		}
 		</script>
 	</div>
@@ -1550,7 +1550,8 @@
 							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
 							style="cursor: pointer" th:text="${@msgUtil.getValue(#locale, labelFieldName)}" 
 							th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
-							onClick="list(this.dataset.item, this.dataset.direction);"></th>
+							th:data-search-form-id="${function + 'SearchForm'}"
+							onClick="list(document.getElementById(this.dataset.searchFormId), this.dataset.item, this.dataset.direction);"></th>
 		 		</th:block>
 		 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
 					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
