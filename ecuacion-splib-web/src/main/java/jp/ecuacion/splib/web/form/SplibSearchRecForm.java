@@ -15,17 +15,16 @@
  */
 package jp.ecuacion.splib.web.form;
 
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.validation.Valid;
 import jp.ecuacion.splib.core.record.SplibRecord;
 
 /**
- * Stores data for list.
+ * Stores data for edit.
  */
-public class SplibListForm<R extends SplibRecord> extends SplibGeneralForm {
+public abstract class SplibSearchRecForm<R extends SplibRecord> extends SplibSearchForm {
 
+  @Valid
   protected R rec;
-  private List<R> recList = new ArrayList<>();
 
   public R getRec() {
     return rec;
@@ -34,20 +33,4 @@ public class SplibListForm<R extends SplibRecord> extends SplibGeneralForm {
   public void setRec(R rec) {
     this.rec = rec;
   }
-
-  public List<R> getRecList() {
-    return recList;
-  }
-
-  /**
-   * Sets record list and returns this for method chain.
-   * 
-   * @param recList recList
-   * @return {@code SplibListForm<T>}
-   */
-  public SplibListForm<R> setRecList(List<R> recList) {
-    this.recList = recList;
-    return this;
-  }
-
 }
