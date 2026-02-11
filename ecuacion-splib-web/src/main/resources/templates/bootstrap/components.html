@@ -1307,8 +1307,10 @@
  				+ ${options})}"></div>
 	</div>
 
-	<div th:fragment="downloadButton(name, label, options)" th:remove="tag">
- 		<div th:replace="~{ :: submitButton(${name}, ${label}, 'event=click|waitForDownloadToFinish,' + ${options})}"></div>
+	<!--/* downloadButton */-->
+	<div th:fragment="downloadButton(options)" th:remove="tag">
+ 		<div th:replace="~{ :: submitButton('download', 'jp.ecuacion.splib.web.common.button.download', 
+ 				'event=click|waitForDownloadToFinish,' + ${options})}"></div>
 	</div>
 
 
@@ -1682,7 +1684,7 @@
 	<div th:fragment="tdInputNumber(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('right')}, ${options})}"></div>
 	</div>
-	
+
 	<!--/* inline input hidden */-->
 	<div th:fragment="tdInputHidden(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="type=hidden">
