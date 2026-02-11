@@ -16,8 +16,9 @@
 package jp.ecuacion.splib.web.util;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import jp.ecuacion.lib.core.item.EclibItemContainer;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.stereotype.Component;
 
@@ -41,44 +42,25 @@ public class SplibThymeleafComponentUtil {
   /**
    * Provides message string shown when the delete button pressed.
    * 
-   * <p>itemDisplayedOnDeleteには、通常は一つのitemを指定するが、"itemA,itemB"のように複数の項目を指定することも可能。 （natural
-   * keyが複数の項目からなる場合に使用） その場合は、(itemA, itemB) : (1, 2) のように括弧で括った形で表現</p>
+   * <p>itemDisplayedOnDelete is able to have multiple items like "itemA,itemB".
+   *     In that case the resultant string is like '(itemA, itemB) : (1, 2)'.</p>
    */
-  public String getDeleteConfirmMessage(String rootRecordName, String itemDisplayedOnDelete) {
-    List<String> fieldNameList = new ArrayList<>();
-
-    for (String item : itemDisplayedOnDelete.split(",")) {
-      // itemDisplayedOnDeleteに"."が2つ以上ある場合はメッセージ表示に適さないのでパスを短くする
-      while (true) {
-        if (item.split("\\.").length <= 2) {
-          break;
-        }
-
-        item = item.substring(item.indexOf(".") + 1);
-      }
-
-      // 指定されたfieldが実はSystemCommonに定義されている場合を救っておく。
-      if (!PropertyFileUtil.hasItemName(item)) {
-        String field = item.contains(".") ? item.substring(item.lastIndexOf(".") + 1) : item;
-        String commonItem = "SystemCommon." + field;
-        if (PropertyFileUtil.hasItemName(commonItem)) {
-          item = commonItem;
-        }
-      }
-
-      fieldNameList
-          .add(PropertyFileUtil.getItemName(request.getLocale(), rootRecordName + "." + item));
-    }
+  public String getDeleteConfirmMessage(EclibItemContainer rootRecord,
+      String itemDisplayedOnDelete) {
+    List<String> fieldNameList = Arrays.asList(itemDisplayedOnDelete.split(","));
 
     boolean multiple = fieldNameList.size() > 1;
-
     StringBuilder fieldNameSb = new StringBuilder();
-    for (String str : fieldNameList) {
-      fieldNameSb.append(", " + str);
+
+    for (String itemPropertyPath : fieldNameList) {
+      String itemName = PropertyFileUtil.getItemName(request.getLocale(),
+          rootRecord.getItem(itemPropertyPath).getItemNameKey());
+      fieldNameSb.append(", " + itemName);
     }
 
-    String fieldNames =
-        (multiple ? "（" : "") + fieldNameSb.toString().substring(2) + (multiple ? "）" : "");
+    String fieldNames = (multiple ? " (" : "")
+        + (fieldNameList.size() == 0 ? "" : fieldNameSb.toString().substring(2))
+        + (multiple ? ") " : "");
 
     return PropertyFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.deleteConfirmation",
