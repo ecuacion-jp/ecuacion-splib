@@ -1735,12 +1735,13 @@
 	<div th:fragment="tdUpdateButton(options)" th:remove="tag">
 		<div th:replace="~{ :: tdSubmitButtonWithIds('showUpdateForm', 'jp.ecuacion.splib.web.common.button.update', ${options})}"></div>
 	</div>
-	
+
 	<!--/* inline delete button */-->
-	<div th:fragment="tdDeleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag">
+	<div th:fragment="tdDeleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag"
+			th:with="itemNameKey=*{getItem('__${itemDisplayedOnDelete}__').getItemNameKey('__${rootRecordName}__')}">
 		<div th:replace="~{ :: tdSubmitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete',
 				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete}
-				+ ',attr=data-confirm-message|' + ${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}
+				+ ',attr=data-confirm-message|' + ${@compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}
 				+ ',' + ${options})}"></div>
 	</div>
 
