@@ -1307,10 +1307,6 @@
  				+ ${options})}"></div>
 	</div>
 
-	<div th:fragment="downloadButton(name, label, options)" th:remove="tag">
- 		<div th:replace="~{ :: submitButton(${name}, ${label}, 'event=click|waitForDownloadToFinish,' + ${options})}"></div>
-	</div>
-
 
 
 	<!--/* 
@@ -1332,6 +1328,12 @@
 	<!--/* backButton */-->
 	<div th:fragment="backButton(options)" th:remove="tag">
 		<div th:replace="~{ :: submitButton('back', 'jp.ecuacion.splib.web.common.button.back', ${options})}"></div>
+	</div>
+
+	<!--/* downloadButton */-->
+	<div th:fragment="downloadButton(options)" th:remove="tag">
+ 		<div th:replace="~{ :: submitButton('download', 'jp.ecuacion.splib.web.common.button.download', 
+ 				'event=click|waitForDownloadToFinish,' + ${options})}"></div>
 	</div>
 
 
@@ -1578,7 +1580,12 @@
 	<div th:fragment="thDeleteButton(options)" th:remove="tag">
 		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.delete', ${options})}"></div>
 	</div>
-	
+
+	<!--/* thDownloadButton */-->
+	<div th:fragment="thDownloadButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.download', ${options})}"></div>
+	</div>
+
 	<!-- switch user button -->
 	<div th:fragment="thSwitchUserButton(options)" th:remove="tag">
 		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.switchUser.switchButton', ${options})}"></div>
@@ -1682,7 +1689,7 @@
 	<div th:fragment="tdInputNumber(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent('right')}, ${options})}"></div>
 	</div>
-	
+
 	<!--/* inline input hidden */-->
 	<div th:fragment="tdInputHidden(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="type=hidden">
@@ -1735,6 +1742,12 @@
 				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete}
 				+ ',attr=data-confirm-message|' + ${@compUtil.getDeleteConfirmMessage(rootRecordName, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}
 				+ ',' + ${options})}"></div>
+	</div>
+
+	<!--/* tdDownloadButton */-->
+	<div th:fragment="tdDownloadButton(options)" th:remove="tag">
+		<div th:replace="~{ :: tdSubmitButtonWithIds('download', 'jp.ecuacion.splib.web.common.button.download', 
+				'event=click|waitForDownloadToFinish,' + ${options})}"></div>
 	</div>
 	
 	<!--/* inline switch user button */-->
