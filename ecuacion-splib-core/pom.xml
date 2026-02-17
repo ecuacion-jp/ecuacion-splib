@@ -80,7 +80,7 @@
 		<!-- ecuacion-lib -->
 		<dependency>
 			<groupId>jp.ecuacion.lib</groupId>
-			<artifactId>ecuacion-lib-core</artifactId>
+			<artifactId>ecuacion-lib-validation</artifactId>
 		</dependency>
 
 	</dependencies>
