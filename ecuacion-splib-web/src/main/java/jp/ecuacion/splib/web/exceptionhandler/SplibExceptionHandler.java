@@ -33,6 +33,7 @@ import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
 import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import jp.ecuacion.lib.core.exception.unchecked.UncheckedAppException;
+import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -201,18 +202,21 @@ public abstract class SplibExceptionHandler {
 
       if (saex instanceof ValidationAppException) {
         ValidationAppException vex = (ValidationAppException) saex;
-        if (!vex.isMessageWithItemName()) {
+        ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
+        if (!cv.isMessageWithItemName()) {
           isThereMessageWithItemPropertyPath = true;
-          itemPropertyPaths = vex.getItemPropertyPaths();
+          List<String> list =
+              cv.getFieldInfoBeanList().stream().map(b -> b.itemPropertyPathForForm).toList();
+          itemPropertyPaths = list.toArray(new String[list.size()]);
         }
-        
+
       } else if (saex instanceof BizLogicAppException) {
         itemPropertyPaths = ((BizLogicAppException) saex).getItemPropertyPaths();
         if (itemPropertyPaths != null && itemPropertyPaths.length > 0) {
           isThereMessageWithItemPropertyPath = true;
         }
       }
-      
+
       msgSetter.setMessage(messagesBean, saex, request.getLocale(), itemPropertyPaths);
     }
 
