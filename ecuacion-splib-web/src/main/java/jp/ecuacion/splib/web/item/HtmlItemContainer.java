@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import jp.ecuacion.lib.core.item.EclibItem;
-import jp.ecuacion.lib.core.item.EclibItemContainer;
+import jp.ecuacion.lib.core.item.Item;
+import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
@@ -31,7 +31,7 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 /**
  * Has features related web environment.
  */
-public interface HtmlItemContainer extends EclibItemContainer {
+public interface HtmlItemContainer extends ItemContainer {
 
   /**
    * Returns HtmlItem.
@@ -45,7 +45,7 @@ public interface HtmlItemContainer extends EclibItemContainer {
    * 
    * @return HtmlItem[]
    */
-  default HtmlItem[] getItems() {
+  default HtmlItem[] customizedItems() {
     return (HtmlItem[]) getHtmlItems();
   }
 
@@ -53,7 +53,7 @@ public interface HtmlItemContainer extends EclibItemContainer {
    * Merge htmlItems.
    */
   default HtmlItem[] mergeHtmlItems(HtmlItem[] items1, HtmlItem[] items2) {
-    EclibItem[] items = mergeItems(items1, items2);
+    Item[] items = mergeItems(items1, items2);
     List<HtmlItem> list = Arrays.asList(items).stream().map(item -> (HtmlItem) item).toList();
     return list.toArray(new HtmlItem[list.size()]);
   }

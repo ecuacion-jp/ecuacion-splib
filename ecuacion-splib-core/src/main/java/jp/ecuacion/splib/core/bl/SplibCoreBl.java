@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
-import jp.ecuacion.lib.core.item.EclibItemContainer;
+import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertyFileUtil.Arg;
 import jp.ecuacion.lib.core.util.ReflectionUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
@@ -35,7 +35,7 @@ public class SplibCoreBl extends ReflectionUtil {
    * It only has a function to throw exception, not one to check the occuring of duplication.
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
-      boolean checkFromAllGroups, String[] itemPropertyPaths, EclibItemContainer container)
+      boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container)
       throws BizLogicAppException {
     List<String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
         .map(path -> container.getItem(path).getItemNameKey()).toList();
@@ -74,7 +74,7 @@ public class SplibCoreBl extends ReflectionUtil {
    * Offers duplicate check function.
    */
   protected <T> void internalDuplicateCheck(boolean checkFromAllGroups, List<T> entityList,
-      EclibItemContainer rec, String itemNameKeyClass, String idItemPropertyPath,
+      ItemContainer rec, String itemNameKeyClass, String idItemPropertyPath,
       String... checkTargetItemPropertyPaths) throws BizLogicAppException {
     List<T> listWithoutMyself = entityList.stream().filter(
         e -> !getValue(e, idItemPropertyPath).toString().equals(getValue(rec, idItemPropertyPath)))

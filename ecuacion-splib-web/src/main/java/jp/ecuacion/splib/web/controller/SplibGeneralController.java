@@ -20,6 +20,7 @@ import jakarta.annotation.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,7 +38,6 @@ import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
 import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
-import jp.ecuacion.lib.core.util.ValidationUtil;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
@@ -720,10 +720,11 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       RolesAndAuthoritiesBean bean) {
 
     // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
-    List<ConstraintViolationBean> errorList = new ArrayList<>();
+    List<ConstraintViolationBean<?>> errorList = new ArrayList<>();
 
-    for (ConstraintViolation<?> cv : ValidationUtil.validate(form)) {
-      errorList.add(new ConstraintViolationBean(cv));
+    for (ConstraintViolation<?> cv : Validation.buildDefaultValidatorFactory().getValidator()
+        .validate(form)) {
+      errorList.add(new ConstraintViolationBean<>(cv));
     }
 
     // NotEmptyのチェック結果を追加
@@ -763,16 +764,16 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * Jakarta validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
    * 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
    */
-  private void removeDuplicatedValidators(List<ConstraintViolationBean> cvList) {
+  private void removeDuplicatedValidators(List<ConstraintViolationBean<?>> cvList) {
 
     // 一度、field名をkey, valueをsetとしcvを複数格納するmapを作成し、そのkeyに2件以上validatorが存在しかつNotEmptyが存在する場合は
     // NotEmpty以外を間引く、というロジックとする
-    Map<String, Set<ConstraintViolationBean>> duplicateCheckMap = new HashMap<>();
+    Map<String, Set<ConstraintViolationBean<?>>> duplicateCheckMap = new HashMap<>();
 
     // 後続処理のため、NotEmptyを保持するkeyを保持しておく
     Set<String> keySetWithNotEmpty = new HashSet<>();
 
-    for (ConstraintViolationBean cv : cvList) {
+    for (ConstraintViolationBean<?> cv : cvList) {
       String key = cv.getFieldInfoBeans()[0].itemPropertyPathForForm.toString();
       if (duplicateCheckMap.get(key) == null) {
         duplicateCheckMap.put(key, new HashSet<>());
@@ -788,7 +789,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     // duplicateCheckMapで、keySetWithNotEmptyに含まれるkeyのvalueは、NotEmpty以外を取り除く
     for (String key : keySetWithNotEmpty) {
-      for (ConstraintViolationBean cv : duplicateCheckMap.get(key)) {
+      for (ConstraintViolationBean<?> cv : duplicateCheckMap.get(key)) {
         if (!isNotEmptyValidator(cv)) {
           cvList.remove(cv);
         }
@@ -796,15 +797,15 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     }
   }
 
-  private boolean isNotEmptyValidator(ConstraintViolationBean cv) {
+  private boolean isNotEmptyValidator(ConstraintViolationBean<?> cv) {
     String validatorClass = cv.getValidatorClass();
     return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
   }
 
-  private Comparator<ConstraintViolationBean> getComparator() {
+  private Comparator<ConstraintViolationBean<?>> getComparator() {
     return new Comparator<>() {
       @Override
-      public int compare(ConstraintViolationBean f1, ConstraintViolationBean f2) {
+      public int compare(ConstraintViolationBean<?> f1, ConstraintViolationBean<?> f2) {
         // 項目名で比較
         int result = f1.getFieldInfoBeans()[0].itemPropertyPathForForm.toString()
             .compareTo(f2.getFieldInfoBeans()[0].itemPropertyPathForForm.toString());
