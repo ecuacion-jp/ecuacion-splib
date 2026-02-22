@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.util;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
-import jp.ecuacion.lib.core.item.EclibItemContainer;
+import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +45,7 @@ public class SplibThymeleafComponentUtil {
    * <p>itemDisplayedOnDelete is able to have multiple items like "itemA,itemB".
    *     In that case the resultant string is like '(itemA, itemB) : (1, 2)'.</p>
    */
-  public String getDeleteConfirmMessage(EclibItemContainer rootRecord,
+  public String getDeleteConfirmMessage(ItemContainer rootRecord,
       String itemDisplayedOnDelete) {
     List<String> fieldNameList = Arrays.asList(itemDisplayedOnDelete.split(","));
 

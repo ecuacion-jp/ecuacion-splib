@@ -235,7 +235,7 @@ public abstract class SplibGeneralForm {
   /**
    * Validates notEmpty.
    */
-  public Set<ConstraintViolationBean> validateNotEmpty(String loginState,
+  public Set<ConstraintViolationBean<SplibGeneralForm>> validateNotEmpty(String loginState,
       RolesAndAuthoritiesBean bean) {
     return validateNotEmpty(Locale.getDefault(), loginState, bean);
   }
@@ -243,11 +243,11 @@ public abstract class SplibGeneralForm {
   /**
    * Validates notEmpty.
    */
-  public Set<ConstraintViolationBean> validateNotEmpty(Locale locale, String loginState,
-      RolesAndAuthoritiesBean bean) {
+  public Set<ConstraintViolationBean<SplibGeneralForm>> validateNotEmpty(Locale locale,
+      String loginState, RolesAndAuthoritiesBean bean) {
 
     final String validationClass = "jakarta.validation.constraints.NotEmpty";
-    Set<ConstraintViolationBean> rtnSet = new HashSet<>();
+    Set<ConstraintViolationBean<SplibGeneralForm>> rtnSet = new HashSet<>();
 
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
@@ -259,8 +259,9 @@ public abstract class SplibGeneralForm {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
-          rtnSet.add(new ConstraintViolationBean(this, validationClass + ".message",
-              validationClass, rootRecordName, notEmptyItemPropertyPath));
+          rtnSet
+              .add(new ConstraintViolationBean<SplibGeneralForm>(this, validationClass + ".message",
+                  validationClass, rootRecordName, notEmptyItemPropertyPath));
         }
       }
     }
