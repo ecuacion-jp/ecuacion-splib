@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.item;
 import java.util.ArrayList;
 import java.util.List;
 import jp.ecuacion.lib.core.annotation.RequireNonempty;
-import jp.ecuacion.lib.core.item.EclibItem;
+import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
 /**
@@ -27,7 +27,7 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
  * 
  * <p>{@code HtmlItem} is a kind of "item"s. See <a href="https://github.com/ecuacion-jp/ecuacion-jp.github.io/blob/main/documentation/common/naming-convention.md">naming-convention.md</a></p>
  */
-public class HtmlItem extends EclibItem {
+public class HtmlItem extends Item {
 
   /**
    * Shows whether an item allows empty.
