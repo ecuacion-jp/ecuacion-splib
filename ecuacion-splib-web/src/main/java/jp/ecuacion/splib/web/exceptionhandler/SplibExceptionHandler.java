@@ -203,12 +203,11 @@ public abstract class SplibExceptionHandler {
       if (saex instanceof ValidationAppException) {
         ValidationAppException vex = (ValidationAppException) saex;
         ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
-        if (!cv.isMessageWithItemName()) {
-          isThereMessageWithItemPropertyPath = true;
-          List<String> list =
-              cv.getFieldInfoBeanList().stream().map(b -> b.itemPropertyPathForForm).toList();
-          itemPropertyPaths = list.toArray(new String[list.size()]);
-        }
+
+        isThereMessageWithItemPropertyPath = true;
+        List<String> list =
+            cv.getFieldInfoBeanList().stream().map(b -> b.itemPropertyPathForForm).toList();
+        itemPropertyPaths = list.toArray(new String[list.size()]);
 
       } else if (saex instanceof BizLogicAppException) {
         itemPropertyPaths = ((BizLogicAppException) saex).getItemPropertyPaths();
