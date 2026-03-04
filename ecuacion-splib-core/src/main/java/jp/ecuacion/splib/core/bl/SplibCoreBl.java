@@ -63,8 +63,8 @@ public class SplibCoreBl extends ReflectionUtil {
 
       String str = StringUtil.getSeparatedValuesString(itemNameKeys,
           "${+messages:jp.ecuacion.lib.core.common.itemName.separator}",
-          "${+messages:jp.ecuacion.lib.core.common.itemName.prependParenthesis}${+item_names:",
-          "}${+messages:jp.ecuacion.lib.core.common.itemName.appendParenthesis}", false);
+          "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
+          "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}", false);
       throw new BizLogicAppException(itemPropertyPaths, msgId,
           new Arg[] {Arg.formattedString(str)});
     }
