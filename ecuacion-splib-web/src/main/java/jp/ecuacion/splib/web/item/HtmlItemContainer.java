@@ -103,7 +103,7 @@ public interface HtmlItemContainer extends ItemContainer {
       RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
         .filter(item -> item.getIsNotEmpty(loginState, bean))
-        .map(item -> item.getItemPropertyPath()).toList();
+        .map(item -> item.getPropertyPath()).toList();
   }
 
   /**
@@ -132,7 +132,7 @@ public interface HtmlItemContainer extends ItemContainer {
       RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
         .filter(item -> item.getIsNotEmptyOnSearch(loginState, bean))
-        .map(item -> item.getItemPropertyPath()).toList();
+        .map(item -> item.getPropertyPath()).toList();
   }
 
   /**
@@ -159,7 +159,7 @@ public interface HtmlItemContainer extends ItemContainer {
       if (item instanceof HtmlItemString
           && ((HtmlItemString) item).getStringSearchPatternEnum() != null) {
         HtmlItemString itemStr = (HtmlItemString) item;
-        map.put(item.getItemPropertyPath(), new StringMatchingConditionBean(
+        map.put(item.getPropertyPath(), new StringMatchingConditionBean(
             itemStr.getStringSearchPatternEnum(), itemStr.isIgnoresCase()));
       }
     }

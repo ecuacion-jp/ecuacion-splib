@@ -319,7 +319,7 @@ public class SpecFactory<T extends EclibEntity> {
     List<Specification<T>> list = new ArrayList<>();
 
     for (HtmlItem item : ((HtmlItemContainer) rec).getHtmlItems()) {
-      String propertyPath = item.getItemPropertyPath();
+      String propertyPath = item.getPropertyPath();
       Object value = null;
 
       try {
