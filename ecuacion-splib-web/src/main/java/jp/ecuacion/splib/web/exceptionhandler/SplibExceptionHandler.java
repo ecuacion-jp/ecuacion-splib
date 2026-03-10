@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.exceptionhandler;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -224,6 +225,18 @@ public abstract class SplibExceptionHandler {
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
+  }
+
+  /**
+   * Catches {@code ConstraintViolationException}.
+   */
+  @ExceptionHandler({ConstraintViolationException.class})
+  public @Nonnull ModelAndView handleConstraintViolationException(
+      @Nonnull ConstraintViolationException exception,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+    List<? extends SingleAppException> exList = exception.getConstraintViolations().stream()
+        .map(cv -> new ValidationAppException(cv)).toList();
+    return handleAppException(new MultipleAppException(exList), loginUser);
   }
 
   /**
