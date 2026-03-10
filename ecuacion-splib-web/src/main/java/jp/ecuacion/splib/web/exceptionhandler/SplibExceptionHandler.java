@@ -29,6 +29,7 @@ import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
+import jp.ecuacion.lib.core.exception.checked.ConstraintViolationExceptionWithParameters;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
@@ -39,6 +40,7 @@ import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.ValidationUtil.MessageParameters;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
@@ -245,8 +247,11 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleConstraintViolationException(
       @Nonnull ConstraintViolationException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+    MessageParameters params = exception instanceof ConstraintViolationExceptionWithParameters
+        ? ((ConstraintViolationExceptionWithParameters) exception).getMessageParameters()
+        : new MessageParameters();
     List<? extends SingleAppException> exList = exception.getConstraintViolations().stream()
-        .map(cv -> new ValidationAppException(cv)).toList();
+        .map(cv -> new ValidationAppException(cv, params)).toList();
     return handleAppException(new MultipleAppException(exList), loginUser);
   }
 
