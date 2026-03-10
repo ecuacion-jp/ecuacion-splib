@@ -122,7 +122,7 @@ public interface HtmlItemContainer extends ItemContainer {
   }
 
   /**
-   * Obtrains NotEmpty fields.
+   * Obtains NotEmpty fields.
    * 
    * @param loginState loginState
    * @param bean bean
