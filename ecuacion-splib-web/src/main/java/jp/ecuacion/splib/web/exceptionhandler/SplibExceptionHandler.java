@@ -174,6 +174,11 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleAppException(@Nonnull AppException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
+    boolean needsMsgAtItem = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
+        "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
+    boolean needsMsgAtTop = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
+        "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
+
     // MultipleAppExceptionも考慮し例外を複数持つ
     List<SingleAppException> exList = new ArrayList<>();
 
@@ -191,7 +196,7 @@ public abstract class SplibExceptionHandler {
       exList.add((SingleAppException) exception);
     }
 
-    MessageSetter msgSetter = new MessageSetter();
+    MessageSetter msgSetter = new MessageSetter(needsMsgAtItem, needsMsgAtTop);
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
@@ -205,7 +210,11 @@ public abstract class SplibExceptionHandler {
         ValidationAppException vex = (ValidationAppException) saex;
         ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
 
-        if (vex.getConstraintViolationBean().getMessageParameters().isMessageWithItemName()) {
+        Boolean isMessageWithItemName =
+            vex.getConstraintViolationBean().getMessageParameters().isMessageWithItemName();
+
+        // itemPropertyPaths needed when message is show at the bottom of the item
+        if ((isMessageWithItemName != null && !isMessageWithItemName) || needsMsgAtItem) {
           isThereMessageWithItemPropertyPath = true;
           List<String> list =
               cv.getFieldInfoBeanList().stream().map(b -> b.itemPropertyPathForForm).toList();
@@ -338,7 +347,7 @@ public abstract class SplibExceptionHandler {
       // Change exception into BizLogicAppException to let MessageSetter to accept the exception.
       BizLogicAppException blaex = new BizLogicAppException(redirectException.getMessageId(),
           redirectException.getMessageArgs());
-      new MessageSetter().setMessage(messagesBean, blaex, request.getLocale());
+      new MessageSetter(false, true).setMessage(messagesBean, blaex, request.getLocale());
     }
 
     // redirect
@@ -370,10 +379,13 @@ public abstract class SplibExceptionHandler {
 
   private static class MessageSetter {
 
-    private static boolean needsMsgAtItem = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
-    private static boolean needsMsgAtTop = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
+    private boolean needsMsgAtItem;
+    private boolean needsMsgAtTop;
+
+    public MessageSetter(boolean needsMsgAtItem, boolean needsMsgAtTop) {
+      this.needsMsgAtItem = needsMsgAtItem;
+      this.needsMsgAtTop = needsMsgAtTop;
+    }
 
     public void setMessage(MessagesBean messagesBean, SingleAppException saex, Locale locale,
         String... recordPropertyPaths) {
