@@ -216,7 +216,8 @@ public abstract class SplibExceptionHandler {
             vex.getConstraintViolationBean().getMessageParameters().isMessageWithItemName();
 
         // itemPropertyPaths needed when message is show at the bottom of the item
-        if ((isMessageWithItemName != null && !isMessageWithItemName) || needsMsgAtItem) {
+        if ((isMessageWithItemName != null && !isMessageWithItemName)
+            || (isMessageWithItemName == null && needsMsgAtItem)) {
           isThereMessageWithItemPropertyPath = true;
           List<String> list =
               cv.getFieldInfoBeanList().stream().map(b -> b.itemPropertyPathForForm).toList();
