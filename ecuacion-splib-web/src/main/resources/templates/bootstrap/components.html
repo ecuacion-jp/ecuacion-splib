@@ -947,7 +947,7 @@
 
 	<!--/* internalAllHtmlInputNumberComponent. */-->
 	<div th:fragment="internalAllHtmlInputNumberComponent" th:remove="tag">
-		<th:block th:with="needsCommas=*{__${rootRecordName}__.needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
+		<th:block th:with="needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
 			<th:block th:with="type=text, inputValue=${(needsCommas && inputValue != null) ? #numbers.formatDecimal(#strings.replace(inputValue, ',', ''), 1, 'COMMA', 0, 'POINT') : inputValue}">
 				<div th:replace="~{ :: internalAllHtmlInputComponent('right')}"></div>
 			</th:block>
