@@ -212,15 +212,15 @@ public abstract class SplibExceptionHandler {
         ValidationAppException vex = (ValidationAppException) saex;
         ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
 
-        Boolean isMessageWithItemName =
-            vex.getConstraintViolationBean().getMessageParameters().isMessageWithItemName();
+        Boolean isMessageWithItemName = vex.getMessageParameters().isMessageWithItemName();
 
         // itemPropertyPaths needed when message is show at the bottom of the item
         if ((isMessageWithItemName != null && !isMessageWithItemName)
             || (isMessageWithItemName == null && needsMsgAtItem)) {
           isThereMessageWithItemPropertyPath = true;
-          List<String> list =
-              cv.getFieldInfoBeanList().stream().map(b -> b.itemPropertyPathForForm).toList();
+          // Remove rootRecordName from propertyPath.
+          List<String> list = cv.getFieldInfoBeanList().stream()
+              .map(b -> b.propertyPath().substring(b.propertyPath().indexOf("."))).toList();
           itemPropertyPaths = list.toArray(new String[list.size()]);
         }
 

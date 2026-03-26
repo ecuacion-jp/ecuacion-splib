@@ -89,7 +89,7 @@ public class SplibCoreBl extends ReflectionUtil {
     }
 
     List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
-        .map(path -> rec.getItem(path).getItemNameKey(itemNameKeyClass)).toList();
+        .map(path -> rec.getItem(path).getItemNameKey()).toList();
 
     SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0, checkFromAllGroups,
         checkTargetItemPropertyPaths, itemNameKeys.toArray(new String[itemNameKeys.size()]));
