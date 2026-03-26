@@ -724,7 +724,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     for (ConstraintViolation<?> cv : Validation.buildDefaultValidatorFactory().getValidator()
         .validate(form)) {
-      errorList.add(new ConstraintViolationBean<>(cv));
+      errorList.add(ConstraintViolationBean.createConstraintViolationBean(cv));
     }
 
     // NotEmptyのチェック結果を追加
@@ -774,7 +774,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     Set<String> keySetWithNotEmpty = new HashSet<>();
 
     for (ConstraintViolationBean<?> cv : cvList) {
-      String key = cv.getFieldInfoBeans()[0].itemPropertyPathForForm.toString();
+      String key = cv.getFieldInfoBeans()[0].propertyPath().toString();
       if (duplicateCheckMap.get(key) == null) {
         duplicateCheckMap.put(key, new HashSet<>());
       }
@@ -807,8 +807,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       @Override
       public int compare(ConstraintViolationBean<?> f1, ConstraintViolationBean<?> f2) {
         // 項目名で比較
-        int result = f1.getFieldInfoBeans()[0].itemPropertyPathForForm.toString()
-            .compareTo(f2.getFieldInfoBeans()[0].itemPropertyPathForForm.toString());
+        int result = f1.getFieldInfoBeans()[0].propertyPath().toString()
+            .compareTo(f2.getFieldInfoBeans()[0].propertyPath().toString());
         if (result != 0) {
           return result;
         }
@@ -821,8 +821,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
         // validator種別も同じ場合は、@Patternのみと考えられる。
         // Patternの場合はregxpにより並び順が固定されるのでそれで比較
-        String s1 = (String) f1.getParamMap().get("regexp");
-        String s2 = (String) f2.getParamMap().get("regexp");
+        String s1 = (String) f1.getEmbeddedParamMap().get("regexp");
+        String s2 = (String) f2.getEmbeddedParamMap().get("regexp");
         return s1.compareTo(s2);
       }
     };

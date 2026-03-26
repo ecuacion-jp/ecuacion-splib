@@ -259,9 +259,8 @@ public abstract class SplibGeneralForm {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
-          rtnSet
-              .add(new ConstraintViolationBean<SplibGeneralForm>(this, validationClass + ".message",
-                  validationClass, rootRecordName, notEmptyItemPropertyPath));
+          rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this, "(empty)",
+              validationClass + ".message", rootRecordName + "." + notEmptyItemPropertyPath));
         }
       }
     }
