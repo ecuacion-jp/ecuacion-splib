@@ -132,7 +132,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
       throws Exception {
     prepare(model, loginUser, form);
 
-    // redirect元でエラーがあった場合はデータの再取得は行わない
+    // Do not re-fetch data if there was an error at the redirect source.
     MessagesBean messageBean =
         (MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
 

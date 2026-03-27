@@ -98,7 +98,7 @@ public abstract class SplibSearchListService
 
     } else {
       return listToSort.stream()
-          // #658: rec1.getValue(itemPropertyPath) がnullの場合を考慮
+          // #658: Handle the case where rec1.getValue(itemPropertyPath) is null.
           .sorted((rec1, rec2) -> rec1.getValue(itemPropertyPath) == null ? -1 * directionVal
               : directionVal * ((String) rec1.getValue(itemPropertyPath))
                   .compareTo((String) rec2.getValue(itemPropertyPath)))
@@ -116,7 +116,7 @@ public abstract class SplibSearchListService
   protected List<? extends SplibRecord> getFilteredList(List<? extends SplibRecord> sortedList,
       SplibSearchForm seForm) {
 
-    // 画面での指定件数が全件数を下回る場合は、対象のみを抜き出したリストとする
+    // If the display count is less than the total count, extract only the target records.
     Objects.requireNonNull(sortedList);
     List<? extends SplibRecord> finalList = new ArrayList<>(sortedList);
     if (sortedList.size() > seForm.getRecordsInScreen()) {

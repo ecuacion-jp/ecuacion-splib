@@ -53,15 +53,15 @@ public abstract class SplibSoftDeleteAdvice {
   }
 
   /*
-   * soft deleteされた状態のレコードがある状態でsave(insert)しようとしたときに、重複エラーが発生しないため
-   * 既存レコードを削除する。
-   * unique keyの同一値が削除フラグtrueで別groupに存在する場合でも対応かであること、
-   * relationにより子テーブルとの関連が存在する場合にはそれらも含めて処理できること、を満たすため、
-   * これらの処理は、削除フラグ・グループのfilter設定をoffにした状態で実施する前提とする。
+   * Deletes existing records to prevent duplicate errors when attempting to save (insert) a record
+   * while a soft-deleted record with the same unique key exists.
+   * This process must be executed with the soft-delete and group filter settings disabled
+   * in order to handle the case where the same unique key value exists with soft-delete=true
+   * in another group, and to process child table relationships when they exist.
    */
   private void beforeAdvice(EclibEntity entity, SplibRepository<EclibEntity, ?> repo) {
 
-    // springっぽくないのだが、@BeanなどでうまくできなかったのでThreadLocalを使用して値を取得
+    // Not idiomatic Spring, but ThreadLocal is used because injection via @Bean etc. did not work.
     Object groupId = SplibControllerAdviceInfoBean.getGroupId();
 
     filterUtil.disableAllFilters();
@@ -84,14 +84,15 @@ public abstract class SplibSoftDeleteAdvice {
         em.detach(entity);
       }
 
-      // 同一IDで削除済みのレコード存在チェック。あれば削除。（surrogate key strategyでは発生する場面は考えにくいが）
+      // Check for a soft-deleted record with the same ID and delete if found.
+      // (Unlikely with the surrogate key strategy.)
       Optional<T> result = repo.findByIdAndSoftDeleteFieldTrueFromAllGroups(entity);
       if (result.isPresent()) {
         repo.delete(result.get());
         repo.flush();
       }
 
-      // 同一Unique Keyで削除済みのレコード存在チェック。あれば削除
+      // Check for a soft-deleted record with the same unique key and delete if found.
       if (entity.hasNaturalKey()) {
         result = repo.findByNaturalKeyAndSoftDeleteFieldTrueFromAllGroups(entity);
         if (result.isPresent()) {
@@ -102,7 +103,7 @@ public abstract class SplibSoftDeleteAdvice {
 
       if (isUpdate) {
         // Reattach the entity once detached.
-        entity = em.merge(entity);
+        em.merge(entity);
       }
     }
   }

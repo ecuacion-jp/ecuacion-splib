@@ -48,10 +48,12 @@ public class SplibUtil {
     DatetimeFormatParameters params = new DatetimeFormatParameters();
     String strOffset = (String) request.getSession().getAttribute("zoneOffset");
 
-    // イレギュラーな挙動により、strOffsetがnullの場合は発生してしまう。
-    // （システムエラーで、userDetailはsessionに持っているのにlogin画面に戻る場合など）
-    // その場合、次の処理がnull引数でエラーとなるためnullならUtc（0）を入れておく。
-    // ログインしていない画面で時間を表示することもないだろうから問題ないと思われる
+    // strOffset can be null due to irregular behavior,
+    // such as when a system error occurs and the user is redirected to the login screen
+    // even though userDetails are still in the session.
+    // In that case the subsequent processing would fail with a null argument,
+    // so set it to UTC (0) when null.
+    // This should be fine since time is unlikely to be displayed on non-login screens.
     if (strOffset == null) {
       strOffset = "0";
     }
@@ -74,21 +76,23 @@ public class SplibUtil {
     String urlPathWithContextPath = request.getRequestURI();
     String contextPath = servletContext.getContextPath();
 
-    // 動作確認した限りは、servletContext.getContextPath()（以下A）は、"/contextPath"のように前のみに"/"がつく、
-    // request.getRequestURI()（以下B）は、"/contextPath/public/..." のように記載、なので、
-    // B.replaceFirst(A)は、頭のcontextPath部分が綺麗にとれて"/public/..."のようにcontextPathがない場合と同一になる想定だが、
-    // 実はservletContext.getContextPath()で頭に"/"がない形で取得されるパターンがあった、などのイレギュラーがあると嫌なので念の為チェックしておく
+    // From testing, servletContext.getContextPath() (A) has a leading "/" like "/contextPath",
+    // and request.getRequestURI() (B) is like "/contextPath/public/...",
+    // so B.replaceFirst(A) is expected to cleanly remove the contextPath prefix,
+    // resulting in "/public/..." just as when there is no contextPath.
+    // However, to guard against irregularities such as getContextPath() returning a path
+    // without a leading "/", add a check here as a precaution.
     if ((!contextPath.equals("") && !contextPath.startsWith("/"))
         || !urlPathWithContextPath.startsWith("/")) {
       throw new RuntimeException(
-          "servletContext.getContextPath() または request.getRequestURI() が\"\\\"から始まっていません。想定外です。"
-              + "servletContext.getContextPath() = " + contextPath + ", request.getRequestURI() = "
-              + urlPathWithContextPath);
+          "servletContext.getContextPath() or request.getRequestURI() does not start with"
+              + " \"/\". Unexpected. servletContext.getContextPath() = " + contextPath
+              + ", request.getRequestURI() = " + urlPathWithContextPath);
     }
 
     String urlPath = urlPathWithContextPath;
 
-    // contextPath == "" の場合に加え、contextPath == "/" の場合も考慮。これらの場合は無視する
+    // In addition to contextPath == "", also handle contextPath == "/"; ignore both cases.
     if (!contextPath.equals("") && !contextPath.equals("/")) {
       urlPath = urlPath.replaceFirst(servletContext.getContextPath(), "");
     }
@@ -96,16 +100,17 @@ public class SplibUtil {
     String tmp = urlPath.substring(1);
     String loginState = tmp.substring(0, tmp.indexOf("/"));
 
-    // loginStateが"ecuacion"だった場合は、次の階層の文字列も連結してloginStateとする
-    // 例：/ecuacion/public/... -> "ecuacion-public"
+    // If loginState is "ecuacion", also append the next path segment to loginState.
+    // e.g. /ecuacion/public/... -> "ecuacion-public"
     if (loginState.equals("ecuacion")) {
-      // この時点のtmpは、頭の/がとれたecuacion/public/... の状態。そこから"public"を取り出す
+      // At this point tmp is in the state "ecuacion/public/..." with the leading "/" removed.
+      // Extract "public" from it.
       tmp = tmp.substring(tmp.indexOf("/") + 1);
       tmp = tmp.substring(0, tmp.indexOf("/"));
       loginState = loginState + "-" + tmp;
     }
 
-    // 存在するloginStateかチェック
+    // Check that the loginState is a valid one.
     List<String> loginStateCodeList = new ArrayList<>();
     for (LoginStateEnum anEnum : LoginStateEnum.values()) {
       loginStateCodeList.add(anEnum.getCode());
@@ -145,11 +150,11 @@ public class SplibUtil {
 
     // model
     if (model != null) {
-      // 自画面遷移の場合はmodelもredirect先で取得可にしておく
+      // For same-page transitions, make the model available at the redirect destination.
       contextMap.put(SplibWebConstants.KEY_MODEL, model);
     }
 
-    // redirectBeanに今のuuidを追加設定しておく。
+    // Add the current UUID to redirectBean.
     redirectBean.putParam(SplibWebConstants.KEY_CONTEXT_ID, new String[] {contextId.toString()});
 
     // returns url

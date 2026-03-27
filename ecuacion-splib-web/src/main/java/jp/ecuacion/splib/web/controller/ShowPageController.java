@@ -81,42 +81,45 @@ public class ShowPageController extends SplibBaseController {
           "jp.ecuacion.splib.web.common.message.htmlFileNameNotAllowed", new String[] {page});
     }
 
-    // pageの存在有無はチェックしておく
+    // Check whether the page exists.
     ClassPathResource resource = new ClassPathResource("templates/" + page + ".html");
     if (!resource.exists()) {
       throw new RedirectToHomePageException(Level.INFO,
           "jp.ecuacion.splib.web.common.message.htmlFileNotFound", new String[] {page});
     }
 
-    // htmlタグに"data-show-page-login-state属性があり、その値に現在のloginStateが存在することをチェック
+    // Check that the html tag has the "data-show-page-login-state" attribute
+    // and that its value contains the current loginState.
     htmlTagAttributeCheck(page, resource);
 
     return page;
   }
 
   /*
-   * htmlタグの中に"data-show-page-login-state属性があり、その値に現在のloginStateが存在することをチェックする処理。
-   * これだけのためにlibraryを追加しwarを重くするのは無駄なので、文字列操作で対応。
+   * Checks that the html tag has the "data-show-page-login-state" attribute
+   * and that its value contains the current loginState.
+   * Adding a library just for this would unnecessarily increase the war size,
+   * so string operations are used instead.
    */
   private void htmlTagAttributeCheck(String page, ClassPathResource resource) throws IOException {
     String html = resource.getContentAsString(Charset.defaultCharset());
     String startTag = "<html";
 
-    // ifの条件の後者は「htmlタグが2つ以上ある場合。
+    // The second condition in the if is: when there are 2 or more html tags.
     if (!html.contains(startTag) || html.replace(startTag, "").contains(startTag)) {
       throw new RedirectToHomePageException(Level.INFO,
           "jp.ecuacion.splib.web.common.message.htmlFileNotAllowedToOpen", new String[] {page});
     }
 
-    // htmlタグを抜き出す
+    // Extract the html tag.
     String htmlTag = html.substring(html.indexOf(startTag));
     htmlTag = htmlTag.substring(0, htmlTag.indexOf(">") + 1);
 
-    // 改行・空欄で区切り、"data-show-page-login-state" の属性を抽出
+    // Split by newlines and spaces, and extract the "data-show-page-login-state" attribute.
     List<String> list = Arrays.asList(htmlTag.replaceAll("\n", " ").split(" ")).stream()
         .filter(str -> str.contains(SplibWebConstants.KEY_BASE_PAGE_LOGIN_STATE)).toList();
 
-    // チェック
+    // Validate.
     if (list.size() != 1 || !list.get(0).contains("=")
         || !list.get(0).split("=")[1].contains(util.getLoginState())) {
       throw new RedirectToHomePageException(Level.INFO,

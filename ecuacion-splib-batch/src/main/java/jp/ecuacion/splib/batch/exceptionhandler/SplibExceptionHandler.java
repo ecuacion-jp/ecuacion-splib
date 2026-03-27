@@ -60,6 +60,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
     sb.append(formatMsg("job", SplibBatchAdvice.getCurrentJob(), true));
     sb.append(formatMsg("step", SplibBatchAdvice.getCurrentStep(), false));
     sb.append(formatMsg("tasklet or chunk", SplibBatchAdvice.getCurrentTaskletOrChunk(), false));
+    detailLog.info(sb.toString());
 
     LogUtil.logSystemError(detailLog, throwable);
 
@@ -72,8 +73,8 @@ public class SplibExceptionHandler implements ExceptionHandler {
       }
     }
 
-    // appExceptionの場合、特にMultipleAppExceptionで複数のメッセージがある場合、
-    // 一覧で見えないとわかりにくいので改めて一覧表示しておく。
+    // For AppException, especially MultipleAppException with multiple messages,
+    // list them again so they are visible in the log.
     if (throwable instanceof AppException || throwable instanceof UncheckedAppException) {
       AppException appEx = null;
       if (throwable instanceof UncheckedAppException) {
@@ -83,9 +84,9 @@ public class SplibExceptionHandler implements ExceptionHandler {
         appEx = (AppException) throwable;
       }
 
-      List<String> msgList = ExceptionUtil.getAppExceptionMessageList(appEx, Locale.getDefault());
+      List<String> msgList = ExceptionUtil.getMessageList(appEx, Locale.getDefault());
       detailLog.info("==========");
-      detailLog.info("[AppException メッセージ一覧]");
+      detailLog.info("[AppException message list]");
       msgList.stream().forEach(msg -> detailLog.info(msg));
       detailLog.info("==========");
     }
