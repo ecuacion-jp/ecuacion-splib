@@ -71,7 +71,7 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
   public ModelAndView handlePessimisticLockingFailureException(
       PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser)
       throws Exception {
-    // 通常のチェックエラー扱いとする
+    // Treat as a normal check error.
     return handleAppException(
         new BizLogicAppException("jp.ecuacion.splib.web.common.message.pessimisticLocking"),
         loginUser);

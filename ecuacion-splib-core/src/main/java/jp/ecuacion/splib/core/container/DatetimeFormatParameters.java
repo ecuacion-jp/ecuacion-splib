@@ -54,9 +54,11 @@ public class DatetimeFormatParameters {
   }
 
   /**
-   * javascriptのDateオブジェクトのgetTimezoneOffset() メソッドにて取得される値を引数に渡す形でのoffset指定.
-   * 
-   *  <p>UTC+0900（日本）だと -9(時間) 60(分) = -540 という値。 これを「ZoneOffset.ofHours(9)」の形で保持。</p>
+   * Specifies the offset using the value returned by JavaScript's
+   * {@code Date.getTimezoneOffset()} method.
+   *
+   * <p>For UTC+0900 (Japan), the value is -9 (hours) * 60 (minutes) = -540.
+   * This is stored in the form of {@code ZoneOffset.ofHours(9)}.</p>
    */
   public void setZoneOffsetWithJsMinutes(int minutes) {
     int hour = -1 * minutes / 60;

@@ -50,7 +50,7 @@ public abstract class SplibDataStoreDependentControllerAdvice {
 
     executeForAll();
 
-    // 未loginの場合は終了。systemAdmin roleが存在する場合はsystemAdmin扱いで処理
+    // Return if not logged in. If a systemAdmin role exists, process as systemAdmin.
     if (loginUser == null) {
       return;
     }

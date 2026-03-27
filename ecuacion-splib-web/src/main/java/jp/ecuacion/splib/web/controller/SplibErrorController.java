@@ -53,13 +53,13 @@ public class SplibErrorController implements ErrorController {
   public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response,
       Model model) {
 
-    // requestに設定されているmodelを追加登録（画面描画のためのparameterもあるので）
+    // Also register the model set in the request (it may contain parameters for rendering).
     model.addAllAttributes(((Model) request.getAttribute(SplibWebConstants.KEY_MODEL)).asMap());
 
     final Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
     final Exception exception = (Exception) request.getAttribute("jakarta.servlet.error.exception");
 
-    // 404の場合
+    // When status is 404.
     if (statusCode == 404) {
       detailLogger.info("http status = 404. "
           + "you can find the accessed url from the logs above. (Only when the DEBUG log of "
@@ -67,7 +67,8 @@ public class SplibErrorController implements ErrorController {
       return new ModelAndView("error/404", model.asMap(), HttpStatus.valueOf(statusCode));
     }
 
-    // 404などを含めexceptionがない場合でも本methodは呼ばれてしまい、その場合はexceptionは存在しないので、存在する場合のみ例外をログ出力
+    // This method is called even when there is no exception (including 404 etc.),
+    // so log the exception only when it is present.
     if (exception != null) {
       LogUtil.logSystemError(new DetailLogger(this), exception);
 

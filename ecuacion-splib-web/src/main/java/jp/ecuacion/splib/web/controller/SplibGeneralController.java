@@ -356,7 +356,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       cls = SplibGeneralService.class;
     }
 
-    // closureの中ではfinalでないと使えないとエラーになったのでfinal変数に入れ替え
+    // Replaced with a final variable because non-final variables cannot be used inside lambdas.
     final Class<?> cls2 = cls;
     List<S> list = serviceList.stream().filter(e -> cls2.isAssignableFrom(e.getClass())).toList();
 
@@ -469,7 +469,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
 
     model.addAttribute("mainRootRecordName", context.mainRootRecordName());
-    // 以下は削除予定
+    // The following line is planned to be removed.
     model.addAttribute("rootRecordName", context.mainRootRecordName());
 
     rolesAndAuthoritiesBean =
@@ -606,10 +606,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * Carries out the procedure that is needed 
    * after the service procedure ended or the service throws exceptions.
    * 
-   * <p>All the method with {@code @XxxMapping} 
+   * <p>All the method with {@code @XxxMapping}
    *     needs to call this method at the first line of the method.<br>
-   * validation・BLチェック含めエラー発生なし、かつredirect、かつtransactionTokenCheck不要、の場合は厳密にはチェックは不要となる。
-   * が、最低でも引数なしのメソッドは呼ぶ（=transactionTokenCheckは実施）ルールとし、transactionTokenCheckが不要の場合は別途それを設定することとする
+   * Strictly speaking, the check is not needed when there are no errors including validation
+   * and BL checks, redirect is performed, and transactionTokenCheck is not required.
+   * However, the rule is that at minimum the no-argument method must be called
+   * (= transactionTokenCheck is performed), and if transactionTokenCheck is not needed,
+   * that must be configured separately.
    * </p>
    * 
    * @param model model
@@ -623,7 +626,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   /**
    * Carries out the procedure that is needed 
    * after the service procedure ended or the service throws exceptions.
-   * エラー処理などに必要な処理を行う。 本処理は、@XxxMappingにより呼び出されるメソッド全てで呼び出す必要あり。
+   * Carries out the procedure that is needed for error handling and other common processing.
    * 
    * @param model model
    * @param loginUser loginUser
@@ -633,21 +636,21 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms)
       throws AppException {
 
-    // 全form共通処理
+    // Common processing for all forms.
     for (SplibGeneralForm form : forms) {
-      // formをmodelに追加
+      // Add form to model.
       model.addAttribute(form);
-      // controllerContextを設定
+      // Set controller context.
       form.setControllerContext(context);
     }
 
-    // formは配列でも取得できるよう、別途配列のままrequestにも格納しておく
+    // Also store forms as an array in the model so they can be retrieved as an array.
     model.addAttribute(SplibWebConstants.KEY_FORMS, forms);
 
-    // エラー処理のためにmodelにcontrollerを格納
+    // Store controller in model for error handling.
     model.addAttribute(SplibWebConstants.KEY_CONTROLLER, this);
 
-    // // prepareSettingsはcontrollerに設定
+    // // Set prepareSettings to controller.
     // this.prepareSettings = (settings == null) ? new PrepareSettings() : settings;
 
     transactionTokenCheck();
@@ -666,8 +669,9 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * <p>The token check is not executed when the html page doesn't have a token.</p>
    */
   private void transactionTokenCheck() throws BizLogicAppException {
-    // forwardの場合は、forward前のrequest parameterも全て付加されてくるため、2回transactionCheckが発生しエラーとなる。
-    // それを避けるため、forwardなら処理をスキップする。
+    // When forwarding, all request parameters from before the forward are also included,
+    // causing transactionCheck to run twice and resulting in an error.
+    // To avoid this, skip the process when forwarding.
     String forward = request.getParameter("forward");
     if (forward != null && forward.equals("true")) {
       return;
@@ -719,7 +723,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   private List<ValidationAppException> getBeanValidationAppExceptionList(SplibGeneralForm form,
       RolesAndAuthoritiesBean bean) {
 
-    // spring mvcでのvalidation結果からは情報がうまく取れないので、改めてvalidationを行う
+    // Re-run validation because information from Spring MVC's validation result
+    // cannot be retrieved correctly.
     List<ConstraintViolationBean<?>> errorList = new ArrayList<>();
 
     for (ConstraintViolation<?> cv : Validation.buildDefaultValidatorFactory().getValidator()
@@ -727,32 +732,38 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       errorList.add(ConstraintViolationBean.createConstraintViolationBean(cv));
     }
 
-    // NotEmptyのチェック結果を追加
+    // Add NotEmpty check results.
     errorList.addAll(form.validateNotEmpty(request.getLocale(), util.getLoginState(), bean).stream()
         .collect(Collectors.toList()));
 
-    // 並び順を指定。今後項目名指定することも想定するが、一旦は並び順が固定されれば満足なので単純に並べる
+    // Specify sort order. Item name specification may be supported in the future,
+    // but for now a fixed sort order is sufficient.
     errorList = errorList.stream().sorted(getComparator()).collect(Collectors.toList());
 
-    // Jakarta validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
-    // 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
+    // The standard Jakarta validation validators are suboptimal — for example,
+    // Size validator errors are shown even for empty strings.
+    // When the field is empty, only the empty-field error should be shown,
+    // so if both NotEmpty and another validator exist for the same field,
+    // remove all validators except NotEmpty.
     removeDuplicatedValidators(errorList);
 
-    // ここでerrorList.size() == 0のパターンが発生。
-    // spring側のvalidationではresultにエラー内容が格納されたが自分でvalidateしなおすとエラー検知できない、というパターン。
-    // systemErrorとしておく
+    // This pattern (errorList.size() == 0) can occur:
+    // Spring's validation stored errors in the result,
+    // but re-running validation manually fails to detect them.
+    // Treat as a system error.
     if (errorList.size() == 0) {
       String msg = """
-          SplibExceptionHandler#handleInputValidationExceptionに来ているのにerrorListにエラー項目が存在しません。
-          rootRecoordNameと同一のnameを持ったsubmitボタンを押した場合に発生する模様。
-          （例：rootRecordNameをappとした場合、以下のようなボタンを作成する場合に発生）
+          Reached getBeanValidationAppExceptionList but errorList is empty.
+          This occurs when a submit button with the same name as rootRecordName is pressed.
+          (Example: when rootRecordName is "app", a button like the following causes this)
           <div th:replace="~{bootstrap/components :: submitButton('app', ...)}"></div>
 
-          textなどの情報は、GETでいうと、request paramの中で"app.desc=..."のように記載されるが、そのparameterの中で
-          spring mvcだとボタン名が"app="と出る。
-          このボタン名に対する"app="を、"app"のキーワードがあるためformへのmapping対象だとspringが勘違いするために、
-          mappingをトライしエラーが発生しているのかも。
-          （ちなみに、ボタンのnameがappzzzなど、appから始まるがappとは異なる文字列であれば、この問題は発生しない）
+          For text input etc., in GET terms the request param appears as "app.desc=...",
+          but Spring MVC outputs the button name itself as "app=".
+          Spring may mistakenly treat "app=" as a form mapping target due to the "app" keyword,
+          attempting a mapping and throwing an error.
+          (Note: if the button name starts with "app" but differs, e.g. "appzzz",
+          this problem does not occur.)
           """;
       throw new RuntimeException(msg);
     }
@@ -761,16 +772,20 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   /*
-   * Jakarta validation標準の各種validatorが、""の場合でもSize validatorのエラーが表示されるなどイマイチ。
-   * 空欄の場合には空欄のエラーのみを出したいので、同一項目で、NotEmptyと別のvalidatorが同時に存在する場合はNotEmpty以外を間引く。
+   * The standard Jakarta validation validators are suboptimal — for example,
+   * Size validator errors are shown even for empty strings.
+   * When the field is empty, only the empty-field error should be shown,
+   * so if both NotEmpty and another validator exist for the same field,
+   * remove all validators except NotEmpty.
    */
   private void removeDuplicatedValidators(List<ConstraintViolationBean<?>> cvList) {
 
-    // 一度、field名をkey, valueをsetとしcvを複数格納するmapを作成し、そのkeyに2件以上validatorが存在しかつNotEmptyが存在する場合は
-    // NotEmpty以外を間引く、というロジックとする
+    // Build a map with field name as key and a set of CVs as value,
+    // then remove all validators except NotEmpty for keys that have 2+ validators
+    // and include NotEmpty.
     Map<String, Set<ConstraintViolationBean<?>>> duplicateCheckMap = new HashMap<>();
 
-    // 後続処理のため、NotEmptyを保持するkeyを保持しておく
+    // Keep track of keys that hold NotEmpty for use in subsequent processing.
     Set<String> keySetWithNotEmpty = new HashSet<>();
 
     for (ConstraintViolationBean<?> cv : cvList) {
@@ -781,13 +796,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
       duplicateCheckMap.get(key).add(cv);
 
-      // NotEmptyの場合はkeySetWithNotEmptyに追加
+      // If NotEmpty, add to keySetWithNotEmpty.
       if (isNotEmptyValidator(cv)) {
         keySetWithNotEmpty.add(key);
       }
     }
 
-    // duplicateCheckMapで、keySetWithNotEmptyに含まれるkeyのvalueは、NotEmpty以外を取り除く
+    // For keys in keySetWithNotEmpty, remove all validators except NotEmpty from their value sets.
     for (String key : keySetWithNotEmpty) {
       for (ConstraintViolationBean<?> cv : duplicateCheckMap.get(key)) {
         if (!isNotEmptyValidator(cv)) {
@@ -806,21 +821,21 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     return new Comparator<>() {
       @Override
       public int compare(ConstraintViolationBean<?> f1, ConstraintViolationBean<?> f2) {
-        // 項目名で比較
+        // Compare by field name.
         int result = f1.getFieldInfoBeans()[0].propertyPath().toString()
             .compareTo(f2.getFieldInfoBeans()[0].propertyPath().toString());
         if (result != 0) {
           return result;
         }
 
-        // 項目名が同じ場合はmessageTemplate(実質はvalidator種別）で比較
+        // If field names are the same, compare by messageTemplate (effectively validator type).
         result = f1.getValidatorClass().compareTo(f2.getValidatorClass());
         if (result != 0) {
           return result;
         }
 
-        // validator種別も同じ場合は、@Patternのみと考えられる。
-        // Patternの場合はregxpにより並び順が固定されるのでそれで比較
+        // If validator types are also the same, it can only be @Pattern.
+        // For Pattern, sort order is fixed by regexp, so compare by that.
         String s1 = (String) f1.getEmbeddedParamMap().get("regexp");
         String s2 = (String) f2.getEmbeddedParamMap().get("regexp");
         return s1.compareTo(s2);

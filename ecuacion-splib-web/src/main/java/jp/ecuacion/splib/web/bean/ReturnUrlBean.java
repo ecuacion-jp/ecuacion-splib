@@ -202,18 +202,19 @@ public class ReturnUrlBean {
    * @return parameter part of the URL
    */
   private String getParamsString() {
-    // requestから来たparameterをまとめてRedirectUrlBeanに追加する場合、
-    // transactionTokenが入ってきてしまうがそのままredirectするとチェックエラーになるのでtransactionTokenをparamsから除く処理を追加
+    // When adding request parameters to RedirectUrlBean in bulk, the transactionToken may be
+    // included, but redirecting with it would cause a check error,
+    // so remove transactionToken from params.
     removeParam(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
 
-    // forwardの場合はそれとわかるparamterを追加
+    // If forwarding, add a parameter to indicate that.
     if (isForward) {
       putParam("forward", "true");
     }
 
     boolean is1st = true;
     StringBuilder sb = new StringBuilder();
-    // forwardのparamを追加
+    // Add forward param to URL.
     for (Entry<String, String[]> entry : paramMap.entrySet()) {
       for (String value : entry.getValue()) {
         if (is1st) {

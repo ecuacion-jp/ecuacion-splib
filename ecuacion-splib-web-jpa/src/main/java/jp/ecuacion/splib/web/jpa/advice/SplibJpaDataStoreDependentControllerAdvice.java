@@ -39,17 +39,17 @@ public class SplibJpaDataStoreDependentControllerAdvice
 
   @Override
   protected void executeForAll() {
-    // 削除フラグのfilterを設定
+    // Enable the soft-delete filter.
     filterUtil.enableSoftDeleteFilter();
   }
 
   @Override
   protected void executeForAccountBelongingToGroup(SplibRecord loginAcc) {
     Object accGroupId = service.getGroupId(loginAcc);
-    // SoftDeleteAdviceで使用するためgroupIdを保管
+    // Store groupId for use in SoftDeleteAdvice.
     SplibControllerAdviceInfoBean.setGroupId(accGroupId);
 
-    // groupのfilterを設定
+    // Enable the group filter.
     filterUtil.enableGroupFilter(accGroupId);
   }
 }
