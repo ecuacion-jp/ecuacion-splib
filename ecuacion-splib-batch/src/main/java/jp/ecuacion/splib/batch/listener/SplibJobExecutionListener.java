@@ -44,7 +44,7 @@ public class SplibJobExecutionListener implements JobExecutionListener {
       // jobExecution.getAllFailureExceptions().forEach(Throwable::printStackTrace);
 
     } else {
-      // バッチが正常に終了した場合
+      // Batch completed normally.
       logger
           .info("END  : job-name: " + jobExecution.getJobInstance().getJobName() + " [NORMAL END]");
     }

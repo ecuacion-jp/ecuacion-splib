@@ -42,7 +42,7 @@ public abstract class SplibRecord {
    * Constructs a new instance.
    */
   public SplibRecord() {
-    // defaultを使用
+    // Use default.
     dateTimeFormatParams = new DatetimeFormatParameters();
   }
 

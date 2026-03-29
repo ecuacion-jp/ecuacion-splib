@@ -116,23 +116,24 @@ public abstract class SplibExceptionHandler {
         (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
 
     // #603:
-    // 本当は、ExceptionHandlerのエラー処理の中でも、redirectしない場合のみprepareFormを呼べばいいはずなのだが
-    // そこのhandlingはまだできていない。必要時に整理。
+    // Ideally prepareForm should only be called when not redirecting within the ExceptionHandler,
+    // but that handling is not yet implemented. To be refactored when needed.
     getController().getService().prepareForm(Arrays.asList(forms), loginUser);
 
     // redirectBean
-    // redirectBeanがない場合は自画面遷移。この場合は他のmodelの情報も全て遷移先に渡す。
-    // 後続処理の簡便化のため、自画面遷移の場合のredirectBeanを生成しておく。
+    // If redirectBean is null, transition to the same page.
+    // In that case all model information is also passed to the destination.
+    // To simplify subsequent processing, generate a redirectBean for same-page transitions.
     if (redirectBean == null) {
       redirectBean = new ReturnUrlBean(ctrl, util, false);
     }
 
-    // redirectの有無で分岐
+    // Branch on whether redirect is needed.
     if (!isRedirect) {
       return new ModelAndView(ctrl.getDefaultHtmlPageName(), getModel().asMap());
 
     } else {
-      // redirectBean == nullの場合は自画面遷移、自画面遷移の場合はmodelの情報も保持する
+      // When redirectBean is null it is a same-page transition; in that case model info is kept.
       String path = util.prepareForPageTransition(request, redirectBean, getModel(), true);
 
       return new ModelAndView(path);
@@ -159,8 +160,9 @@ public abstract class SplibExceptionHandler {
             exception.getMessageId(), exception.getMessageArgs()),
         exception.buttonIdToPressOnConfirm()));
 
-    // warningはsubmitが完了していないことから同じ画面に戻る処理なので、別ページへのredirectは発生しない
-    // PRGのためisRedirectはtrueとしておく
+    // Since warning means the submit did not complete, processing returns to the same page,
+    // so no redirect to a different page occurs.
+    // isRedirect is set to true for PRG.
     return appExceptionFinalHandler(getController(), loginUser, false, null);
   }
 
@@ -181,7 +183,7 @@ public abstract class SplibExceptionHandler {
     boolean needsMsgAtTop = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
 
-    // MultipleAppExceptionも考慮し例外を複数持つ
+    // Hold multiple exceptions to also handle MultipleAppException.
     List<SingleAppException> exList = new ArrayList<>();
 
     if (exception instanceof MultipleAppException) {
@@ -189,7 +191,7 @@ public abstract class SplibExceptionHandler {
         exList.add(appEx);
       }
 
-      // 結果exListがゼロの場合はシステムエラーとして処理。
+      // If exList is empty as a result, treat as a system error.
       if (exList.size() == 0) {
         throw new RuntimeException("No exception included in MultipleAppException.");
       }
@@ -212,15 +214,15 @@ public abstract class SplibExceptionHandler {
         ValidationAppException vex = (ValidationAppException) saex;
         ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
 
-        Boolean isMessageWithItemName =
-            vex.getConstraintViolationBean().getMessageParameters().isMessageWithItemName();
+        Boolean isMessageWithItemName = vex.getMessageParameters().isMessageWithItemName();
 
         // itemPropertyPaths needed when message is show at the bottom of the item
         if ((isMessageWithItemName != null && !isMessageWithItemName)
             || (isMessageWithItemName == null && needsMsgAtItem)) {
           isThereMessageWithItemPropertyPath = true;
-          List<String> list =
-              cv.getFieldInfoBeanList().stream().map(b -> b.itemPropertyPathForForm).toList();
+          // Remove rootRecordName from propertyPath.
+          List<String> list = cv.getFieldInfoBeanList().stream()
+              .map(b -> b.propertyPath().substring(b.propertyPath().indexOf("."))).toList();
           itemPropertyPaths = list.toArray(new String[list.size()]);
         }
 
@@ -407,7 +409,7 @@ public abstract class SplibExceptionHandler {
       String messageAtItem = null;
       String messageAtTop = null;
       if (needsMsgAtItem) {
-        messageAtItem = ExceptionUtil.getAppExceptionMessageList(saex, locale, false).get(0);
+        messageAtItem = ExceptionUtil.getMessageList(saex, locale, false).get(0);
 
         // showsAtEachItem == false even if needsMsgAtItem == true
         // when recordPropertyPaths.length == 0
@@ -416,7 +418,7 @@ public abstract class SplibExceptionHandler {
       }
 
       if (needsMsgAtTop) {
-        messageAtTop = ExceptionUtil.getAppExceptionMessageList(saex, locale, true).get(0);
+        messageAtTop = ExceptionUtil.getMessageList(saex, locale, true).get(0);
 
         // Skip the message when needsMsgAtItem is also true and recordPropertyPaths.length == 0
         // because it's exactly the same as the one with needsMsgAtItem

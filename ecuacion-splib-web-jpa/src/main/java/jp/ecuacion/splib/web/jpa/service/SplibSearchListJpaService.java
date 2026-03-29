@@ -57,14 +57,15 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
   //
 
   /**
-   * offsetはlogin画面でのonload時に呼ばれるため、login画面を開いた状態で放置した場合は値がnullでエラーになる.
+   * Since this is called on onload of the login screen,
+   * the offset value may be null if the login screen is left open and abandoned.
    */
   public DatetimeFormatParameters getParams() {
     return new SplibUtil().getParams(request);
   }
 
   /**
-   * record内のlocalDate項目（String）をLocalDate形式で取得.
+   * Gets a localDate field (String) inside a record as a LocalDate.
    */
   protected LocalDate localDate(String date) {
     return (date == null || date.equals("")) ? null
@@ -90,10 +91,10 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
       JpaSpecificationExecutor<E> repository) {
     Specification<E> specs = getSpecs(searchForm);
 
-    // 指定条件での検索結果の全件数を取得。併せてページ調整
+    // Get the total count of records matching the search conditions, and adjust the page.
     searchForm.setNumberOfRecordsAndAdjustCurrentPageNumger(repository.count(specs));
 
-    // ここでは指定ページ分のレコードのみ取得
+    // Fetch only the records for the specified page.
     return repository.findAll(specs, searchForm.getPageRequest());
   }
 }

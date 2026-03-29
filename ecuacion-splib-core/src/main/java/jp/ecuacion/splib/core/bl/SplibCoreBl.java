@@ -64,7 +64,7 @@ public class SplibCoreBl extends ReflectionUtil {
       String str = StringUtil.getSeparatedValuesString(itemNameKeys,
           "${+messages:jp.ecuacion.lib.core.common.itemName.separator}",
           "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
-          "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}", false);
+          "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
       throw new BizLogicAppException(itemPropertyPaths, msgId,
           new Arg[] {Arg.formattedString(str)});
     }
@@ -89,7 +89,7 @@ public class SplibCoreBl extends ReflectionUtil {
     }
 
     List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
-        .map(path -> rec.getItem(path).getItemNameKey(itemNameKeyClass)).toList();
+        .map(path -> rec.getItem(path).getItemNameKey()).toList();
 
     SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0, checkFromAllGroups,
         checkTargetItemPropertyPaths, itemNameKeys.toArray(new String[itemNameKeys.size()]));

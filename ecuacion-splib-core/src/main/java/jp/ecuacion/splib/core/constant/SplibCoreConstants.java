@@ -20,7 +20,7 @@ package jp.ecuacion.splib.core.constant;
  */
 public class SplibCoreConstants {
   
-  /** splibのパッケージ共通部分. */
+  /** Common package prefix for splib. */
   public static final String PKG_PARENT = "jp.ecuacion.splib";
   public static final String PKG = "jp.ecuacion.splib.core";
 

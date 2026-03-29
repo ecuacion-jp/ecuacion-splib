@@ -35,10 +35,11 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   public static final String DIRECTION_DESC = "desc";
 
   /**
-   * 検索・一覧表示画面で、検索条件を指定して検索した際の検索条件は保管しておきたい.
-   * 
-   *  <p>一方で、メニューのリンクなど、検索条件を載せない形で画面にアクセスした際は、
-   * その検索条件を保管するのではなく保存済みの検索条件で検索したい。 この分岐を本フラグで対応。</p>
+   * On the search and list screen, search conditions specified by the user should be retained.
+   *
+   * <p>On the other hand, when the screen is accessed without search conditions
+   * (e.g. from a menu link), it is preferable to search using the previously saved conditions
+   * rather than saving the empty conditions. This flag handles that branching.</p>
    */
   private boolean requestFromSearchForm;
 
@@ -59,13 +60,13 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    */
   private boolean prepared = false;
 
-  // 検索に必要な条件
+  // Fields needed for search.
   protected String sortItem;
   protected String direction;
   protected Integer page;
   protected Integer recordsInScreen;
 
-  /** pagerを作成するのに必要となるため、serviceから受け取りpager作成時に使用. */
+  /** Received from service and used when creating the pager. */
   protected Integer numberOfRecords;
 
   public boolean isPrepared() {
@@ -84,7 +85,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   @Nonnull
   protected abstract String getDefaultSortItem();
 
-  /** こちらはdefaultで設定をしておくが個別form毎に変更が可能. */
+  /** Default value is set here but can be changed per individual form. */
   protected String getDefaultDirection() {
     return DIRECTION_ASC;
   }
@@ -195,8 +196,9 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   /**
-   * 値のセットはsetNumberOfRecordsAndAdjustCurrentPageNumger()を使用する前提であり、
-   * これでない方法でnumberOfRecordsを設定すると処理が正しく動かないためあえて通常のsetterは削除した.
+   * The value is assumed to be set via setNumberOfRecordsAndAdjustCurrentPageNumger().
+   * If numberOfRecords is set by any other means the processing will not work correctly,
+   * so the normal setter has been intentionally removed.
    */
   public Integer getNumberOfRecords() {
     return numberOfRecords;
@@ -210,20 +212,21 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   public void setNumberOfRecordsAndAdjustCurrentPageNumger(Long numberOfRecords) {
     this.numberOfRecords = numberOfRecords.intValue();
 
-    // ページ調整
+    // Page adjustment.
     changePageIfThePageNumberExceedsTheLast();
   }
 
   /**
-   * 最終ページを超えた状態だと変になるので、件数が存在する最終ページより後のページを示している場合は最終ページに変更.
+   * Changes to the last page if the current page exceeds the last page that has records,
+   * since going beyond the last page causes unexpected behavior.
    */
   private void changePageIfThePageNumberExceedsTheLast() {
 
-    // 件数から考えられる最終ページ（Pagerベースのゼロから始まるページ番号）
+    // Last page derived from record count (zero-based page number used by Pager).
     int lastPageFromRecordCount =
         numberOfRecords / recordsInScreen + (numberOfRecords % recordsInScreen > 0 ? 1 : 0) - 1;
 
-    // 上記ロジックだと、検索結果が0件の場合にlastPageFromRecordCount == -1となるため補正
+    // Correct: when search result is 0 records, lastPageFromRecordCount becomes -1.
     if (lastPageFromRecordCount < 0) {
       lastPageFromRecordCount = 0;
     }
@@ -239,35 +242,43 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   }
 
   /**
-   * pagerを作成するためのPagerInfoのリストを生成.
-   * 
-   * <p>Pager作成のルールは以下。<br>
+   * Generates the list of PagerInfo to build the pager.
+   *
+   * <p>Rules for building the pager:<br>
    * </p>
    * <ul>
-   * <li>レコード件数が0件及び、現在のrecordsInScreen以下の場合はpagerを表示しない</li>
-   * <li>上記条件より、pagerが存在する際は常に2ページ以上存在することとなる。</li>
-   * <li>次ページ・全ページへ移動する「Previous」「Next」は（Pagerが存在する限り）常に存在するものとし、
-   * 現在の表示が1ページ目の場合はPreviousは押せない、現ページが最終ページ（以降）の場合はNextは押せない、という制御とする
-   * （「現ページが最終ページ（以降）」と「以降」をつけているのは、</li>
-   * <li>元々50レコードあり、5件表示で10ページまで表示していたが、画面表示後にレコードを30件削除、
-   * その後画面から10ページ目のボタンを押した場合、素直にPageRequestすると、10ページ目を取得しようとし0件取得になるのだが、
-   * エラーになるわけではないし頻繁にあることではないのでそれでよしとする、つまりpager上も10ページを最終ページとし表示する。
-   * その状態でPreviousを押すと、これまたデータが存在しない9ページ目を表示しようとするがそれもOKとする。
-   * （そもそも一気にデータが消されるのは通常オペレーションでは考えにくいと思われるし、一旦1ページ目に戻りpagerを見れば件数が減ったとわかるので）<br>
-   * →表示件数や検索条件を同時に変更すると、割と頻発する状態になったため、最終ページより後に現在ページがある場合は最終ページに変更する処理を追加。
-   * （setNumberOfRecordsAndAdjustCurrentPageNumger() -> changePageIfThePageNumberExceedsTheLast()
-   * のところ） 本処理のロジックは現時点ではそのままとしておく。間違いなく不要であることを確認後必要ならその部分のロジックを削除可。</li>
-   * <li>前ページ・次ページに移動する手段は「Previous」「Next」を使用し、ページ番号で表示されるセルは、現ページ、1ページ、最終ページのみとする。
-   * （次のページの番号のリンクとNextを両方出すのは冗長なので）</li>
-   * <li>現ページの隣のページが1ページ目ないし最終ページでない場合は、間に押下不可な「...」のセルを入れる</li>
-   * <li>つまり、押下不可を(*)で表すと、pagerでは以下のように表示される。
+   * <li>If the record count is 0 or is at most recordsInScreen, the pager is not shown.</li>
+   * <li>From the condition above, when the pager is shown there are always 2 or more pages.</li>
+   * <li>"Previous" and "Next" cells are always present as long as the pager exists.
+   * When on page 1 Previous is disabled; when on the last page (or beyond) Next is disabled.
+   * (The "or beyond" qualifier is added because:</li>
+   * <li>Originally 50 records existed shown 5 per page (10 pages), but after displaying the
+   * screen 30 records were deleted. If the user then clicks page 10, PageRequest tries to fetch
+   * page 10 and returns 0 records — but since this is not an error and is infrequent, it is
+   * accepted and page 10 is shown as the last page in the pager.
+   * If Previous is clicked in that state, page 9 (also with no data) is shown, and that
+   * is also accepted. (Sudden mass deletion is unlikely in normal operation, and navigating
+   * back to page 1 will show that the count decreased.)<br>
+   * NOTE: When display count or search conditions are changed simultaneously this situation
+   * occurs fairly often, so a process was added to change the current page to the last page
+   * when it exceeds the last page.
+   * (setNumberOfRecordsAndAdjustCurrentPageNumger()
+   * -&gt; changePageIfThePageNumberExceedsTheLast())
+   * The logic of this process is left as-is for now; it can be removed once confirmed
+   * to be definitely unnecessary.</li>
+   * <li>Navigation uses "Previous"/"Next", and only the current page, page 1, and the last
+   * page are shown as numbered cells. (Showing the next page number link and Next would be
+   * redundant.)</li>
+   * <li>If the page adjacent to the current page is neither page 1 nor the last page, a
+   * non-clickable "..." cell is inserted between them.</li>
+   * <li>In short, denoting non-clickable cells with (*), the pager appears as follows:
    * <ul>
-   * <li>全2ページ・現在1ページの場合：Previous(*)|1|2|Next(*)</li>
-   * <li>全3ページ・現在1ページの場合：Previous(*)|1|...(*)|3|Next</li>
-   * <li>全3ページ・現在2ページの場合：Previous|1|2|3|Next</li>
-   * <li>全4ページ・現在1ページの場合：Previous(*)|1|...(*)|4|Next</li>
-   * <li>全4ページ・現在2ページの場合：Previous|1|2|...(*)|4|Next</li>
-   * <li>全5ページ・現在3ページの場合：Previous|1|...(*)|3|...(*)|5|Next</li>
+   * <li>2 total pages, current page 1: Previous(*)|1|2|Next(*)</li>
+   * <li>3 total pages, current page 1: Previous(*)|1|...(*)|3|Next</li>
+   * <li>3 total pages, current page 2: Previous|1|2|3|Next</li>
+   * <li>4 total pages, current page 1: Previous(*)|1|...(*)|4|Next</li>
+   * <li>4 total pages, current page 2: Previous|1|2|...(*)|4|Next</li>
+   * <li>5 total pages, current page 3: Previous|1|...(*)|3|...(*)|5|Next</li>
    * </ul>
    * </li>
    * </ul>
@@ -281,59 +292,61 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     List<PagerInfo> rtnList = new ArrayList<>();
     PageRequest pageRequest = getPageRequest();
 
-    // pager非表示の場合は、ゼロ件listで返す
+    // Return empty list when pager is not shown.
     if (numberOfRecords <= recordsInScreen) {
       return rtnList;
     }
 
-    // まずPreviousセルを生成。
-    // 現ページが2ページ目であればPreviousが押せるのでそこで分岐。
+    // Generate the Previous cell first.
+    // Previous is clickable when the current page is 2nd or later.
     rtnList.add(pageRequest.getPageNumber() > 0
         ? new PagerInfo(labelPrev, false, pageRequest.getPageNumber() - 1)
         : new PagerInfo(labelPrev));
 
-    // 次は必ず1。現ページが1ならactive, それ以外なら""なので、disabledであることはない。
+    // Next cell is always 1. If current page is 1 it's active, otherwise ""; never disabled.
     rtnList.add(new PagerInfo("1", pageRequest.getPageNumber() == 0, 0));
 
-    // 次に「...」がくる場合は、現ページが1で全3ページ以上ある場合、または現ページが3以降の場合。
+    // The "..." cell comes next when: current page is 1 and there are 3+ total pages,
+    // or current page is 3 or later.
     if ((pageRequest.getPageNumber() == 0 && numberOfRecords > recordsInScreen * 2)
         || pageRequest.getPageNumber() >= 2) {
       rtnList.add(new PagerInfo("..."));
     }
 
-    // 件数から考えられる最終ページ（Pagerベースのゼロから始まるページ番号）
+    // Last page derived from record count (zero-based page number used by Pager).
     int lastPageFromRecordCount =
         numberOfRecords / recordsInScreen + (numberOfRecords % recordsInScreen > 0 ? 1 : 0) - 1;
 
-    // 次は、1ページ目と最終ページに挟まれる数字。現ページが1ページ目または最終ページの場合は表示されないのでスキップ
+    // The number sandwiched between page 1 and the last page.
+    // Skipped when current page is 1 or the last page.
     boolean needsSandwichedNumber =
         pageRequest.getPageNumber() != 0 && pageRequest.getPageNumber() < lastPageFromRecordCount;
     if (needsSandwichedNumber) {
-      // 挟まれるページは、必ずactive
+      // The sandwiched page is always active.
       rtnList.add(new PagerInfo(Integer.toString(pageRequest.getPageNumber() + 1), true,
           pageRequest.getPageNumber()));
     }
 
-    // 後ろ側の「...」。現ページが最終ページより2ページ以上前の場合。
-    // ただ、これだけだと「Previous|1|...|...|5|Next」という表記になってしまうため、
-    // さらに「挟まれる数字がある場合」に限定して表示。
+    // Trailing "..." shown when current page is 2 or more pages before the last.
+    // Without the additional condition this would render "Previous|1|...|...|5|Next",
+    // so it is further limited to show only when a sandwiched number exists.
     if (pageRequest.getPageNumber() <= lastPageFromRecordCount - 2 && needsSandwichedNumber) {
       rtnList.add(new PagerInfo("..."));
     }
 
-    // Pagerの最終ページ（Pagerベースのゼロから始まるページ番号）。
-    // 5件表示、10ページあったが、画面表示後に全件削除、その後10ページ目をクリックした場合は、
-    // レコード件数上は存在しないが、Pager上は10ページ目まである（現在10ページ）として返す。
-    // それを踏まえた最終ページ番号。
+    // The last page in the Pager (zero-based page number used by Pager).
+    // If 10 pages were shown (5 records each) but all records were deleted after display
+    // and the user clicks page 10, the Pager returns page 10 as the last page
+    // even though no records exist at that page number.
     int lastPage = lastPageFromRecordCount > pageRequest.getPageNumber() ? lastPageFromRecordCount
         : pageRequest.getPageNumber();
 
-    // 最終ページ
+    // Last page.
     rtnList.add(new PagerInfo(Integer.toString(lastPage + 1),
         pageRequest.getPageNumber() == lastPage, lastPage));
 
-    // Nextセル。
-    // 現ページが最終ページ以外であれば押せる。
+    // Next cell.
+    // Clickable when the current page is not the last page.
     rtnList.add(pageRequest.getPageNumber() != lastPage
         ? new PagerInfo(labelNext, false, pageRequest.getPageNumber() + 1)
         : new PagerInfo(labelNext));
@@ -345,12 +358,12 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * Is used for search result records display like "6-10 / 15".
    */
   public String getLinesInScreen() {
-    // ゼロ件の場合
+    // When there are zero records.
     if (numberOfRecords == 0) {
       return "";
 
-      // 不具合で、最終ページ以降を表示してしまった場合
-      // （修正する予定だがもしなってもエラーにならないように実装しておく）
+      // When displaying beyond the last page due to a bug.
+      // (Planned to fix, but implemented to avoid errors if this occurs.)
     } else if (numberOfRecords / recordsInScreen < page) {
       return "( - / " + numberOfRecords + ")";
     }

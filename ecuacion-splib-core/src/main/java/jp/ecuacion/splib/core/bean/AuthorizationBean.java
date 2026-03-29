@@ -90,7 +90,7 @@ public class AuthorizationBean {
   public String[] addAndGetRolesOrAuthorities(String addedRoleOrAuthority) {
     String[] rtnArr = new String[rolesOrAuthorities.length + 1];
     for (int i = 0; i < rolesOrAuthorities.length; i++) {
-      // 追加しようとするroleOrAuthorityが既に設定されている場合は追加する必要がないのでそのまま終了
+      // Skip adding if the roleOrAuthority is already set.
       if (rolesOrAuthorities[i].equals(addedRoleOrAuthority)) {
         return rolesOrAuthorities;
       }

@@ -40,8 +40,10 @@ import org.springframework.data.jpa.domain.Specification;
 public class SpecFactory<T extends EclibEntity> {
 
   /**
-   * String、boolean、数値など、同一比較であれば型を絞らず共通使用可能。Enum項目（DB上はString）はvalueをEnum指定する必要があるので注意.
-   * fieldは"name", "parentRecord.id", "parentRecord.childRecord.id"など関連のrecordを含めて記載可能。
+   * Usable generically for String, boolean, numeric types, etc. when doing equality comparison.
+   * Note: Enum fields (stored as String in DB) require the value to be specified as an Enum.
+   * The field can include related records, e.g. "name", "parentRecord.id",
+   * "parentRecord.childRecord.id".
    */
   @SuppressWarnings("unused")
   public Specification<T> equals(String propertyPath, Object value) {

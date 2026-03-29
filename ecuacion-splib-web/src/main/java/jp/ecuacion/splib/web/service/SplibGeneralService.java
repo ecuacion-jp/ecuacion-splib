@@ -69,7 +69,7 @@ public abstract class SplibGeneralService {
   }
 
   // /**
-  // * record内のlocalDate項目（String）をLocalDate形式で取得。
+  // * Gets a localDate field (String) inside a record as a LocalDate.
   // */
   // protected LocalDate localDate(String date) {
   // return (date == null || date.equals("")) ? null

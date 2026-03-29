@@ -50,18 +50,19 @@ public class SplibControllerAdvice {
   @ModelAttribute
   public void modelAttribute(Model model) {
 
-    // modelをrequestに追加。exceptionHandlerでModelを使いたいのだが、
-    // そこでmodelをDIで取得すると中身が空っぽのModelが取得されるため。
+    // Add model to request attribute. This is needed because when model is obtained via DI
+    // in the ExceptionHandler, an empty model is returned instead of the populated one.
     request.setAttribute(SplibWebConstants.KEY_MODEL, model);
 
-    // redirect元から引き継がれたmodel, messagesを復元しmodelに追加
+    // Restore model and messages carried over from the redirect source and add to model.
     recoverRequestParametersFromRedirectContextId(model);
 
     // transactionToken
     model.addAttribute(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN,
         new TransactionTokenUtil().issueNewToken(request));
 
-    // url pathを追加。thymeleafでrequestの直接使用が不可になり、urlなどの使用はcontrollerでのmodelへの設定が推奨とのこと。
+    // Add url path. Direct use of request in Thymeleaf is no longer allowed,
+    // and it is recommended to set url etc. to model in the controller.
     model.addAttribute("loginState", util.getLoginState());
   }
 
@@ -69,7 +70,7 @@ public class SplibControllerAdvice {
 
     boolean takesOverContext = true;
 
-    // messages, modelをredirect元から引き継いでいる場合はmodelに追加。
+    // If messages and model are carried over from the redirect source, add them to model.
     String contextId = request.getParameter(SplibWebConstants.KEY_CONTEXT_ID);
     if (contextId == null || contextId.equals("")) {
       takesOverContext = false;
@@ -95,8 +96,9 @@ public class SplibControllerAdvice {
       model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
           contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-      // formをmodelから取得し設定変更
-      // validationは必要ならredirectの前に実施されているはずなので、再利用する際に再度validationを行う必要はない
+      // Retrieve forms from model and change settings.
+      // Validation should have been performed before the redirect if needed,
+      // so there is no need to re-validate when reusing.
       model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
           .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
 

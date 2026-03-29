@@ -86,27 +86,36 @@ public abstract class SplibGeneralForm {
   }
 
   /**
-   * 一つの機能の実装を複数メニューで使い回す場合に使用するメニュー名.
-   * 
-   * <p>使い回しをしない通常機能は、放置しnull（実際にはhtml側でhiddenを持っているのでそれがsubmitされ空文字になる）のままでよい。
-   * searchFormはsessionにformを保持し検索条件を保持するが、複数メニューで使い回す場合は
-   * そのメニュー別に検索条件を保持するのが望ましいため、このdataKindもsession保存時のキーとする。
+   * Menu name used when a single function implementation is reused across multiple menus.
+   *
+   * <p>For normal functions that are not reused, leave this null
+   * (in practice the html side has a hidden input which submits an empty string).
+   * Since searchForm retains the form in the session to hold search conditions,
+   * when reusing across multiple menus it is preferable to retain search conditions
+   * per menu, so this dataKind is also used as the key when saving to session.
    * </p>
-   * 
-   * <p>現行設計ではdataKindをrequestで持ち回る形を採用している。 sessionに持たせた方が実装が楽と思われる部分もありながら、navBarから他のメニューを選択された時には
-   * sessionに保管されたdataKindではなくrequestの方のdataKindを採用する、あたりをうまく回す必要があり、
-   * その意味ではsessionに持たせるよりrequestで持ち回る方がわかりやすい（dataKindが空ならシステムエラーになるので）ことから
-   * まずはrequestで持ち回り、の実装方式としておく。 ※PRGを使用しGETでのアクセスを可としている中で、個々のURLをコピって使用しても使用可能とする意味でも、
-   * 全てのURLにdataKindパラメータがついているのが望ましい、という観点もあるので付記。
+   *
+   * <p>The current design passes dataKind via the request.
+   * Although storing it in the session would simplify some parts of the implementation,
+   * when a different menu is selected from the navBar the dataKind from the request must be
+   * used instead of the one saved in the session, which requires careful handling.
+   * In that sense, passing it via request is clearer than storing in session
+   * (because an empty dataKind causes a system error).
+   * Therefore the implementation uses request-based passing for now.
+   * Note: since PRG is used and GET access is allowed, having the dataKind parameter in every
+   * URL is also desirable so that copying and using individual URLs still works.
    * </p>
    */
   protected String dataKind;
 
   /**
-   * warningを返した際に、それに対してOKした場合は、OKしたという履歴を残さないとまた再度同じチェックに引っかかりワーニングを出してしまう。
-   * それを防ぐため、一度OKしたwarningは、messageIdを本fieldに保管することで避ける.
-   * 
-   * <p>複数のwarnに対する情報を保持できるよう、本項目はcsv形式とする。（対応するhiddenにjavascript側で","とメッセージIDを追加）</p>
+   * When a warning is returned and the user confirms it with OK,
+   * without recording that history the same check would trigger again and show the warning.
+   * To prevent this, once-confirmed warnings are stored by their messageId in this field.
+   *
+   * <p>To hold information for multiple warnings, this field uses CSV format.
+   * (The corresponding hidden input appends "," and the message ID on the JavaScript side.)
+   * </p>
    */
   protected String confirmedWarnings;
 
@@ -137,18 +146,19 @@ public abstract class SplibGeneralForm {
   }
 
   /**
-   * form配下に存在するrecordを全て取得。 戻り値のmapのkeyはfield名.
+   * Gets all records under the form. The key of the returned map is the field name.
    */
   public List<Field> getRootRecordFields() {
-    // form内に保持しているrecordを取得。
-    // 複数functionで同一の画面を使う場合に一方のformを継承した場合、親classがprivateで持っているfieldを取得する必要があるため
-    // ループを回して親に遡っての捜索となっている
+    // Gets records held in the form.
+    // When one form is extended for use on the same screen with multiple functions,
+    // private fields in the parent class must also be retrieved,
+    // so the search traverses up the class hierarchy in a loop.
     Class<?> formCls = this.getClass();
     List<Field> checkList = new ArrayList<>();
     while (true) {
       Field[] fields = formCls.getDeclaredFields();
 
-      // 正しくrecordが存在しているかのチェックとrecordの取得
+      // Check that a record correctly exists and retrieve it.
       for (Field field : fields) {
         if (SplibRecord.class.isAssignableFrom(field.getType())) {
           checkList.add(field);
@@ -259,9 +269,8 @@ public abstract class SplibGeneralForm {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
-          rtnSet
-              .add(new ConstraintViolationBean<SplibGeneralForm>(this, validationClass + ".message",
-                  validationClass, rootRecordName, notEmptyItemPropertyPath));
+          rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this, "(empty)",
+              validationClass + ".message", rootRecordName + "." + notEmptyItemPropertyPath));
         }
       }
     }
