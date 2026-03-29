@@ -40,16 +40,16 @@
 				<div class="row">
 					<div class="col-lg-4 col-12"></div>
 					<div class="col-lg-4 col-12 d-flex justify-content-center">
-						<div th:replace="~{bootstrap/components :: searchButton('')}"></div>
+						<div th:replace="~{bootstrap/components-search :: searchButton('')}"></div>
 					</div>
 					<div class="col-lg-4 col-12 d-flex justify-content-lg-end justify-content-center">
-						<div th:replace="~{bootstrap/components :: searchConditionClearButton('')}"></div>
+						<div th:replace="~{bootstrap/components-search :: searchConditionClearButton('')}"></div>
 					</div>
 				</div>
 				<div th:replace="~{bootstrap/components :: horizontalLine('')}"></div>
 			</th:block>
 			<input type="hidden" name="dataKind" th:value="${__${function + 'SearchForm'}__.dataKind}">
-			<div th:replace="~{bootstrap/components :: sortPagingAndRecordsInScreen(${__${function + 'SearchForm'}__}, '')}"></div>
+			<div th:replace="~{bootstrap/components-list :: sortPagingAndRecordsInScreen(${__${function + 'SearchForm'}__}, '')}"></div>
 		</div>
 	</div>
 	
@@ -84,8 +84,8 @@
 	</div>
 	
 	<div layout:fragment="scripts">
-		<div th:replace="~{bootstrap/components :: scriptForTdSubmitButtonWithIds(${rootRecordName}, '')}"></div>
-		<div th:replace="~{bootstrap/components :: scriptForSortPagingAndRecordsInScreen('')}"></div>
+		<div th:replace="~{bootstrap/components-list :: scriptForTdSubmitButtonWithIds(${rootRecordName}, '')}"></div>
+		<div th:replace="~{bootstrap/components-list :: scriptForSortPagingAndRecordsInScreen('')}"></div>
 	</div>
 </body>
 </html>
