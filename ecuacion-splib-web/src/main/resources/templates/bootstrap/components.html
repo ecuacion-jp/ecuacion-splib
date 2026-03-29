@@ -1547,20 +1547,24 @@
 	<div th:fragment="thCustomizable(itemPropertyPath, position, options)" th:remove="tag">
 		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
-			<th:block th:with="id=${recordName + '.' + fieldName},labelFieldName=${listForm.__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey()}">
-				<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
-					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
-							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
-							style="cursor: pointer" th:text="${@msgUtil.getValue(#locale, labelFieldName)}" 
-							th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
-							th:data-search-form-id="${function + 'SearchForm'}"
-							onClick="list(document.getElementById(this.dataset.searchFormId), this.dataset.item, this.dataset.direction);"></th>
+			<th:block th:with="id=${recordName + '.' + fieldName},
+					itemNameKey=${@optUtil.hasKey(options, 'itemNameKey') ? @optUtil.getValue(options, 'itemNameKey') : listForm.__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey()}">
+				<th:block th:with="itemName=${@msgUtil.getValue(#locale, itemNameKey)}">
+					<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
+						<th scope="col" style="cursor: pointer" th:text="${itemName}" 
+								th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
+								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
+								th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
+								th:data-search-form-id="${function + 'SearchForm'}"
+								onClick="list(document.getElementById(this.dataset.searchFormId), this.dataset.item, this.dataset.direction);"></th>
+			 		</th:block>
+			 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
+						<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
+								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
+								th:text="${itemName}"></th>
+			 		</th:block>
 		 		</th:block>
-		 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
-					<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
-							th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}" 
-							th:text="${@msgUtil.getValue(#locale, labelFieldName)}"></th>
-		 		</th:block>
+		 	</th:block>
 	 	</th:block>
 	</div>
 	
