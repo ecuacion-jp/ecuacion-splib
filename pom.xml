@@ -361,6 +361,13 @@
 				<artifactId>ecuacion-splib-web-jpa</artifactId>
 				<version>${ecuacion-splib.version}</version>
 			</dependency>
+
+			<!-- This is a jakarta module but spring boot does not provide it -->
+			<dependency>
+				<groupId>jakarta.el</groupId>
+				<artifactId>jakarta.el-api</artifactId>
+				<version>${jakarta.el.jakarta.el-api.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
