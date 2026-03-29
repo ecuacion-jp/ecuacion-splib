@@ -1,0 +1,388 @@
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+</head>
+<body>
+
+	<!--/*
+		### search result display condition components (sort, pagination and lines of display in the table)
+	 */-->
+
+	<!--/* component which is integrated with functions of sort, paging and lines of data */-->
+	<div th:fragment="sortPagingAndRecordsInScreen(form, options)" th:remove="tag">
+		<input type="hidden" id="sortItem" name="sortItem" th:value="${form.sortItem}">
+		<input type="hidden" id="direction" name="direction" th:value="${form.direction}">
+		<input type="hidden" id="page" name="page" th:value="${form.page}">
+		<input type="hidden" id="recordsInScreen" name="recordsInScreen" th:value="${form.recordsInScreen}">
+		<input type="hidden" id="requestFromSearchForm" name="requestFromSearchForm" value="true">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-4 align-self-end">
+					<div class="text-dark">[[${form.linesInScreen}]]</div>
+				</div>
+				<div class="col-md-4">
+					<nav aria-label="Page navigation" th:if="${form.getPagerInfoList(#locale).size() > 0}">
+						<ul class="pagination justify-content-center">
+							<th:block th:each="pagerInfo : ${form.getPagerInfoList(#locale)}" th:object="${pagerInfo}" th:remove="tag">
+								<li class="page-item" th:classappend="*{status}">
+									<a th:if="*{isDisabled()}" class="page-link text-light" href="#" tabindex="-1" aria-disabled="true" th:text="*{displayString}"></a>
+									<a th:if="*{!isDisabled()}" class="page-link" th:data-search-form-id="${function + 'SearchForm'}" th:data-page="*{goToPage}"
+											href="#" onClick="listFromPage(document.getElementById(this.dataset.searchFormId), this.dataset.page);" th:text="*{displayString}"></a>
+								</li>
+							</th:block>
+						</ul>
+					</nav>
+				</div>
+				<div class="col-md-4" style="text-align:right; padding-right: 0px">
+					<div class="dropdown">
+						<div th:replace="~{bootstrap/components-input :: submitButton('searchAgain', 'jp.ecuacion.splib.web.common.label.recordsInScreen',
+								'disabledOnSubmit=true,' + 'id=dropdownMenuButton1,attr=data-bs-toggle|dropdown,classappend=dropdown-toggle,classappend=mb-3' + ${options})}"></div>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 5)">5</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 10)">10</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 20)">20</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 50)">50</a></li>
+							<li><a class="dropdown-item text-dark" href="javascript:listFromRecordsInScreen(document.getElementById('dropdownMenuButton1'), 100)">100</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--/*
+		### search-page script
+	 */-->
+
+	<!--/* JavaScript for sort. Place it together if you use an inline update button. Usually placed at the bottom of the page. */-->
+	<div th:fragment="scriptForThSortable(options)" th:remove="tag">
+		<script>
+		function list(searchForm, sortItem, direction) {
+			document.getElementById("sortItem").value = sortItem;
+			document.getElementById("direction").value = direction;
+			searchForm.elements["action"].value = "searchAgain";
+			searchForm.submit();
+		}
+		</script>
+	</div>
+
+	<div th:fragment="scriptForRecordsInScreen(options)" th:remove="tag">
+		<script>
+		function listFromRecordsInScreen(button, recordsInScreen) {
+			document.getElementById("recordsInScreen").value = recordsInScreen;
+			button.form.requestSubmit(document.getElementById('dropdownMenuButton1'));
+		}
+		</script>
+	</div>
+
+	<div th:fragment="scriptForPagenation(options)" th:remove="tag">
+		<script>
+		function listFromPage(form, page) {
+			document.getElementById("page").value = page;
+			form.elements["action"].value = "searchAgain";
+			form.submit();
+		}
+		</script>
+	</div>
+
+	<!-- /* Combines the 3 scripts above. Since the HTML parts are used as a set, these scripts should also be used together. */ -->
+	<div th:fragment="scriptForSortPagingAndRecordsInScreen(options)" th:remove="tag">
+		<div th:replace="~{ :: scriptForThSortable('')}"></div>
+		<div th:replace="~{ :: scriptForRecordsInScreen('')}"></div>
+		<div th:replace="~{ :: scriptForPagenation('')}"></div>
+	</div>
+
+
+
+	<!--/*
+		###
+		### list-page components.
+		###
+	 */-->
+
+	<!--/*
+		### table header(th).
+	 */-->
+
+	<!--/* Non-sortable th. text-align is fixed to center. 'form' is not passed as an argument but must be set with name 'form' via th:with in the outer context. */-->
+	<div th:fragment="thText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: thCustomizable(${itemPropertyPath}, 'center', ${options})}"></div>
+	</div>
+
+	<!--/* Sortable th. text-align is fixed to center. 'form' is not passed as an argument but must be set with name 'form' via th:with in the outer context. */-->
+	<div th:fragment="thSortable(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: thCustomizable(${itemPropertyPath}, 'center', ${options + ',thSortable'})}"></div>
+	</div>
+
+	<!--/* Customizable sortable th. 'form' is not passed as an argument but must be set with name 'form' via th:with in the outer context. */-->
+	<div th:fragment="thCustomizable(itemPropertyPath, position, options)" th:remove="tag">
+		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
+				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
+			<th:block th:with="id=${recordName + '.' + fieldName},
+					itemNameKey=${@optUtil.hasKey(options, 'itemNameKey') ? @optUtil.getValue(options, 'itemNameKey') : listForm.__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey()}">
+				<th:block th:with="itemName=${@msgUtil.getValue(#locale, itemNameKey)}">
+					<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
+						<th scope="col" style="cursor: pointer" th:text="${itemName}"
+								th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
+								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+								th:data-item="${itemPropertyPath}" th:data-direction="${form.nextDirection('__${itemPropertyPath}__')}"
+								th:data-search-form-id="${function + 'SearchForm'}"
+								onClick="list(document.getElementById(this.dataset.searchFormId), this.dataset.item, this.dataset.direction);"></th>
+			 		</th:block>
+			 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
+						<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
+								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+								th:text="${itemName}"></th>
+			 		</th:block>
+	 			</th:block>
+	 		</th:block>
+ 		</th:block>
+	</div>
+
+	<!--/* th with label string */-->
+	<div th:fragment="thFreeText(label, options)" th:remove="tag">
+		<th scope="col" class="text-center text-white bg-color-tbl-header"
+				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
+				th:text="${@msgUtil.getValue(#locale, label)}"></th>
+	</div>
+
+	<!-- update button -->
+	<div th:fragment="thUpdateButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.update', ${options})}"></div>
+	</div>
+
+	<!-- delete button -->
+	<div th:fragment="thDeleteButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.delete', ${options})}"></div>
+	</div>
+
+	<!--/* thDownloadButton */-->
+	<div th:fragment="thDownloadButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.common.button.download', ${options})}"></div>
+	</div>
+
+	<!-- switch user button -->
+	<div th:fragment="thSwitchUserButton(options)" th:remove="tag">
+		<div th:replace="~{ :: thFreeText('jp.ecuacion.splib.web.switchUser.switchButton', ${options})}"></div>
+	</div>
+
+	<!--/*
+		### The followings are td components.
+	 */-->
+
+	<!--/* td readOnly customizable */-->
+	<!--/* context options: (temporary)
+			- th:with="deleted=true"	adds a deleted line effect.
+	*/-->
+	<div th:fragment="tdReadOnlyCustomizable(value, position, options)" th:remove="tag">
+		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
+				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
+				th:classappend="${(deleted != null && deleted) || @optUtil.hasKey(options, 'deleted')} ? 'text-deleted' : 'text-dark'">
+			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl')}">
+				<a th:href="${@optUtil.getValue(options, 'linkUrl')}" target="_blank">[[${value}]]</a>
+			</th:block>
+			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl') == false}">
+				[[${value}]]
+			</th:block>
+		</td>
+	</div>
+
+	<!--/* td readOnly text */-->
+	<div th:fragment="tdReadOnlyText(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
+			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
+		</th:block>
+	</div>
+
+	<!--/* td readOnly number */-->
+	<div th:fragment="tdReadOnlyNumber(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)},
+				needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
+			<div th:replace="~{ :: tdReadOnlyCustomizable(${(needsCommas ? #numbers.formatDecimal(value, 1, 'COMMA', 0, 'POINT')
+					: value)}, 'right', ${options})}"></div>
+		</th:block>
+	</div>
+
+	<!--/* td readOnly fixed length */-->
+	<div th:fragment="tdReadOnlyFixedLength(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
+			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
+		</th:block>
+	</div>
+
+	<!--/* td readOnly free text */-->
+	<div th:fragment="tdReadOnlyFreeText(value, options)" th:remove="tag">
+		<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
+	</div>
+
+	<!--/* td readOnly free fixed length */-->
+	<div th:fragment="tdReadOnlyFreeFixedLength(value, options)" th:remove="tag">
+		<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
+	</div>
+
+	<!--/* td readOnly enum text */-->
+	<div th:fragment="tdReadOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.__${@strUtil.getMethodName(itemPropertyPath)}__Name(#locale)}">
+			<div th:replace="~{ :: tdReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
+		</th:block>
+	</div>
+
+	<!--/* td readOnly checkbox */-->
+	<div th:fragment="tdReadOnlyCheckbox(itemPropertyPath, options)" th:remove="tag">
+		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${itemPropertyPath}__}" disabled>
+		</td>
+	</div>
+
+	<!--/* internalTdInputInsideTdCommon */-->
+	<div th:fragment="internalTdInputInsideTdCommon(itemPropertyPath, allInputContents, options)" th:remove="tag">
+		<th:block th:with="index=${recStat.index},isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
+			<th:block th:with="inputId='recList' + ${index} + '.' + ${itemPropertyPath},
+					inputName='recList[' + ${index} + '].' + ${itemPropertyPath},
+					inputValue=${recList[__${index}__].__${itemPropertyPath}__},
+					needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
+
+				<div th:replace="${allInputContents}"></div>
+
+			</th:block>
+		</th:block>
+	</div>
+
+	<!--/* internalTdInputCommon */-->
+	<div th:fragment="internalTdInputCommon(itemPropertyPath, allInputContents, options)" th:remove="tag">
+		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ${allInputContents}, ${options})}"></div>
+		</td>
+	</div>
+
+	<!--/* inline input text */-->
+	<div th:fragment="tdInputText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('left')}, ${options})}"></div>
+	</div>
+
+	<!--/* inline input number */-->
+	<div th:fragment="tdInputNumber(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('right')}, ${options})}"></div>
+	</div>
+
+	<!--/* inline input hidden */-->
+	<div th:fragment="tdInputHidden(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="type=hidden">
+			<div th:replace="~{ :: internalTdInputInsideTdCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent(null)}, ${options})}"></div>
+		</th:block>
+	</div>
+
+	<!--/* inline input checkbox */-->
+	<div th:fragment="tdInputCheckbox(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalTdInputCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlCheckboxComponent(false)}, ${options})}"></div>
+	</div>
+
+	<!--/* showInsertFormButton */-->
+	<div th:fragment="showInsertFormButton(options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components-input :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
+	</div>
+
+	<!--/* tdScriptButton */-->
+	<div th:fragment="tdScriptButton(id, label, options)" th:remove="tag">
+		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+	 		<div th:replace="~{bootstrap/components :: scriptButton(${id}, ${label}, 'classappend=btn-sm,' + ${options})}">
+	 		</div>
+		</td>
+	</div>
+
+	<!--/* tdSubmitButton */-->
+	<div th:fragment="tdSubmitButton(name, label, options)" th:remove="tag">
+		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+	 		<div th:replace="~{bootstrap/components-input :: submitButton(${name}, ${label}, 'classappend=btn-sm,' + ${options})}">
+	 		</div>
+		</td>
+	</div>
+
+	<!--/* tdSubmitButtonWithIds */-->
+	<div th:fragment="tdSubmitButtonWithIds(name, label, options)" th:remove="tag">
+		<div th:replace="~{ :: tdSubmitButton(${name}, ${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', label))},
+					'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions}
+					 + ',' + ${options} + ',event=click|tdSubmitButtonWithIds')}">
+		</div>
+	</div>
+
+	<!--/* inline update button */-->
+	<div th:fragment="tdUpdateButton(options)" th:remove="tag">
+		<div th:replace="~{ :: tdSubmitButtonWithIds('showUpdateForm', 'jp.ecuacion.splib.web.common.button.update', ${options})}"></div>
+	</div>
+
+	<!--/* inline delete button */-->
+	<div th:fragment="tdDeleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag"
+			th:with="itemNameKey=*{getItem('__${itemDisplayedOnDelete}__').getItemNameKey('__${rootRecordName}__')}">
+		<div th:replace="~{ :: tdSubmitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete',
+				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete}
+				+ ',attr=data-confirm-message|' + ${@compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}
+				+ ',' + ${options})}"></div>
+	</div>
+
+	<!--/* tdDownloadButton */-->
+	<div th:fragment="tdDownloadButton(options)" th:remove="tag">
+		<div th:replace="~{ :: tdSubmitButtonWithIds('download', 'jp.ecuacion.splib.web.common.button.download',
+				'event=click|waitForDownloadToFinish,' + ${options})}"></div>
+	</div>
+
+	<!--/* inline switch user button */-->
+	<div th:fragment="tdSwitchUserButton(username, options)" th:remove="tag">
+		<div th:replace="~{ :: tdScriptButton('switchUser', 'jp.ecuacion.splib.web.switchUser.switchButton',
+				'attr=data-username|' + ${username} + ',' + ${options} + ',event=click|switchUser')}"></div>
+	</div>
+
+	<!--/* javaScript for inline update button. Use with tdUpdateButton. Put it at "bottom-space" part in a page template.  */-->
+	<div th:fragment="scriptForTdSubmitButtonWithIds(rootRecordName, options)" th:remove="tag">
+		<script th:with="ids=${rootRecordName + '.ids'},versions=${rootRecordName + '.optimisticLockVersions'}">
+		function tdSubmitButtonWithIds(event, button) {
+			var message = button.dataset.confirmMessage;
+			var bl = message == null ? true : confirm(message);
+
+			if (bl) {
+				button.form.elements['[[${ids}]]'].value = button.dataset.ids;
+				button.form.elements['[[${versions}]]'].value = button.dataset.versions;
+
+			} else {
+				event.preventDefault();
+			}
+		}
+		</script>
+	</div>
+
+	<!--/* javaScript for inline switch user. Use with tdSwitchUserButton. Put it at "bottom-space" part in a page template.  */-->
+	<div th:fragment="scriptForTdSwitchUserButton(options)" th:remove="tag">
+		<form id="switchUserForm" method="GET" th:action="@{/admin/switchUser}">
+			<input type="hidden" id="switchUser.username" name="switchUser.username">
+		</form>
+		<script>
+		function switchUser(event, button) {
+			// default submit not needed.
+			event.preventDefault();
+
+			document.getElementById("switchUser.username").value = button.dataset.username;
+			document.getElementById("switchUserForm").submit();
+		}
+		</script>
+	</div>
+
+</body>
+</html>

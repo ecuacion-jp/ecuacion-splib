@@ -1,0 +1,124 @@
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+</head>
+<body>
+
+	<!--/*
+		### general-form-page components
+	 */-->
+
+	<!--/*
+		### form components
+	 */-->
+
+	<!--/* generalForm */-->
+	<div th:fragment="generalForm(formContent, topSpaceContent, bottomSpaceContent
+			, formMethod, multipart, subFunction, options)" th:remove="tag">
+ 		<div th:replace="~{bootstrap/components :: internalAllCommonComponent(~{ :: fragmentGeneralForm}, true, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentGeneralForm" th:remove="tag">
+			<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
+				<th:block th:with="javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
+
+					<th:block th:replace="${topSpaceContent}" />
+
+					<!--/* issue#156: Since the error message is hard to understand when ${__${javaFormName}__} == null, understandable message output procedure is added. */-->
+					<th:block th:if="${__${javaFormName}__} == null"
+							th:with="msg=${'Form not found in model. Form name: ' + javaFormName + '.
+									The reason can be: Form with the name not defined;
+									Form is defined but not used (not set in the generics parameter of the controller definition sentence);'}">
+						[[${@exUtil.systemError(msg)}]]
+					</th:block>
+
+					<!--/* Check #454 to understand how subFunction and ctrlSubFunction work. */-->
+					<form th:name="${javaFormName}" th:id="${javaFormName}"
+							th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
+							th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
+							th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
+							th:object="${__${javaFormName + '.' + rootRecordName}__}"
+							onsubmit="doubleClickPreventionLockButtonsOnSubmit(event, this)"
+							th:data-submitting-message="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitting')}">
+
+						<th:block th:if="${@optUtil.getValueOrElse(options, 'transactionToken', 'true') != 'false'}">
+							<input type="hidden" name="transactionToken" th:value="${transactionToken}">
+						</th:block>
+
+						<input type="hidden" name="action">
+
+						<!--/* Show the form name with an error message to easily understand that the form name passed from controller to model is wrong. */-->
+						<h1 style="color: red" th:if="${__${function + #strings.capitalize(subFunction) + 'Form'}__} == null">
+							form: [[${function + #strings.capitalize(subFunction) + 'Form'}]] is null.
+						</h1>
+
+						<input type="hidden" name="confirmedWarnings" th:value="${confirmedWarnings}">
+			 			<input type="hidden" name="submitOnChangeToRefresh">
+			 			<input type="hidden" th:id="${javaFormName + '.' + rootRecordName + '.ids'}" th:name="${rootRecordName + '.ids'}"
+			 					th:value="*{ids}">
+						<input type="hidden" th:id="${javaFormName + '.' + rootRecordName + '.optimisticLockVersions'}" th:name="${rootRecordName + '.optimisticLockVersions'}"
+								th:value="*{optimisticLockVersions}" />
+						<th:block th:replace="${formContent}" />
+
+						<div th:replace="~{ :: internalWarnMessage('')}"></div>
+
+		 			</form>
+
+					<th:block th:replace="${bottomSpaceContent}" />
+
+				</th:block>
+			</th:block>
+		</div></th:block>
+	</div>
+
+	<!--/* internal warn message part */-->
+	<div th:fragment="internalWarnMessage(options)" th:remove="tag">
+		<div th:object="${messagesBean}">
+			<th:block th:if="*{warnMessage != null}">
+				<input type="hidden" name="warnMessage" th:data-button-name="*{warnMessage.buttonName}" th:data-msg-id="*{warnMessage.messageId}" th:value="*{warnMessage.message}">
+				<script>
+					var bl = confirm(this.form.elements['warnMessage'].value);
+					var obj = this.form.elements['confirmedWarnings'];
+					if (bl) {
+						obj.value = obj.value + "," + this.form.elements['warnMessage'].dataset.msgId;
+
+						const buttonName = this.form.elements['warnMessage'].dataset.buttonName;
+						if (typeof buttonName === "undefined") {
+							buttonName = "";
+						}
+
+						if (buttonName == "") {
+							this.form.submit();
+
+						} else {
+							var btn = this.form.elements[buttonName];
+							btn.click();
+						}
+
+					} else {
+						obj.value = "";
+					}
+				</script>
+			</th:block>
+		</div>
+	</div>
+
+</body>
+</html>
