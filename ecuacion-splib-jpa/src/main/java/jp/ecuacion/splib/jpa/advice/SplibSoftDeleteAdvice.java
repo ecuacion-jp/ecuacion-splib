@@ -80,7 +80,7 @@ public abstract class SplibSoftDeleteAdvice {
 
       if (isUpdate) {
         // Detach the entity once to disable dirty checking.
-        em.flush();
+        em.clear();
         em.detach(entity);
       }
 

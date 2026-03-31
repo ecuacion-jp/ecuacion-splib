@@ -75,7 +75,7 @@
 
 							<!--/* label */-->
 							<th:block th:if="${needsLabel}"
-									th:with="itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey('__${rootRecordName}__')}">
+									th:with="itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey()}">								
 								<label th:for="${inputId}" class="form-label text-dark mb-0">
 									[[${@msgUtil.getValue(#locale, '__${itemNameKey}__') + labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
