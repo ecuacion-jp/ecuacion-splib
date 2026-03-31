@@ -1,0 +1,111 @@
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+</head>
+<body>
+
+	<!--/*
+		### search-page input components
+	 */-->
+
+	<!--/* internal common component. It's not supposed to use directly from thymeleaf web pages. */-->
+	<div th:fragment="internalInputCommonComponent(itemPropertyPath, searchInputContents, labelPostfix, options)" th:remove="tag">
+		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
+		<div th:replace="~{bootstrap/components-input :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentSearchInputCommonComponent}, ~{bootstrap/components :: nullFragment},
+		*{isNotEmptyOnSearch('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
+		true, true, ${labelPostfix}, ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="fragmentSearchInputCommonComponent" th:remove="tag">
+			<th:block th:replace="${searchInputContents}" />
+		</div></th:block>
+	</div>
+
+	<div th:fragment="searchText(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('left')},
+				*{getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>
+	</div>
+
+	<div th:fragment="searchNumber(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::searchNumberInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="numberInternal(itemPropertyPath, options)" th:remove="tag">
+			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" th:name="${inputId}" th:value="${inputValue}"
+				class="text-end"
+				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(inputId)}"
+				th:maxlength="${isReadOnly} ? '' : *{getStringLength('__${fieldName}__')}"
+				th:readonly="${isReadOnly}">
+		</div></th:block>
+	</div>
+
+	<div th:fragment="searchDate(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::searchDateInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="dateInternal(itemPropertyPath, options)" th:remove="tag">
+			<input type="date" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" th:name="${inputId}" th:value="${inputValue}"
+				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(inputId)}"
+				th:readonly="${isReadOnly}">
+		</div></th:block>
+	</div>
+
+	<!--/* internal common component */-->
+	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlSelectComponent}, '',  ${options})}"></div>
+	</div>
+
+	<div th:fragment="searchSelect(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
+				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
+	</div>
+
+	<!--/*
+		- options:
+		  - including: Shows only specified Enum elements in the dropdown. Specify enum element names (not codes) in comma-separated format, e.g. 'include=ADMIN,GROUP_ADMIN'.
+		  - excluding: Shows all Enum elements except the specified ones in the dropdown. Specify enum element names (not codes) in comma-separated format, e.g. 'exclude=ADMIN,GROUP_ADMIN'.
+		  - firstCharOfCodeEqualTo: true if the first character of the code matches.
+		  - firstCharOfCodeLessThanOrEqualTo: Compares the first character of the code by ASCII value (less than or equal).
+		  - firstCharOfCodeGreaterThanOrEqualTo: Compares the first character of the code by ASCII value (greater than or equal).
+	 */-->
+	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+	</div>
+
+	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+	</div>
+
+	<!--/*
+		### search-page button components
+	 */-->
+
+	<!--/* searchButton */-->
+	<div th:fragment="searchButton(options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components-input :: submitButton('search', 'jp.ecuacion.splib.web.common.button.search', 'disabledOnSubmit=true,' + ${options})}"></div>
+	</div>
+
+	<!--/* searchConditionClearButton */-->
+	<div th:fragment="searchConditionClearButton(options)" th:remove="tag">
+		<div th:replace="~{bootstrap/components-input :: submitButton('conditionClear', 'jp.ecuacion.splib.web.common.button.conditionClear', 'disabledOnSubmit=true,' + ${options})}"></div>
+	</div>
+
+</body>
+</html>

@@ -24,9 +24,9 @@
 <body>
 	<div layout:fragment="form-content" th:remove="tag">
 		<div class="row">
-			<th th:replace="~{bootstrap/components :: inputText('appVersion', 'width=full,readonly')}"></th>
-			<th th:replace="~{bootstrap/components :: inputText('excelTemplateVersion', 'width=full,readonly')}"></th>
-			<th th:replace="~{bootstrap/components :: inputText('codeGeneratorVersion', 'width=full,readonly')}"></th>
+			<th th:replace="~{bootstrap/components-input :: text('appVersion', 'width=full,readonly')}"></th>
+			<th th:replace="~{bootstrap/components-input :: text('excelTemplateVersion', 'width=full,readonly')}"></th>
+			<th th:replace="~{bootstrap/components-input :: text('codeGeneratorVersion', 'width=full,readonly')}"></th>
 		</div>
 	</div>
 </body>
