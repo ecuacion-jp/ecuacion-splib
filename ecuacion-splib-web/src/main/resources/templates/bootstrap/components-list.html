@@ -192,7 +192,7 @@
 	<!--/* context options: (temporary)
 			- th:with="deleted=true"	adds a deleted line effect.
 	*/-->
-	<div th:fragment="readOnlyCustomizable(value, position, options)" th:remove="tag">
+	<div th:fragment="listReadOnlyCustomizable(value, position, options)" th:remove="tag">
 		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
 				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
 				th:classappend="${(deleted != null && deleted) || @optUtil.hasKey(options, 'deleted')} ? 'text-deleted' : 'text-dark'">
@@ -206,47 +206,47 @@
 	</div>
 
 	<!--/* td readOnly text */-->
-	<div th:fragment="readOnlyText(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listReadOnlyText(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
-			<div th:replace="~{ :: readOnlyCustomizable(${value}, 'left', ${options})}"></div>
+			<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>
 
 	<!--/* td readOnly number */-->
-	<div th:fragment="readOnlyNumber(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listReadOnlyNumber(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="value=${rec.getValue(itemPropertyPath)},
 				needsCommas=*{needsCommas('__${rootRecordName}__', '__${itemPropertyPath}__')}">
-			<div th:replace="~{ :: readOnlyCustomizable(${(needsCommas ? #numbers.formatDecimal(value, 1, 'COMMA', 0, 'POINT')
+			<div th:replace="~{ :: listReadOnlyCustomizable(${(needsCommas ? #numbers.formatDecimal(value, 1, 'COMMA', 0, 'POINT')
 					: value)}, 'right', ${options})}"></div>
 		</th:block>
 	</div>
 
 	<!--/* td readOnly fixed length */-->
-	<div th:fragment="readOnlyFixedLength(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listReadOnlyFixedLength(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
-			<div th:replace="~{ :: readOnlyCustomizable(${value}, 'center', ${options})}"></div>
+			<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
 		</th:block>
 	</div>
 
 	<!--/* td readOnly free text */-->
-	<div th:fragment="readOnlyFreeText(value, options)" th:remove="tag">
-		<div th:replace="~{ :: readOnlyCustomizable(${value}, 'left', ${options})}"></div>
+	<div th:fragment="listReadOnlyFreeText(value, options)" th:remove="tag">
+		<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 	</div>
 
 	<!--/* td readOnly free fixed length */-->
-	<div th:fragment="readOnlyFreeFixedLength(value, options)" th:remove="tag">
-		<div th:replace="~{ :: readOnlyCustomizable(${value}, 'center', ${options})}"></div>
+	<div th:fragment="listReadOnlyFreeFixedLength(value, options)" th:remove="tag">
+		<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
 	</div>
 
 	<!--/* td readOnly enum text */-->
-	<div th:fragment="readOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listReadOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="value=${rec.__${@strUtil.getMethodName(itemPropertyPath)}__Name(#locale)}">
-			<div th:replace="~{ :: readOnlyCustomizable(${value}, 'left', ${options})}"></div>
+			<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 		</th:block>
 	</div>
 
 	<!--/* td readOnly checkbox */-->
-	<div th:fragment="readOnlyCheckbox(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listReadOnlyCheckbox(itemPropertyPath, options)" th:remove="tag">
 		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${itemPropertyPath}__}" disabled>
 		</td>
@@ -274,24 +274,24 @@
 	</div>
 
 	<!--/* inline input text */-->
-	<div th:fragment="text(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listText(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('left')}, ${options})}"></div>
 	</div>
 
 	<!--/* inline input number */-->
-	<div th:fragment="number(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listNumber(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('right')}, ${options})}"></div>
 	</div>
 
 	<!--/* inline input hidden */-->
-	<div th:fragment="hidden(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listHidden(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="type=hidden">
 			<div th:replace="~{ :: internalInsideCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent(null)}, ${options})}"></div>
 		</th:block>
 	</div>
 
 	<!--/* inline input checkbox */-->
-	<div th:fragment="checkbox(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="listCheckbox(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalCommon(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlCheckboxComponent(false)}, ${options})}"></div>
 	</div>
 

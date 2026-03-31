@@ -206,17 +206,17 @@
 	</div>
 	
 	<!--/* textbox */-->
-	<div th:fragment="text(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputText(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'text', true, ${options})}"></div>
 	</div>
 				
 	<!--/* textbox(password) */-->
-	<div th:fragment="password(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputPassword(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'password', true, ${options})}"></div>
 	</div>
 
 	<!--/* hidden */-->
-	<div th:fragment="hidden(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputHidden(itemPropertyPath, options)" th:remove="tag">
 		<th:block th:with="type=hidden">
 	 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputComponent(null)}, ~{bootstrap/components :: nullFragment}, 
 	 				false, false, false, '',  ${options})}"></div>
@@ -224,7 +224,7 @@
 	</div>
 	
 	<!--/* number */-->
-	<div th:fragment="number(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputNumber(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlInputNumberComponent}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 	</div>
 	
@@ -234,27 +234,27 @@
 	</div>	
 
 	<!--/* textbox(month) */-->
-	<div th:fragment="yearMonth(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputYearMonth(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'month', ${options})}"></div>
 	</div>
 
 	<!--/* textbox(date) */-->
-	<div th:fragment="date(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputDate(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'date', ${options})}"></div>
 	</div>
 
 	<!--/* textbox(time) */-->
-	<div th:fragment="time(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputTime(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputDateTime(${itemPropertyPath}, 'time', ${options})}"></div>
 	</div>
 	
 	<!--/* dateTime (always disabled) */-->
-	<div th:fragment="dateTime(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputDateTime(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalEditInputTextComponent(${itemPropertyPath}, 'text', true, 'disabled,' + ${options})}"></div>
 	</div>
 
 	<!--/* textarea */-->
- 	<div th:fragment="textArea(itemPropertyPath, options)" th:remove="tag">
+ 	<div th:fragment="inputTextArea(itemPropertyPath, options)" th:remove="tag">
  		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputTextArea}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTextArea" th:remove="tag">
@@ -268,7 +268,7 @@
 	</div>
 
 	<!--/* textarea which shows docments like service agreement. */-->
- 	<div th:fragment="documentViewer(itemPropertyPath, options)" th:remove="tag">
+ 	<div th:fragment="inputDocumentViewer(itemPropertyPath, options)" th:remove="tag">
  		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputDocumentViewer}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputDocumentViewer" th:remove="tag">
@@ -280,17 +280,17 @@
 	</div>
 
 	<!--/* checkbox */-->
-	<div th:fragment="checkbox(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputCheckbox(itemPropertyPath, options)" th:remove="tag">
  		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::internalAllHtmlCheckboxComponent(false)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
 	</div>
 
 	<!--/* checkbox (switch) */-->
-	<div th:fragment="switch(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
  		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::internalAllHtmlCheckboxComponent(true)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
 	</div>
 	 
 	<!--/* checkbox */-->
-	<div th:fragment="checkboxes(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputCheckboxes(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::fragmentInputCheckboxes}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCheckboxes" th:remove="tag">
@@ -316,11 +316,11 @@
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: internalAllHtmlSelectComponent}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 	</div>
 	
-	<div th:fragment="select(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, *{__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
 	</div>
 	
-	<div th:fragment="selectWithLocale(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputSelectWithLocale(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, 
 				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
@@ -333,13 +333,13 @@
 		  - firstCharOfCodeLessThanOrEqualTo: Shows selections whose first character is less than or equal to the one spefied. Compared by ascii code number.
 		  - firstCharOfCodeGreaterThanOrEqualTo: Shows selections whose first character is greaterl than or equal to the one spefied. Compared by ascii code number.
 	 */-->
-	<div th:fragment="selectFromEnum(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, 
 				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* component for file upload */-->
-	<div  th:fragment="file(itemPropertyPath, options)" th:remove="tag">
+	<div  th:fragment="inputFile(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputFile" th:remove="tag">
@@ -349,7 +349,7 @@
 	</div>
 	
 	<!--/* component for taken photo upload for mobile */-->
-	<div  th:fragment="takenPhotoMobile(itemPropertyPath, options)" th:remove="tag">
+	<div  th:fragment="inputTakenPhotoMobile(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoMobile}, ~{ :: fragmentInputTakenPhotoMobilePostfix}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTakenPhotoMobile" th:remove="tag">
@@ -369,7 +369,7 @@
 	</div>
 
 	<!--/* component for taken photo upload for PC */-->
-	<div  th:fragment="takenPhotoPc(itemPropertyPath, options)" th:remove="tag">
+	<div  th:fragment="inputTakenPhotoPc(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoPc}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTakenPhotoPc" th:remove="tag">
@@ -465,12 +465,12 @@
 	</div>
 	
 	<!--/* component for captcha */-->
-	<!--/* 
+	<!--/*
 		- When itemPropertyPath is "sampleField", image data should be put in "sampleFieldImageData"
 		  amd input string in "sampleField"
-		- Put BASE64 String with "data:image/xxx;base64, prefix" to the field that itemPropertyPath + "ImageData" specifies. 
+		- Put BASE64 String with "data:image/xxx;base64, prefix" to the field that itemPropertyPath + "ImageData" specifies.
 	*/-->
-	<div  th:fragment="captcha(itemPropertyPath, options)" th:remove="tag">
+	<div  th:fragment="inputCaptcha(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputCaptcha}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCaptcha" th:remove="tag">

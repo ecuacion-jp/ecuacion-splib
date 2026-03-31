@@ -38,12 +38,12 @@
 		</div></th:block>
 	</div>
 
-	<div th:fragment="text(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="searchText(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('left')},
 				*{getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>
 	</div>
 
-	<div th:fragment="number(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="searchNumber(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::searchNumberInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="numberInternal(itemPropertyPath, options)" th:remove="tag">
@@ -55,7 +55,7 @@
 		</div></th:block>
 	</div>
 
-	<div th:fragment="date(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="searchDate(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::searchDateInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="dateInternal(itemPropertyPath, options)" th:remove="tag">
@@ -66,12 +66,12 @@
 	</div>
 
 	<!--/* internal common component */-->
-	<div th:fragment="componentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
+	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlSelectComponent}, '',  ${options})}"></div>
 	</div>
 
-	<div th:fragment="select(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: componentSelect(${itemPropertyPath},
+	<div th:fragment="searchSelect(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
 				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
 	</div>
 
@@ -83,13 +83,13 @@
 		  - firstCharOfCodeLessThanOrEqualTo: Compares the first character of the code by ASCII value (less than or equal).
 		  - firstCharOfCodeGreaterThanOrEqualTo: Compares the first character of the code by ASCII value (greater than or equal).
 	 */-->
-	<div th:fragment="selectFromEnum(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: componentSelect(${itemPropertyPath},
+	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
 				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 
-	<div th:fragment="selectFromBoolean(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: componentSelect(${itemPropertyPath},
+	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
 				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
 	</div>
 
