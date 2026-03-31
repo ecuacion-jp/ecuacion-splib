@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.record;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import jp.ecuacion.lib.core.jakartavalidation.annotation.ItemNameKeyClass;
 import jp.ecuacion.lib.core.util.PropertyFileUtil;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
@@ -25,6 +26,7 @@ import jp.ecuacion.splib.web.item.HtmlItemContainer;
 /**
  * Is a record for configController.
  */
+@ItemNameKeyClass("config")
 public class ConfigRecord extends SplibRecord implements HtmlItemContainer {
   private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 

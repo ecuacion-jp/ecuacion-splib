@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.web.record;
 
+import jp.ecuacion.lib.core.jakartavalidation.annotation.ItemNameKeyClass;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
@@ -22,6 +23,7 @@ import jp.ecuacion.splib.web.item.HtmlItemContainer;
 /**
  * Is a record for loginController.
  */
+@ItemNameKeyClass("login")
 public class LoginRecord extends SplibRecord implements HtmlItemContainer {
 
   @Override
