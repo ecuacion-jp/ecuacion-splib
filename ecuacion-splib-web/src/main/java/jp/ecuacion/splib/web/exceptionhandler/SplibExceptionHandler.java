@@ -220,11 +220,12 @@ public abstract class SplibExceptionHandler {
         if ((isMessageWithItemName != null && !isMessageWithItemName)
             || (isMessageWithItemName == null && needsMsgAtItem)) {
           isThereMessageWithItemPropertyPath = true;
-          // Remove rootRecordName from propertyPath.
-          List<String> list = cv.getFieldInfoBeanList().stream()
-              .map(b -> b.propertyPath().substring(b.propertyPath().indexOf("."))).toList();
-          itemPropertyPaths = list.toArray(new String[list.size()]);
         }
+        
+        // Remove rootRecordName from propertyPath.
+        List<String> list = cv.getFieldInfoBeanList().stream()
+            .map(b -> b.propertyPath().substring(b.propertyPath().indexOf(".") + 1)).toList();
+        itemPropertyPaths = list.toArray(new String[list.size()]);
 
       } else if (saex instanceof BizLogicAppException) {
         itemPropertyPaths = ((BizLogicAppException) saex).getItemPropertyPaths();
