@@ -200,11 +200,8 @@ public abstract class SplibExceptionHandler {
       exList.add((SingleAppException) exception);
     }
 
-    MessageSetter msgSetter = new MessageSetter(needsMsgAtItem, needsMsgAtTop);
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
-
-    boolean isThereMessageWithItemPropertyPath = false;
 
     // Process AppExceptions one by one in MultipleAppException
     for (SingleAppException saex : exList) {
@@ -214,14 +211,6 @@ public abstract class SplibExceptionHandler {
         ValidationAppException vex = (ValidationAppException) saex;
         ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
 
-        Boolean isMessageWithItemName = vex.getMessageParameters().isMessageWithItemName();
-
-        // itemPropertyPaths needed when message is show at the bottom of the item
-        if ((isMessageWithItemName != null && !isMessageWithItemName)
-            || (isMessageWithItemName == null && needsMsgAtItem)) {
-          isThereMessageWithItemPropertyPath = true;
-        }
-        
         // Remove rootRecordName from propertyPath.
         List<String> list = cv.getFieldInfoBeanList().stream()
             .map(b -> b.propertyPath().substring(b.propertyPath().indexOf(".") + 1)).toList();
@@ -229,16 +218,11 @@ public abstract class SplibExceptionHandler {
 
       } else if (saex instanceof BizLogicAppException) {
         itemPropertyPaths = ((BizLogicAppException) saex).getItemPropertyPaths();
-        if (itemPropertyPaths != null && itemPropertyPaths.length > 0) {
-          isThereMessageWithItemPropertyPath = true;
-        }
       }
 
-      msgSetter.setMessage(messagesBean, saex, request.getLocale(), itemPropertyPaths);
+      setMessage(messagesBean, saex, needsMsgAtItem, needsMsgAtTop, request.getLocale(),
+          itemPropertyPaths);
     }
-
-    msgSetter.addMessageThatSaysThereIsAnError(messagesBean, request.getLocale(),
-        isThereMessageWithItemPropertyPath);
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
@@ -356,7 +340,7 @@ public abstract class SplibExceptionHandler {
       // Change exception into BizLogicAppException to let MessageSetter to accept the exception.
       BizLogicAppException blaex = new BizLogicAppException(redirectException.getMessageId(),
           redirectException.getMessageArgs());
-      new MessageSetter(false, true).setMessage(messagesBean, blaex, request.getLocale());
+      setMessage(messagesBean, blaex, false, true, request.getLocale());
     }
 
     // redirect
@@ -386,56 +370,50 @@ public abstract class SplibExceptionHandler {
     return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
   }
 
-  private static class MessageSetter {
+  private void setMessage(MessagesBean messagesBean, SingleAppException saex,
+      boolean needsMsgAtItemAsDefault, boolean needsMsgAtTopAsDefault, Locale locale,
+      String... recordPropertyPaths) {
 
-    private boolean needsMsgAtItem;
-    private boolean needsMsgAtTop;
-
-    public MessageSetter(boolean needsMsgAtItem, boolean needsMsgAtTop) {
-      this.needsMsgAtItem = needsMsgAtItem;
-      this.needsMsgAtTop = needsMsgAtTop;
+    // Throw an exception when both needsMsgAtItem and needsMsgAtTop are false.
+    if (!needsMsgAtItemAsDefault && !needsMsgAtTopAsDefault) {
+      String msg = "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
+          + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.";
+      throw new EclibRuntimeException(msg);
     }
 
-    public void setMessage(MessagesBean messagesBean, SingleAppException saex, Locale locale,
-        String... recordPropertyPaths) {
+    // needsMsgAtItem is false
+    // when saex is neither BizLogicAppException nor ValidationAppException.
+    boolean needsMsgAtItem = false;
+    if (saex instanceof BizLogicAppException) {
+      needsMsgAtItem = !needsMsgAtItemAsDefault ? false
+          : ((BizLogicAppException) saex).getItemPropertyPaths().length > 0;
 
-      // Throw an exception when both needsMsgAtItem and needsMsgAtTop are false.
-      if (!needsMsgAtItem && !needsMsgAtTop) {
-        String msg = "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
-            + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.";
-        throw new EclibRuntimeException(msg);
-      }
-
-      // message
-      String messageAtItem = null;
-      String messageAtTop = null;
-      if (needsMsgAtItem) {
-        messageAtItem = ExceptionUtil.getMessageList(saex, locale, false).get(0);
-
-        // showsAtEachItem == false even if needsMsgAtItem == true
-        // when recordPropertyPaths.length == 0
-        messagesBean.setErrorMessage(messageAtItem, recordPropertyPaths.length != 0,
-            recordPropertyPaths);
-      }
-
-      if (needsMsgAtTop) {
-        messageAtTop = ExceptionUtil.getMessageList(saex, locale, true).get(0);
-
-        // Skip the message when needsMsgAtItem is also true and recordPropertyPaths.length == 0
-        // because it's exactly the same as the one with needsMsgAtItem
-        // (Technically the message string can be changed but it is supposed to mean the same thing)
-        if (!(needsMsgAtItem && recordPropertyPaths.length == 0)) {
-          messagesBean.setErrorMessage(messageAtTop, false, recordPropertyPaths);
-        }
-      }
+    } else if (saex instanceof ValidationAppException) {
+      MessageParameters params = ((ValidationAppException) saex).getMessageParameters();
+      needsMsgAtItem = !needsMsgAtItemAsDefault ? false
+          : (params.isMessageWithItemName() != null ? !params.isMessageWithItemName() : true);
     }
 
-    public void addMessageThatSaysThereIsAnError(MessagesBean messagesBean, Locale locale,
-        boolean isThereMessageWithItemPropertyPath) {
-      if (needsMsgAtItem && !needsMsgAtTop && isThereMessageWithItemPropertyPath) {
+    // For now !needsMsgAtItem value.
+    boolean needsMsgAtTop = !needsMsgAtItem;
+
+    // message
+    String messageAtItem = null;
+    String messageAtTop = null;
+    if (needsMsgAtItem) {
+
+      if (messagesBean.getErrorMessagesAtEachItem().size() == 0) {
         String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
         messagesBean.setErrorMessage(PropertyFileUtil.getMessage(locale, key), false);
       }
+
+      messageAtItem = ExceptionUtil.getMessageList(saex, locale, false).get(0);
+      messagesBean.setErrorMessage(messageAtItem, true, recordPropertyPaths);
+    }
+
+    if (needsMsgAtTop) {
+      messageAtTop = ExceptionUtil.getMessageList(saex, locale, true).get(0);
+      messagesBean.setErrorMessage(messageAtTop, false, recordPropertyPaths);
     }
   }
 }
