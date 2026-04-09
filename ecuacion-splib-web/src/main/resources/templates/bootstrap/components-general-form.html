@@ -77,7 +77,7 @@
 								th:value="*{optimisticLockVersions}" />
 						<th:block th:replace="${formContent}" />
 
-						<div th:replace="~{ :: internalWarnMessage('')}"></div>
+						<div th:replace="~{ :: internalWarnMessage(${javaFormName}, '')}"></div>
 
 		 			</form>
 
@@ -89,26 +89,27 @@
 	</div>
 
 	<!--/* internal warn message part */-->
-	<div th:fragment="internalWarnMessage(options)" th:remove="tag">
+	<div th:fragment="internalWarnMessage(formName, options)" th:remove="tag">
 		<div th:object="${messagesBean}">
 			<th:block th:if="*{warnMessage != null}">
-				<input type="hidden" name="warnMessage" th:data-button-name="*{warnMessage.buttonName}" th:data-msg-id="*{warnMessage.messageId}" th:value="*{warnMessage.message}">
+				<input type="hidden" name="warnMessage" id="warnMessage" th:data-button-name="*{warnMessage.buttonName}" th:data-msg-id="*{warnMessage.messageId}" th:value="*{warnMessage.message}">
 				<script>
-					var bl = confirm(this.form.elements['warnMessage'].value);
-					var obj = this.form.elements['confirmedWarnings'];
+					var warnMessage = document.getElementById('warnMessage');
+					var bl = confirm(warnMessage.value);
+					var obj = warnMessage.form.elements['confirmedWarnings'];
 					if (bl) {
-						obj.value = obj.value + "," + this.form.elements['warnMessage'].dataset.msgId;
+						obj.value = obj.value + "," + warnMessage.dataset.msgId;
 
-						const buttonName = this.form.elements['warnMessage'].dataset.buttonName;
+						var buttonName = warnMessage.dataset.buttonName;
 						if (typeof buttonName === "undefined") {
 							buttonName = "";
 						}
 
 						if (buttonName == "") {
-							this.form.submit();
+							warnMessage.form.submit();
 
 						} else {
-							var btn = this.form.elements[buttonName];
+							var btn = warnMessage.form.elements[buttonName];
 							btn.click();
 						}
 
