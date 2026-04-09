@@ -45,16 +45,6 @@ public class WebAppWarningException extends AppWarningException {
     super(messageId, messageArgs);
   }
 
-  @Override
-  public @Nonnull WebAppWarningException itemPropertyPaths(@Nullable String[] fields) {
-    return (WebAppWarningException) super.itemPropertyPaths(fields);
-  }
-
-  @Override
-  public @Nonnull String[] getItemPropertyPaths() {
-    return itemPropertyPaths;
-  }
-
   /**
    * Sets buttonIdToPressOnConfirm.
    * 

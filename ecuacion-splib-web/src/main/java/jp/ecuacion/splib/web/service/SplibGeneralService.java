@@ -18,7 +18,6 @@ package jp.ecuacion.splib.web.service;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.logging.DetailLogger;
@@ -58,23 +57,14 @@ public abstract class SplibGeneralService {
    * @throws WebAppWarningException WebAppWarningException
    */
   protected void throwWarning(@RequireNonnull Set<String> confirmedWarningMessageSet,
-      @RequireNonnull Locale locale, @Nullable String buttonIdToPressOnConfirm,
-      @Nullable String[] fields, @RequireNonnull String msgId, @RequireNonnull String... params)
-      throws WebAppWarningException {
+      @Nullable String buttonIdToPressOnConfirm, @RequireNonnull String msgId,
+      @RequireNonnull String... params) throws WebAppWarningException {
 
     if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
-      throw new WebAppWarningException(msgId, params).itemPropertyPaths(fields)
+      throw new WebAppWarningException(msgId, params)
           .buttonIdToPressOnConfirm(buttonIdToPressOnConfirm);
     }
   }
-
-  // /**
-  // * Gets a localDate field (String) inside a record as a LocalDate.
-  // */
-  // protected LocalDate localDate(String date) {
-  // return (date == null || date.equals("")) ? null
-  // : LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-  // }
 
   /**
    * Obtains {@code DatetimeFormatParameters} instance.
