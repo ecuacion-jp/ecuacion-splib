@@ -48,10 +48,8 @@ public abstract class SplibGeneralService {
    *
    * @param confirmedWarningMessageSet This is obtained from
    *     {@code form.getConfirmedWarningMessageSet()}.
-   * @param locale locale
    * @param buttonIdToPressOnConfirm buttonIdToPressOnConfirm, may be {@code null}.
    *     See {@link jp.ecuacion.splib.web.exception.WebAppWarningException}.
-   * @param fields fields
    * @param msgId msgId
    * @param params params
    * @throws WebAppWarningException WebAppWarningException
