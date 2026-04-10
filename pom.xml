@@ -44,10 +44,7 @@
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp</remote-location.javadoc>
 		<checkstyle.config.site>https://ecuacion-jp.github.io/config/common/checkstyle</checkstyle.config.site>
 		<ecuacion-splib.version>0.0.1-SNAPSHOT</ecuacion-splib.version>
-		<!--
 		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
-		-->	
-		<ecuacion-lib.version>14.34.2</ecuacion-lib.version>
 		<ecuacion-util.version>0.0.1-SNAPSHOT</ecuacion-util.version>
 		<!-- 3rd party module versions -->
 		<org.apache.maven.plugins.maven-war-plugin.version>3.2.2</org.apache.maven.plugins.maven-war-plugin.version>
@@ -266,6 +263,16 @@
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+
+				<!-- Needed for ignoring x.x.x-bx version in maven central -->
+				<!-- versions-maven-plugin -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<configuration>
+						<rulesUri>file://${maven.multiModuleProjectDirectory}/.mvn/version-rules.xml</rulesUri>
+					</configuration>
 				</plugin>
 
 				<!-- spotbugs -->
