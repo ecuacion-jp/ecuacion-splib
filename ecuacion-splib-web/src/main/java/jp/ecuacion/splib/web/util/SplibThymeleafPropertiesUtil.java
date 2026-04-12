@@ -15,13 +15,13 @@
  */
 package jp.ecuacion.splib.web.util;
 
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.springframework.stereotype.Component;
 
 /**
  * Offers access to application[...].properties. It's supposed to called from thymeleaf.
  * 
- * <p>It calls PropertyFileUtil inside.</p>
+ * <p>It calls PropertiesFileUtil inside.</p>
  */
 @Component("propUtil")
 public class SplibThymeleafPropertiesUtil {
@@ -38,7 +38,7 @@ public class SplibThymeleafPropertiesUtil {
    * @return boolean
    */
   public boolean hasKey(String key) {
-    return PropertyFileUtil.hasApplication(key);
+    return PropertiesFileUtil.hasApplication(key);
   }
 
   /**
@@ -48,7 +48,7 @@ public class SplibThymeleafPropertiesUtil {
    * @return String
    */
   public String getValue(String key) {
-    return PropertyFileUtil.getApplication(key);
+    return PropertiesFileUtil.getApplication(key);
   }
 
   /**

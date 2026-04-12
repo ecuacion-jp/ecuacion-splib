@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.apache.commons.lang3.StringUtils;
 
@@ -121,17 +121,17 @@ public abstract class SplibRecord {
   protected List<String[]> getBooleanDropdownList(Locale locale, String fieldName, String options) {
     List<String[]> rtnList = new ArrayList<>();
 
-    Arrays.asList(new String[] {"true", "false"}).stream().forEach(bl -> rtnList.add(
-        new String[] {bl, PropertyFileUtil.getMessage(locale, "boolean." + fieldName + "." + bl)}));
+    Arrays.asList(new String[] {"true", "false"}).stream().forEach(bl -> rtnList.add(new String[] {
+        bl, PropertiesFileUtil.getMessage(locale, "boolean." + fieldName + "." + bl)}));
 
     return rtnList;
   }
-  
+
   /** default method. */
   public String getIds() {
     return "";
   }
-  
+
   /** default method. */
   public String getOptimisticLockVersions() {
     return "";

@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.record;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.jakartavalidation.annotation.ItemNameKeyClass;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
@@ -59,8 +59,8 @@ public class ConfigRecord extends SplibRecord implements HtmlItemContainer {
   }
 
   private String getCodeGeneratorRelatedValue(String key) {
-    boolean hasValue = PropertyFileUtil.hasApplication(key);
-    return hasValue ? PropertyFileUtil.getApplication(key) : codeGeneratorNotUsedMesssage;
+    boolean hasValue = PropertiesFileUtil.hasApplication(key);
+    return hasValue ? PropertiesFileUtil.getApplication(key) : codeGeneratorNotUsedMesssage;
   }
 
 }

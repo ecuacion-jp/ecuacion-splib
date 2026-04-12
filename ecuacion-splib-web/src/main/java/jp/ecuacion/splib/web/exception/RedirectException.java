@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.web.exception;
 
 import java.util.Locale;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.slf4j.event.Level;
 
 /** 
@@ -111,7 +111,7 @@ public class RedirectException extends RuntimeException {
       String[] messageArgs) {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
-    this.logString = PropertyFileUtil.getMessage(Locale.ENGLISH, messageId, messageArgs);
+    this.logString = PropertiesFileUtil.getMessage(Locale.ENGLISH, messageId, messageArgs);
     this.messageId = messageId;
     this.messageArgs = messageArgs;
   }

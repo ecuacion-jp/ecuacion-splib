@@ -15,7 +15,7 @@
  */
 package jp.ecuacion.splib.web.exception;
 
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.slf4j.event.Level;
 
 /**
@@ -25,7 +25,7 @@ public class RedirectToHomePageException extends RedirectException {
 
   private static final long serialVersionUID = 1L;
   private static final String HOME_PAGE_PATH =
-      PropertyFileUtil.getApplication("jp.ecuacion.splib.web.home-page");
+      PropertiesFileUtil.getApplication("jp.ecuacion.splib.web.home-page");
 
   /**
    * Constructs a new instance.
