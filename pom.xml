@@ -265,16 +265,6 @@
 					</executions>
 				</plugin>
 
-				<!-- Needed for ignoring x.x.x-bx version in maven central -->
-				<!-- versions-maven-plugin -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>versions-maven-plugin</artifactId>
-					<configuration>
-						<rulesUri>file://${maven.multiModuleProjectDirectory}/.mvn/version-rules.xml</rulesUri>
-					</configuration>
-				</plugin>
-
 				<!-- spotbugs -->
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
