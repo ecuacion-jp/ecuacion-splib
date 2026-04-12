@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.springframework.data.domain.PageRequest;
@@ -285,9 +285,9 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    */
   public List<PagerInfo> getPagerInfoList(Locale locale) {
     final String labelPrev =
-        PropertyFileUtil.getMessage(locale, "jp.ecuacion.splib.web.common.label.prev");
+        PropertiesFileUtil.getMessage(locale, "jp.ecuacion.splib.web.common.label.prev");
     final String labelNext =
-        PropertyFileUtil.getMessage(locale, "jp.ecuacion.splib.web.common.label.next");
+        PropertiesFileUtil.getMessage(locale, "jp.ecuacion.splib.web.common.label.next");
 
     List<PagerInfo> rtnList = new ArrayList<>();
     PageRequest pageRequest = getPageRequest();

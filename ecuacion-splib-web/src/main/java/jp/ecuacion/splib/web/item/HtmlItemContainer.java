@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.lib.core.item.ItemContainer;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
@@ -185,7 +185,7 @@ public interface HtmlItemContainer extends ItemContainer {
     String commentMessageId =
         StringUtil.getLowerCamelFromSnake(bean.getStringSearchPatternEnum().toString());
 
-    return PropertyFileUtil.getMessage(locale,
+    return PropertiesFileUtil.getMessage(locale,
         "jp.ecuacion.splib.web.common.label.searchPattern." + commentMessageId + "Match");
   }
 }

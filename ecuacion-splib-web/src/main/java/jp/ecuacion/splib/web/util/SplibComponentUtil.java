@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import jp.ecuacion.lib.core.util.DateTimeApiUtil;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -77,7 +77,7 @@ public class SplibComponentUtil {
       return null;
     }
 
-    String workDirPath = PropertyFileUtil.getApplication("jp.ecuacion.work-dir");
+    String workDirPath = PropertiesFileUtil.getApplication("jp.ecuacion.work-dir");
     new File(workDirPath).mkdirs();
 
 
