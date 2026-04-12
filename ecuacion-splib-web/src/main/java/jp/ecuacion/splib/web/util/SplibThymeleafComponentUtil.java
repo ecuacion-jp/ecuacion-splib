@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
 import jp.ecuacion.lib.core.item.ItemContainer;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.springframework.stereotype.Component;
 
 /**
@@ -53,7 +53,7 @@ public class SplibThymeleafComponentUtil {
     StringBuilder fieldNameSb = new StringBuilder();
 
     for (String itemPropertyPath : fieldNameList) {
-      String itemName = PropertyFileUtil.getItemName(request.getLocale(),
+      String itemName = PropertiesFileUtil.getItemName(request.getLocale(),
           rootRecord.getItem(itemPropertyPath).getItemNameKey());
       fieldNameSb.append(", " + itemName);
     }
@@ -62,7 +62,7 @@ public class SplibThymeleafComponentUtil {
         + (fieldNameList.size() == 0 ? "" : fieldNameSb.toString().substring(2))
         + (multiple ? ") " : "");
 
-    return PropertyFileUtil.getMessage(request.getLocale(),
+    return PropertiesFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.deleteConfirmation",
         new String[] {fieldNames.toString()});
   }

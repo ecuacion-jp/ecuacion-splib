@@ -39,7 +39,7 @@ import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.lib.core.util.ValidationUtil.MessageParameters;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.bean.MessagesBean;
@@ -156,7 +156,7 @@ public abstract class SplibExceptionHandler {
 
     Objects.requireNonNull(messagesBean);
     messagesBean.setWarnMessage(new WarnMessageBean(
-        exception.getMessageId(), PropertyFileUtil.getMessage(request.getLocale(),
+        exception.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
             exception.getMessageId(), exception.getMessageArgs()),
         exception.buttonIdToPressOnConfirm()));
 
@@ -178,9 +178,9 @@ public abstract class SplibExceptionHandler {
   public @Nonnull ModelAndView handleAppException(@Nonnull AppException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
-    boolean needsMsgAtItem = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
+    boolean needsMsgAtItem = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
-    boolean needsMsgAtTop = Boolean.valueOf(PropertyFileUtil.getApplicationOrElse(
+    boolean needsMsgAtTop = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
 
     // Hold multiple exceptions to also handle MultipleAppException.
@@ -404,7 +404,7 @@ public abstract class SplibExceptionHandler {
 
       if (messagesBean.getErrorMessagesAtEachItem().size() == 0) {
         String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
-        messagesBean.setErrorMessage(PropertyFileUtil.getMessage(locale, key), false);
+        messagesBean.setErrorMessage(PropertiesFileUtil.getMessage(locale, key), false);
       }
 
       messageAtItem = ExceptionUtil.getMessageList(saex, locale, false).get(0);

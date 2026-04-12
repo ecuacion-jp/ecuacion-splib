@@ -16,14 +16,14 @@
 package jp.ecuacion.splib.web.util;
 
 import java.util.Locale;
-import jp.ecuacion.lib.core.util.PropertyFileUtil;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
  * Provides localized messages called from thymeleaf.
  * 
- * <p>This calls {@code PropertyFileUtil}. 
+ * <p>This calls {@code PropertiesFileUtil}. 
  *     The existence of the class doesn't prevent you to use #{...}.</p>
  */
 @Component("msgUtil")
@@ -47,9 +47,9 @@ public class SplibThymeleafMessageUtil {
       return false;
     }
 
-    boolean hasMsg = PropertyFileUtil.hasMessage(key);
-    boolean hasStr = PropertyFileUtil.hasString(key);
-    boolean hasItem = PropertyFileUtil.hasItemName(key);
+    boolean hasMsg = PropertiesFileUtil.hasMessage(key);
+    boolean hasStr = PropertiesFileUtil.hasString(key);
+    boolean hasItem = PropertiesFileUtil.hasItemName(key);
 
     return hasMsg || hasStr || hasItem;
   }
@@ -68,9 +68,9 @@ public class SplibThymeleafMessageUtil {
       return "";
     }
 
-    boolean hasMsg = PropertyFileUtil.hasMessage(key);
-    boolean hasStr = PropertyFileUtil.hasString(key);
-    boolean hasItem = PropertyFileUtil.hasItemName(key);
+    boolean hasMsg = PropertiesFileUtil.hasMessage(key);
+    boolean hasStr = PropertiesFileUtil.hasString(key);
+    boolean hasItem = PropertiesFileUtil.hasItemName(key);
 
     // Return id when id not exist in both.
     if (!hasMsg && !hasStr && !hasItem) {
@@ -79,13 +79,13 @@ public class SplibThymeleafMessageUtil {
 
     // Even when hasMsg == false && hasItem = false, Exception doesn't emerge.
     if (hasMsg) {
-      return PropertyFileUtil.getMessage(locale, key, args);
+      return PropertiesFileUtil.getMessage(locale, key, args);
 
     } else if (hasStr) {
-      return PropertyFileUtil.getString(key, args);
+      return PropertiesFileUtil.getString(key, args);
 
     } else {
-      return PropertyFileUtil.getItemName(locale, key);
+      return PropertiesFileUtil.getItemName(locale, key);
     }
   }
 
