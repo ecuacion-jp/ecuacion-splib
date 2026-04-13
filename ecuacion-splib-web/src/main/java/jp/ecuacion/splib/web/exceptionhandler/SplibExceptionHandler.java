@@ -212,8 +212,8 @@ public abstract class SplibExceptionHandler {
         ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
 
         // Remove rootRecordName from propertyPath.
-        List<String> list = cv.getFieldInfoBeanList().stream()
-            .map(b -> b.propertyPath().substring(b.propertyPath().indexOf(".") + 1)).toList();
+        List<String> list = cv.getItemList().stream()
+            .map(b -> b.getPropertyPath().substring(b.getPropertyPath().indexOf(".") + 1)).toList();
         itemPropertyPaths = list.toArray(new String[list.size()]);
 
       } else if (saex instanceof BizLogicAppException) {
