@@ -720,6 +720,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     }
   }
 
+  @SuppressWarnings("null")
   private List<ValidationAppException> getBeanValidationAppExceptionList(SplibGeneralForm form,
       RolesAndAuthoritiesBean bean) {
 
