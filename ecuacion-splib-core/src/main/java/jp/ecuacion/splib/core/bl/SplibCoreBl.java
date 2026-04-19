@@ -18,12 +18,15 @@ package jp.ecuacion.splib.core.bl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.item.ItemContainer;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil.Arg;
 import jp.ecuacion.lib.core.util.ReflectionUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Supplies utilities.
@@ -37,7 +40,7 @@ public class SplibCoreBl extends ReflectionUtil {
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
       boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container)
       throws BizLogicAppException {
-    List<String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
+    List<@NonNull String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
         .map(path -> container.getItem(path).getItemNameKey()).toList();
 
     throwExceptionWhenDuplicated(isDuplicated, checkFromAllGroups, itemPropertyPaths,
@@ -66,7 +69,7 @@ public class SplibCoreBl extends ReflectionUtil {
           "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
           "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
       throw new BizLogicAppException(itemPropertyPaths, msgId,
-          new Arg[] {Arg.formattedString(str)});
+          new @NonNull Arg[] {ObjectsUtil.requireNonNull(Arg.formattedString(str))});
     }
   }
 
@@ -76,19 +79,19 @@ public class SplibCoreBl extends ReflectionUtil {
   protected <T> void internalDuplicateCheck(boolean checkFromAllGroups, List<T> entityList,
       ItemContainer rec, String itemNameKeyClass, String idItemPropertyPath,
       String... checkTargetItemPropertyPaths) throws BizLogicAppException {
-    List<T> listWithoutMyself = entityList.stream().filter(
-        e -> !getValue(e, idItemPropertyPath).toString().equals(getValue(rec, idItemPropertyPath)))
-        .toList();
+    List<T> listWithoutMyself =
+        entityList.stream().filter(e -> !Objects.requireNonNull(getValue(e, idItemPropertyPath))
+            .toString().equals(getValue(rec, idItemPropertyPath))).toList();
 
     for (String path : checkTargetItemPropertyPaths) {
       listWithoutMyself = listWithoutMyself.stream()
           .filter(e -> (getValue(e, path) == null && getValue(rec, path) == null)
-              || getValue(e, path) != null
-                  && getValue(e, path).toString().equals(getValue(rec, path)))
+              || getValue(e, path) != null && Objects.requireNonNull(getValue(e, path)).toString()
+                  .equals(getValue(rec, path)))
           .toList();
     }
 
-    List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
+    List<@NonNull String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
         .map(path -> rec.getItem(path).getItemNameKey()).toList();
 
     SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0, checkFromAllGroups,
@@ -130,7 +133,8 @@ public class SplibCoreBl extends ReflectionUtil {
     if (conditions != null) {
       for (ChildExistenceCheckConditionBean condition : conditions) {
         list = list.stream()
-            .filter(e -> getValue(e, condition.itemPropertyPath).equals(condition.conditionValue))
+            .filter(e -> Objects.requireNonNull(getValue(e, condition.itemPropertyPath))
+                .equals(condition.conditionValue))
             .toList();
       }
     }
@@ -147,8 +151,8 @@ public class SplibCoreBl extends ReflectionUtil {
 
       Arg[] args = recordSpecifyingFieldName == null ? new Arg[] {Arg.message(entityMessageIdPart)}
           : new Arg[] {Arg.message(entityMessageIdPart),
-              Arg.string(referingRecordDataLabelMsgIdPart),
-              Arg.string(getValue(list.get(0), recordSpecifyingFieldName).toString())};
+              Arg.string(referingRecordDataLabelMsgIdPart), Arg.string(Objects
+                  .requireNonNull(getValue(list.get(0), recordSpecifyingFieldName)).toString())};
       throw new BizLogicAppException(msgId, args);
 
     }

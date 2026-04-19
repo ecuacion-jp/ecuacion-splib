@@ -19,7 +19,6 @@ import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
-import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
@@ -54,9 +53,9 @@ public abstract class SplibGeneralService {
    * @param params params
    * @throws WebAppWarningException WebAppWarningException
    */
-  protected void throwWarning(@RequireNonnull Set<String> confirmedWarningMessageSet,
-      @Nullable String buttonIdToPressOnConfirm, @RequireNonnull String msgId,
-      @RequireNonnull String... params) throws WebAppWarningException {
+  protected void throwWarning(Set<String> confirmedWarningMessageSet,
+      @Nullable String buttonIdToPressOnConfirm, String msgId, String... params)
+      throws WebAppWarningException {
 
     if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
       throw new WebAppWarningException(msgId, params)

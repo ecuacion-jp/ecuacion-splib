@@ -17,7 +17,7 @@ package jp.ecuacion.splib.web.item;
 
 import java.util.ArrayList;
 import java.util.List;
-import jp.ecuacion.lib.core.annotation.RequireNonempty;
+import jp.ecuacion.lib.core.annotation.RequireNonEmpty;
 import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
@@ -56,7 +56,7 @@ public class HtmlItem extends Item {
   }
   
   @Override
-  public HtmlItem itemNameKey(@RequireNonempty String itemNameKey) {
+  public HtmlItem itemNameKey(@RequireNonEmpty String itemNameKey) {
     return (HtmlItem) super.itemNameKey(itemNameKey);
   }
   
