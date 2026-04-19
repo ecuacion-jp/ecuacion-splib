@@ -29,13 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
-import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
@@ -188,7 +186,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @return ControllerContext
      */
     @Nonnull
-    public ControllerContext subFunction(@RequireNonnull String subFunction) {
+    public ControllerContext subFunction(String subFunction) {
       this.subFunction = ObjectsUtil.requireNonNull(subFunction);
       return this;
     }
@@ -713,33 +711,31 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     List<SingleAppException> exList = new ArrayList<>();
     if (hasNotEmptyError || (result != null && result.hasErrors())) {
-      List<ValidationAppException> list = getBeanValidationAppExceptionList(form, bean);
-      exList.addAll(list);
+      Set<ConstraintViolation<?>> set = getBeanValidationAppExceptionList(form, bean);
+      exList.addAll(set.stream().map(cv -> new ValidationAppException(cv)).toList());
 
       throw new MultipleAppException(exList);
     }
   }
 
-  @SuppressWarnings("null")
-  private List<ValidationAppException> getBeanValidationAppExceptionList(SplibGeneralForm form,
+  private Set<ConstraintViolation<?>> getBeanValidationAppExceptionList(SplibGeneralForm form,
       RolesAndAuthoritiesBean bean) {
 
     // Re-run validation because information from Spring MVC's validation result
     // cannot be retrieved correctly.
-    List<ConstraintViolationBean<?>> errorList = new ArrayList<>();
+    List<ConstraintViolation<?>> tmpErrorList = new ArrayList<>();
 
-    for (ConstraintViolation<?> cv : Validation.buildDefaultValidatorFactory().getValidator()
-        .validate(form)) {
-      errorList.add(ConstraintViolationBean.createConstraintViolationBean(cv));
-    }
+    Validation.buildDefaultValidatorFactory().getValidator().validate(form).stream()
+        .forEach(cv -> tmpErrorList.add(cv));
 
     // Add NotEmpty check results.
-    errorList.addAll(form.validateNotEmpty(request.getLocale(), util.getLoginState(), bean).stream()
-        .collect(Collectors.toList()));
+    tmpErrorList.addAll(form.validateNotEmpty(request.getLocale(), util.getLoginState(), bean)
+        .stream().collect(Collectors.toList()));
 
     // Specify sort order. Item name specification may be supported in the future,
     // but for now a fixed sort order is sufficient.
-    errorList = errorList.stream().sorted(getComparator()).collect(Collectors.toList());
+    List<ConstraintViolation<?>> errorList =
+        tmpErrorList.stream().sorted(getComparator()).collect(Collectors.toList());
 
     // The standard Jakarta validation validators are suboptimal — for example,
     // Size validator errors are shown even for empty strings.
@@ -769,7 +765,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       throw new RuntimeException(msg);
     }
 
-    return errorList.stream().map(b -> new ValidationAppException(b)).toList();
+    return Set.copyOf(errorList);
   }
 
   /*
@@ -779,18 +775,18 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * so if both NotEmpty and another validator exist for the same field,
    * remove all validators except NotEmpty.
    */
-  private void removeDuplicatedValidators(List<ConstraintViolationBean<?>> cvList) {
+  private void removeDuplicatedValidators(List<ConstraintViolation<?>> cvList) {
 
     // Build a map with field name as key and a set of CVs as value,
     // then remove all validators except NotEmpty for keys that have 2+ validators
     // and include NotEmpty.
-    Map<String, Set<ConstraintViolationBean<?>>> duplicateCheckMap = new HashMap<>();
+    Map<String, Set<ConstraintViolation<?>>> duplicateCheckMap = new HashMap<>();
 
     // Keep track of keys that hold NotEmpty for use in subsequent processing.
     Set<String> keySetWithNotEmpty = new HashSet<>();
 
-    for (ConstraintViolationBean<?> cv : cvList) {
-      String key = cv.getItems()[0].getPropertyPath().toString();
+    for (ConstraintViolation<?> cv : cvList) {
+      String key = cv.getPropertyPath().toString();
       if (duplicateCheckMap.get(key) == null) {
         duplicateCheckMap.put(key, new HashSet<>());
       }
@@ -805,7 +801,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     // For keys in keySetWithNotEmpty, remove all validators except NotEmpty from their value sets.
     for (String key : keySetWithNotEmpty) {
-      for (ConstraintViolationBean<?> cv : duplicateCheckMap.get(key)) {
+      for (ConstraintViolation<?> cv : duplicateCheckMap.get(key)) {
         if (!isNotEmptyValidator(cv)) {
           cvList.remove(cv);
         }
@@ -813,32 +809,33 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     }
   }
 
-  private boolean isNotEmptyValidator(ConstraintViolationBean<?> cv) {
-    String validatorClass = cv.getValidatorClass();
+  private boolean isNotEmptyValidator(ConstraintViolation<?> cv) {
+    String validatorClass = cv.getConstraintDescriptor().getAnnotation().getClass().getSimpleName();
     return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
   }
 
-  private Comparator<ConstraintViolationBean<?>> getComparator() {
+  private Comparator<ConstraintViolation<?>> getComparator() {
     return new Comparator<>() {
       @Override
-      public int compare(ConstraintViolationBean<?> f1, ConstraintViolationBean<?> f2) {
+      public int compare(ConstraintViolation<?> f1, ConstraintViolation<?> f2) {
         // Compare by field name.
-        int result = f1.getItems()[0].getPropertyPath().toString()
-            .compareTo(f2.getItems()[0].getPropertyPath().toString());
+        int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
         if (result != 0) {
           return result;
         }
 
-        // If field names are the same, compare by messageTemplate (effectively validator type).
-        result = f1.getValidatorClass().compareTo(f2.getValidatorClass());
+        // If field names are the same, compare by validator name.
+        result = f1.getConstraintDescriptor().getConstraintValidatorClasses().get(0).getSimpleName()
+            .compareTo(f2.getConstraintDescriptor().getConstraintValidatorClasses().get(0)
+                .getSimpleName());
         if (result != 0) {
           return result;
         }
 
         // If validator types are also the same, it can only be @Pattern.
         // For Pattern, sort order is fixed by regexp, so compare by that.
-        String s1 = (String) f1.getEmbeddedParamMap().get("regexp");
-        String s2 = (String) f2.getEmbeddedParamMap().get("regexp");
+        String s1 = (String) f1.getConstraintDescriptor().getAttributes().get("regexp");
+        String s2 = (String) f2.getConstraintDescriptor().getAttributes().get("regexp");
         return s1.compareTo(s2);
       }
     };

@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
@@ -33,8 +32,8 @@ import jp.ecuacion.lib.core.exception.checked.ConstraintViolationExceptionWithPa
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.exception.checked.SingleAppException;
 import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
+import jp.ecuacion.lib.core.exception.unchecked.AppRuntimeException;
 import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
-import jp.ecuacion.lib.core.exception.unchecked.UncheckedAppException;
 import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
@@ -251,8 +250,8 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    * @throws Exception Exception
    */
-  @ExceptionHandler({UncheckedAppException.class})
-  public @Nonnull ModelAndView handleUncheckedAppException(@Nonnull UncheckedAppException exception,
+  @ExceptionHandler({AppRuntimeException.class})
+  public @Nonnull ModelAndView handleUncheckedAppException(@Nonnull AppRuntimeException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     // Treat as normal BizLogicAppException.
@@ -302,7 +301,7 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    */
   @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
-  public @Nonnull ModelAndView handleRedirectNeededExceptions(@RequireNonnull Exception exception,
+  public @Nonnull ModelAndView handleRedirectNeededExceptions(Exception exception,
       Model newModel) {
     RedirectException redirectException = null;
 

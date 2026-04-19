@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
@@ -64,8 +63,7 @@ public class ReturnUrlBean {
    * @param controller controller
    * @param util util
    */
-  public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
-      @RequireNonnull SplibUtil util) {
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util) {
     this(controller, util, true);
   }
 
@@ -77,8 +75,7 @@ public class ReturnUrlBean {
    * @param controller controller
    * @param util util
    */
-  public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
-      @RequireNonnull SplibUtil util, boolean isNormalEnd) {
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, boolean isNormalEnd) {
     this(ObjectsUtil.requireNonNull(controller), util, isNormalEnd,
         isNormalEnd ? controller.getDefaultDestPageOnNormalEnd()
             : controller.getDefaultDestPageOnAbnormalEnd());
@@ -95,8 +92,7 @@ public class ReturnUrlBean {
    * @param util util
    * @param page page
    */
-  public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
-      @RequireNonnull SplibUtil util, @RequireNonnull String page) {
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, String page) {
     this(controller, util, true, page);
   }
 
@@ -109,8 +105,8 @@ public class ReturnUrlBean {
    * @param util util
    * @param page page
    */
-  public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
-      @RequireNonnull SplibUtil util, boolean isNormalEnd, @RequireNonnull String page) {
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, boolean isNormalEnd,
+      String page) {
     this(ObjectsUtil.requireNonNull(controller), util,
         isNormalEnd ? controller.getDefaultDestSubFunctionOnNormalEnd()
             : controller.getDefaultDestSubFunctionOnAbnormalEnd(),
@@ -125,9 +121,8 @@ public class ReturnUrlBean {
    * @param subFunction subFunction
    * @param page page
    */
-  public ReturnUrlBean(@RequireNonnull SplibGeneralController<?> controller,
-      @RequireNonnull SplibUtil util, @RequireNonnull String subFunction,
-      @RequireNonnull String page) {
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, String subFunction,
+      String page) {
     path = getPathFromParams(ObjectsUtil.requireNonNull(controller),
         ObjectsUtil.requireNonNull(util).getLoginState(), ObjectsUtil.requireNonNull(subFunction),
         ObjectsUtil.requireNonNull(page));
@@ -140,7 +135,7 @@ public class ReturnUrlBean {
    * 
    * @param path path
    */
-  public ReturnUrlBean(@RequireNonnull String path) {
+  public ReturnUrlBean(String path) {
     this.path = ObjectsUtil.requireNonNull(path);
   }
 
