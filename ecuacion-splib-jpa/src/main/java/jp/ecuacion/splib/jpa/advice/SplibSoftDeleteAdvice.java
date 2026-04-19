@@ -74,37 +74,39 @@ public abstract class SplibSoftDeleteAdvice {
   private <T extends EclibEntity> void physicalDeleteSoftDeletedRecords(T entity,
       SplibRepository<T, ?> repo) {
 
-    boolean isUpdate = em.contains(entity);
+    // boolean isUpdate = em.contains(entity);
 
     if (entity.hasSoftDeleteField()) {
 
-      if (isUpdate) {
-        // Detach the entity once to disable dirty checking.
-        em.clear();
-        em.detach(entity);
-      }
+      // if (isUpdate) {
+      // Detach the entity once to disable dirty checking.
+      // em.detach(entity);
+      // }
 
       // Check for a soft-deleted record with the same ID and delete if found.
       // (Unlikely with the surrogate key strategy.)
       Optional<T> result = repo.findByIdAndSoftDeleteFieldTrueFromAllGroups(entity);
       if (result.isPresent()) {
-        repo.delete(result.get());
-        repo.flush();
+        // Execute native query to avoid the change for persistence context.
+        repo.deleteByIdAndSoftDeleteFieldTrueFromAllGroups(result.get());
+        // repo.flush();
       }
 
       // Check for a soft-deleted record with the same unique key and delete if found.
       if (entity.hasNaturalKey()) {
         result = repo.findByNaturalKeyAndSoftDeleteFieldTrueFromAllGroups(entity);
         if (result.isPresent()) {
-          repo.delete(result.get());
-          repo.flush();
+          // Execute native query to avoid the change for persistence context.
+          repo.deleteByIdAndSoftDeleteFieldTrueFromAllGroups(result.get());
+          // repo.flush();
         }
       }
 
-      if (isUpdate) {
-        // Reattach the entity once detached.
-        em.merge(entity);
-      }
+      // if (isUpdate) {
+      // Reattach the entity once detached.
+      // entity = em.merge(entity);
+      // repo.flush();
+      // }
     }
   }
 }
