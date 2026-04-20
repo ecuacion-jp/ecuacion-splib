@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
-import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
+import jp.ecuacion.lib.core.violation.BusinessViolation;
+import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
@@ -162,6 +163,7 @@ public abstract class SplibGeneralForm {
       for (Field field : fields) {
         if (SplibRecord.class.isAssignableFrom(field.getType())) {
           checkList.add(field);
+          field.setAccessible(true);
         }
       }
 
@@ -238,30 +240,34 @@ public abstract class SplibGeneralForm {
   /**
    * Has a notEmpty error.
    */
-  public boolean hasNotEmptyError(String loginState, RolesAndAuthoritiesBean bean) {
-    return validateNotEmpty(loginState, bean).size() > 0;
-  }
-
-  /**
-   * Validates notEmpty.
-   */
-  public Set<ConstraintViolationBean<SplibGeneralForm>> validateNotEmpty(String loginState,
+  public boolean hasNotEmptyError(Object rootBean, String loginState,
       RolesAndAuthoritiesBean bean) {
-    return validateNotEmpty(Locale.getDefault(), loginState, bean);
+    Violations violations = new Violations();
+    validateNotEmpty(rootBean, violations, loginState, bean);
+    return violations.getBusinessViolations().size() != 0
+        || violations.getConstraintViolations().size() != 0;
   }
 
   /**
    * Validates notEmpty.
    */
-  public Set<ConstraintViolationBean<SplibGeneralForm>> validateNotEmpty(Locale locale,
+  public void validateNotEmpty(Object rootBean, Violations violations, String loginState,
+      RolesAndAuthoritiesBean bean) {
+    validateNotEmpty(rootBean, violations, Locale.getDefault(), loginState, bean);
+  }
+
+  /**
+   * Validates notEmpty.
+   */
+  public void validateNotEmpty(Object rootBean, Violations violations, Locale locale,
       String loginState, RolesAndAuthoritiesBean bean) {
 
     final String validationClass = "jakarta.validation.constraints.NotEmpty";
-    Set<ConstraintViolationBean<SplibGeneralForm>> rtnSet = new HashSet<>();
+    // Set<ConstraintViolationBean<SplibGeneralForm>> rtnSet = new HashSet<>();
 
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
-      String rootRecordName = rootRecordField.getName();
+      // String rootRecordName = rootRecordField.getName();
       HtmlItemContainer rootRecord = (HtmlItemContainer) getRootRecord(rootRecordField);
 
       for (String notEmptyItemPropertyPath : getNotEmptyItemPropertyPathList(rootRecord, loginState,
@@ -269,13 +275,14 @@ public abstract class SplibGeneralForm {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
         if (value == null || (value instanceof String && ((String) value).equals(""))) {
-          rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this, "(empty)",
-              validationClass + ".message", rootRecordName + "." + notEmptyItemPropertyPath));
+          violations.add(new BusinessViolation(rootBean, new String[] {notEmptyItemPropertyPath},
+              validationClass + ".message"));
+          // rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this,
+          // "(empty)",
+          // validationClass + ".message", rootRecordName + "." + notEmptyItemPropertyPath));
         }
       }
     }
-
-    return rtnSet;
   }
 
   /**
@@ -286,6 +293,7 @@ public abstract class SplibGeneralForm {
    */
   protected List<String> getNotEmptyItemPropertyPathList(HtmlItemContainer rootRecord,
       String loginState, RolesAndAuthoritiesBean bean) {
-    return rootRecord.getNotEmptyItemPropertyPathList(loginState, bean);
+    return rootRecord == null ? new ArrayList<>()
+        : rootRecord.getNotEmptyItemPropertyPathList(loginState, bean);
   }
 }

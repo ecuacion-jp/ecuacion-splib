@@ -19,23 +19,17 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
-import jp.ecuacion.lib.core.exception.checked.SingleAppException;
-import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
+import jp.ecuacion.lib.core.violation.BusinessViolation;
+import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
@@ -666,7 +660,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * 
    * <p>The token check is not executed when the html page doesn't have a token.</p>
    */
-  private void transactionTokenCheck() throws BizLogicAppException {
+  private void transactionTokenCheck() {
     // When forwarding, all request parameters from before the forward are also included,
     // causing transactionCheck to run twice and resulting in an error.
     // To avoid this, skip the process when forwarding.
@@ -686,7 +680,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       if (!tokenSet.contains(tokenFromHtml)) {
 
         String msgId = "jp.ecuacion.splib.web.common.message.tokenInvalidate";
-        throw new BizLogicAppException(msgId);
+        new Violations().add(new BusinessViolation(msgId)).throwIfAny();
       }
 
       tokenSet.remove(tokenFromHtml);
@@ -704,140 +698,138 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @throws MultipleAppException MultipleAppException
    */
   private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
-      RolesAndAuthoritiesBean bean) throws MultipleAppException {
+      RolesAndAuthoritiesBean bean) {
     // input validation
-    boolean hasNotEmptyError = false;
-    hasNotEmptyError = form.hasNotEmptyError(loginState, bean);
-
-    List<SingleAppException> exList = new ArrayList<>();
-    if (hasNotEmptyError || (result != null && result.hasErrors())) {
-      Set<ConstraintViolation<?>> set = getBeanValidationAppExceptionList(form, bean);
-      exList.addAll(set.stream().map(cv -> new ValidationAppException(cv)).toList());
-
-      throw new MultipleAppException(exList);
-    }
+    Violations violations = new Violations();
+    getBeanValidationAppExceptionList(violations, form, bean);
   }
 
-  private Set<ConstraintViolation<?>> getBeanValidationAppExceptionList(SplibGeneralForm form,
+  private void getBeanValidationAppExceptionList(Violations violations, SplibGeneralForm form,
       RolesAndAuthoritiesBean bean) {
 
-    // Re-run validation because information from Spring MVC's validation result
-    // cannot be retrieved correctly.
-    List<ConstraintViolation<?>> tmpErrorList = new ArrayList<>();
-
-    Validation.buildDefaultValidatorFactory().getValidator().validate(form).stream()
-        .forEach(cv -> tmpErrorList.add(cv));
+    violations.addAll(Validation.buildDefaultValidatorFactory().getValidator().validate(form));
 
     // Add NotEmpty check results.
-    tmpErrorList.addAll(form.validateNotEmpty(request.getLocale(), util.getLoginState(), bean)
-        .stream().collect(Collectors.toList()));
+    Field field = form.getRootRecordFields().get(0);
+    
+    try {
+      Object itemContainer = field.get(form);
+      form.validateNotEmpty(itemContainer, violations, request.getLocale(), util.getLoginState(),
+          bean);
 
-    // Specify sort order. Item name specification may be supported in the future,
-    // but for now a fixed sort order is sufficient.
-    List<ConstraintViolation<?>> errorList =
-        tmpErrorList.stream().sorted(getComparator()).collect(Collectors.toList());
-
-    // The standard Jakarta validation validators are suboptimal — for example,
-    // Size validator errors are shown even for empty strings.
-    // When the field is empty, only the empty-field error should be shown,
-    // so if both NotEmpty and another validator exist for the same field,
-    // remove all validators except NotEmpty.
-    removeDuplicatedValidators(errorList);
-
-    // This pattern (errorList.size() == 0) can occur:
-    // Spring's validation stored errors in the result,
-    // but re-running validation manually fails to detect them.
-    // Treat as a system error.
-    if (errorList.size() == 0) {
-      String msg = """
-          Reached getBeanValidationAppExceptionList but errorList is empty.
-          This occurs when a submit button with the same name as rootRecordName is pressed.
-          (Example: when rootRecordName is "app", a button like the following causes this)
-          <div th:replace="~{bootstrap/components :: submitButton('app', ...)}"></div>
-
-          For text input etc., in GET terms the request param appears as "app.desc=...",
-          but Spring MVC outputs the button name itself as "app=".
-          Spring may mistakenly treat "app=" as a form mapping target due to the "app" keyword,
-          attempting a mapping and throwing an error.
-          (Note: if the button name starts with "app" but differs, e.g. "appzzz",
-          this problem does not occur.)
-          """;
-      throw new RuntimeException(msg);
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
     }
+    //
+    // // Specify sort order. Item name specification may be supported in the future,
+    // // but for now a fixed sort order is sufficient.
+    // // violations.getBusinessViolations().stream().sorted(getComparator())
+    // // .collect(Collectors.toList());
+    //
+    // // The standard Jakarta validation validators are suboptimal — for example,
+    // // Size validator errors are shown even for empty strings.
+    // // When the field is empty, only the empty-field error should be shown,
+    // // so if both NotEmpty and another validator exist for the same field,
+    // // remove all validators except NotEmpty.
+    // // removeDuplicatedValidators(errorList);
+    //
+    // // This pattern (errorList.size() == 0) can occur:
+    // // Spring's validation stored errors in the result,
+    // // but re-running validation manually fails to detect them.
+    // // Treat as a system error.
+    // if (violations.getBusinessViolations().size() == 0
+    // && violations.getConstraintViolations().size() == 0) {
+    // String msg = """
+    // Reached getBeanValidationAppExceptionList but errorList is empty.
+    // This occurs when a submit button with the same name as rootRecordName is pressed.
+    // (Example: when rootRecordName is "app", a button like the following causes this)
+    // <div th:replace="~{bootstrap/components :: submitButton('app', ...)}"></div>
+    //
+    // For text input etc., in GET terms the request param appears as "app.desc=...",
+    // but Spring MVC outputs the button name itself as "app=".
+    // Spring may mistakenly treat "app=" as a form mapping target due to the "app" keyword,
+    // attempting a mapping and throwing an error.
+    // (Note: if the button name starts with "app" but differs, e.g. "appzzz",
+    // this problem does not occur.)
+    // """;
+    // throw new RuntimeException(msg);
+    // }
 
-    return Set.copyOf(errorList);
+    violations.throwIfAny();
   }
 
-  /*
-   * The standard Jakarta validation validators are suboptimal — for example,
-   * Size validator errors are shown even for empty strings.
-   * When the field is empty, only the empty-field error should be shown,
-   * so if both NotEmpty and another validator exist for the same field,
-   * remove all validators except NotEmpty.
-   */
-  private void removeDuplicatedValidators(List<ConstraintViolation<?>> cvList) {
+  // /*
+  // * The standard Jakarta validation validators are suboptimal — for example,
+  // * Size validator errors are shown even for empty strings.
+  // * When the field is empty, only the empty-field error should be shown,
+  // * so if both NotEmpty and another validator exist for the same field,
+  // * remove all validators except NotEmpty.
+  // */
+  // private void removeDuplicatedValidators(List<ConstraintViolation<?>> cvList) {
+  //
+  // // Build a map with field name as key and a set of CVs as value,
+  // // then remove all validators except NotEmpty for keys that have 2+ validators
+  // // and include NotEmpty.
+  // Map<String, Set<ConstraintViolation<?>>> duplicateCheckMap = new HashMap<>();
+  //
+  // // Keep track of keys that hold NotEmpty for use in subsequent processing.
+  // Set<String> keySetWithNotEmpty = new HashSet<>();
+  //
+  // for (ConstraintViolation<?> cv : cvList) {
+  // String key = cv.getPropertyPath().toString();
+  // if (duplicateCheckMap.get(key) == null) {
+  // duplicateCheckMap.put(key, new HashSet<>());
+  // }
+  //
+  // duplicateCheckMap.get(key).add(cv);
+  //
+  // // If NotEmpty, add to keySetWithNotEmpty.
+  // if (isNotEmptyValidator(cv)) {
+  // keySetWithNotEmpty.add(key);
+  // }
+  // }
+  //
+  // // For keys in keySetWithNotEmpty, remove all validators except NotEmpty from their value sets.
+  // for (String key : keySetWithNotEmpty) {
+  // for (ConstraintViolation<?> cv : duplicateCheckMap.get(key)) {
+  // if (!isNotEmptyValidator(cv)) {
+  // cvList.remove(cv);
+  // }
+  // }
+  // }
+  // }
 
-    // Build a map with field name as key and a set of CVs as value,
-    // then remove all validators except NotEmpty for keys that have 2+ validators
-    // and include NotEmpty.
-    Map<String, Set<ConstraintViolation<?>>> duplicateCheckMap = new HashMap<>();
+  // private boolean isNotEmptyValidator(ConstraintViolation<?> cv) {
+  // String validatorClass = cv instanceof ConstraintViolationBean
+  // ? ((ConstraintViolationBean<?>) cv).getValidatorClass()
+  // : cv.getConstraintDescriptor().getAnnotation().getClass().getSimpleName();
+  // return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
+  // }
 
-    // Keep track of keys that hold NotEmpty for use in subsequent processing.
-    Set<String> keySetWithNotEmpty = new HashSet<>();
-
-    for (ConstraintViolation<?> cv : cvList) {
-      String key = cv.getPropertyPath().toString();
-      if (duplicateCheckMap.get(key) == null) {
-        duplicateCheckMap.put(key, new HashSet<>());
-      }
-
-      duplicateCheckMap.get(key).add(cv);
-
-      // If NotEmpty, add to keySetWithNotEmpty.
-      if (isNotEmptyValidator(cv)) {
-        keySetWithNotEmpty.add(key);
-      }
-    }
-
-    // For keys in keySetWithNotEmpty, remove all validators except NotEmpty from their value sets.
-    for (String key : keySetWithNotEmpty) {
-      for (ConstraintViolation<?> cv : duplicateCheckMap.get(key)) {
-        if (!isNotEmptyValidator(cv)) {
-          cvList.remove(cv);
-        }
-      }
-    }
-  }
-
-  private boolean isNotEmptyValidator(ConstraintViolation<?> cv) {
-    String validatorClass = cv.getConstraintDescriptor().getAnnotation().getClass().getSimpleName();
-    return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
-  }
-
-  private Comparator<ConstraintViolation<?>> getComparator() {
-    return new Comparator<>() {
-      @Override
-      public int compare(ConstraintViolation<?> f1, ConstraintViolation<?> f2) {
-        // Compare by field name.
-        int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
-        if (result != 0) {
-          return result;
-        }
-
-        // If field names are the same, compare by validator name.
-        result = f1.getConstraintDescriptor().getConstraintValidatorClasses().get(0).getSimpleName()
-            .compareTo(f2.getConstraintDescriptor().getConstraintValidatorClasses().get(0)
-                .getSimpleName());
-        if (result != 0) {
-          return result;
-        }
-
-        // If validator types are also the same, it can only be @Pattern.
-        // For Pattern, sort order is fixed by regexp, so compare by that.
-        String s1 = (String) f1.getConstraintDescriptor().getAttributes().get("regexp");
-        String s2 = (String) f2.getConstraintDescriptor().getAttributes().get("regexp");
-        return s1.compareTo(s2);
-      }
-    };
-  }
+  // private Comparator<ConstraintViolation<?>> getComparator() {
+  // return new Comparator<>() {
+  // @Override
+  // public int compare(ConstraintViolation<?> f1, ConstraintViolation<?> f2) {
+  // // Compare by field name.
+  // int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
+  // if (result != 0) {
+  // return result;
+  // }
+  //
+  // // If field names are the same, compare by validator name.
+  // result = f1.getConstraintDescriptor().getConstraintValidatorClasses().get(0).getSimpleName()
+  // .compareTo(f2.getConstraintDescriptor().getConstraintValidatorClasses().get(0)
+  // .getSimpleName());
+  // if (result != 0) {
+  // return result;
+  // }
+  //
+  // // If validator types are also the same, it can only be @Pattern.
+  // // For Pattern, sort order is fixed by regexp, so compare by that.
+  // String s1 = (String) f1.getConstraintDescriptor().getAttributes().get("regexp");
+  // String s2 = (String) f2.getConstraintDescriptor().getAttributes().get("regexp");
+  // return s1 == null ? -1 : s1.compareTo(s2);
+  // }
+  // };
+  // }
 }
