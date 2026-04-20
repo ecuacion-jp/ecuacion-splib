@@ -15,7 +15,9 @@
  */
 package jp.ecuacion.splib.web.jpa.exceptionhandler;
 
-import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
+import jp.ecuacion.lib.core.exception.ViolationException;
+import jp.ecuacion.lib.core.violation.BusinessViolation;
+import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -71,9 +73,8 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
   public ModelAndView handlePessimisticLockingFailureException(
       PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser)
       throws Exception {
-    // Treat as a normal check error.
-    return handleAppException(
-        new BizLogicAppException("jp.ecuacion.splib.web.common.message.pessimisticLocking"),
-        loginUser);
+    Violations v = new Violations();
+    v.add(new BusinessViolation("jp.ecuacion.splib.web.common.message.pessimisticLocking"));
+    return handleViolationException(new ViolationException(v), loginUser);
   }
 }

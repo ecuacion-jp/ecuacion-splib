@@ -18,12 +18,16 @@ package jp.ecuacion.splib.core.bl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
 import jp.ecuacion.lib.core.item.ItemContainer;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil.Arg;
 import jp.ecuacion.lib.core.util.ReflectionUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
+import jp.ecuacion.lib.core.violation.BusinessViolation;
+import jp.ecuacion.lib.core.violation.Violations;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Supplies utilities.
@@ -35,9 +39,8 @@ public class SplibCoreBl extends ReflectionUtil {
    * It only has a function to throw exception, not one to check the occuring of duplication.
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
-      boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container)
-      throws BizLogicAppException {
-    List<String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
+      boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container) {
+    List<@NonNull String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
         .map(path -> container.getItem(path).getItemNameKey()).toList();
 
     throwExceptionWhenDuplicated(isDuplicated, checkFromAllGroups, itemPropertyPaths,
@@ -49,8 +52,7 @@ public class SplibCoreBl extends ReflectionUtil {
    * It only has a function to throw exception, not one to check the occuring of duplication.
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
-      boolean checkFromAllGroups, String[] itemPropertyPaths, String[] itemNameKeys)
-      throws BizLogicAppException {
+      boolean checkFromAllGroups, String[] itemPropertyPaths, String[] itemNameKeys) {
     if (isDuplicated) {
 
       // The error message can be distinguished by using the value of
@@ -65,8 +67,9 @@ public class SplibCoreBl extends ReflectionUtil {
           "${+messages:jp.ecuacion.lib.core.common.itemName.separator}",
           "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
           "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
-      throw new BizLogicAppException(itemPropertyPaths, msgId,
-          new Arg[] {Arg.formattedString(str)});
+      new Violations().add(new BusinessViolation(itemPropertyPaths, msgId,
+          new @NonNull Arg[] {ObjectsUtil.requireNonNull(Arg.formattedString(str))}))
+          .throwIfAny();
     }
   }
 
@@ -75,20 +78,20 @@ public class SplibCoreBl extends ReflectionUtil {
    */
   protected <T> void internalDuplicateCheck(boolean checkFromAllGroups, List<T> entityList,
       ItemContainer rec, String itemNameKeyClass, String idItemPropertyPath,
-      String... checkTargetItemPropertyPaths) throws BizLogicAppException {
-    List<T> listWithoutMyself = entityList.stream().filter(
-        e -> !getValue(e, idItemPropertyPath).toString().equals(getValue(rec, idItemPropertyPath)))
-        .toList();
+      String... checkTargetItemPropertyPaths) {
+    List<T> listWithoutMyself =
+        entityList.stream().filter(e -> !Objects.requireNonNull(getValue(e, idItemPropertyPath))
+            .toString().equals(getValue(rec, idItemPropertyPath))).toList();
 
     for (String path : checkTargetItemPropertyPaths) {
       listWithoutMyself = listWithoutMyself.stream()
           .filter(e -> (getValue(e, path) == null && getValue(rec, path) == null)
-              || getValue(e, path) != null
-                  && getValue(e, path).toString().equals(getValue(rec, path)))
+              || getValue(e, path) != null && Objects.requireNonNull(getValue(e, path)).toString()
+                  .equals(getValue(rec, path)))
           .toList();
     }
 
-    List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
+    List<@NonNull String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
         .map(path -> rec.getItem(path).getItemNameKey()).toList();
 
     SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0, checkFromAllGroups,
@@ -98,8 +101,7 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with list.
    */
-  public <T> void internalChildExistenceCheck(List<T> list, String entityMessageIdPart)
-      throws BizLogicAppException {
+  public <T> void internalChildExistenceCheck(List<T> list, String entityMessageIdPart) {
     internalChildExistenceCheck(list, null, entityMessageIdPart);
   }
 
@@ -107,7 +109,7 @@ public class SplibCoreBl extends ReflectionUtil {
    * Offers child existence check with list.
    */
   public <T> void internalChildExistenceCheck(List<T> list, String messageId,
-      String entityMessageIdPart) throws BizLogicAppException {
+      String entityMessageIdPart) {
     internalChildExistenceCheck(list, messageId, entityMessageIdPart, null, null, null);
   }
 
@@ -115,7 +117,7 @@ public class SplibCoreBl extends ReflectionUtil {
    * Offers child existence check with list.
    */
   public <T> void internalChildExistenceCheck(List<T> list, String entityMessageIdPart,
-      ChildExistenceCheckConditionBean... conditions) throws BizLogicAppException {
+      ChildExistenceCheckConditionBean... conditions) {
     internalChildExistenceCheck(list, null, entityMessageIdPart, conditions, null, null);
   }
 
@@ -124,13 +126,13 @@ public class SplibCoreBl extends ReflectionUtil {
    */
   protected <T> void internalChildExistenceCheck(List<T> list, String messageId,
       String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
-      String referingRecordDataLabel, String recordSpecifyingFieldName)
-      throws BizLogicAppException {
+      String referingRecordDataLabel, String recordSpecifyingFieldName) {
 
     if (conditions != null) {
       for (ChildExistenceCheckConditionBean condition : conditions) {
         list = list.stream()
-            .filter(e -> getValue(e, condition.itemPropertyPath).equals(condition.conditionValue))
+            .filter(e -> Objects.requireNonNull(getValue(e, condition.itemPropertyPath))
+                .equals(condition.conditionValue))
             .toList();
       }
     }
@@ -147,9 +149,9 @@ public class SplibCoreBl extends ReflectionUtil {
 
       Arg[] args = recordSpecifyingFieldName == null ? new Arg[] {Arg.message(entityMessageIdPart)}
           : new Arg[] {Arg.message(entityMessageIdPart),
-              Arg.string(referingRecordDataLabelMsgIdPart),
-              Arg.string(getValue(list.get(0), recordSpecifyingFieldName).toString())};
-      throw new BizLogicAppException(msgId, args);
+              Arg.string(referingRecordDataLabelMsgIdPart), Arg.string(Objects
+                  .requireNonNull(getValue(list.get(0), recordSpecifyingFieldName)).toString())};
+      new Violations().add(new BusinessViolation(msgId, args)).throwIfAny();
 
     }
   }
@@ -157,8 +159,7 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with optional.
    */
-  public <T> void internalChildExistenceCheck(Optional<T> optional, String entityMessageIdPart)
-      throws BizLogicAppException {
+  public <T> void internalChildExistenceCheck(Optional<T> optional, String entityMessageIdPart) {
     internalChildExistenceCheck(optional, null, entityMessageIdPart);
   }
 
@@ -166,7 +167,7 @@ public class SplibCoreBl extends ReflectionUtil {
    * Offers child existence check with optional.
    */
   public <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
-      String entityMessageIdPart) throws BizLogicAppException {
+      String entityMessageIdPart) {
     internalChildExistenceCheck(optional, messageId, entityMessageIdPart, null, null, null);
   }
 
@@ -174,7 +175,7 @@ public class SplibCoreBl extends ReflectionUtil {
    * Offers child existence check with optional.
    */
   public <T> void internalChildExistenceCheck(Optional<T> optional, String entityMessageIdPart,
-      ChildExistenceCheckConditionBean... conditions) throws BizLogicAppException {
+      ChildExistenceCheckConditionBean... conditions) {
     internalChildExistenceCheck(optional, null, entityMessageIdPart, conditions, null, null);
   }
 
@@ -183,8 +184,7 @@ public class SplibCoreBl extends ReflectionUtil {
    */
   protected <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
       String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
-      String referingRecordDataLabel, String recordSpecifyingFieldName)
-      throws BizLogicAppException {
+      String referingRecordDataLabel, String recordSpecifyingFieldName) {
     List<T> list = new ArrayList<>();
 
     if (optional.isPresent()) {

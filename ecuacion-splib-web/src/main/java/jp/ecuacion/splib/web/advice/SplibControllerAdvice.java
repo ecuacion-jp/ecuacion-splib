@@ -68,42 +68,37 @@ public class SplibControllerAdvice {
 
   private void recoverRequestParametersFromRedirectContextId(Model model) {
 
-    boolean takesOverContext = true;
-
     // If messages and model are carried over from the redirect source, add them to model.
     String contextId = request.getParameter(SplibWebConstants.KEY_CONTEXT_ID);
-    if (contextId == null || contextId.equals("")) {
-      takesOverContext = false;
-    }
+    if (contextId != null && !contextId.isEmpty()) {
 
-    @SuppressWarnings("unchecked")
-    Map<String, Object> contextMap = (Map<String, Object>) request.getSession()
-        .getAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
-    // when contextId is appended to the URL
-    // maybe because of the reuse of the URL with contextId but no contextMap is saved.
-    if (contextMap == null) {
-      takesOverContext = false;
-    }
+      @SuppressWarnings("unchecked")
+      Map<String, Object> contextMap = (Map<String, Object>) request.getSession()
+          .getAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
 
-    if (takesOverContext) {
-      // model
-      Map<String, Object> modelMapRedirectFrom =
-          ((Model) contextMap.get(SplibWebConstants.KEY_MODEL)).asMap();
-      modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
-      model.addAllAttributes(modelMapRedirectFrom);
+      // when contextId is appended to the URL
+      // maybe because of the reuse of the URL with contextId but no contextMap is saved.
+      if (contextMap != null) {
+        // model
+        Map<String, Object> modelMapRedirectFrom =
+            ((Model) contextMap.get(SplibWebConstants.KEY_MODEL)).asMap();
+        modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
+        model.addAllAttributes(modelMapRedirectFrom);
 
-      // messageBean
-      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
-          contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
+        // messageBean
+        model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
+            contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-      // Retrieve forms from model and change settings.
-      // Validation should have been performed before the redirect if needed,
-      // so there is no need to re-validate when reusing.
-      model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
-          .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
+        // Retrieve forms from model and change settings.
+        // Validation should have been performed before the redirect if needed,
+        // so there is no need to re-validate when reusing.
+        model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
+            .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
 
-      // remove contextMap from session
-      request.getSession().removeAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
+        // remove contextMap from session
+        request.getSession()
+            .removeAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
+      }
     }
 
     // add new MessagesBean if null

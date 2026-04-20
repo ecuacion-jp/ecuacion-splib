@@ -17,7 +17,6 @@ package jp.ecuacion.splib.web.exception;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jp.ecuacion.lib.core.annotation.RequireNonnull;
 import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 
 /**
@@ -41,7 +40,7 @@ public class WebAppWarningException extends AppWarningException {
    * @param messageId messageId
    * @param messageArgs messageArgs
    */
-  public WebAppWarningException(@RequireNonnull String messageId, @Nonnull String... messageArgs) {
+  public WebAppWarningException(String messageId, @Nonnull String... messageArgs) {
     super(messageId, messageArgs);
   }
 
