@@ -16,8 +16,8 @@
 package jp.ecuacion.splib.jpa.bl;
 
 import java.util.Optional;
-import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
+import jp.ecuacion.lib.core.violation.BusinessViolation;
+import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.bl.SplibCoreBl;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
@@ -84,7 +84,7 @@ public abstract class SplibJpaBl<E extends EclibEntity, I, V> extends SplibCoreB
    * Note that the additionally retrieved entities must also be used in subsequent processing.
    * </p>
    */
-  public E findAndOptimisticLockingCheck(I id, V version) throws AppException {
+  public E findAndOptimisticLockingCheck(I id, V version) {
     Optional<E> optional = getRepositoryForOptimisticLocking().findById(id);
 
     // Another user may have deleted the record, setting the soft-delete flag
@@ -92,7 +92,7 @@ public abstract class SplibJpaBl<E extends EclibEntity, I, V> extends SplibCoreB
     // as an exclusive control error.
     if (optional.isEmpty()) {
       String msg = "jp.ecuacion.splib.web.common.message.sameRecordAlreadyDeleted";
-      throw new BizLogicAppException(msg);
+      new Violations().add(new BusinessViolation(msg)).throwIfAny();
     }
 
     E e = optional.get();
