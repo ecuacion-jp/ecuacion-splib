@@ -25,8 +25,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+<<<<<<< HEAD
 import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ViolationException;
+=======
+import jp.ecuacion.lib.core.exception.ViolationWarningException;
+>>>>>>> 99ee694 (SplibExceptionHandler now handles ViolationWebWarningException.)
 import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.lib.core.exception.checked.AppWarningException;
 import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
@@ -43,7 +47,10 @@ import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.lib.core.util.ValidationUtil.MessageParameters;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
+<<<<<<< HEAD
 import jp.ecuacion.lib.core.violation.Violations;
+=======
+>>>>>>> 99ee694 (SplibExceptionHandler now handles ViolationWebWarningException.)
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
@@ -151,22 +158,40 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    * @throws Exception Exception
    */
-  @ExceptionHandler({AppWarningException.class})
-  public @Nonnull ModelAndView handleAppWarningException(@Nonnull WebAppWarningException exception,
+  @ExceptionHandler({WebAppWarningException.class, ViolationWarningException.class})
+  public @Nonnull ModelAndView handleWarning(@Nonnull Exception exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-    Objects.requireNonNull(messagesBean);
-    messagesBean.setWarnMessage(new WarnMessageBean(
-        exception.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
-            exception.getMessageId(), exception.getMessageArgs()),
-        exception.buttonIdToPressOnConfirm()));
+    if (exception instanceof AppWarningException) {
+      handleAppWarningException((WebAppWarningException) exception, messagesBean);
+      
+    } else {
+      handleViolationWarningException((ViolationWebWarningException) exception, messagesBean);
+    }
 
     // Since warning means the submit did not complete, processing returns to the same page,
     // so no redirect to a different page occurs.
     // isRedirect is set to true for PRG.
     return appExceptionFinalHandler(getController(), loginUser, false, null);
+  }
+
+  private void handleViolationWarningException(ViolationWebWarningException exception,
+      MessagesBean messagesBean) {
+    BusinessViolation v = exception.getViolations().getBusinessViolations().get(0);
+    messagesBean.setWarnMessage(new WarnMessageBean(
+        v.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
+            v.getMessageId(), v.getMessageArgs()),
+        exception.getButtonIdPressedIfConfirmed()));
+  }
+
+  private void handleAppWarningException(WebAppWarningException exception,
+      MessagesBean messagesBean) {
+    messagesBean.setWarnMessage(new WarnMessageBean(
+        exception.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
+            exception.getMessageId(), exception.getMessageArgs()),
+        exception.buttonIdToPressOnConfirm()));
   }
 
   /**
@@ -345,8 +370,7 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    */
   @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
-  public @Nonnull ModelAndView handleRedirectNeededExceptions(Exception exception,
-      Model newModel) {
+  public @Nonnull ModelAndView handleRedirectNeededExceptions(Exception exception, Model newModel) {
     RedirectException redirectException = null;
 
     // Setup model if it's new.
