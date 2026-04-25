@@ -17,8 +17,7 @@ package jp.ecuacion.splib.web.controller;
 
 import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
-import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
+import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
@@ -155,10 +154,10 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     try {
       prepare(model, searchForm.validate(null), listForm);
 
-    } catch (AppException ae) {
+    } catch (ViolationException ve) {
       // Add sign that shows error occurs while searching.
       model.addAttribute(KEY_ERROR_OCCURS_WHILE_SEARCHING, true);
-      throw ae;
+      throw ve;
     }
 
     return redirectToSamePageTakingOverModel(model);
@@ -266,7 +265,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
     } else {
       // I wonder this condition is not possible to happen now....
-      throw new EclibRuntimeException("Not used anymore I believe...");
+      throw new RuntimeException("Not used anymore I believe...");
       // if (request.getSession().getAttribute(formName) == null) {
       // throw new RuntimeException("searchForm == null cannot be occurred.");
       // }
@@ -308,11 +307,10 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param model model
    * @param loginUser loginUser
    * @return URL
-   * @throws AppException AppException
    */
   @PostMapping(value = "action", params = "action=showInsertForm")
   public String showInsertForm(Model model, FST searchForm, FLT listForm,
-      @AuthenticationPrincipal UserDetails loginUser) throws AppException {
+      @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
     ReturnUrlBean bean =
         new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
@@ -325,11 +323,10 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param model model
    * @param loginUser loginUser
    * @return URL
-   * @throws AppException AppException
    */
   @PostMapping(value = "action", params = "action=showUpdateForm")
   public String showUpdateForm(Model model, FST searchForm, FLT listForm,
-      @AuthenticationPrincipal UserDetails loginUser) throws AppException {
+      @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
     ReturnUrlBean bean =
         new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());

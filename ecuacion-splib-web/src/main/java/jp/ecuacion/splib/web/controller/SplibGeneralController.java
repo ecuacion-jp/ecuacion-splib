@@ -24,8 +24,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
@@ -399,7 +397,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   /**
-   *  Is set If you want to redirect when {@code AppException} occurs.
+   *  Is set If you want to redirect when {@code ViolationException} occurs.
    *  
    *  <p>It may be {@code null} if you don't want to redirect.</p>
    *  
@@ -415,7 +413,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * Returns parameter list needed to add when the response is redirect to the original page.
    * 
    * <p>It can be used with the redirect by both normal end and abnormal end 
-   *     (= in the case that AppException is thrown).</p>
+   *     (= in the case that ViolationException is thrown).</p>
    */
   protected List<String[]> paramListOnRedirectToSelf = new ArrayList<>();
 
@@ -609,9 +607,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * 
    * @param model model
    * @param forms forms
-   * @throws AppException AppException
    */
-  public void prepare(Model model, SplibGeneralForm... forms) throws AppException {
+  public void prepare(Model model, SplibGeneralForm... forms) {
     prepare(model, null, forms);
   }
 
@@ -623,10 +620,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param model model
    * @param loginUser loginUser
    * @param forms forms
-   * @throws AppException AppException
    */
-  public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms)
-      throws AppException {
+  public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms) {
 
     // Common processing for all forms.
     for (SplibGeneralForm form : forms) {
@@ -695,7 +690,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param loginState loginState
    * @param bean bean
    * @throws FormInputValidationException FormInputValidationException
-   * @throws MultipleAppException MultipleAppException
    */
   private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
       RolesAndAuthoritiesBean bean) {

@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.util;
 
-import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,7 +29,7 @@ public class SplibThymeleafExceptionUtil {
    * @param message message
    */
   public void systemError(String message) {
-    throw new EclibRuntimeException(
+    throw new RuntimeException(
         "An error occurred while thymeleaf was constructing an html : " + message);
   }
 }

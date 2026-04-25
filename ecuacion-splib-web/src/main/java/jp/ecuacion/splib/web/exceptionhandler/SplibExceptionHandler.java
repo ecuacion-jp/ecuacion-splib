@@ -21,22 +21,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.nio.channels.OverlappingFileLockException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import jp.ecuacion.lib.core.exception.ConstraintViolationExceptionWithParameters;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.exception.ViolationWarningException;
-import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.checked.AppWarningException;
-import jp.ecuacion.lib.core.exception.checked.BizLogicAppException;
-import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
-import jp.ecuacion.lib.core.exception.checked.SingleAppException;
-import jp.ecuacion.lib.core.exception.checked.ValidationAppException;
-import jp.ecuacion.lib.core.exception.unchecked.AppRuntimeException;
-import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
-import jp.ecuacion.lib.core.jakartavalidation.bean.ConstraintViolationBean;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -53,7 +42,6 @@ import jp.ecuacion.splib.web.controller.SplibEditController;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
-import jp.ecuacion.splib.web.exception.WebAppWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +72,7 @@ public abstract class SplibExceptionHandler {
 
   /**
    * Returns the controller from which the exception throws.
-   * 
+   *
    * @return SplibGeneralController
    */
   @Nonnull
@@ -94,7 +82,7 @@ public abstract class SplibExceptionHandler {
 
   /**
    * Returns the forms from which the exception throws.
-   * 
+   *
    * @return SplibGeneralController
    */
   @Nonnull
@@ -104,7 +92,7 @@ public abstract class SplibExceptionHandler {
 
   /**
    * Returns the model obtained at the controller.
-   * 
+   *
    * @return Model
    */
   @Nonnull
@@ -144,47 +132,31 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
-   * Catches {@code AppWarningException}.
-   * 
-   * @param exception AppWarningException
+   * Catches {@code ViolationWarningException}.
+   *
+   * @param exception ViolationWarningException
    * @param loginUser UserDetails, may be {@code null} when the user is not logged in
    * @return ModelAndView
    * @throws Exception Exception
    */
-  @ExceptionHandler({WebAppWarningException.class, ViolationWarningException.class})
-  public @Nonnull ModelAndView handleWarning(@Nonnull Exception exception,
+  @ExceptionHandler({ViolationWarningException.class})
+  public @Nonnull ModelAndView handleWarning(@Nonnull ViolationWarningException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
-    if (exception instanceof AppWarningException) {
-      handleAppWarningException((WebAppWarningException) exception, messagesBean);
-      
-    } else {
-      handleViolationWarningException((ViolationWebWarningException) exception, messagesBean);
-    }
+    BusinessViolation v = exception.getViolations().getBusinessViolations().get(0);
+    String buttonId = exception instanceof ViolationWebWarningException
+        ? ((ViolationWebWarningException) exception).getButtonIdPressedIfConfirmed() : null;
+    messagesBean.setWarnMessage(new WarnMessageBean(
+        v.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
+            v.getMessageId(), v.getMessageArgs()),
+        buttonId));
 
     // Since warning means the submit did not complete, processing returns to the same page,
     // so no redirect to a different page occurs.
     // isRedirect is set to true for PRG.
     return appExceptionFinalHandler(getController(), loginUser, false, null);
-  }
-
-  private void handleViolationWarningException(ViolationWebWarningException exception,
-      MessagesBean messagesBean) {
-    BusinessViolation v = exception.getViolations().getBusinessViolations().get(0);
-    messagesBean.setWarnMessage(new WarnMessageBean(
-        v.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
-            v.getMessageId(), v.getMessageArgs()),
-        exception.getButtonIdPressedIfConfirmed()));
-  }
-
-  private void handleAppWarningException(WebAppWarningException exception,
-      MessagesBean messagesBean) {
-    messagesBean.setWarnMessage(new WarnMessageBean(
-        exception.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
-            exception.getMessageId(), exception.getMessageArgs()),
-        exception.buttonIdToPressOnConfirm()));
   }
 
   /**
@@ -195,92 +167,43 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    * @throws Exception Exception
    */
-  @SuppressWarnings("removal")
   @ExceptionHandler({ViolationException.class})
   public @Nonnull ModelAndView handleViolationException(@Nonnull ViolationException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
-    boolean needsMsgAtItem = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
+    boolean needsMsgAtItemDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
-    boolean needsMsgAtTop = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
+    boolean needsMsgAtTopDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
 
     MessagesBean messagesBean =
         (MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
 
     Violations violations = exception.getViolations();
-
     MessageParameters params = violations.messageParameters();
+
     for (ConstraintViolation<?> cv : violations.getConstraintViolations()) {
-      setMessage(messagesBean, new ValidationAppException(cv, params),
-          needsMsgAtItem, needsMsgAtTop, request.getLocale());
+      boolean needsMsgAtItem = !needsMsgAtItemDefault ? false
+          : (params.isMessageWithItemName() != null ? !params.isMessageWithItemName() : true);
+      boolean needsMsgAtTop = !needsMsgAtItem;
+      String message = ExceptionUtil.getMessageList(
+          new Violations().messageParameters(params).add(cv), request.getLocale(),
+          needsMsgAtTop).get(0);
+      if (needsMsgAtItem) {
+        if (messagesBean.getErrorMessagesAtEachItem().size() == 0) {
+          String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
+          messagesBean.setErrorMessage(PropertiesFileUtil.getMessage(request.getLocale(), key),
+              false);
+        }
+        messagesBean.setErrorMessage(message, true, new String[] {});
+      } else {
+        messagesBean.setErrorMessage(message, false, new String[] {});
+      }
     }
 
     for (BusinessViolation bv : violations.getBusinessViolations()) {
-      setMessage(messagesBean, bv, needsMsgAtItem, needsMsgAtTop, request.getLocale());
-    }
-
-    ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
-    return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
-  }
-
-  /**
-   * Catches {@code AppException}.
-   *
-   * @param exception AppException
-   * @param loginUser UserDetails
-   * @return ModelAndView
-   * @throws Exception Exception
-   */
-  @SuppressWarnings("removal")
-  @ExceptionHandler({AppException.class})
-  public @Nonnull ModelAndView handleAppException(@Nonnull AppException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-
-    boolean needsMsgAtItem = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
-    boolean needsMsgAtTop = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
-
-    // Hold multiple exceptions to also handle MultipleAppException.
-    List<SingleAppException> exList = new ArrayList<>();
-
-    if (exception instanceof MultipleAppException) {
-      for (SingleAppException appEx : ((MultipleAppException) exception).getList()) {
-        exList.add(appEx);
-      }
-
-      // If exList is empty as a result, treat as a system error.
-      if (exList.size() == 0) {
-        throw new RuntimeException("No exception included in MultipleAppException.");
-      }
-
-    } else {
-      exList.add((SingleAppException) exception);
-    }
-
-    MessagesBean messagesBean =
-        ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
-
-    // Process AppExceptions one by one in MultipleAppException
-    for (SingleAppException saex : exList) {
-      String[] itemPropertyPaths = new String[] {};
-
-      if (saex instanceof ValidationAppException) {
-        ValidationAppException vex = (ValidationAppException) saex;
-        ConstraintViolationBean<?> cv = vex.getConstraintViolationBean();
-
-        // Remove rootRecordName from propertyPath.
-        List<String> list = cv.getItemList().stream()
-            .map(b -> b.getPropertyPath().substring(b.getPropertyPath().indexOf(".") + 1)).toList();
-        itemPropertyPaths = list.toArray(new String[list.size()]);
-
-      } else if (saex instanceof BizLogicAppException) {
-        itemPropertyPaths = ((BizLogicAppException) saex).getItemPropertyPaths();
-      }
-
-      setMessage(messagesBean, saex, needsMsgAtItem, needsMsgAtTop, request.getLocale(),
-          itemPropertyPaths);
+      setMessage(messagesBean, bv, needsMsgAtItemDefault, needsMsgAtTopDefault,
+          request.getLocale());
     }
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
@@ -289,8 +212,12 @@ public abstract class SplibExceptionHandler {
 
   /**
    * Catches {@code ConstraintViolationException}.
+   *
+   * @param exception ConstraintViolationException
+   * @param loginUser UserDetails
+   * @return ModelAndView
+   * @throws Exception Exception
    */
-  @SuppressWarnings("removal")
   @ExceptionHandler({ConstraintViolationException.class})
   public @Nonnull ModelAndView handleConstraintViolationException(
       @Nonnull ConstraintViolationException exception,
@@ -298,31 +225,17 @@ public abstract class SplibExceptionHandler {
     MessageParameters params = exception instanceof ConstraintViolationExceptionWithParameters
         ? ((ConstraintViolationExceptionWithParameters) exception).getMessageParameters()
         : new MessageParameters();
-    List<? extends SingleAppException> exList = exception.getConstraintViolations().stream()
-        .map(cv -> new ValidationAppException(cv, params)).toList();
-    return handleAppException(new MultipleAppException(exList), loginUser);
-  }
-
-  /**
-   * Catches {@code UncheckedAppException}.
-   * 
-   * @param exception UncheckedAppException
-   * @param loginUser UserDetails
-   * @return ModelAndView
-   * @throws Exception Exception
-   */
-  @ExceptionHandler({AppRuntimeException.class})
-  public @Nonnull ModelAndView handleUncheckedAppException(@Nonnull AppRuntimeException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-
-    // Treat as normal BizLogicAppException.
-    return handleAppException((AppException) exception.getCause(), loginUser);
+    Violations violations = new Violations().messageParameters(params);
+    for (ConstraintViolation<?> cv : exception.getConstraintViolations()) {
+      violations.add(cv);
+    }
+    return handleViolationException(new ViolationException(violations), loginUser);
   }
 
   /**
    * Catches {@code OverlappingFileLockException}.
-   * 
-   * @param exception AppException
+   *
+   * @param exception OverlappingFileLockException
    * @param loginUser UserDetails
    * @return ModelAndView
    * @throws Exception Exception
@@ -347,15 +260,15 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
-   * Catches some specific exceptions. 
-   * 
+   * Catches some specific exceptions.
+   *
    * <ul>
-   * <li>NoResourceFoundException: 
+   * <li>NoResourceFoundException:
    * No @RequestMapping settings in controllers which matches the request url.</li>
-   * <li>RedirectException: @RequestMapping settings 
+   * <li>RedirectException: @RequestMapping settings
    * exists, but html file does not exist.</li>
    * </ul>
-   * 
+   *
    * @param exception Exception
    * @param newModel When Exception occurs before Controller#prepare called, getModel() is null.
    *     In that case, this new model can be used.
@@ -411,7 +324,7 @@ public abstract class SplibExceptionHandler {
 
   /**
    * Catches {@code Throwable}.
-   * 
+   *
    * @param exception Throwable
    * @param model model
    * @return ModelAndView
@@ -437,7 +350,7 @@ public abstract class SplibExceptionHandler {
       String msg =
           "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
               + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.";
-      throw new EclibRuntimeException(msg);
+      throw new RuntimeException(msg);
     }
 
     boolean needsMsgAtItem =
@@ -457,54 +370,6 @@ public abstract class SplibExceptionHandler {
 
     if (needsMsgAtTop) {
       messagesBean.setErrorMessage(message, false, violation.getItemPropertyPaths());
-    }
-  }
-
-  @SuppressWarnings("removal")
-  private void setMessage(MessagesBean messagesBean, SingleAppException saex,
-      boolean needsMsgAtItemAsDefault, boolean needsMsgAtTopAsDefault, Locale locale,
-      String... recordPropertyPaths) {
-
-    // Throw an exception when both needsMsgAtItem and needsMsgAtTop are false.
-    if (!needsMsgAtItemAsDefault && !needsMsgAtTopAsDefault) {
-      String msg = "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
-          + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.";
-      throw new EclibRuntimeException(msg);
-    }
-
-    // needsMsgAtItem is false
-    // when saex is neither BizLogicAppException nor ValidationAppException.
-    boolean needsMsgAtItem = false;
-    if (saex instanceof BizLogicAppException) {
-      needsMsgAtItem = !needsMsgAtItemAsDefault ? false
-          : ((BizLogicAppException) saex).getItemPropertyPaths().length > 0;
-
-    } else if (saex instanceof ValidationAppException) {
-      MessageParameters params = ((ValidationAppException) saex).getMessageParameters();
-      needsMsgAtItem = !needsMsgAtItemAsDefault ? false
-          : (params.isMessageWithItemName() != null ? !params.isMessageWithItemName() : true);
-    }
-
-    // For now !needsMsgAtItem value.
-    boolean needsMsgAtTop = !needsMsgAtItem;
-
-    // message
-    String messageAtItem = null;
-    String messageAtTop = null;
-    if (needsMsgAtItem) {
-
-      if (messagesBean.getErrorMessagesAtEachItem().size() == 0) {
-        String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
-        messagesBean.setErrorMessage(PropertiesFileUtil.getMessage(locale, key), false);
-      }
-
-      messageAtItem = ExceptionUtil.getMessageList(saex, locale, false).get(0);
-      messagesBean.setErrorMessage(messageAtItem, true, recordPropertyPaths);
-    }
-
-    if (needsMsgAtTop) {
-      messageAtTop = ExceptionUtil.getMessageList(saex, locale, true).get(0);
-      messagesBean.setErrorMessage(messageAtTop, false, recordPropertyPaths);
     }
   }
 }
