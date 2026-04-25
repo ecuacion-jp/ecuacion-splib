@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.apache.commons.lang3.StringUtils;
@@ -109,7 +108,7 @@ public abstract class SplibRecord {
       }
 
     } catch (Exception e) {
-      throw new EclibRuntimeException(e);
+      throw new RuntimeException(e);
     }
 
     return rtn;

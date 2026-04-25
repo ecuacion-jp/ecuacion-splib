@@ -28,6 +28,7 @@ import jp.ecuacion.lib.core.exception.checked.AppWarningException;
  *     In that case, you set {@code buttonIdToPressOnConfirm} 
  *     to designate the submit button to press instead of just being submitted by javascript.</p>
  */
+@Deprecated
 public class WebAppWarningException extends AppWarningException {
 
   private static final long serialVersionUID = 1L;
@@ -40,6 +41,7 @@ public class WebAppWarningException extends AppWarningException {
    * @param messageId messageId
    * @param messageArgs messageArgs
    */
+  @Deprecated
   public WebAppWarningException(String messageId, @Nonnull String... messageArgs) {
     super(messageId, messageArgs);
   }
@@ -50,6 +52,7 @@ public class WebAppWarningException extends AppWarningException {
    * @param buttonIdToPressOnConfirm buttonIdToPressOnConfirm
    * @return WebAppWarningException
    */
+  @Deprecated
   public @Nonnull WebAppWarningException buttonIdToPressOnConfirm(
       @Nullable String buttonIdToPressOnConfirm) {
     if (buttonIdToPressOnConfirm != null) {
@@ -64,6 +67,7 @@ public class WebAppWarningException extends AppWarningException {
    * 
    * @return buttonIdToPressOnConfirm
    */
+  @Deprecated
   public @Nullable String buttonIdToPressOnConfirm() {
     return buttonIdToPressOnConfirm;
   }

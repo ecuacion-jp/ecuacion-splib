@@ -436,6 +436,15 @@
 			</repositories>
 		</profile>
 	</profiles>
+	
+	<!-- jspecify -->
+	<dependencies>
+		<dependency>
+		    <groupId>org.jspecify</groupId>
+		    <artifactId>jspecify</artifactId>
+		    <scope>provided</scope>
+		</dependency>
+	</dependencies>
 
 	<modules>
 		<module>ecuacion-splib-core</module>

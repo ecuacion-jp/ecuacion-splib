@@ -21,7 +21,6 @@ import jakarta.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import jp.ecuacion.lib.core.exception.unchecked.EclibRuntimeException;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
@@ -326,7 +325,7 @@ public class SpecFactory<T extends EclibEntity> {
 
       try {
         value = (Object) rec.getValue(propertyPath);
-      } catch (EclibRuntimeException ex) {
+      } catch (RuntimeException ex) {
         if (ex.getCause() instanceof NoSuchMethodException) {
           // items with unexistent itemPropertyPath is allowed.
           // no exception thrown and skip the rest.
