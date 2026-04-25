@@ -53,10 +53,10 @@ public abstract class SplibEditService<F extends SplibEditForm>
 
   /**
    * Shows update page.
-   * 
-   * <p>The argument form is used 
+   *
+   * <p>The argument form is used
    *     to receive record id and version from the searchList Controller.</p>
-   * 
+   *
    * @param form form
    * @param loginUser loginUser
    */

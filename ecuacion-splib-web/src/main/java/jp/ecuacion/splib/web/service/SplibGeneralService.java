@@ -19,7 +19,6 @@ import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
-import jp.ecuacion.lib.core.exception.ViolationWarningException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.violation.Violations;
@@ -54,11 +53,9 @@ public abstract class SplibGeneralService {
    *     See {@link ViolationWebWarningException}.
    * @param msgId msgId
    * @param params params
-   * @throws ViolationWarningException ViolationWarningException
    */
   protected void throwWarning(Set<String> confirmedWarningMessageSet,
-      @Nullable String buttonIdToPressOnConfirm, String msgId, String... params)
-      throws ViolationWarningException {
+      @Nullable String buttonIdToPressOnConfirm, String msgId, String... params) {
 
     if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
       Violations violations = new Violations().add(msgId, params);

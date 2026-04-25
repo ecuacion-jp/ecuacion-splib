@@ -71,8 +71,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
       }
     }
 
-    // For ViolationException with multiple violations,
-    // list them again so they are visible in the log.
+    // For ViolationException, list all messages so they are visible in the log.
     if (throwable instanceof ViolationException) {
       List<String> msgList = ExceptionUtil.getMessageList(
           (ViolationException) throwable, Locale.getDefault());
