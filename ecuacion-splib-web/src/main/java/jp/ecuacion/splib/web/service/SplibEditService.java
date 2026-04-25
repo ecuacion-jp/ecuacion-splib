@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.service;
 
-import jp.ecuacion.lib.core.exception.checked.AppException;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -49,10 +48,8 @@ public abstract class SplibEditService<F extends SplibEditForm>
    * 
    * @param form form
    * @param loginUser loginUser
-   * @throws AppException AppException
    */
-  public abstract void getInsertPage(F form, UserDetails loginUser)
-      throws AppException;
+  public abstract void getInsertPage(F form, UserDetails loginUser);
 
   /**
    * Shows update page.
@@ -62,7 +59,6 @@ public abstract class SplibEditService<F extends SplibEditForm>
    * 
    * @param form form
    * @param loginUser loginUser
-   * @throws AppException AppException
    */
   public abstract void getUpdatePage(F form, UserDetails loginUser)
       throws Exception;
