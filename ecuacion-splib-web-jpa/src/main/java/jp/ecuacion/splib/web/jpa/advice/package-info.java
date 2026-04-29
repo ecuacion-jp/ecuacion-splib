@@ -17,4 +17,7 @@
 /**
  * Provides controllerAdvices.
  */
+@NullMarked
 package jp.ecuacion.splib.web.jpa.advice;
+
+import org.jspecify.annotations.NullMarked;

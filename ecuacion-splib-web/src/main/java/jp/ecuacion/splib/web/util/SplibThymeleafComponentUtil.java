@@ -55,11 +55,11 @@ public class SplibThymeleafComponentUtil {
     for (String itemPropertyPath : fieldNameList) {
       String itemName = PropertiesFileUtil.getItemName(request.getLocale(),
           rootRecord.getItem(itemPropertyPath).getItemNameKey());
-      fieldNameSb.append(", " + itemName);
+      fieldNameSb.append(", ").append(itemName);
     }
 
     String fieldNames = (multiple ? " (" : "")
-        + (fieldNameList.size() == 0 ? "" : fieldNameSb.toString().substring(2))
+        + (fieldNameList.isEmpty() ? "" : fieldNameSb.toString().substring(2))
         + (multiple ? ") " : "");
 
     return PropertiesFileUtil.getMessage(request.getLocale(),

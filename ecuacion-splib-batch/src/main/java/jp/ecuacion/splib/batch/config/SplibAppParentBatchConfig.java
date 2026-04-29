@@ -24,6 +24,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.builder.TaskletStepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -60,7 +61,8 @@ public abstract class SplibAppParentBatchConfig {
    * @param tasklets tasklets
    * @return TaskletStepBuilder
    */
-  protected TaskletStepBuilder preparedStepBuilder(String stepName, JobRepository jobRepository,
+  protected @Nullable TaskletStepBuilder preparedStepBuilder(String stepName,
+      JobRepository jobRepository,
       PlatformTransactionManager transactionManager, Tasklet... tasklets) {
     StepBuilder builder = new StepBuilder(stepName, jobRepository).listener(stepExecutionListener);
     TaskletStepBuilder tlBuilder = null;

@@ -17,4 +17,7 @@
 /**
  * Provides configs for JPA.
  */
+@NullMarked
 package jp.ecuacion.splib.jpa.config;
+
+import org.jspecify.annotations.NullMarked;

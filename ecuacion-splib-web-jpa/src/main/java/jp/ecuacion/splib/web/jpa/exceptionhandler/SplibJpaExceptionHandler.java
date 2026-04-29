@@ -15,6 +15,8 @@
  */
 package jp.ecuacion.splib.web.jpa.exceptionhandler;
 
+import org.jspecify.annotations.Nullable;
+
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
@@ -57,7 +59,7 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
   public ModelAndView handleObjectOptimisticLockingFailureException(
       ObjectOptimisticLockingFailureException exception,
-      @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
+      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
     return super.handleOptimisticLockingFailureException(null, loginUser, model);
   }
 

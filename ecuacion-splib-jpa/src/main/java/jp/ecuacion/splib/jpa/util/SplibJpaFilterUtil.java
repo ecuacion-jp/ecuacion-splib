@@ -27,6 +27,7 @@ import org.hibernate.Session;
 public abstract class SplibJpaFilterUtil {
 
   @PersistenceContext
+  @SuppressWarnings("NullAway")
   EntityManager em;
 
   private boolean usesSoftDeleteFeature;

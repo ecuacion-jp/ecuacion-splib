@@ -32,10 +32,17 @@ public class SplibControllerAdviceInfoBean {
 
   /**
    * Sets group ID.
-   * 
+   *
    * @param groupId groupId
    */
   public static void setGroupId(Object groupId) {
     thGroupId.set(groupId);
+  }
+
+  /**
+   * Removes group ID from the thread-local to prevent stale values when a thread is reused.
+   */
+  public static void removeGroupId() {
+    thGroupId.remove();
   }
 }

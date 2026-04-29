@@ -22,8 +22,8 @@ package jp.ecuacion.splib.core.bean;
  *     so it's placed in {@code ecuacion-lib-core}. 
  */
 public class AuthorizationBean {
-  private String[] requestMatchers;
-  private String[] rolesOrAuthorities;
+  private String[] requestMatchers = new String[] {};
+  private String[] rolesOrAuthorities = new String[] {};
 
   /**
    * Constructs a new instance.

@@ -15,8 +15,8 @@
  */
 package jp.ecuacion.splib.web.bean;
 
-import jakarta.annotation.Nonnull;
 import java.util.HashMap;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,8 +41,7 @@ public class ReturnUrlBean {
   /*
    * Is the path part of the URL.
    */
-  @Nonnull
-  private String path;
+  private String path = "";
 
   /**
    * Is the parameters part of the URL.
@@ -50,7 +49,6 @@ public class ReturnUrlBean {
    * <p>The data type of the value is an array 
    *     because html request parameter allows multiple values.</p>
    */
-  @Nonnull
   private final Map<String, String[]> paramMap = new HashMap<>();
 
   /**
@@ -185,7 +183,7 @@ public class ReturnUrlBean {
       String subFunction, String page) {
     String functionKindPath = ctrl.getFunctionKinds().length == 0 ? ""
         : (StringUtil.getSeparatedValuesString(ctrl.getFunctionKinds(), "/") + "/");
-    String subFuncPart = (subFunction.equals("") ? "" : "/" + subFunction);
+    String subFuncPart = (subFunction.isEmpty() ? "" : "/" + subFunction);
 
     return "/" + loginState + "/" + functionKindPath + ctrl.getFunction() + subFuncPart + "/"
         + page;
@@ -220,7 +218,7 @@ public class ReturnUrlBean {
           sb.append("&");
         }
 
-        sb.append(entry.getKey() + "=" + value);
+        sb.append(entry.getKey()).append("=").append(value);
       }
     }
 
@@ -234,7 +232,7 @@ public class ReturnUrlBean {
    * @param value value
    * @return ReturnUrlBean (for method chain)
    */
-  public ReturnUrlBean putParam(String key, String value) {
+  public ReturnUrlBean putParam(String key, @Nullable String value) {
     Objects.requireNonNull(key);
     paramMap.put(key, value == null ? new String[] {""} : new String[] {value});
 
@@ -248,7 +246,7 @@ public class ReturnUrlBean {
    * @param values values
    * @return ReturnUrlBean (for method chain)
    */
-  public ReturnUrlBean putParam(String key, String[] values) {
+  public ReturnUrlBean putParam(String key, @Nullable String[] values) {
     Objects.requireNonNull(key);
     paramMap.put(key, values == null ? new String[] {""} : values);
 

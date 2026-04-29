@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
@@ -66,7 +65,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * 
    * @param function function
    */
-  public SplibSearchListController(@Nonnull String function) {
+  public SplibSearchListController(String function) {
     this(function, new ControllerContext());
   }
 
@@ -76,7 +75,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param function function
    * @param settings settings
    */
-  public SplibSearchListController(@Nonnull String function, ControllerContext settings) {
+  public SplibSearchListController(String function, ControllerContext settings) {
     super(function, settings.subFunction("searchList"));
   }
 
@@ -106,7 +105,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String page(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     searchForm = getProperSearchForm(model, searchForm);
-    listForm.setDataKind(searchForm.getDataKind());
+    listForm.setDataKind(java.util.Objects.toString(searchForm.getDataKind(), ""));
     redirectUrlOnAppExceptionBean = new ReturnUrlBean(this, util, false);
 
     prepare(model, loginUser, searchForm, listForm);
@@ -205,15 +204,13 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     // Clear info.
     String formName = getFunction() + "SearchForm";
-    String sessionKey =
-        formName + (searchForm.getDataKind() == null || searchForm.getDataKind().equals("") ? ""
-            : "." + searchForm.getDataKind());
+    String sessionKey = getSessionKey(formName, searchForm);
 
     request.getSession().setAttribute(sessionKey, newSearchForm);
 
     prepare(model, loginUser, searchForm, listForm);
     return new ReturnUrlBean(this, util, true)
-        .putParam(SplibWebConstants.KEY_DATA_KIND, searchForm.getDataKind()).getUrl();
+        .putParam(SplibWebConstants.KEY_DATA_KIND, java.util.Objects.toString(searchForm.getDataKind(), "")).getUrl();
   }
 
   /**
@@ -233,52 +230,40 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     String formName = getFunction() + "SearchForm";
     String key = getSessionKey(formName, searchForm);
 
-    if (searchForm != null) {
+    if (searchForm.isRequestFromSearchForm()) {
+      // Argument searchForm (= submitted by pressing search button in a search page) is adopted
+      // when isRequestFromSearchForm == true.
+      request.getSession().setAttribute(key, searchForm);
 
-      if (searchForm.isRequestFromSearchForm()) {
-        // Argument saerchForm (= submitted by pressing search button in a search page) is adopted
-        // when isRequestFromSearchForm == true.
-        request.getSession().setAttribute(key, searchForm);
-
-        // You've got a search resquest means the condition is not newly created.
-        searchForm.setNewlyCreated(false);
-
-      } else {
-        // SearchForm in session is adopted when isRequestFromSearchForm == false
-        // (= accessed by URL or conditioon clear button pressed)
-
-        if (request.getSession().getAttribute(key) == null) {
-          // Add the argument form (= newly created form) to the session.
-          request.getSession().setAttribute(key, searchForm);
-        }
-
-        searchForm = (FST) request.getSession().getAttribute(key);
-
-        // Manage newlyCreated.
-        if (searchForm.getNewlyCreatedRawValue() == null) {
-          searchForm.setNewlyCreated(true);
-
-        } else if (searchForm.getNewlyCreatedRawValue()) {
-          searchForm.setNewlyCreated(false);
-        }
-      }
+      // You've got a search request means the condition is not newly created.
+      searchForm.setNewlyCreated(false);
 
     } else {
-      // I wonder this condition is not possible to happen now....
-      throw new RuntimeException("Not used anymore I believe...");
-      // if (request.getSession().getAttribute(formName) == null) {
-      // throw new RuntimeException("searchForm == null cannot be occurred.");
-      // }
+      // SearchForm in session is adopted when isRequestFromSearchForm == false
+      // (= accessed by URL or condition clear button pressed)
+
+      if (request.getSession().getAttribute(key) == null) {
+        // Add the argument form (= newly created form) to the session.
+        request.getSession().setAttribute(key, searchForm);
+      }
+
+      searchForm = (FST) request.getSession().getAttribute(key);
+
+      // Manage newlyCreated.
+      if (searchForm.getNewlyCreatedRawValue() == null) {
+        searchForm.setNewlyCreated(true);
+
+      } else if (searchForm.getNewlyCreatedRawValue()) {
+        searchForm.setNewlyCreated(false);
+      }
     }
 
-    FST formUsedForSearch = (FST) request.getSession().getAttribute(key);
-
-    return formUsedForSearch;
+    return (FST) request.getSession().getAttribute(key);
   }
 
   private String getSessionKey(String formName, FST searchForm) {
-    return formName + (searchForm == null || searchForm.getDataKind() == null
-        || searchForm.getDataKind().equals("") ? "" : "." + searchForm.getDataKind());
+    return formName + (java.util.Objects.toString(searchForm.getDataKind(), "") == null || java.util.Objects.toString(searchForm.getDataKind(), "").isEmpty()
+        ? "" : "." + java.util.Objects.toString(searchForm.getDataKind(), ""));
   }
 
   /**

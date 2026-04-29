@@ -15,7 +15,7 @@
  */
 package jp.ecuacion.splib.web.service;
 
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +36,9 @@ public abstract class SplibGeneralService {
 
   @Autowired
   private HttpServletRequest request;
+
+  @Autowired
+  private SplibUtil util;
 
   private DetailLogger detailLog = new DetailLogger(this);
 
@@ -72,7 +75,7 @@ public abstract class SplibGeneralService {
    * <p>It's often used to construct a record.</p>
    */
   public DatetimeFormatParameters getParams() {
-    return new SplibUtil().getParams(request);
+    return util.getParams(request);
   }
 
   /** 
@@ -86,7 +89,8 @@ public abstract class SplibGeneralService {
    * @param allFormList a list of forms
    * @param loginUser UserDetails
    */
-  public void prepareForm(List<SplibGeneralForm> allFormList, UserDetails loginUser) {
+  public void prepareForm(List<SplibGeneralForm> allFormList,
+      @Nullable UserDetails loginUser) {
     detailLog
         .debug("prepareForm(List<SplibGeneralForm> allFormList, UserDetails loginUser) called.");
   }

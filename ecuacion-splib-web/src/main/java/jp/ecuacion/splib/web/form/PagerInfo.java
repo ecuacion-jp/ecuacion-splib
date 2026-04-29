@@ -15,6 +15,8 @@
  */
 package jp.ecuacion.splib.web.form;
 
+import org.jspecify.annotations.Nullable;
+
 /** 
  * Consists of a cell which is a part of a pager structure.
  */
@@ -33,6 +35,7 @@ public class PagerInfo {
   /**
    * The page number to which the page transitions by pressing a link.
    */
+  @Nullable
   private String goToPage;
 
   /**
@@ -72,7 +75,7 @@ public class PagerInfo {
     return status.equals("disabled");
   }
   
-  public String getGoToPage() {
+  public @Nullable String getGoToPage() {
     return goToPage;
   }
   

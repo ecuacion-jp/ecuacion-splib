@@ -25,6 +25,7 @@ import java.util.Base64;
 import jp.ecuacion.lib.core.util.DateTimeApiUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -41,7 +42,7 @@ public class SplibComponentUtil {
    * @return file saved path, may be null when file is not uploaded.
    * @throws Exception Exception
    */
-  public static String saveUploadedFile(MultipartFile file) throws Exception {
+  public static @Nullable String saveUploadedFile(@Nullable MultipartFile file) throws Exception {
     if (file == null) {
       return null;
     }
@@ -58,7 +59,7 @@ public class SplibComponentUtil {
    * @return file saved path, may be null when file is not uploaded.
    * @throws Exception Exception
    */
-  public static String saveUploadedFile(String base64) throws Exception {
+  public static @Nullable String saveUploadedFile(String base64) throws Exception {
 
     if (StringUtils.isEmpty(base64)) {
       return null;
@@ -71,7 +72,8 @@ public class SplibComponentUtil {
     return saveUploadedFileCommon(decoder.decode(base64), "");
   }
 
-  private static String saveUploadedFileCommon(byte[] bytes, String filename) throws IOException {
+  private static @Nullable String saveUploadedFileCommon(byte[] bytes, String filename)
+      throws IOException {
 
     if (bytes == null || bytes.length == 0) {
       return null;

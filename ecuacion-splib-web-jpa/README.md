@@ -20,9 +20,6 @@ It is designed to release created war into `tomcat`.
 (modules depending on `ecuacion-splib-web`)
 - `jp.ecuacion.lib:ecuacion-splib-core`
 
-(modules depending on `ecuacion-splib-jpa`)
-- `jp.ecuacion.lib:ecuacion-lib-jpa`
-
 (modules depending on `ecuacion-splib-core`)
 - `jp.ecuacion.lib:ecuacion-lib-core`
 

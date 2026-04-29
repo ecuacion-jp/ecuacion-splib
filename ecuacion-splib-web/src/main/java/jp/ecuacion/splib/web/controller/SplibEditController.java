@@ -15,8 +15,8 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.bean.MessagesBean;
+import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
@@ -49,6 +49,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    */
   private PageTemplatePatternEnum pageTemplatePattern;
 
+  @Nullable
   protected ReturnUrlBean redirectOnSuccess;
 
   @Autowired
@@ -60,7 +61,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @param function function
    */
   public SplibEditController(PageTemplatePatternEnum pageTemplatePattern,
-      @Nonnull String function) {
+      String function) {
     this(pageTemplatePattern, function, new ControllerContext());
   }
 
@@ -70,7 +71,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @param function function
    * @param settings settings
    */
-  public SplibEditController(PageTemplatePatternEnum pageTemplatePattern, @Nonnull String function,
+  public SplibEditController(PageTemplatePatternEnum pageTemplatePattern, String function,
       ControllerContext settings) {
     super(function, settings.subFunction("edit"));
 
@@ -136,7 +137,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
     MessagesBean messageBean =
         (MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
 
-    if (messageBean.getErrorMessages().size() == 0) {
+    if (messageBean.getErrorMessages().isEmpty()) {
       form.setIsInsert(isInsert);
       getService().page(form, loginUser);
     }
@@ -159,7 +160,8 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
   @PostMapping(value = "action", params = "action=insertOrUpdate")
   public String edit(@Validated F form, BindingResult result, Model model,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    addParamToParamListOnRedirectToSelf("action", form.isInsert() ? PARAM_INSERT : PARAM_UPDATE);
+    addParamToParamListOnRedirectToSelf("action",
+        Boolean.TRUE.equals(form.isInsert()) ? PARAM_INSERT : PARAM_UPDATE);
     prepare(model, loginUser, form.validate(result));
     getService().edit(form, loginUser);
 

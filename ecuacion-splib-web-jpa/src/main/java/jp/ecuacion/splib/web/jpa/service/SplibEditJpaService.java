@@ -17,7 +17,7 @@ package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jp.ecuacion.lib.jpa.entity.EclibEntity;
+import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
@@ -30,10 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
  * @param <E> AbstractEntity
  */
 @Transactional(rollbackFor = Exception.class)
-public abstract class SplibEditJpaService<F extends SplibEditForm, E extends EclibEntity>
+public abstract class SplibEditJpaService<F extends SplibEditForm, E extends SplibEntity>
     extends SplibEditService<F> implements SplibJpaServiceInterface<E> {
 
   @PersistenceContext
+  @SuppressWarnings("NullAway")
   protected EntityManager em;
 
   /**
@@ -62,7 +63,7 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Ecl
    *     but "insertOrUpdate" method is created for simplicity.
    * </p>
    */
-  protected <T extends EclibEntity> T insertOrUpdate(SplibRepository<T, ?> repo, T e) {
+  protected <T extends SplibEntity> T insertOrUpdate(SplibRepository<T, ?> repo, T e) {
 
     return repo.save(e);
   }

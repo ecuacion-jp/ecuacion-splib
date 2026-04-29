@@ -15,11 +15,9 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
@@ -44,7 +42,7 @@ public abstract class SplibGeneral2FormsController
    * 
    * @param function function
    */
-  public SplibGeneral2FormsController(@Nonnull String function) {
+  public SplibGeneral2FormsController(String function) {
     super(function);
   }
 
@@ -54,8 +52,8 @@ public abstract class SplibGeneral2FormsController
    * @param function function
    * @param settings settings
    */
-  protected SplibGeneral2FormsController(@Nonnull String function,
-      @NonNull ControllerContext settings) {
+  protected SplibGeneral2FormsController(String function,
+      ControllerContext settings) {
     super(function, settings);
   }
 

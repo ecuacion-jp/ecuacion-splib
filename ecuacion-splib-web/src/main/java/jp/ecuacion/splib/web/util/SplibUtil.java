@@ -17,9 +17,8 @@ package jp.ecuacion.splib.web.util;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
@@ -82,7 +81,7 @@ public class SplibUtil {
     // resulting in "/public/..." just as when there is no contextPath.
     // However, to guard against irregularities such as getContextPath() returning a path
     // without a leading "/", add a check here as a precaution.
-    if ((!contextPath.equals("") && !contextPath.startsWith("/"))
+    if ((!contextPath.isEmpty() && !contextPath.startsWith("/"))
         || !urlPathWithContextPath.startsWith("/")) {
       throw new RuntimeException(
           "servletContext.getContextPath() or request.getRequestURI() does not start with"
@@ -93,7 +92,7 @@ public class SplibUtil {
     String urlPath = urlPathWithContextPath;
 
     // In addition to contextPath == "", also handle contextPath == "/"; ignore both cases.
-    if (!contextPath.equals("") && !contextPath.equals("/")) {
+    if (!contextPath.isEmpty() && !contextPath.equals("/")) {
       urlPath = urlPath.replaceFirst(servletContext.getContextPath(), "");
     }
 
@@ -111,12 +110,8 @@ public class SplibUtil {
     }
 
     // Check that the loginState is a valid one.
-    List<String> loginStateCodeList = new ArrayList<>();
-    for (LoginStateEnum anEnum : LoginStateEnum.values()) {
-      loginStateCodeList.add(anEnum.getCode());
-    }
-
-    if (!loginStateCodeList.contains(loginState)) {
+    final String finalLoginState = loginState;
+    if (Arrays.stream(LoginStateEnum.values()).noneMatch(e -> e.getCode().equals(finalLoginState))) {
       throw new RuntimeException(
           "loginState not appropriate: loginState = " + loginState + ", urlPath = " + urlPath);
     }

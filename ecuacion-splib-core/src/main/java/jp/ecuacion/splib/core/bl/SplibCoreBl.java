@@ -28,6 +28,8 @@ import jp.ecuacion.lib.core.util.ReflectionUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Supplies utilities.
@@ -44,7 +46,7 @@ public class SplibCoreBl extends ReflectionUtil {
         .map(path -> container.getItem(path).getItemNameKey()).toList();
 
     throwExceptionWhenDuplicated(isDuplicated, checkFromAllGroups, itemPropertyPaths,
-        itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
+        itemNameKeyList.toArray(String[]::new));
   }
 
   /**
@@ -90,11 +92,11 @@ public class SplibCoreBl extends ReflectionUtil {
           .toList();
     }
 
-    List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
+    List<@NonNull String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
         .map(path -> rec.getItem(path).getItemNameKey()).toList();
 
-    SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0, checkFromAllGroups,
-        checkTargetItemPropertyPaths, itemNameKeys.toArray(new String[itemNameKeys.size()]));
+    SplibCoreBl.throwExceptionWhenDuplicated(!listWithoutMyself.isEmpty(), checkFromAllGroups,
+        checkTargetItemPropertyPaths, itemNameKeys.toArray(String[]::new));
   }
 
   /**
@@ -107,9 +109,10 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with list.
    */
-  public <T> void internalChildExistenceCheck(List<T> list, String messageId,
+  public <T> void internalChildExistenceCheck(List<T> list, @Nullable String messageId,
       String entityMessageIdPart) {
-    internalChildExistenceCheck(list, messageId, entityMessageIdPart, null, null, null);
+    internalChildExistenceCheck(list, messageId, entityMessageIdPart,
+        new ChildExistenceCheckConditionBean[] {}, null, null);
   }
 
   /**
@@ -123,9 +126,9 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with list.
    */
-  protected <T> void internalChildExistenceCheck(List<T> list, String messageId,
-      String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
-      String referingRecordDataLabel, String recordSpecifyingFieldName) {
+  protected <T> void internalChildExistenceCheck(List<T> list, @Nullable String messageId,
+      String entityMessageIdPart, ChildExistenceCheckConditionBean @Nullable [] conditions,
+      @Nullable String referingRecordDataLabel, @Nullable String recordSpecifyingFieldName) {
 
     if (conditions != null) {
       for (ChildExistenceCheckConditionBean condition : conditions) {
@@ -136,7 +139,7 @@ public class SplibCoreBl extends ReflectionUtil {
       }
     }
 
-    if (list.size() > 0) {
+    if (!list.isEmpty()) {
       String msgCmnPrefix = "jp.ecuacion.splib.core.bl.SplibCoreBl.message";
       String msgPrefix = msgCmnPrefix + ".cannotBeDeletedBecauseOfReference";
       String msgId = messageId != null ? messageId
@@ -164,9 +167,10 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with optional.
    */
-  public <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
+  public <T> void internalChildExistenceCheck(Optional<T> optional, @Nullable String messageId,
       String entityMessageIdPart) {
-    internalChildExistenceCheck(optional, messageId, entityMessageIdPart, null, null, null);
+    internalChildExistenceCheck(optional, messageId, entityMessageIdPart,
+        new ChildExistenceCheckConditionBean[] {}, null, null);
   }
 
   /**
@@ -180,16 +184,16 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with optional.
    */
-  protected <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
-      String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
-      String referingRecordDataLabel, String recordSpecifyingFieldName) {
+  protected <T> void internalChildExistenceCheck(Optional<T> optional, @Nullable String messageId,
+      String entityMessageIdPart, @Nullable ChildExistenceCheckConditionBean[] conditions,
+      @Nullable String referingRecordDataLabel, @Nullable String recordSpecifyingFieldName) {
     List<T> list = new ArrayList<>();
 
     if (optional.isPresent()) {
       list.add(optional.get());
     }
 
-    internalChildExistenceCheck(list, null, entityMessageIdPart, conditions,
+    internalChildExistenceCheck(list, (@Nullable String) null, entityMessageIdPart, conditions,
         referingRecordDataLabel, recordSpecifyingFieldName);
   }
 

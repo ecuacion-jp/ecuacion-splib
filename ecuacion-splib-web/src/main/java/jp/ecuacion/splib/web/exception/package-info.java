@@ -17,4 +17,7 @@
 /**
  * Provides exceptions.
  */
+@NullMarked
 package jp.ecuacion.splib.web.exception;
+
+import org.jspecify.annotations.NullMarked;

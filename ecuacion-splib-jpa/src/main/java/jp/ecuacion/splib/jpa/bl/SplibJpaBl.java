@@ -19,8 +19,8 @@ import java.util.Optional;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
-import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.bl.SplibCoreBl;
+import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
@@ -31,7 +31,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
  * @param <I> Id of entity
  * @param <V> Version of entity
  */
-public abstract class SplibJpaBl<E extends EclibEntity, I, V> extends SplibCoreBl {
+public abstract class SplibJpaBl<E extends SplibEntity, I, V> extends SplibCoreBl {
 
   /**
    * Is used for {@code findAndOptimisticLockingCheck()}.

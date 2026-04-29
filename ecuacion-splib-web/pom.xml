@@ -91,6 +91,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
 		<!-- spring-data-coreは使用したいが、jpaなどの個別実装は含めたくない。starterにはそのような選択肢がないようなのでmoduleを個別指定 -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>

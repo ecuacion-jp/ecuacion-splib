@@ -59,6 +59,10 @@
 		<com.github.spotbugs.spotbugs-maven-plugin.version>4.9.8.1</com.github.spotbugs.spotbugs-maven-plugin.version>
 		<com.github.spotbugs.spotbugs.version>4.9.8</com.github.spotbugs.spotbugs.version>
 		<org.apache.maven.plugins.maven-enforcer-plugin.version>3.5.0</org.apache.maven.plugins.maven-enforcer-plugin.version>
+		<org.sonatype.central.central-publishing-maven-plugin.version>0.10.0</org.sonatype.central.central-publishing-maven-plugin.version>
+		<!-- nullaway / error prone -->
+		<com.uber.nullaway.version>0.13.4</com.uber.nullaway.version>
+		<com.google.errorprone.error_prone_core.version>2.49.0</com.google.errorprone.error_prone_core.version>
 	</properties>
 
 	<repositories> 
@@ -105,27 +109,6 @@
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
 					</configuration>
-				</plugin>
-
-				<!-- pom.xmlからproject.versionを取得しsrc/main/resources/version.propertiesに格納する処理で必要 -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<version>${org.codehaus.mojo.exec-maven-plugin.version}</version>
-					<executions>
-						<execution>
-							<!-- eclipseのm2e pluginが処理できないためm2eは無視するようタグ埋め込み -->
-							<?m2e ignore?>
-							<id>Version Calculation</id>
-							<phase>generate-sources</phase>
-							<goals>
-								<goal>exec</goal>
-							</goals>
-							<configuration>
-								<executable>../../ecuacion-build-tools/create-version-properties.sh</executable>
-							</configuration>
-						</execution>
-					</executions>
 				</plugin>
 
 				<!-- maven-source-plugin (outputs a jar of source) -->
@@ -181,6 +164,7 @@
 					<artifactId>wagon-maven-plugin</artifactId>
 					<version>${org.codehaus.mojo.wagon-maven-plugin.version}</version>
 					<configuration>
+						<skip>${wagon.skip}</skip>
 						<fromFile>${project.build.directory}/${project.build.finalName}-javadoc.jar</fromFile>
 						<url>${remote-location.javadoc}/work</url>
 						<serverId>ecuacion-repo-sftp</serverId>
@@ -288,6 +272,32 @@
 					<configuration>
 						<excludeFilterFile>https://ecuacion-jp.github.io/config/common/spotbugs/exclude.xml</excludeFilterFile>
 						<failOnError>false</failOnError>
+					</configuration>
+				</plugin>
+
+				<!-- maven-compiler-plugin with NullAway -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<compilerArgs>
+							<arg>-XDcompilePolicy=simple</arg>
+							<arg>-XDshould-stop.ifError=FLOW</arg>
+							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+							<arg>-Xplugin:ErrorProne -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
+						</compilerArgs>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>com.google.errorprone</groupId>
+								<artifactId>error_prone_core</artifactId>
+								<version>${com.google.errorprone.error_prone_core.version}</version>
+							</path>
+							<path>
+								<groupId>com.uber.nullaway</groupId>
+								<artifactId>nullaway</artifactId>
+								<version>${com.uber.nullaway.version}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -435,8 +445,51 @@
 				</repository>
 			</repositories>
 		</profile>
+
+		<profile>
+			<id>maven-central</id>
+			<build>
+				<plugins>
+
+					<!-- maven-gpg-plugin (signs artifacts for Maven Central) -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${org.apache.maven.plugins.maven-gpg-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<gpgArguments>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
+						</configuration>
+					</plugin>
+
+					<!-- central-publishing-maven-plugin (publishes to Maven Central) -->
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>${org.sonatype.central.central-publishing-maven-plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<publishingServerId>central</publishingServerId>
+							<autoPublish>false</autoPublish>
+						</configuration>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
-	
+
 	<!-- jspecify -->
 	<dependencies>
 		<dependency>
@@ -454,4 +507,5 @@
 		<module>ecuacion-splib-web-jpa</module>
 		<module>ecuacion-splib-rest</module>
 	</modules>
+
 </project>

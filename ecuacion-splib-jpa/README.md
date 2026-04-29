@@ -13,7 +13,6 @@
 ### Automatically Loaded Libraries
 
 - `jp.ecuacion.lib:ecuacion-splib-core`
-- `jp.ecuacion.lib:ecuacion-lib-jpa`
 
 (modules depending on `ecuacion-splib-core`)
 - `jp.ecuacion.lib:ecuacion-lib-core`

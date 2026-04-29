@@ -17,4 +17,7 @@
 /**
  * Provides Controllers.
  */
+@NullMarked
 package jp.ecuacion.splib.web.jpa.controller;
+
+import org.jspecify.annotations.NullMarked;

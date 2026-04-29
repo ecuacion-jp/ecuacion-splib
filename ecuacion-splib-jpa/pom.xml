@@ -83,11 +83,5 @@
 			<artifactId>ecuacion-splib-core</artifactId>
 		</dependency>
 
-		<!-- ecuacion-lib -->
-		<dependency>
-			<groupId>jp.ecuacion.lib</groupId>
-			<artifactId>ecuacion-lib-jpa</artifactId>
-		</dependency>
-
 	</dependencies>
 </project>
