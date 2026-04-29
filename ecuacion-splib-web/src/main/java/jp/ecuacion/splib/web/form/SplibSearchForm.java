@@ -15,12 +15,12 @@
  */
 package jp.ecuacion.splib.web.form;
 
-import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.springframework.data.domain.PageRequest;
@@ -53,6 +53,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    *     In SplibSearchListController#getProperSearchForm(Model, FST) changes it to "true".
    *     Next time this passes the method above, it again changes to "false".</p>
    */
+  @Nullable
   private Boolean newlyCreated;
 
   /**
@@ -67,6 +68,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   protected Integer recordsInScreen;
 
   /** Received from service and used when creating the pager. */
+  @Nullable
   protected Integer numberOfRecords;
 
   public boolean isPrepared() {
@@ -82,7 +84,6 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * 
    * @return String
    */
-  @Nonnull
   protected abstract String getDefaultSortItem();
 
   /** Default value is set here but can be changed per individual form. */
@@ -122,7 +123,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * Otherwise the code inside want to know if the value is null, 
    * so the method obtaining raw value (means it may return null) prepared.
    */
-  public Boolean getNewlyCreatedRawValue() {
+  public @Nullable Boolean getNewlyCreatedRawValue() {
     return newlyCreated;
   }
 
@@ -139,7 +140,6 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * 
    * @return String
    */
-  @Nonnull
   public String getSortItemWithDefault() {
     String rtn = (sortItem == null) ? getDefaultSortItem() : sortItem;
     return Objects.requireNonNull(rtn);
@@ -197,10 +197,10 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
 
   /**
    * The value is assumed to be set via setNumberOfRecordsAndAdjustCurrentPageNumger().
-   * If numberOfRecords is set by any other means the processing will not work correctly,
+   * If numRecTotal is set by any other means the processing will not work correctly,
    * so the normal setter has been intentionally removed.
    */
-  public Integer getNumberOfRecords() {
+  public @Nullable Integer getNumberOfRecords() {
     return numberOfRecords;
   }
 
@@ -223,8 +223,9 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
   private void changePageIfThePageNumberExceedsTheLast() {
 
     // Last page derived from record count (zero-based page number used by Pager).
+    int numRec = java.util.Objects.requireNonNull(numberOfRecords);
     int lastPageFromRecordCount =
-        numberOfRecords / recordsInScreen + (numberOfRecords % recordsInScreen > 0 ? 1 : 0) - 1;
+        numRec / recordsInScreen + (numRec % recordsInScreen > 0 ? 1 : 0) - 1;
 
     // Correct: when search result is 0 records, lastPageFromRecordCount becomes -1.
     if (lastPageFromRecordCount < 0) {
@@ -293,7 +294,8 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     PageRequest pageRequest = getPageRequest();
 
     // Return empty list when pager is not shown.
-    if (numberOfRecords <= recordsInScreen) {
+    int numRec2 = java.util.Objects.requireNonNull(numberOfRecords);
+    if (numRec2 <= recordsInScreen) {
       return rtnList;
     }
 
@@ -308,14 +310,14 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
 
     // The "..." cell comes next when: current page is 1 and there are 3+ total pages,
     // or current page is 3 or later.
-    if ((pageRequest.getPageNumber() == 0 && numberOfRecords > recordsInScreen * 2)
+    if ((pageRequest.getPageNumber() == 0 && numRec2 > recordsInScreen * 2)
         || pageRequest.getPageNumber() >= 2) {
       rtnList.add(new PagerInfo("..."));
     }
 
     // Last page derived from record count (zero-based page number used by Pager).
     int lastPageFromRecordCount =
-        numberOfRecords / recordsInScreen + (numberOfRecords % recordsInScreen > 0 ? 1 : 0) - 1;
+        numRec2 / recordsInScreen + (numRec2 % recordsInScreen > 0 ? 1 : 0) - 1;
 
     // The number sandwiched between page 1 and the last page.
     // Skipped when current page is 1 or the last page.
@@ -359,24 +361,28 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    */
   public String getLinesInScreen() {
     // When there are zero records.
-    if (numberOfRecords == 0) {
+    int numRec = java.util.Objects.requireNonNull(numberOfRecords);
+    if (numRec == 0) {
       return "";
 
       // When displaying beyond the last page due to a bug.
       // (Planned to fix, but implemented to avoid errors if this occurs.)
-    } else if (numberOfRecords / recordsInScreen < page) {
-      return "( - / " + numberOfRecords + ")";
+    } else if (numRec / recordsInScreen < page) {
+      return "( - / " + numRec + ")";
     }
 
     int min = page * recordsInScreen + 1;
     int normalMax = (page + 1) * recordsInScreen;
-    int max = normalMax > numberOfRecords ? numberOfRecords : normalMax;
-    return "( " + min + " - " + max + " / " + numberOfRecords + " )";
+    int max = normalMax > numRec ? numRec : normalMax;
+    return "( " + min + " - " + max + " / " + numRec + " )";
   }
 
   @Override
   protected List<String> getNotEmptyItemPropertyPathList(HtmlItemContainer rootRecord,
-      String loginState, RolesAndAuthoritiesBean bean) {
+      String loginState, @Nullable RolesAndAuthoritiesBean bean) {
+    if (bean == null) {
+      return new java.util.ArrayList<>();
+    }
     return rootRecord.getNotEmptyOnSearchItemPropertyPathList(loginState, bean);
   }
 }

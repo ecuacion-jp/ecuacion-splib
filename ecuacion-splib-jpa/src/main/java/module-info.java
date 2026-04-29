@@ -17,6 +17,7 @@ module jp.ecuacion.splib.jpa {
   exports jp.ecuacion.splib.jpa.advice;
   exports jp.ecuacion.splib.jpa.bean;
   exports jp.ecuacion.splib.jpa.config;
+  exports jp.ecuacion.splib.jpa.entity;
   exports jp.ecuacion.splib.jpa.repository;
   exports jp.ecuacion.splib.jpa.util;
 	

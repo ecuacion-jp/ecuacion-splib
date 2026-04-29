@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 public class SplibJpaHibernateUtil {
 
   @PersistenceContext
+  @SuppressWarnings("NullAway")
   private EntityManager em;
 
   /**

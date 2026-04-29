@@ -18,7 +18,7 @@ package jp.ecuacion.splib.web.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomBooleanEditor;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
@@ -62,7 +62,7 @@ public abstract class SplibBaseController {
         // Now we're trying to save is the non-selected checkbox boolean item which submits nothing.
         setValue(false);
 
-      } else if (text.equals("")) {
+      } else if (text.isEmpty()) {
         // That boolean value is "" means that
         // the component corresponding to the item is dropdown and ""
         // out of 3 options (true / false / none) is selected. (This normally happens when search

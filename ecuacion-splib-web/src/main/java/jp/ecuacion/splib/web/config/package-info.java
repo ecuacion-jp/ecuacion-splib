@@ -17,4 +17,7 @@
 /**
  * Provides configs.
  */
+@NullMarked
 package jp.ecuacion.splib.web.config;
+
+import org.jspecify.annotations.NullMarked;

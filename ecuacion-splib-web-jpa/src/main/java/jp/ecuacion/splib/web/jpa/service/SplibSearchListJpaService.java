@@ -20,8 +20,9 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import jp.ecuacion.lib.jpa.entity.EclibEntity;
+import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
+import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
@@ -42,14 +43,18 @@ import org.springframework.transaction.annotation.Transactional;
 //@formatter:off
 @Transactional(rollbackFor = Exception.class)
 public abstract class SplibSearchListJpaService<FST extends SplibSearchForm, 
-    FLT extends SplibListForm<?>, E extends EclibEntity>
+    FLT extends SplibListForm<?>, E extends SplibEntity>
     extends SplibSearchListService<FST, FLT> implements SplibJpaServiceInterface<E> {
   //@formatter:on
 
   @Autowired
   private HttpServletRequest request;
 
+  @Autowired
+  private SplibUtil util;
+
   @PersistenceContext
+  @SuppressWarnings("NullAway")
   protected EntityManager em;
 
   //
@@ -61,14 +66,14 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
    * the offset value may be null if the login screen is left open and abandoned.
    */
   public DatetimeFormatParameters getParams() {
-    return new SplibUtil().getParams(request);
+    return util.getParams(request);
   }
 
   /**
    * Gets a localDate field (String) inside a record as a LocalDate.
    */
-  protected LocalDate localDate(String date) {
-    return (date == null || date.equals("")) ? null
+  protected @Nullable LocalDate localDate(String date) {
+    return (date == null || date.isEmpty()) ? null
         : LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
   }
 

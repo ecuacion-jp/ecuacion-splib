@@ -15,8 +15,7 @@
  */
 package jp.ecuacion.splib.web.exceptionhandler;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -65,6 +64,7 @@ public abstract class SplibExceptionHandler {
   HttpServletRequest request;
 
   @Autowired(required = false)
+  @Nullable
   SplibExceptionHandlerAction actionOnThrowable;
 
   @Autowired
@@ -75,7 +75,6 @@ public abstract class SplibExceptionHandler {
    *
    * @return SplibGeneralController
    */
-  @Nonnull
   protected SplibGeneralController<?> getController() {
     return (SplibGeneralController<?>) getModel().getAttribute(SplibWebConstants.KEY_CONTROLLER);
   }
@@ -85,7 +84,6 @@ public abstract class SplibExceptionHandler {
    *
    * @return SplibGeneralController
    */
-  @Nonnull
   private SplibGeneralForm[] getForms() {
     return ((SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS));
   }
@@ -95,12 +93,11 @@ public abstract class SplibExceptionHandler {
    *
    * @return Model
    */
-  @Nonnull
   private Model getModel() {
     return (Model) request.getAttribute(SplibWebConstants.KEY_MODEL);
   }
 
-  private @Nonnull ModelAndView appExceptionFinalHandler(@Nonnull SplibGeneralController<?> ctrl,
+  private ModelAndView appExceptionFinalHandler(SplibGeneralController<?> ctrl,
       @Nullable UserDetails loginUser, boolean isRedirect, @Nullable ReturnUrlBean redirectBean) {
 
     SplibGeneralForm[] forms =
@@ -140,7 +137,7 @@ public abstract class SplibExceptionHandler {
    * @throws Exception Exception
    */
   @ExceptionHandler({ViolationWarningException.class})
-  public @Nonnull ModelAndView handleWarning(@Nonnull ViolationWarningException exception,
+  public ModelAndView handleWarning(ViolationWarningException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     MessagesBean messagesBean =
         ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
@@ -169,13 +166,19 @@ public abstract class SplibExceptionHandler {
    * @throws Exception Exception
    */
   @ExceptionHandler({ViolationException.class})
-  public @Nonnull ModelAndView handleViolationException(@Nonnull ViolationException exception,
+  public ModelAndView handleViolationException(ViolationException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     boolean needsMsgAtItemDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
     boolean needsMsgAtTopDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
+
+    if (!needsMsgAtItemDefault && !needsMsgAtTopDefault) {
+      throw new RuntimeException(
+          "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
+              + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.");
+    }
 
     MessagesBean messagesBean =
         (MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
@@ -184,20 +187,24 @@ public abstract class SplibExceptionHandler {
     MessageParameters params = violations.messageParameters();
 
     for (ConstraintViolation<?> cv : violations.getConstraintViolations()) {
-      boolean needsMsgAtItem = !needsMsgAtItemDefault ? false
-          : (params.isMessageWithItemName() != null ? !params.isMessageWithItemName() : true);
-      boolean needsMsgAtTop = !needsMsgAtItem;
-      String message = ExceptionUtil.getMessageList(
-          new Violations().messageParameters(params).add(cv), request.getLocale(),
-          needsMsgAtTop).get(0);
+      boolean needsMsgAtItem = needsMsgAtItemDefault
+          && (params.isMessageWithItemName() != null ? !params.isMessageWithItemName() : true);
+      boolean needsMsgAtTop = needsMsgAtTopDefault;
       if (needsMsgAtItem) {
-        if (messagesBean.getErrorMessagesAtEachItem().size() == 0) {
+        String message = ExceptionUtil.getMessageList(
+            new Violations().messageParameters(params).add(cv), request.getLocale(),
+            false).get(0);
+        if (messagesBean.getErrorMessagesAtEachItem().isEmpty()) {
           String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
           messagesBean.setErrorMessage(PropertiesFileUtil.getMessage(request.getLocale(), key),
               false);
         }
         messagesBean.setErrorMessage(message, true, new String[] {});
-      } else {
+      }
+      if (needsMsgAtTop) {
+        String message = ExceptionUtil.getMessageList(
+            new Violations().messageParameters(params).add(cv), request.getLocale(),
+            true).get(0);
         messagesBean.setErrorMessage(message, false, new String[] {});
       }
     }
@@ -220,8 +227,8 @@ public abstract class SplibExceptionHandler {
    * @throws Exception Exception
    */
   @ExceptionHandler({ConstraintViolationException.class})
-  public @Nonnull ModelAndView handleConstraintViolationException(
-      @Nonnull ConstraintViolationException exception,
+  public ModelAndView handleConstraintViolationException(
+      ConstraintViolationException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     MessageParameters params = exception instanceof ConstraintViolationExceptionWithParameters
         ? ((ConstraintViolationExceptionWithParameters) exception).getMessageParameters()
@@ -241,8 +248,8 @@ public abstract class SplibExceptionHandler {
    * @throws Exception Exception
    */
   @ExceptionHandler({OverlappingFileLockException.class})
-  public @Nonnull ModelAndView handleOptimisticLockingFailureException(
-      @Nonnull OverlappingFileLockException exception,
+  public ModelAndView handleOptimisticLockingFailureException(
+      @Nullable OverlappingFileLockException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
 
     String msgId = "jp.ecuacion.splib.web.common.message.optimisticLocking";
@@ -276,7 +283,7 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    */
   @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
-  public @Nonnull ModelAndView handleRedirectNeededExceptions(Exception exception, Model newModel) {
+  public ModelAndView handleRedirectNeededExceptions(Exception exception, Model newModel) {
     RedirectException redirectException = null;
 
     // Setup model if it's new.
@@ -330,7 +337,7 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    */
   @ExceptionHandler({Throwable.class})
-  public @Nonnull ModelAndView handleThrowable(@Nonnull Throwable exception, @Nonnull Model model) {
+  public ModelAndView handleThrowable(Throwable exception, Model model) {
 
     LogUtil.logSystemError(detailLog, exception);
 
@@ -354,14 +361,13 @@ public abstract class SplibExceptionHandler {
     }
 
     boolean needsMsgAtItem =
-        !needsMsgAtItemAsDefault ? false : violation.getItemPropertyPaths().length > 0;
-    boolean needsMsgAtTop = !needsMsgAtItem;
-
-    String message = ExceptionUtil
-        .getMessageList(new Violations().add(violation), locale, needsMsgAtTop).get(0);
+        needsMsgAtItemAsDefault && violation.getItemPropertyPaths().length > 0;
+    boolean needsMsgAtTop = needsMsgAtTopAsDefault;
 
     if (needsMsgAtItem) {
-      if (messagesBean.getErrorMessagesAtEachItem().size() == 0) {
+      String message = ExceptionUtil
+          .getMessageList(new Violations().add(violation), locale, false).get(0);
+      if (messagesBean.getErrorMessagesAtEachItem().isEmpty()) {
         String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
         messagesBean.setErrorMessage(PropertiesFileUtil.getMessage(locale, key), false);
       }
@@ -369,6 +375,8 @@ public abstract class SplibExceptionHandler {
     }
 
     if (needsMsgAtTop) {
+      String message = ExceptionUtil
+          .getMessageList(new Violations().add(violation), locale, true).get(0);
       messagesBean.setErrorMessage(message, false, violation.getItemPropertyPaths());
     }
   }

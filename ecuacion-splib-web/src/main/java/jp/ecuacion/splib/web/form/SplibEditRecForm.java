@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.form;
 
 import jakarta.validation.Valid;
 import jp.ecuacion.splib.core.record.SplibRecord;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Stores data for edit.
@@ -24,9 +25,10 @@ import jp.ecuacion.splib.core.record.SplibRecord;
 public abstract class SplibEditRecForm<R extends SplibRecord> extends SplibEditForm {
 
   @Valid
+  @Nullable
   protected R rec;
 
-  public R getRec() {
+  public @Nullable R getRec() {
     return rec;
   }
 

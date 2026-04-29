@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.exception;
 
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.event.Level;
 
 /**
@@ -31,35 +32,36 @@ public class RedirectToHomePageException extends RedirectException {
    * Constructs a new instance.
    */
   public RedirectToHomePageException() {
-    this((Level) null, (String) null, (String) null);
+    this((@Nullable Level) null, (@Nullable String) null, (@Nullable String) null);
   }
 
   /**
    * Constructs a new instance.
    */
   public RedirectToHomePageException(String messageId, String... messageArgs) {
-    this((Level) null, (String) null, messageId, messageArgs);
+    this((@Nullable Level) null, (@Nullable String) null, messageId, messageArgs);
   }
 
   /**
    * Constructs a new instance.
    */
-  public RedirectToHomePageException(Level logLevel, String logString) {
-    this(logLevel, logString, (String) null);
+  public RedirectToHomePageException(@Nullable Level logLevel, @Nullable String logString) {
+    this(logLevel, logString, (@Nullable String) null);
   }
 
   /**
    * Constructs a new instance.
    */
-  public RedirectToHomePageException(Level logLevel, String logString, String messageId,
-      String... messageArgs) {
+  public RedirectToHomePageException(@Nullable Level logLevel, @Nullable String logString,
+      @Nullable String messageId, String... messageArgs) {
     super(properHomePagePath(), logLevel, logString, messageId, messageArgs);
   }
 
   /**
    * See {@link RedirectException}.
    */
-  public RedirectToHomePageException(Level logLevel, String messageId, String[] messageArgs) {
+  public RedirectToHomePageException(@Nullable Level logLevel, String messageId,
+      String[] messageArgs) {
     super(properHomePagePath(), logLevel, messageId, messageArgs);
   }
 

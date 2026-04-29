@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.advice;
 
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.service.SplibDataStoreDependentControllerAdviceService;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,7 +47,8 @@ public abstract class SplibDataStoreDependentControllerAdvice {
    * @param loginUser UserDetails
    */
   @ModelAttribute
-  protected void setAccountInfo(Model model, @AuthenticationPrincipal UserDetails loginUser) {
+  protected void setAccountInfo(Model model,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser) {
 
     executeForAll();
 
@@ -56,8 +58,8 @@ public abstract class SplibDataStoreDependentControllerAdvice {
     }
 
     SplibRecord loginAcc = null;
-    boolean isAdmin = loginUser.getAuthorities().stream().map(e -> e.getAuthority())
-        .filter(auth -> auth.startsWith("ROLE_ADMIN")).toList().size() > 0;
+    boolean isAdmin = loginUser.getAuthorities().stream()
+        .anyMatch(auth -> auth.getAuthority().startsWith("ROLE_ADMIN"));
 
     loginAcc = isAdmin ? service.getAccAdmin(loginUser) : service.getAccGeneral(loginUser);
 

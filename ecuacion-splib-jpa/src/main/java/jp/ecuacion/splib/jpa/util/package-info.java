@@ -17,4 +17,7 @@
 /**
  * Provides utilities for JPA features.
  */
+@NullMarked
 package jp.ecuacion.splib.jpa.util;
+
+import org.jspecify.annotations.NullMarked;

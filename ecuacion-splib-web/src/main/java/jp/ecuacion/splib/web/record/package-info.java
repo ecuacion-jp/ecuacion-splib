@@ -17,4 +17,7 @@
 /**
  * Provides records.
  */
+@NullMarked
 package jp.ecuacion.splib.web.record;
+
+import org.jspecify.annotations.NullMarked;

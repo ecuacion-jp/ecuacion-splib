@@ -100,8 +100,8 @@ public abstract class SplibSearchListService
       return listToSort.stream()
           // #658: Handle the case where rec1.getValue(itemPropertyPath) is null.
           .sorted((rec1, rec2) -> rec1.getValue(itemPropertyPath) == null ? -1 * directionVal
-              : directionVal * ((String) rec1.getValue(itemPropertyPath))
-                  .compareTo((String) rec2.getValue(itemPropertyPath)))
+              : directionVal * ((String) Objects.requireNonNull(rec1.getValue(itemPropertyPath)))
+                  .compareTo((String) Objects.requireNonNull(rec2.getValue(itemPropertyPath))))
           .toList();
     }
   }

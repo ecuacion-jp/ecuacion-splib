@@ -22,6 +22,7 @@ import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -57,12 +58,13 @@ public class SplibThymeleafOptionUtil {
    *     then the value for key1 is {@code {'a', 'b', 'a')}}</li>
    * </ul>
    */
-  private Map<String, List<String>> optionMap(String optionCsv, String duplicationCheckKey) {
+  private Map<String, List<String>> optionMap(String optionCsv,
+      @Nullable String duplicationCheckKey) {
 
     Map<String, List<String>> rtnMap = new HashMap<>();
 
     // Finish when optionCsv is empty.
-    if (optionCsv == null || optionCsv.equals("")) {
+    if (optionCsv == null || optionCsv.isEmpty()) {
       return rtnMap;
     }
 
@@ -81,7 +83,7 @@ public class SplibThymeleafOptionUtil {
       // Ignore empty key because it happens and it's not bad.
       // (It happens when you set an option conditionally like:
       // options = 'a=b,' + (c == null ? '' : 'c=d')
-      if (key.equals("")) {
+      if (key.isEmpty()) {
         continue;
       }
 
@@ -94,7 +96,7 @@ public class SplibThymeleafOptionUtil {
 
       // if the key already exists in the map and allowsDuplicateKey == false,
       // the value is updated and output log.
-      if (rtnMap.get(lowerCaseKey).size() != 0 && duplicationCheckKey != null
+      if (!rtnMap.get(lowerCaseKey).isEmpty() && duplicationCheckKey != null
           && duplicationCheckKey.toLowerCase().equals(lowerCaseKey)) {
         rtnMap.get(lowerCaseKey).clear();
         detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
@@ -127,7 +129,7 @@ public class SplibThymeleafOptionUtil {
    * @param key key
    * @return value
    */
-  public String getValue(String options, String key) {
+  public @Nullable String getValue(String options, String key) {
     String lowerCaseKey = key.toLowerCase();
     Map<String, List<String>> map = (optionMap(options, key));
 
@@ -145,7 +147,7 @@ public class SplibThymeleafOptionUtil {
    */
   public String getValueOrElse(String options, String key, String defaultValue) {
     if (hasKey(options, key)) {
-      return getValue(options, key);
+      return java.util.Objects.requireNonNull(getValue(options, key));
 
     } else {
       return defaultValue;
@@ -184,7 +186,7 @@ public class SplibThymeleafOptionUtil {
     return StringUtil.getSeparatedValuesString(getValues(options, key), " ");
   }
 
-  private String getElementFromPsv(String option, int psvIndex) {
+  private @Nullable String getElementFromPsvNullable(@Nullable String option, int psvIndex) {
 
     if (StringUtils.isEmpty(option)) {
       return null;
@@ -211,9 +213,9 @@ public class SplibThymeleafOptionUtil {
    *      When you want to list multiple strings of same meaning set xxx=yyy multiple times
    *      (like 'classappend=mt-3,classappend=mb-3'))</p>
    */
-  public String getElementFromPsv(String options, String key, int psvIndex) {
-    String option = getValue(options, key);
-    return getElementFromPsv(option, psvIndex);
+  public @Nullable String getElementFromPsv(String options, String key, int psvIndex) {
+    @Nullable String option = getValue(options, key);
+    return getElementFromPsvNullable(option, psvIndex);
   }
 
   /**
@@ -228,14 +230,14 @@ public class SplibThymeleafOptionUtil {
   /**
    * Obtains an element from an array of psv strings.
    */
-  public String getElementFromValuesOfPsv(String options, String key, int arrayIndex,
+  public @Nullable String getElementFromValuesOfPsv(String options, String key, int arrayIndex,
       int psvIndex) {
     String[] array = getValues(options, key);
     if (array.length <= arrayIndex) {
       return null;
 
     } else {
-      return getElementFromPsv(array[arrayIndex], psvIndex);
+      return getElementFromPsvNullable(array[arrayIndex], psvIndex);
     }
   }
 

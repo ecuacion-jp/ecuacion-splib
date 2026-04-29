@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Stores messages shown on pages.
@@ -38,6 +39,7 @@ public class MessagesBean {
    */
   private boolean needsSuccessMessage = false;
 
+  @Nullable
   private WarnMessageBean warnMessage;
 
   /**
@@ -53,11 +55,11 @@ public class MessagesBean {
     this.needsSuccessMessage = needsSuccessMessage;
   }
 
-  public WarnMessageBean getWarnMessage() {
+  public @Nullable WarnMessageBean getWarnMessage() {
     return warnMessage;
   }
 
-  public void setWarnMessage(WarnMessageBean warnMessage) {
+  public void setWarnMessage(@Nullable WarnMessageBean warnMessage) {
     this.warnMessage = warnMessage;
   }
 
@@ -105,7 +107,7 @@ public class MessagesBean {
    */
   public List<String> getErrorMessagesAtEachItem() {
     return errorMessageList.stream()
-        .filter(e -> e.getIsShownAtEachItem() && e.getItemPropertyPathSet().size() > 0)
+        .filter(e -> e.getIsShownAtEachItem() && !e.getItemPropertyPathSet().isEmpty())
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
 
@@ -114,7 +116,7 @@ public class MessagesBean {
    */
   public List<String> getErrorMessagesAtEachItem(String itemPropertyPath) {
     return errorMessageList.stream()
-        .filter(e -> e.getIsShownAtEachItem() && e.getItemPropertyPathSet().size() > 0)
+        .filter(e -> e.getIsShownAtEachItem() && !e.getItemPropertyPathSet().isEmpty())
         .filter(e -> e.getItemPropertyPathSet().contains(itemPropertyPath))
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
@@ -124,7 +126,7 @@ public class MessagesBean {
    */
   public List<String> getErrorMessagesAtTheTop() {
     return errorMessageList.stream()
-        .filter(e -> !(e.getIsShownAtEachItem() && e.getItemPropertyPathSet().size() > 0))
+        .filter(e -> !(e.getIsShownAtEachItem() && !e.getItemPropertyPathSet().isEmpty()))
         .map(e -> e.getMessage()).collect(Collectors.toList());
   }
 
@@ -180,6 +182,7 @@ public class MessagesBean {
   public static class WarnMessageBean {
     private String messageId;
     private String message;
+    @Nullable
     private String buttonName;
 
     /**
@@ -199,7 +202,7 @@ public class MessagesBean {
      * @param message message
      * @param buttonName buttonIdToPressOnConfirm
      */
-    public WarnMessageBean(String messageId, String message, String buttonName) {
+    public WarnMessageBean(String messageId, String message, @Nullable String buttonName) {
       this.messageId = messageId;
       this.message = message;
       this.buttonName = buttonName;

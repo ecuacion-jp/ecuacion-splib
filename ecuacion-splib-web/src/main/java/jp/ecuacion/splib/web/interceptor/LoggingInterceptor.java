@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.StringUtil;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -38,7 +38,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
         .map(e -> e.getKey() + "=" + StringUtil.getCsv(e.getValue())).toList();
 
     detailLog.debug(getPrefix(request) + "request process started. request: "
-        + request.getRequestURI() + (paramList.size() == 0 ? ""
+        + request.getRequestURI() + (paramList.isEmpty() ? ""
             : ", parameters: " + StringUtil.getSeparatedValuesString(paramList, "&")));
 
     return true;

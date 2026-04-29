@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.advice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
@@ -81,7 +82,7 @@ public class SplibControllerAdvice {
       if (contextMap != null) {
         // model
         Map<String, Object> modelMapRedirectFrom =
-            ((Model) contextMap.get(SplibWebConstants.KEY_MODEL)).asMap();
+            ((Model) ObjectsUtil.requireNonNull(contextMap.get(SplibWebConstants.KEY_MODEL))).asMap();
         modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
         model.addAllAttributes(modelMapRedirectFrom);
 
@@ -92,8 +93,10 @@ public class SplibControllerAdvice {
         // Retrieve forms from model and change settings.
         // Validation should have been performed before the redirect if needed,
         // so there is no need to re-validate when reusing.
-        model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
-            .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
+        model.asMap().values().stream()
+            .filter(SplibGeneralForm.class::isInstance)
+            .map(SplibGeneralForm.class::cast)
+            .forEach(SplibGeneralForm::noValidate);
 
         // remove contextMap from session
         request.getSession()

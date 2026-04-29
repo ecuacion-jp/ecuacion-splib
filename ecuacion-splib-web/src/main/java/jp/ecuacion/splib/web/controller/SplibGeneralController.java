@@ -15,8 +15,7 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validation;
@@ -40,7 +39,6 @@ import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
@@ -82,13 +80,11 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     /** 
      * See function().
      */
-    @Nonnull
-    private String function;
+    private String function = "";
 
     /** 
      * See subFunction().
      */
-    @Nonnull
     private String subFunction = "";
 
     /** 
@@ -139,7 +135,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @param function function
      * @return ControllerContext
      */
-    @Nonnull
     public ControllerContext function(String function) {
       this.function = function == null ? "" : function;
       return this;
@@ -164,7 +159,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      *     
      * @return function
      */
-    @Nonnull
     public String function() {
       return function;
     }
@@ -177,7 +171,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @param subFunction subFunction
      * @return ControllerContext
      */
-    @Nonnull
     public ControllerContext subFunction(String subFunction) {
       this.subFunction = ObjectsUtil.requireNonNull(subFunction);
       return this;
@@ -196,7 +189,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * 
      * @return subFunction
      */
-    @Nonnull
     public String subFunction() {
       return subFunction;
     }
@@ -209,7 +201,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @param htmlFilenamePostfix htmlFilenamePostfix
      * @return ControllerContext
      */
-    @Nonnull
     public ControllerContext htmlFilenamePostfix(String htmlFilenamePostfix) {
       this.htmlFilenamePostfix = htmlFilenamePostfix;
       return this;
@@ -244,7 +235,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @param rootRecordName rootRecordName
      * @return ControllerContext
      */
-    @Nonnull
     public ControllerContext mainRootRecordName(String rootRecordName) {
       this.mainRootRecordName = rootRecordName;
       return this;
@@ -272,7 +262,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      *     
      * @return rootRecordName 
      */
-    @Nonnull
     public String mainRootRecordName() {
       return mainRootRecordName == null ? function : mainRootRecordName;
     }
@@ -304,6 +293,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     return new ControllerContext();
   }
 
+  @Nullable
   protected RolesAndAuthoritiesBean rolesAndAuthoritiesBean;
 
   /**
@@ -365,7 +355,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * 
    * @param function function
    */
-  public SplibGeneralController(@Nonnull String function) {
+  public SplibGeneralController(String function) {
     this(function, newContext());
   }
 
@@ -375,7 +365,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param function function
    * @param context context
    */
-  protected SplibGeneralController(@Nonnull String function, @NonNull ControllerContext context) {
+  protected SplibGeneralController(String function, ControllerContext context) {
     context.function(function);
     this.context = context;
   }
@@ -403,9 +393,10 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    *  
    *  <p>{@code BizLogicRedirectAppException} redirect settings is priotized over this settings.</p>
    */
+  @Nullable
   protected ReturnUrlBean redirectUrlOnAppExceptionBean;
 
-  public ReturnUrlBean getRedirectUrlOnAppExceptionBean() {
+  public @Nullable ReturnUrlBean getRedirectUrlOnAppExceptionBean() {
     return redirectUrlOnAppExceptionBean;
   }
 
@@ -452,7 +443,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param loginUser UserDetails
    */
   @ModelAttribute
-  private void setParamsToModel(Model model, @AuthenticationPrincipal UserDetails loginUser) {
+  private void setParamsToModel(Model model,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser) {
     model.addAttribute("functionKindsPathString", context.functionKinds().length == 0 ? ""
         : (StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/"));
     model.addAttribute("function", context.function());
@@ -621,7 +613,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param loginUser loginUser
    * @param forms forms
    */
-  public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms) {
+  public void prepare(Model model, @Nullable UserDetails loginUser, SplibGeneralForm... forms) {
 
     // Common processing for all forms.
     for (SplibGeneralForm form : forms) {
@@ -691,8 +683,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param bean bean
    * @throws FormInputValidationException FormInputValidationException
    */
-  private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
-      RolesAndAuthoritiesBean bean) {
+  private void validationCheck(SplibGeneralForm form, @Nullable BindingResult result,
+      String loginState, @Nullable RolesAndAuthoritiesBean bean) {
     // input validation
     Violations violations = new Violations();
     getBeanValidationAppExceptionList(violations, form, bean);
@@ -701,7 +693,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   private void getBeanValidationAppExceptionList(Violations violations, SplibGeneralForm form,
-      RolesAndAuthoritiesBean bean) {
+      @Nullable RolesAndAuthoritiesBean bean) {
 
     violations.addAll(Validation.buildDefaultValidatorFactory().getValidator().validate(form));
 
@@ -713,83 +705,9 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       form.validateNotEmpty(itemContainer, violations, request.getLocale(), util.getLoginState(),
           bean);
 
-    } catch (Exception ex) {
+    } catch (IllegalAccessException ex) {
       throw new RuntimeException(ex);
     }
   }
 
-  // /*
-  // * The standard Jakarta validation validators are suboptimal — for example,
-  // * Size validator errors are shown even for empty strings.
-  // * When the field is empty, only the empty-field error should be shown,
-  // * so if both NotEmpty and another validator exist for the same field,
-  // * remove all validators except NotEmpty.
-  // */
-  // private void removeDuplicatedValidators(List<ConstraintViolation<?>> cvList) {
-  //
-  // // Build a map with field name as key and a set of CVs as value,
-  // // then remove all validators except NotEmpty for keys that have 2+ validators
-  // // and include NotEmpty.
-  // Map<String, Set<ConstraintViolation<?>>> duplicateCheckMap = new HashMap<>();
-  //
-  // // Keep track of keys that hold NotEmpty for use in subsequent processing.
-  // Set<String> keySetWithNotEmpty = new HashSet<>();
-  //
-  // for (ConstraintViolation<?> cv : cvList) {
-  // String key = cv.getPropertyPath().toString();
-  // if (duplicateCheckMap.get(key) == null) {
-  // duplicateCheckMap.put(key, new HashSet<>());
-  // }
-  //
-  // duplicateCheckMap.get(key).add(cv);
-  //
-  // // If NotEmpty, add to keySetWithNotEmpty.
-  // if (isNotEmptyValidator(cv)) {
-  // keySetWithNotEmpty.add(key);
-  // }
-  // }
-  //
-  // // For keys in keySetWithNotEmpty, remove all validators except NotEmpty from their value sets.
-  // for (String key : keySetWithNotEmpty) {
-  // for (ConstraintViolation<?> cv : duplicateCheckMap.get(key)) {
-  // if (!isNotEmptyValidator(cv)) {
-  // cvList.remove(cv);
-  // }
-  // }
-  // }
-  // }
-
-  // private boolean isNotEmptyValidator(ConstraintViolation<?> cv) {
-  // String validatorClass = cv instanceof ConstraintViolationBean
-  // ? ((ConstraintViolationBean<?>) cv).getValidatorClass()
-  // : cv.getConstraintDescriptor().getAnnotation().getClass().getSimpleName();
-  // return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
-  // }
-
-  // private Comparator<ConstraintViolation<?>> getComparator() {
-  // return new Comparator<>() {
-  // @Override
-  // public int compare(ConstraintViolation<?> f1, ConstraintViolation<?> f2) {
-  // // Compare by field name.
-  // int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
-  // if (result != 0) {
-  // return result;
-  // }
-  //
-  // // If field names are the same, compare by validator name.
-  // result = f1.getConstraintDescriptor().getConstraintValidatorClasses().get(0).getSimpleName()
-  // .compareTo(f2.getConstraintDescriptor().getConstraintValidatorClasses().get(0)
-  // .getSimpleName());
-  // if (result != 0) {
-  // return result;
-  // }
-  //
-  // // If validator types are also the same, it can only be @Pattern.
-  // // For Pattern, sort order is fixed by regexp, so compare by that.
-  // String s1 = (String) f1.getConstraintDescriptor().getAttributes().get("regexp");
-  // String s2 = (String) f2.getConstraintDescriptor().getAttributes().get("regexp");
-  // return s1 == null ? -1 : s1.compareTo(s2);
-  // }
-  // };
-  // }
 }
