@@ -147,7 +147,8 @@ public abstract class SplibExceptionHandler {
 
     BusinessViolation v = exception.getViolations().getBusinessViolations().get(0);
     String buttonId = exception instanceof ViolationWebWarningException
-        ? ((ViolationWebWarningException) exception).getButtonIdPressedIfConfirmed() : null;
+        ? ((ViolationWebWarningException) exception).getButtonIdPressedIfConfirmed()
+        : null;
     messagesBean.setWarnMessage(new WarnMessageBean(
         v.getMessageId(), PropertiesFileUtil.getMessage(request.getLocale(),
             v.getMessageId(), v.getMessageArgs()),
@@ -225,10 +226,9 @@ public abstract class SplibExceptionHandler {
     MessageParameters params = exception instanceof ConstraintViolationExceptionWithParameters
         ? ((ConstraintViolationExceptionWithParameters) exception).getMessageParameters()
         : new MessageParameters();
-    Violations violations = new Violations().messageParameters(params);
-    for (ConstraintViolation<?> cv : exception.getConstraintViolations()) {
-      violations.add(cv);
-    }
+    Violations violations = new Violations()
+        .addAll(exception.getConstraintViolations())
+        .messageParameters(params);
     return handleViolationException(new ViolationException(violations), loginUser);
   }
 
