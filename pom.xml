@@ -50,15 +50,23 @@
 		<org.apache.maven.plugins.maven-war-plugin.version>3.2.2</org.apache.maven.plugins.maven-war-plugin.version>
 		<org.apache.maven.wagon.version>3.5.3</org.apache.maven.wagon.version>
 		<org.codehaus.mojo.exec-maven-plugin.version>3.1.0</org.codehaus.mojo.exec-maven-plugin.version>
-		<org.apache.maven.plugins.maven-source-plugin.version>3.3.1</org.apache.maven.plugins.maven-source-plugin.version>
-		<org.apache.maven.plugins.maven-javadoc-plugin.version>3.11.2</org.apache.maven.plugins.maven-javadoc-plugin.version>
+		<org.apache.maven.plugins.maven-compiler-plugin.version>3.15.0</org.apache.maven.plugins.maven-compiler-plugin.version>
+		<org.apache.maven.plugins.maven-source-plugin.version>3.4.0</org.apache.maven.plugins.maven-source-plugin.version>
+		<org.apache.maven.plugins.maven-javadoc-plugin.version>3.12.0</org.apache.maven.plugins.maven-javadoc-plugin.version>
 		<org.codehaus.mojo.wagon-maven-plugin.version>2.0.2</org.codehaus.mojo.wagon-maven-plugin.version>
-		<com.mycila.license-maven-plugin.version>4.6</com.mycila.license-maven-plugin.version>
+		<com.mycila.license-maven-plugin.version>5.0.0</com.mycila.license-maven-plugin.version>
 		<org.apache.maven.plugins.maven-checkstyle-plugin.version>3.6.0</org.apache.maven.plugins.maven-checkstyle-plugin.version>
-		<com.puppycrawl.tools.checkstyle.version>10.21.4</com.puppycrawl.tools.checkstyle.version>
-		<com.github.spotbugs.spotbugs-maven-plugin.version>4.9.8.1</com.github.spotbugs.spotbugs-maven-plugin.version>
+		<com.puppycrawl.tools.checkstyle.version>13.4.1</com.puppycrawl.tools.checkstyle.version>
+		<com.github.spotbugs.spotbugs-maven-plugin.version>4.9.8.3</com.github.spotbugs.spotbugs-maven-plugin.version>
 		<com.github.spotbugs.spotbugs.version>4.9.8</com.github.spotbugs.spotbugs.version>
-		<org.apache.maven.plugins.maven-enforcer-plugin.version>3.5.0</org.apache.maven.plugins.maven-enforcer-plugin.version>
+		<org.apache.maven.plugins.maven-enforcer-plugin.version>3.6.2</org.apache.maven.plugins.maven-enforcer-plugin.version>
+		<org.apache.maven.plugins.maven-gpg-plugin.version>3.2.8</org.apache.maven.plugins.maven-gpg-plugin.version>
+		<!-- allure -->
+		<io.qameta.allure.allure-maven.version>2.14.0</io.qameta.allure.allure-maven.version>
+		<!-- jacoco -->
+		<org.jacoco.jacoco-maven-plugin.version>0.8.13</org.jacoco.jacoco-maven-plugin.version>
+		<!-- surefire -->
+		<org.apache.maven.plugins.maven-surefire-plugin.version>3.2.5</org.apache.maven.plugins.maven-surefire-plugin.version>
 		<org.sonatype.central.central-publishing-maven-plugin.version>0.10.0</org.sonatype.central.central-publishing-maven-plugin.version>
 		<!-- nullaway / error prone -->
 		<com.uber.nullaway.version>0.13.4</com.uber.nullaway.version>
@@ -150,7 +158,7 @@
 					<executions>
 						<execution>
 							<id>attach-javadocs</id>
-							<phase>install</phase>
+							<phase>package</phase>
 							<goals>
 								<goal>jar</goal>
 							</goals>
@@ -209,6 +217,7 @@
 									<exclude>**/*.css</exclude>
 									<exclude>**/*.txt</exclude>
 									<exclude>**/*.md</exclude>
+									<exclude>.allure/**</exclude>
 								</excludes>
 							</licenseSet>
 						</licenseSets>
@@ -271,14 +280,61 @@
 					</executions>
 					<configuration>
 						<excludeFilterFile>https://ecuacion-jp.github.io/config/common/spotbugs/exclude.xml</excludeFilterFile>
-						<failOnError>false</failOnError>
+						<failOnError>true</failOnError>
 					</configuration>
+				</plugin>
+
+				<!-- allure -->
+				<plugin>
+					<groupId>io.qameta.allure</groupId>
+					<artifactId>allure-maven</artifactId>
+					<version>${io.qameta.allure.allure-maven.version}</version>
+					<configuration>
+						<resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
+					</configuration>
+				</plugin>
+
+				<!-- maven-surefire-plugin: redirect allure results to target/ -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
+					<configuration>
+						<systemPropertyVariables>
+							<allure.results.directory>
+								${project.build.directory}/allure-results
+							</allure.results.directory>
+						</systemPropertyVariables>
+					</configuration>
+				</plugin>
+
+				<!-- jacoco -->
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${org.jacoco.jacoco-maven-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>prepare-agent</id>
+							<goals>
+								<goal>prepare-agent</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>report</id>
+							<phase>test</phase>
+							<goals>
+								<goal>report</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 
 				<!-- maven-compiler-plugin with NullAway -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
 					<configuration>
 						<compilerArgs>
 							<arg>-XDcompilePolicy=simple</arg>
