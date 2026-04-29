@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/*
+  Fragment: oauth2LoginButtons
+  Usage in your login.html:
+    <div th:replace="~{splib-web/oauth2-login-buttons :: oauth2LoginButtons}"></div>
+*/-->
+<div th:fragment="oauth2LoginButtons" th:remove="tag">
+  <div class="mt-4 d-flex flex-column gap-2">
+    <a href="/oauth2/authorization/google"
+       class="btn btn-outline-danger w-100">
+      Sign in with Google
+    </a>
+    <a href="/oauth2/authorization/apple"
+       class="btn btn-dark w-100">
+      Sign in with Apple
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
