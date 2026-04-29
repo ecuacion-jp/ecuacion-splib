@@ -64,6 +64,6 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
     } else {
       return null;
     }
-    return new MessageFormat(template, locale != null ? locale : Locale.getDefault());
+    return new MessageFormat(template, locale != null ? locale : Locale.ROOT);
   }
 }
