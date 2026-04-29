@@ -23,7 +23,6 @@ import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -34,11 +33,20 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice
 public class SplibControllerAdvice {
 
-  @Autowired
   private HttpServletRequest request;
 
-  @Autowired
   private SplibUtil util;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param request request
+   * @param util util
+   */
+  public SplibControllerAdvice(HttpServletRequest request, SplibUtil util) {
+    this.request = request;
+    this.util = util;
+  }
 
   /**
    * Sets objects to model and add model to request attribute.

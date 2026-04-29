@@ -26,7 +26,6 @@ module jp.ecuacion.splib.jpa {
 
   requires transitive jakarta.persistence;
 
-  requires transitive jp.ecuacion.lib.jpa;
   requires transitive jp.ecuacion.splib.core;
   requires transitive spring.orm;
   requires spring.tx;

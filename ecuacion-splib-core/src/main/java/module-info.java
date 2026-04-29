@@ -27,7 +27,7 @@ module jp.ecuacion.splib.core {
   requires jakarta.annotation;
   requires spring.beans;
   requires transitive spring.context;
-  requires spring.core;
+  requires transitive spring.core;
   requires transitive jp.ecuacion.lib.core;
   requires org.apache.commons.lang3;
 }

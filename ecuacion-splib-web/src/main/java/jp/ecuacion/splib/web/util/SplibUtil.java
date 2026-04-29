@@ -24,7 +24,6 @@ import java.util.UUID;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
@@ -34,11 +33,20 @@ import org.springframework.ui.Model;
 @Component
 public class SplibUtil {
 
-  @Autowired
   HttpServletRequest request;
 
-  @Autowired
   private ServletContext servletContext;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param request request
+   * @param servletContext servletContext
+   */
+  public SplibUtil(HttpServletRequest request, ServletContext servletContext) {
+    this.request = request;
+    this.servletContext = servletContext;
+  }
 
   /**
    * Returns DatetimeFormatParameters.

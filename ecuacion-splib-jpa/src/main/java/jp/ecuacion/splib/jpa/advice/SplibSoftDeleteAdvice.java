@@ -24,19 +24,27 @@ import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Before;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Provides the feature to delete the soft-deleted record physically
- * when inserting a new record with the same unique key as soft-deleted one, 
+ * when inserting a new record with the same unique key as soft-deleted one,
  * even though the soft-deleted record and the inserting record belnog to the other groups.
- * 
+ *
  * @see <a href="https://github.com/ecuacion-jp/ecuacion-splib/tree/main/ecuacion-splib-jpa">README</a> from github for details.
  */
 public abstract class SplibSoftDeleteAdvice {
 
-  @Autowired
   private SplibJpaFilterUtil filterUtil;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param filterUtil filterUtil
+   */
+  protected SplibSoftDeleteAdvice(SplibJpaFilterUtil filterUtil) {
+    this.filterUtil = filterUtil;
+  }
+
   @PersistenceContext
   @SuppressWarnings("NullAway")
   private EntityManager em;

@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
-import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides a store which holds info about single something.
