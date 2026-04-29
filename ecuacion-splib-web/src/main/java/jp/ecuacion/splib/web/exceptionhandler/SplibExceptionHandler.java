@@ -44,7 +44,6 @@ import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -60,15 +59,26 @@ public abstract class SplibExceptionHandler {
 
   private DetailLogger detailLog = new DetailLogger(this);
 
-  @Autowired
   HttpServletRequest request;
 
-  @Autowired(required = false)
   @Nullable
   SplibExceptionHandlerAction actionOnThrowable;
 
-  @Autowired
   private SplibUtil util;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param request request
+   * @param actionOnThrowable actionOnThrowable, may be {@code null}
+   * @param util util
+   */
+  protected SplibExceptionHandler(HttpServletRequest request,
+      @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibUtil util) {
+    this.request = request;
+    this.actionOnThrowable = actionOnThrowable;
+    this.util = util;
+  }
 
   /**
    * Returns the controller from which the exception throws.

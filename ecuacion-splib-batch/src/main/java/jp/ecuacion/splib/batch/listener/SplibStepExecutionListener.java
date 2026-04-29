@@ -15,7 +15,9 @@
  */
 package jp.ecuacion.splib.batch.listener;
 
+import java.util.Objects;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
+import org.jspecify.annotations.Nullable;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.stereotype.Component;
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Component;
 public class SplibStepExecutionListener implements StepExecutionListener {
 
   @Override
-  public void beforeStep(StepExecution stepExecution) {
-    SplibBatchAdvice.setCurrentStep(stepExecution.getStepName());
+  public void beforeStep(@Nullable StepExecution stepExecution) {
+    SplibBatchAdvice.setCurrentStep(Objects.requireNonNull(stepExecution).getStepName());
   }
 }

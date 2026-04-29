@@ -23,7 +23,6 @@ module jp.ecuacion.splib.web.jpa {
   requires jakarta.annotation;
   requires transitive jakarta.persistence;
   requires jp.ecuacion.lib.core;
-  requires jp.ecuacion.lib.jpa;
   requires transitive jp.ecuacion.splib.core;
   requires jp.ecuacion.splib.jpa;
   requires transitive jp.ecuacion.splib.web;

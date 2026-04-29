@@ -42,7 +42,7 @@ public class SplibCoreBl extends ReflectionUtil {
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
       boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container) {
-    List<String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
+    List<@NonNull String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
         .map(path -> container.getItem(path).getItemNameKey()).toList();
 
     throwExceptionWhenDuplicated(isDuplicated, checkFromAllGroups, itemPropertyPaths,

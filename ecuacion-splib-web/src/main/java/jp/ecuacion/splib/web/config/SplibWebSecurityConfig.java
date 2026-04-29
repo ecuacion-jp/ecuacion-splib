@@ -22,7 +22,6 @@ import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -65,17 +64,30 @@ public abstract class SplibWebSecurityConfig {
 
   private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-  @Autowired(required = false)
   @Nullable
   private SplibOauth2AuthSuccessHandler oauth2SuccessHandler;
 
-  @Autowired(required = false)
   @Nullable
   private SplibAppleClientSecretService appleClientSecretService;
 
-  @Autowired(required = false)
   @Nullable
   private ClientRegistrationRepository clientRegistrationRepository;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param oauth2SuccessHandler oauth2SuccessHandler, may be {@code null}
+   * @param appleClientSecretService appleClientSecretService, may be {@code null}
+   * @param clientRegistrationRepository clientRegistrationRepository, may be {@code null}
+   */
+  protected SplibWebSecurityConfig(
+      @Nullable SplibOauth2AuthSuccessHandler oauth2SuccessHandler,
+      @Nullable SplibAppleClientSecretService appleClientSecretService,
+      @Nullable ClientRegistrationRepository clientRegistrationRepository) {
+    this.oauth2SuccessHandler = oauth2SuccessHandler;
+    this.appleClientSecretService = appleClientSecretService;
+    this.clientRegistrationRepository = clientRegistrationRepository;
+  }
 
   /**
    * Returns the url when the login procedure successfully ended.

@@ -40,7 +40,7 @@ public class SplibCoreConfig {
 
   /**
    * Provides a {@link MessageSource} backed by {@link
-   * jp.ecuacion.lib.core.util.PropertiesFileUtil}.
+  * jp.ecuacion.lib.core.util.PropertiesFileUtil}.
    *
    * <p>Basenames other than {@code messages} configured in
    * {@code spring.messages.basename} are handled by a parent
@@ -50,14 +50,12 @@ public class SplibCoreConfig {
    * @return the message source
    */
   @Bean
-  public MessageSource messageSource(Environment env) {
+  MessageSource messageSource(Environment env) {
     PropertiesFileUtilMessageSource source = new PropertiesFileUtilMessageSource();
 
     String basenames = env.getProperty("spring.messages.basename", "messages");
-    List<String> extras = Arrays.stream(basenames.split(","))
-        .map(String::trim)
-        .filter(b -> !b.equals("messages"))
-        .toList();
+    List<String> extras = Arrays.stream(basenames.split(",")).map(String::trim)
+        .filter(b -> !b.equals("messages")).toList();
 
     if (!extras.isEmpty()) {
       ResourceBundleMessageSource parent = new ResourceBundleMessageSource();
