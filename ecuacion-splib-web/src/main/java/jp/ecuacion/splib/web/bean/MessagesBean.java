@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -105,6 +106,7 @@ public class MessagesBean {
   /**
    * Obtains all the messages with itemPropertyPath specified.
    */
+  @SuppressWarnings("null")
   public List<String> getErrorMessagesAtEachItem() {
     return errorMessageList.stream()
         .filter(e -> e.getIsShownAtEachItem() && !e.getItemPropertyPathSet().isEmpty())
@@ -114,6 +116,7 @@ public class MessagesBean {
   /**
    * Obtains all the messages with itemPropertyPath specified.
    */
+  @SuppressWarnings("null")
   public List<String> getErrorMessagesAtEachItem(String itemPropertyPath) {
     return errorMessageList.stream()
         .filter(e -> e.getIsShownAtEachItem() && !e.getItemPropertyPathSet().isEmpty())
@@ -124,6 +127,7 @@ public class MessagesBean {
   /**
    * Obtains all the messages without itemPropertyPath specified.
    */
+  @SuppressWarnings("null")
   public List<String> getErrorMessagesAtTheTop() {
     return errorMessageList.stream()
         .filter(e -> !(e.getIsShownAtEachItem() && !e.getItemPropertyPathSet().isEmpty()))
@@ -225,7 +229,7 @@ public class MessagesBean {
     }
 
     public String getButtonName() {
-      return buttonName == null ? "" : buttonName;
+      return buttonName == null ? "" : Objects.requireNonNull(buttonName);
     }
   }
 }

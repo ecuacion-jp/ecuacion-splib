@@ -230,10 +230,6 @@ public class HtmlItem extends Item {
      * @return T
      */
     public T getValue(String loginState, RolesAndAuthoritiesBean bean) {
-      if (list == null) {
-        list = new ArrayList<>();
-      }
-
       for (HtmlItemCondition<T> info : list) {
         if (info.getConditionKey() == HtmlItemConditionKeyEnum.LOGIN_STATE) {
           if (info.getConditionValue().equals(loginState)) {

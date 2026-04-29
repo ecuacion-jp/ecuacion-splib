@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
-import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -114,6 +114,7 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    * Returns true when the search conditions in the form is newly created 
    *     and it's the right time to set initial conditions at searchListService#page().
    */
+  @SuppressWarnings("null")
   public boolean getNewlyCreated() {
     return newlyCreated == null ? false : newlyCreated;
   }

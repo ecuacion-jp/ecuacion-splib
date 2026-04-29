@@ -20,13 +20,13 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
 import jp.ecuacion.splib.web.util.SplibUtil;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,7 +54,7 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
   private SplibUtil util;
 
   @PersistenceContext
-  @SuppressWarnings("NullAway")
+  @Nullable
   protected EntityManager em;
 
   //

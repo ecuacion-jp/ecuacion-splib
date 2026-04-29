@@ -15,12 +15,14 @@
  */
 package jp.ecuacion.splib.web.jpa.exceptionhandler;
 
-import org.jspecify.annotations.Nullable;
-
+import jakarta.servlet.http.HttpServletRequest;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.web.util.SplibUtil;
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,6 +38,18 @@ import org.springframework.web.servlet.ModelAndView;
  * <p>Use this class when the app uses JPA.</p>
  */
 public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param request request
+   * @param actionOnThrowable actionOnThrowable, may be {@code null}
+   * @param util util
+   */
+  protected SplibJpaExceptionHandler(HttpServletRequest request,
+      @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibUtil util) {
+    super(request, actionOnThrowable, util);
+  }
 
   /**
    * Catches {@code ObjectOptimisticLockingFailureException} 

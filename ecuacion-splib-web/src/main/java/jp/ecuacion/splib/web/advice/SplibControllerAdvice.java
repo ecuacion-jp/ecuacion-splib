@@ -89,8 +89,9 @@ public class SplibControllerAdvice {
       // maybe because of the reuse of the URL with contextId but no contextMap is saved.
       if (contextMap != null) {
         // model
-        Map<String, Object> modelMapRedirectFrom =
-            ((Model) ObjectsUtil.requireNonNull(contextMap.get(SplibWebConstants.KEY_MODEL))).asMap();
+        Model redirectFromModel =
+            (Model) ObjectsUtil.requireNonNull(contextMap.get(SplibWebConstants.KEY_MODEL));
+        Map<String, Object> modelMapRedirectFrom = redirectFromModel.asMap();
         modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
         model.addAllAttributes(modelMapRedirectFrom);
 

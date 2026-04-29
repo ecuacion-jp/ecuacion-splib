@@ -73,7 +73,8 @@ public class RedirectException extends RuntimeException {
    * @param logLevel logLevel
    * @param logString logString
    */
-  public RedirectException(String redirectPath, @Nullable Level logLevel, @Nullable String logString) {
+  public RedirectException(String redirectPath, @Nullable Level logLevel,
+      @Nullable String logString) {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
     this.logString = logString;
@@ -88,8 +89,8 @@ public class RedirectException extends RuntimeException {
    * @param logLevel logLevel
    * @param logString logString
    */
-  public RedirectException(String redirectPath, @Nullable Level logLevel, @Nullable String logString, @Nullable String messageId,
-      String... messageArgs) {
+  public RedirectException(String redirectPath, @Nullable Level logLevel,
+      @Nullable String logString, @Nullable String messageId, String... messageArgs) {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
     this.logString = logString;

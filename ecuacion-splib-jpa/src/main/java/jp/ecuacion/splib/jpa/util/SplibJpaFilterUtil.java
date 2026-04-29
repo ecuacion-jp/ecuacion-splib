@@ -17,8 +17,10 @@ package jp.ecuacion.splib.jpa.util;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Objects;
 import org.hibernate.Filter;
 import org.hibernate.Session;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides utility methods which helps to use filters easily.
@@ -27,7 +29,7 @@ import org.hibernate.Session;
 public abstract class SplibJpaFilterUtil {
 
   @PersistenceContext
-  @SuppressWarnings("NullAway")
+  @Nullable
   EntityManager em;
 
   private boolean usesSoftDeleteFeature;
@@ -65,7 +67,7 @@ public abstract class SplibJpaFilterUtil {
    */
   public void enableGroupFilter(Object groupId) {
     if (usesGroupFeature) {
-      Session session = em.unwrap(Session.class);
+      Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
       Filter filter = session.enableFilter("groupFilter");
       filter.setParameter(groupColumnName, groupId);
 
@@ -81,7 +83,7 @@ public abstract class SplibJpaFilterUtil {
    */
   public void disableGroupFilter() {
     if (usesGroupFeature) {
-      Session session = em.unwrap(Session.class);
+      Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
       session.disableFilter("groupFilter");
 
       if (hasCustomGroupColumn) {
@@ -95,7 +97,7 @@ public abstract class SplibJpaFilterUtil {
    */
   public void enableSoftDeleteFilter() {
     if (usesSoftDeleteFeature) {
-      Session session = em.unwrap(Session.class);
+      Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
       session.enableFilter("softDeleteFilter");
     }
   }
@@ -105,7 +107,7 @@ public abstract class SplibJpaFilterUtil {
    */
   public void disableSoftDeleteFilter() {
     if (usesSoftDeleteFeature) {
-      Session session = em.unwrap(Session.class);
+      Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
       session.disableFilter("softDeleteFilter");
     }
   }

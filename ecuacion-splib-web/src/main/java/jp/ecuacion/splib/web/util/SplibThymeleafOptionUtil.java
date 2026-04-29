@@ -68,6 +68,7 @@ public class SplibThymeleafOptionUtil {
       return rtnMap;
     }
 
+    @SuppressWarnings("unused")
     String key = null;
     String value = null;
     String[] options = optionCsv.split(",");
@@ -186,6 +187,7 @@ public class SplibThymeleafOptionUtil {
     return StringUtil.getSeparatedValuesString(getValues(options, key), " ");
   }
 
+  @SuppressWarnings("null")
   private @Nullable String getElementFromPsvNullable(@Nullable String option, int psvIndex) {
 
     if (StringUtils.isEmpty(option)) {

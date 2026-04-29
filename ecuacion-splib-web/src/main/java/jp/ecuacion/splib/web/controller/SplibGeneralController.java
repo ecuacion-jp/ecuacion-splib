@@ -15,13 +15,13 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import org.jspecify.annotations.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
@@ -38,6 +38,7 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -263,7 +264,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
      * @return rootRecordName 
      */
     public String mainRootRecordName() {
-      return mainRootRecordName == null ? function : mainRootRecordName;
+      return mainRootRecordName == null ? function : Objects.requireNonNull(mainRootRecordName);
     }
   }
 

@@ -17,18 +17,17 @@ package jp.ecuacion.splib.web.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.core.bean.AuthorizationBean;
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequestEntityConverter;
+import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -225,15 +224,13 @@ public abstract class SplibWebSecurityConfig {
    * Builds a token-response client that injects Apple's JWT client secret
    * when a token request targets the "apple" registration.
    */
-  private DefaultAuthorizationCodeTokenResponseClient buildTokenResponseClient() {
-    DefaultAuthorizationCodeTokenResponseClient client =
-        new DefaultAuthorizationCodeTokenResponseClient();
+  private RestClientAuthorizationCodeTokenResponseClient buildTokenResponseClient() {
+    RestClientAuthorizationCodeTokenResponseClient client =
+        new RestClientAuthorizationCodeTokenResponseClient();
 
     SplibAppleClientSecretService appleService = appleClientSecretService;
     if (appleService != null) {
-      OAuth2AuthorizationCodeGrantRequestEntityConverter converter =
-          new OAuth2AuthorizationCodeGrantRequestEntityConverter();
-      converter.addParametersConverter(grantRequest -> {
+      client.addParametersConverter(grantRequest -> {
         if (!"apple".equals(grantRequest.getClientRegistration().getRegistrationId())) {
           return null;
         }
@@ -241,7 +238,6 @@ public abstract class SplibWebSecurityConfig {
         params.add("client_secret", appleService.generateClientSecret());
         return params;
       });
-      client.setRequestEntityConverter(converter);
     }
 
     return client;

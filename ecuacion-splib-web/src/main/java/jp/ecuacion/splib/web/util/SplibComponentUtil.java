@@ -72,6 +72,7 @@ public class SplibComponentUtil {
     return saveUploadedFileCommon(decoder.decode(base64), "");
   }
 
+  @SuppressWarnings("unused")
   private static @Nullable String saveUploadedFileCommon(byte[] bytes, String filename)
       throws IOException {
 

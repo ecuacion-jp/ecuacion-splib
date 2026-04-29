@@ -45,7 +45,6 @@ public class SpecFactory<T extends SplibEntity> {
    * The field can include related records, e.g. "name", "parentRecord.id",
    * "parentRecord.childRecord.id".
    */
-  @SuppressWarnings("unused")
   public @Nullable Specification<T> equals(String propertyPath, @Nullable Object value) {
 
     return (root, query, cb) -> {
@@ -63,7 +62,7 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
+  @SuppressWarnings("null")
   public Specification<T> stringEqualsIgnoringCase(String propertyPath, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField = getPath(root, propertyPath, value);
@@ -79,8 +78,8 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
-  public @Nullable Specification<T> stringEquals(String propertyPath, @Nullable String value, boolean ignoresCase) {
+  public @Nullable Specification<T> stringEquals(String propertyPath, @Nullable String value,
+      boolean ignoresCase) {
     return (root, query, cb) -> {
       Expression<String> criteriaFieldTmp = getPath(root, propertyPath, value);
       Expression<String> criteriaField =
@@ -99,7 +98,7 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
+  @SuppressWarnings("null")
   public Specification<T> stringNotEquals(String propertyPath, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField = getPath(root, propertyPath, value);
@@ -120,8 +119,10 @@ public class SpecFactory<T extends SplibEntity> {
     return stringContains(propertyPath, value, false);
   }
 
-  private @Nullable Specification<T> stringContains(String propertyPath, @Nullable String value, boolean ignoresCase) {
-    return value == null ? null : stringSearchPattern(propertyPath, value, "%" + value + "%", ignoresCase);
+  private @Nullable Specification<T> stringContains(String propertyPath, @Nullable String value,
+      boolean ignoresCase) {
+    return value == null ? null
+        : stringSearchPattern(propertyPath, value, "%" + value + "%", ignoresCase);
   }
 
   /**
@@ -131,7 +132,8 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public @Nullable Specification<T> stringContainsIgnoringCase(String propertyPath, @Nullable String value) {
+  public @Nullable Specification<T> stringContainsIgnoringCase(String propertyPath,
+      @Nullable String value) {
     return stringContains(propertyPath, value, true);
   }
 
@@ -155,7 +157,8 @@ public class SpecFactory<T extends SplibEntity> {
    */
   private @Nullable Specification<T> stringStartsWith(String propertyPath, @Nullable String value,
       boolean ignoresCase) {
-    return value == null ? null : stringSearchPattern(propertyPath, value, value + "%", ignoresCase);
+    return value == null ? null
+        : stringSearchPattern(propertyPath, value, value + "%", ignoresCase);
   }
 
   /**
@@ -188,8 +191,10 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  private @Nullable Specification<T> stringEndsWith(String propertyPath, @Nullable String value, boolean ignoresCase) {
-    return value == null ? null : stringSearchPattern(propertyPath, value, "%" + value, ignoresCase);
+  private @Nullable Specification<T> stringEndsWith(String propertyPath, @Nullable String value,
+      boolean ignoresCase) {
+    return value == null ? null
+        : stringSearchPattern(propertyPath, value, "%" + value, ignoresCase);
   }
 
   /**
@@ -199,11 +204,11 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public @Nullable Specification<T> stringEndsWithIgnoringCase(String propertyPath, @Nullable String value) {
+  public @Nullable Specification<T> stringEndsWithIgnoringCase(String propertyPath,
+      @Nullable String value) {
     return stringEndsWith(propertyPath, value, true);
   }
 
-  @SuppressWarnings("unused")
   private @Nullable Specification<T> stringSearchPattern(String propertyPath,
       @Nullable String value, @Nullable String criteriaValue, boolean ignoresCase) {
     return (root, query, cb) -> {
@@ -240,8 +245,8 @@ public class SpecFactory<T extends SplibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
-  public @Nullable Specification<T> localDateEqualToOrLessThan(@Nullable String entity, String field, LocalDate date) {
+  public @Nullable Specification<T> localDateEqualToOrLessThan(@Nullable String entity,
+      String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       Expression<LocalDate> criteriaField =
           entity == null ? root.get(field) : root.get(entity).get(field);
@@ -257,7 +262,6 @@ public class SpecFactory<T extends SplibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
   public @Nullable Specification<T> localDateEqualToOrGreaterThan(String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       return cb.or(cb.equal(root.get(field).as(LocalDate.class), date),
@@ -272,9 +276,8 @@ public class SpecFactory<T extends SplibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
-  public @Nullable Specification<T> localDateEqualToOrGreaterThan(@Nullable String entity, String field,
-      LocalDate date) {
+  public @Nullable Specification<T> localDateEqualToOrGreaterThan(@Nullable String entity,
+      String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       Expression<LocalDate> criteriaField =
           entity == null ? root.get(field) : root.get(entity).get(field);
@@ -283,7 +286,7 @@ public class SpecFactory<T extends SplibEntity> {
     };
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "null"})
   private Specification<T> selectSearchPattern(String propertyPath, String value,
       String criteriaValue, boolean ignoresCase) {
     return (root, query, cb) -> {

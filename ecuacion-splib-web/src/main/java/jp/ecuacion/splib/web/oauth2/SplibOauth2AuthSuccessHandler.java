@@ -22,15 +22,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 /**
@@ -71,6 +70,7 @@ public class SplibOauth2AuthSuccessHandler
     this.userHandler = userHandler;
   }
 
+  @SuppressWarnings("null")
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
@@ -100,6 +100,7 @@ public class SplibOauth2AuthSuccessHandler
    * Resolves the user's display name from the OIDC claims or, for Apple's
    * first-login-only {@code user} POST parameter, from the request body.
    */
+  @SuppressWarnings("null")
   private String resolveName(OidcUser oidcUser, String registrationId,
       HttpServletRequest request) {
     // Google provides name in claims

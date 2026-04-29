@@ -16,7 +16,6 @@
 package jp.ecuacion.splib.web.bean;
 
 import java.util.HashMap;
-import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +25,7 @@ import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Returns the URL to redirect / forward pages to use as the return string in 

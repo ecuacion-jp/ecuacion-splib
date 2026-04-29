@@ -15,14 +15,16 @@
  */
 package jp.ecuacion.splib.web.controller;
 
+import java.util.Objects;
 import jp.ecuacion.splib.web.bean.MessagesBean;
-import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
 import jp.ecuacion.splib.web.util.SplibUtil;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -165,9 +167,9 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
     prepare(model, loginUser, form.validate(result));
     getService().edit(form, loginUser);
 
-    ReturnUrlBean redirectBean =
+    @NonNull ReturnUrlBean redirectBean =
         redirectOnSuccess == null ? new ReturnUrlBean(this, util, true).showSuccessMessage()
-            : redirectOnSuccess;
+            : Objects.requireNonNull(redirectOnSuccess);
     redirectBean.putParam(SplibWebConstants.KEY_DATA_KIND, form.getDataKind());
     redirectBean.putParam("action", PARAM_UPDATE);
 

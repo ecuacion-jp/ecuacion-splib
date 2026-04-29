@@ -25,10 +25,10 @@ import java.util.Set;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.record.SplibRecord;
-import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import org.jspecify.annotations.Nullable;
 import org.springframework.validation.BindingResult;
 
 /**
@@ -229,6 +229,7 @@ public abstract class SplibGeneralForm {
    * Returns already confirmed message ID set.
    * @return {@code Set<String>}
    */
+  @SuppressWarnings("null")
   public Set<String> getConfirmedWarningMessageSet() {
     Set<String> rtnSet = new HashSet<>();
 
@@ -301,6 +302,7 @@ public abstract class SplibGeneralForm {
    * <p>This became a independent method because some form doesn't use "notEmpty()".
    *     For example, searchForm uses "notEmptyOnSearch()", not "notEmpty()".</p>
    */
+  @SuppressWarnings({"unused", "null"})
   protected List<String> getNotEmptyItemPropertyPathList(HtmlItemContainer rootRecord,
       String loginState, @Nullable RolesAndAuthoritiesBean bean) {
     if (rootRecord == null || bean == null) {

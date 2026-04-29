@@ -119,7 +119,8 @@ public class SplibUtil {
 
     // Check that the loginState is a valid one.
     final String finalLoginState = loginState;
-    if (Arrays.stream(LoginStateEnum.values()).noneMatch(e -> e.getCode().equals(finalLoginState))) {
+    if (Arrays.stream(LoginStateEnum.values())
+        .noneMatch(e -> e.getCode().equals(finalLoginState))) {
       throw new RuntimeException(
           "loginState not appropriate: loginState = " + loginState + ", urlPath = " + urlPath);
     }
