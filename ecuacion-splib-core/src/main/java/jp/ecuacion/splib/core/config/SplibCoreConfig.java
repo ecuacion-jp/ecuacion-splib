@@ -107,10 +107,11 @@ public class SplibCoreConfig {
    * Registers extra basenames from {@code spring.messages.basename} with
    * {@link PropertiesFileUtil}.
    *
-   * <p>Basenames of {@code messages} (the default) are skipped since
-   * {@link PropertiesFileUtil} already covers them.
-   * Basenames following the {@code messages_xxx} convention register {@code xxx}
-   * as a postfix. Other naming conventions are not supported.</p>
+   * <p>Base filenames without a postfix ({@code messages}, {@code item_names}, etc.) are
+   * skipped since {@link PropertiesFileUtil} already covers them.
+   * Basenames following the {@code basename_xxx} convention (e.g. {@code messages_xxx},
+   * {@code item_names_xxx}) register {@code xxx} as a postfix.
+   * Other naming conventions are not supported.</p>
    *
    * @param env the Spring environment
    */
@@ -121,18 +122,27 @@ public class SplibCoreConfig {
       // Extract the filename part from paths like "classpath:/i18n/messages_myapp".
       String filename = basename.substring(basename.lastIndexOf('/') + 1);
 
-      if (filename.equals("messages")) {
+      if (filename.equals("messages") || filename.equals("item_names")
+          || filename.equals("enum_names") || filename.equals("messages_with_item_names")) {
+        // Base filenames without postfix; already covered by PropertiesFileUtil.
         continue;
-      }
-
-      if (filename.startsWith("messages_")) {
+      } else if (filename.startsWith("messages_with_item_names_")) {
+        PropertiesFileUtil.addResourceBundlePostfix(
+            filename.substring("messages_with_item_names_".length()));
+      } else if (filename.startsWith("messages_")) {
         PropertiesFileUtil.addResourceBundlePostfix(filename.substring("messages_".length()));
+      } else if (filename.startsWith("item_names_")) {
+        PropertiesFileUtil.addResourceBundlePostfix(filename.substring("item_names_".length()));
+      } else if (filename.startsWith("enum_names_")) {
+        PropertiesFileUtil.addResourceBundlePostfix(filename.substring("enum_names_".length()));
       } else {
         throw new RuntimeException(
             "Non-standard basename '" + basename + "' in 'spring.messages.basename' is not "
             + "supported when using ecuacion's PropertiesFileUtil-based MessageSource. "
-            + "Only 'messages' or 'messages_xxx' naming convention is supported "
-            + "(e.g., 'messages_myapp').");
+            + "Only 'messages', 'messages_xxx', 'item_names', 'item_names_xxx', "
+            + "'enum_names', 'enum_names_xxx', 'messages_with_item_names',"
+            + " or 'messages_with_item_names_xxx' naming conventions are supported"
+            + " (e.g., 'messages_myapp', 'item_names_myapp').");
       }
     }
   }
