@@ -65,6 +65,7 @@ public class SplibJpaHibernateUtil {
         .toList();
   }
 
+  @SuppressWarnings("null")
   private Collection<Object> getAllEntitiesFromPersistenceContext() {
     SessionImplementor sessionImplementor =
         Objects.requireNonNull(em).unwrap(SessionImplementor.class);
