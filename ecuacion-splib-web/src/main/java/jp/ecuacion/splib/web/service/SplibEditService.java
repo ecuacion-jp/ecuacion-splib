@@ -15,9 +15,8 @@
  */
 package jp.ecuacion.splib.web.service;
 
-import org.jspecify.annotations.Nullable;
-
 import jp.ecuacion.splib.web.form.SplibEditForm;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
@@ -28,6 +27,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public abstract class SplibEditService<F extends SplibEditForm>
     extends SplibGeneral1FormService<F> {
 
+  @SuppressWarnings("null")
   @Override
   public void page(F form, @Nullable UserDetails loginUser) throws Exception {
     

@@ -209,8 +209,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     request.getSession().setAttribute(sessionKey, newSearchForm);
 
     prepare(model, loginUser, searchForm, listForm);
+    String dataKindStr = java.util.Objects.toString(searchForm.getDataKind(), "");
     return new ReturnUrlBean(this, util, true)
-        .putParam(SplibWebConstants.KEY_DATA_KIND, java.util.Objects.toString(searchForm.getDataKind(), "")).getUrl();
+        .putParam(SplibWebConstants.KEY_DATA_KIND, dataKindStr).getUrl();
   }
 
   /**
@@ -224,7 +225,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param searchForm searchForm
    * @return proper searchForm
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "null"})
   protected FST getProperSearchForm(Model model, FST searchForm) {
 
     String formName = getFunction() + "SearchForm";
@@ -262,8 +263,8 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   }
 
   private String getSessionKey(String formName, FST searchForm) {
-    return formName + (java.util.Objects.toString(searchForm.getDataKind(), "") == null || java.util.Objects.toString(searchForm.getDataKind(), "").isEmpty()
-        ? "" : "." + java.util.Objects.toString(searchForm.getDataKind(), ""));
+    String dataKind = java.util.Objects.toString(searchForm.getDataKind(), "");
+    return formName + (dataKind == null || dataKind.isEmpty() ? "" : "." + dataKind);
   }
 
   /**

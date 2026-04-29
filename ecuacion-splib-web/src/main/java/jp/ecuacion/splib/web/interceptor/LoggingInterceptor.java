@@ -31,6 +31,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
 
   private final DetailLogger detailLog = new DetailLogger(this);
 
+  @SuppressWarnings("null")
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
@@ -44,12 +45,14 @@ public class LoggingInterceptor implements HandlerInterceptor {
     return true;
   }
 
+  @SuppressWarnings("null")
   @Override
   public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
       @Nullable ModelAndView modelAndView) throws Exception {
     detailLog.debug(getPrefix(request) + "request process finished.");
   }
 
+  @SuppressWarnings("null")
   @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
       Object handler, Exception ex) throws Exception {

@@ -53,20 +53,20 @@ public class SplibAppleClientSecretService {
   private static final long EXPIRY_MS = 6L * 30 * 24 * 60 * 60 * 1000;
 
   @Value("${ecuacion.oauth2.apple.team-id}")
-  @SuppressWarnings("NullAway")
+  @SuppressWarnings({"NullAway", "null"})
   private String teamId;
 
   @Value("${ecuacion.oauth2.apple.key-id}")
-  @SuppressWarnings("NullAway")
+  @SuppressWarnings({"NullAway", "null"})
   private String keyId;
 
   @Value("${ecuacion.oauth2.apple.client-id}")
-  @SuppressWarnings("NullAway")
+  @SuppressWarnings({"NullAway", "null"})
   private String clientId;
 
   /** PKCS8 PEM content without header/footer lines and whitespace. */
   @Value("${ecuacion.oauth2.apple.private-key}")
-  @SuppressWarnings("NullAway")
+  @SuppressWarnings({"NullAway", "null"})
   private String privateKeyPem;
 
   /**

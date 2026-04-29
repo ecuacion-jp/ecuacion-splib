@@ -24,6 +24,7 @@ import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Before;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides the feature to delete the soft-deleted record physically
@@ -46,7 +47,7 @@ public abstract class SplibSoftDeleteAdvice {
   }
 
   @PersistenceContext
-  @SuppressWarnings("NullAway")
+  @Nullable
   private EntityManager em;
 
   /**

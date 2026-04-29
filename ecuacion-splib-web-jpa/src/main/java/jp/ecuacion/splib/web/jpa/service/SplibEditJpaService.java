@@ -21,6 +21,7 @@ import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -34,7 +35,7 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Spl
     extends SplibEditService<F> implements SplibJpaServiceInterface<E> {
 
   @PersistenceContext
-  @SuppressWarnings("NullAway")
+  @Nullable
   protected EntityManager em;
 
   /**

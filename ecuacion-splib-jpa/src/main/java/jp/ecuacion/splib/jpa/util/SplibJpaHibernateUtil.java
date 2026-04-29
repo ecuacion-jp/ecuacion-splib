@@ -20,7 +20,9 @@ import jakarta.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,7 +32,7 @@ import org.springframework.stereotype.Component;
 public class SplibJpaHibernateUtil {
 
   @PersistenceContext
-  @SuppressWarnings("NullAway")
+  @Nullable
   private EntityManager em;
 
   /**
@@ -64,7 +66,8 @@ public class SplibJpaHibernateUtil {
   }
 
   private Collection<Object> getAllEntitiesFromPersistenceContext() {
-    SessionImplementor sessionImplementor = em.unwrap(SessionImplementor.class);
+    SessionImplementor sessionImplementor =
+        Objects.requireNonNull(em).unwrap(SessionImplementor.class);
     org.hibernate.engine.spi.PersistenceContext pc = sessionImplementor.getPersistenceContext();
 
     return pc.getEntitiesByKey().values();

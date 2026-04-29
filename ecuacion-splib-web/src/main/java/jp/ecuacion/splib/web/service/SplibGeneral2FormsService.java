@@ -16,8 +16,8 @@
 package jp.ecuacion.splib.web.service;
 
 import java.util.List;
-import org.jspecify.annotations.Nullable;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
@@ -40,6 +40,7 @@ public abstract class SplibGeneral2FormsService
       throw new RuntimeException("The number of forms not match.");
     }
 
+    @SuppressWarnings("unused")
     SplibGeneralForm form1 = allFormList.get(0);
     SplibGeneralForm form2 = allFormList.get(1);
     prepareForm((F1) form1, (F2) form2, loginUser);

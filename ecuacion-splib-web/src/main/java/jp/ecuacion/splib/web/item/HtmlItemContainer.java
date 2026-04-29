@@ -99,6 +99,7 @@ public interface HtmlItemContainer extends ItemContainer {
    * @param bean bean
    * @return {@code List<String>}
    */
+  @SuppressWarnings("null")
   default List<String> getNotEmptyItemPropertyPathList(String loginState,
       RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
@@ -128,6 +129,7 @@ public interface HtmlItemContainer extends ItemContainer {
    * @param bean bean
    * @return {@code List<String>}
    */
+  @SuppressWarnings("null")
   default List<String> getNotEmptyOnSearchItemPropertyPathList(String loginState,
       RolesAndAuthoritiesBean bean) {
     return Arrays.asList(getHtmlItems()).stream()
