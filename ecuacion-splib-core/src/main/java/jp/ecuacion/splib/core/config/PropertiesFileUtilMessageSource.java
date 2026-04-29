@@ -26,13 +26,13 @@ import org.springframework.context.support.AbstractMessageSource;
  * A {@link org.springframework.context.MessageSource} implementation
  * that delegates to {@link PropertiesFileUtil}.
  *
+ * <p>Key resolution priority is: {@code messages_*.properties} first,
+ * then {@code strings_*.properties}, then {@code item_names_*.properties}.
+ * Returns {@code null} when a key is not found in any of them.</p>
+ *
  * <p>Supports type-aware {@link MessageFormat} formatting
  * (e.g., {@code {0,date,yyyy/MM/dd}}, {@code {0,number,#,###}})
  * via the locale-aware {@link MessageFormat} returned from {@link #resolveCode}.</p>
- *
- * <p>When a key is not found in {@link PropertiesFileUtil},
- * resolution falls through to the parent {@link org.springframework.context.MessageSource}
- * (configured via {@link #setParentMessageSource}) if one is set.</p>
  */
 public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
 
@@ -44,8 +44,8 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
   /**
    * Resolves the given message code via {@link PropertiesFileUtil}.
    *
-   * <p>Returns {@code null} when the key does not exist,
-   * allowing the parent {@link org.springframework.context.MessageSource} to handle it.</p>
+   * <p>Searches in order: {@code messages}, {@code strings}, {@code item_names}.
+   * Returns {@code null} when the key does not exist in any file.</p>
    *
    * @param code the message code to resolve
    * @param locale the locale to resolve the code for
@@ -53,11 +53,17 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
    */
   @Override
   protected @Nullable MessageFormat resolveCode(@Nullable String code, @Nullable Locale locale) {
-    if (!PropertiesFileUtil.hasMessage(Objects.requireNonNull(code))) {
+    String key = Objects.requireNonNull(code);
+    String template;
+    if (PropertiesFileUtil.hasMessage(key)) {
+      template = PropertiesFileUtil.getMessage(locale, key);
+    } else if (PropertiesFileUtil.hasString(key)) {
+      template = PropertiesFileUtil.getString(key);
+    } else if (PropertiesFileUtil.hasItemName(key)) {
+      template = PropertiesFileUtil.getItemName(locale, key);
+    } else {
       return null;
     }
-    
-    String template = PropertiesFileUtil.getMessage(locale, code);
-    return new MessageFormat(template, locale);
+    return new MessageFormat(template, locale != null ? locale : Locale.getDefault());
   }
 }
