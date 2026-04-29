@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil.Arg;
@@ -27,7 +28,6 @@ import jp.ecuacion.lib.core.util.ReflectionUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Supplies utilities.
@@ -40,7 +40,7 @@ public class SplibCoreBl extends ReflectionUtil {
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
       boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container) {
-    List<@NonNull String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
+    List<String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
         .map(path -> container.getItem(path).getItemNameKey()).toList();
 
     throwExceptionWhenDuplicated(isDuplicated, checkFromAllGroups, itemPropertyPaths,
@@ -67,9 +67,8 @@ public class SplibCoreBl extends ReflectionUtil {
           "${+messages:jp.ecuacion.lib.core.common.itemName.separator}",
           "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
           "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
-      new Violations().add(new BusinessViolation(itemPropertyPaths, msgId,
-          new @NonNull Arg[] {ObjectsUtil.requireNonNull(Arg.formattedString(str))}))
-          .throwIfAny();
+      throw new ViolationException(new Violations().add(new BusinessViolation(itemPropertyPaths,
+          msgId, new Arg[] {ObjectsUtil.requireNonNull(Arg.formattedString(str))})));
     }
   }
 
@@ -91,7 +90,7 @@ public class SplibCoreBl extends ReflectionUtil {
           .toList();
     }
 
-    List<@NonNull String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
+    List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
         .map(path -> rec.getItem(path).getItemNameKey()).toList();
 
     SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0, checkFromAllGroups,
@@ -151,8 +150,7 @@ public class SplibCoreBl extends ReflectionUtil {
           : new Arg[] {Arg.message(entityMessageIdPart),
               Arg.string(referingRecordDataLabelMsgIdPart), Arg.string(Objects
                   .requireNonNull(getValue(list.get(0), recordSpecifyingFieldName)).toString())};
-      new Violations().add(new BusinessViolation(msgId, args)).throwIfAny();
-
+      throw new ViolationException(new Violations().add(new BusinessViolation(msgId, args)));
     }
   }
 

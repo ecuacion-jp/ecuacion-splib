@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.Set;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
+import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
-import jp.ecuacion.splib.web.exception.WebAppWarningException;
+import jp.ecuacion.splib.web.exceptionhandler.ViolationWebWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,19 +48,21 @@ public abstract class SplibGeneralService {
    *
    * @param confirmedWarningMessageSet This is obtained from
    *     {@code form.getConfirmedWarningMessageSet()}.
-   * @param buttonIdToPressOnConfirm buttonIdToPressOnConfirm, may be {@code null}.
-   *     See {@link jp.ecuacion.splib.web.exception.WebAppWarningException}.
+   * @param buttonIdToPressOnConfirm the ID of the button to press when the user confirms
+   *     the warning, may be {@code null}.
+   *     See {@link ViolationWebWarningException}.
    * @param msgId msgId
    * @param params params
-   * @throws WebAppWarningException WebAppWarningException
    */
   protected void throwWarning(Set<String> confirmedWarningMessageSet,
-      @Nullable String buttonIdToPressOnConfirm, String msgId, String... params)
-      throws WebAppWarningException {
+      @Nullable String buttonIdToPressOnConfirm, String msgId, String... params) {
 
     if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
-      throw new WebAppWarningException(msgId, params)
-          .buttonIdToPressOnConfirm(buttonIdToPressOnConfirm);
+      Violations violations = new Violations().add(msgId, params);
+      if (buttonIdToPressOnConfirm != null) {
+        throw new ViolationWebWarningException(violations, buttonIdToPressOnConfirm);
+      }
+      violations.throwWarningIfAny();
     }
   }
 

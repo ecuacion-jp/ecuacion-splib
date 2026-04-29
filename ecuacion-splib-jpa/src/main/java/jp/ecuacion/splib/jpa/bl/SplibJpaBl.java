@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.jpa.bl;
 
 import java.util.Optional;
+import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.jpa.entity.EclibEntity;
@@ -92,7 +93,7 @@ public abstract class SplibJpaBl<E extends EclibEntity, I, V> extends SplibCoreB
     // as an exclusive control error.
     if (optional.isEmpty()) {
       String msg = "jp.ecuacion.splib.web.common.message.sameRecordAlreadyDeleted";
-      new Violations().add(new BusinessViolation(msg)).throwIfAny();
+      throw new ViolationException(new Violations().add(new BusinessViolation(msg)));
     }
 
     E e = optional.get();

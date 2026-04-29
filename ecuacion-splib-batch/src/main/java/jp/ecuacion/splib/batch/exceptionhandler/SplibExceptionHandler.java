@@ -18,8 +18,7 @@ package jp.ecuacion.splib.batch.exceptionhandler;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
-import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.unchecked.AppRuntimeException;
+import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -72,20 +71,12 @@ public class SplibExceptionHandler implements ExceptionHandler {
       }
     }
 
-    // For AppException, especially MultipleAppException with multiple messages,
-    // list them again so they are visible in the log.
-    if (throwable instanceof AppException || throwable instanceof AppRuntimeException) {
-      AppException appEx = null;
-      if (throwable instanceof AppRuntimeException) {
-        appEx = ((AppException) ((AppRuntimeException) throwable).getCause());
-
-      } else {
-        appEx = (AppException) throwable;
-      }
-
-      List<String> msgList = ExceptionUtil.getMessageList(appEx, Locale.getDefault());
+    // For ViolationException, list all messages so they are visible in the log.
+    if (throwable instanceof ViolationException) {
+      List<String> msgList = ExceptionUtil.getMessageList(
+          (ViolationException) throwable, Locale.getDefault());
       detailLog.info("==========");
-      detailLog.info("[AppException message list]");
+      detailLog.info("[ViolationException message list]");
       msgList.stream().forEach(msg -> detailLog.info(msg));
       detailLog.info("==========");
     }

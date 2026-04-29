@@ -24,8 +24,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import jp.ecuacion.lib.core.exception.checked.AppException;
-import jp.ecuacion.lib.core.exception.checked.MultipleAppException;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
@@ -399,7 +397,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   /**
-   *  Is set If you want to redirect when {@code AppException} occurs.
+   *  Is set If you want to redirect when {@code ViolationException} occurs.
    *  
    *  <p>It may be {@code null} if you don't want to redirect.</p>
    *  
@@ -415,7 +413,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * Returns parameter list needed to add when the response is redirect to the original page.
    * 
    * <p>It can be used with the redirect by both normal end and abnormal end 
-   *     (= in the case that AppException is thrown).</p>
+   *     (= in the case that ViolationException is thrown).</p>
    */
   protected List<String[]> paramListOnRedirectToSelf = new ArrayList<>();
 
@@ -609,9 +607,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * 
    * @param model model
    * @param forms forms
-   * @throws AppException AppException
    */
-  public void prepare(Model model, SplibGeneralForm... forms) throws AppException {
+  public void prepare(Model model, SplibGeneralForm... forms) {
     prepare(model, null, forms);
   }
 
@@ -623,10 +620,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param model model
    * @param loginUser loginUser
    * @param forms forms
-   * @throws AppException AppException
    */
-  public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms)
-      throws AppException {
+  public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms) {
 
     // Common processing for all forms.
     for (SplibGeneralForm form : forms) {
@@ -695,13 +690,14 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param loginState loginState
    * @param bean bean
    * @throws FormInputValidationException FormInputValidationException
-   * @throws MultipleAppException MultipleAppException
    */
   private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
       RolesAndAuthoritiesBean bean) {
     // input validation
     Violations violations = new Violations();
     getBeanValidationAppExceptionList(violations, form, bean);
+
+    violations.throwIfAny();
   }
 
   private void getBeanValidationAppExceptionList(Violations violations, SplibGeneralForm form,
@@ -711,7 +707,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     // Add NotEmpty check results.
     Field field = form.getRootRecordFields().get(0);
-    
+
     try {
       Object itemContainer = field.get(form);
       form.validateNotEmpty(itemContainer, violations, request.getLocale(), util.getLoginState(),
@@ -720,42 +716,6 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
-    //
-    // // Specify sort order. Item name specification may be supported in the future,
-    // // but for now a fixed sort order is sufficient.
-    // // violations.getBusinessViolations().stream().sorted(getComparator())
-    // // .collect(Collectors.toList());
-    //
-    // // The standard Jakarta validation validators are suboptimal — for example,
-    // // Size validator errors are shown even for empty strings.
-    // // When the field is empty, only the empty-field error should be shown,
-    // // so if both NotEmpty and another validator exist for the same field,
-    // // remove all validators except NotEmpty.
-    // // removeDuplicatedValidators(errorList);
-    //
-    // // This pattern (errorList.size() == 0) can occur:
-    // // Spring's validation stored errors in the result,
-    // // but re-running validation manually fails to detect them.
-    // // Treat as a system error.
-    // if (violations.getBusinessViolations().size() == 0
-    // && violations.getConstraintViolations().size() == 0) {
-    // String msg = """
-    // Reached getBeanValidationAppExceptionList but errorList is empty.
-    // This occurs when a submit button with the same name as rootRecordName is pressed.
-    // (Example: when rootRecordName is "app", a button like the following causes this)
-    // <div th:replace="~{bootstrap/components :: submitButton('app', ...)}"></div>
-    //
-    // For text input etc., in GET terms the request param appears as "app.desc=...",
-    // but Spring MVC outputs the button name itself as "app=".
-    // Spring may mistakenly treat "app=" as a form mapping target due to the "app" keyword,
-    // attempting a mapping and throwing an error.
-    // (Note: if the button name starts with "app" but differs, e.g. "appzzz",
-    // this problem does not occur.)
-    // """;
-    // throw new RuntimeException(msg);
-    // }
-
-    violations.throwIfAny();
   }
 
   // /*

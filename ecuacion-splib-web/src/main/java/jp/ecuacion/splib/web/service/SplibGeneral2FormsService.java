@@ -47,7 +47,7 @@ public abstract class SplibGeneral2FormsService
    * Prepares form.
    * 
    * <p>This is called in addition to showing normal pages,
-   *     after occuring {@code AppException} 
+   *     after occuring {@code ViolationException}
    *     and right before showing the same page with error messages.<br>
    *     In this case the input values are stored in {@code Model}, 
    *     but the other values like selections of dropdowns are not.<br>
