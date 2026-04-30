@@ -378,7 +378,17 @@
 						<requireMavenVersion>
 							<version>3.9.5</version>
 						</requireMavenVersion>
-						<requireUpperBoundDeps/>
+						<!-- Excluded artifacts are managed at older versions by spring-boot-starter-parent
+						     than what its own transitive dependencies actually require.
+						     Remove exclusions when upgrading Spring Boot resolves the mismatch. -->
+						<requireUpperBoundDeps>
+							<excludes>
+								<exclude>org.apache.commons:commons-lang3</exclude>
+								<exclude>org.glassfish.jaxb:jaxb-runtime</exclude>
+								<exclude>org.glassfish.jaxb:jaxb-core</exclude>
+								<exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
+							</excludes>
+						</requireUpperBoundDeps>
 					</rules>
 				</configuration>
 			</plugin>
@@ -387,23 +397,6 @@
 	</build>
 	<dependencyManagement>
 		<dependencies>
-
-			<!-- Overrides to satisfy RequireUpperBoundDeps (must appear before BOM imports) -->
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>3.20.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.glassfish.jaxb</groupId>
-				<artifactId>jaxb-runtime</artifactId>
-				<version>4.0.7</version>
-			</dependency>
-			<dependency>
-				<groupId>jakarta.xml.bind</groupId>
-				<artifactId>jakarta.xml.bind-api</artifactId>
-				<version>4.0.5</version>
-			</dependency>
 
 			<!-- ecuacion-lib-import -->
 			<dependency>
@@ -460,23 +453,6 @@
 				<groupId>jakarta.el</groupId>
 				<artifactId>jakarta.el-api</artifactId>
 				<version>${jakarta.el.jakarta.el-api.version}</version>
-			</dependency>
-
-			<!-- Overrides to satisfy RequireUpperBoundDeps -->
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>3.20.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.glassfish.jaxb</groupId>
-				<artifactId>jaxb-runtime</artifactId>
-				<version>4.0.7</version>
-			</dependency>
-			<dependency>
-				<groupId>jakarta.xml.bind</groupId>
-				<artifactId>jakarta.xml.bind-api</artifactId>
-				<version>4.0.5</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
