@@ -50,10 +50,57 @@
 				titleAccount=${titleAccountApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title-account') ?: titleDefault)} : ${titleAccountApp},
 				titleAdminApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title-admin') ?: ''},
 				titleAdmin=${titleAdminApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title-admin') ?: titleDefault)} : ${titleAdminApp},
-				title=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)}
+				title=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)},
+				imagePathValue=${@propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.image-path', '')},
+				imagePathTmp=@{${imagePathValue}},
+				imagePath=${(!#strings.isEmpty(imagePathTmp) && !#strings.startsWith(imagePathTmp, '/') ? '/' : '') + imagePathTmp},
+				defaultPagePathValue=${@propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.default-page-path', '')},
+				defaultPagePathTmp=@{${defaultPagePathValue}},
+				defaultPagePath=${(!#strings.isEmpty(defaultPagePathTmp) && !#strings.startsWith(defaultPagePathTmp, '/') ? '/' : '') + defaultPagePathTmp},
+				optionBgColor=${@environment.getProperty('jp.ecuacion.splib.web.navbar.background-color-class') ?: ''},
+				options=(${optionBgColor} == '' ? '' : ('backgroundColorClass=' + ${optionBgColor})) + ','
+						+ (${bsBgGradient} == '' ? '' : ('isBackgroundGradient=' + ${bsBgGradient})) + ','
+						+ ${showsNavbarMenuItems == false ? 'showsNavbarMenuItems=false' : ''}
 				">
+			<div th:replace="~{bootstrap/components :: navbarRoot(~{ :: fragmentNavbarBasePage},
+					${title}, ${imagePath}, ${defaultPagePath},	~{ :: fragmentNavbarBasePageRight}, ${options})}"></div>
 
-			
+			<th:block th:if="false"><div th:fragment="fragmentNavbarBasePage" th:remove="tag">
+				<!--/* Change navbar dependent on loginState */-->
+				<th:block th:if="${loginState == 'public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'account'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-account}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'admin'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-admin}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'ecuacion-public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
+				</th:block>
+				<h1 style="color: red"
+						th:if="${loginState != 'public' && loginState != 'account' && loginState != 'admin' && loginState != 'ecuacion-public'}">
+					parameter: ${loginState} is not properly designated.
+				</h1>
+			</div></th:block>
+
+			<th:block th:if="false"><div th:fragment="fragmentNavbarBasePageRight" th:remove="tag">
+				<!--/* Change navbar dependent on loginState */-->
+				<th:block th:if="${loginState == 'public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public-right}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'account'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-account-right}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'admin'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-admin-right}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'ecuacion-public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public-right}"></span>
+				</th:block>
+			</div></th:block>
+
 		</th:block>
 		
 		<div class="ms-5 me-5">
