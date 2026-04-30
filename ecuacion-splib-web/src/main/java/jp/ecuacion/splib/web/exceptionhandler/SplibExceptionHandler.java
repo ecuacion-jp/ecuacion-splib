@@ -21,6 +21,7 @@ import jakarta.validation.ConstraintViolationException;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ConstraintViolationExceptionWithParameters;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.exception.ViolationWarningException;
@@ -291,8 +292,8 @@ public abstract class SplibExceptionHandler {
     // Setup model if it's new.
     Model model = getModel();
     if (model == null) {
-      model = newModel;
-      newModel.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
+      model = Objects.requireNonNull(newModel);
+      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
     }
 
     if (!StringUtils.isEmpty(exception.getMessage())) {
