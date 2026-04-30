@@ -378,7 +378,17 @@
 						<requireMavenVersion>
 							<version>3.9.5</version>
 						</requireMavenVersion>
-						<requireUpperBoundDeps/>
+						<!-- Excluded artifacts are managed at older versions by spring-boot-starter-parent
+						     than what its own transitive dependencies actually require.
+						     Remove exclusions when upgrading Spring Boot resolves the mismatch. -->
+						<requireUpperBoundDeps>
+							<excludes>
+								<exclude>org.apache.commons:commons-lang3</exclude>
+								<exclude>org.glassfish.jaxb:jaxb-runtime</exclude>
+								<exclude>org.glassfish.jaxb:jaxb-core</exclude>
+								<exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
+							</excludes>
+						</requireUpperBoundDeps>
 					</rules>
 				</configuration>
 			</plugin>
@@ -443,13 +453,6 @@
 				<groupId>jakarta.el</groupId>
 				<artifactId>jakarta.el-api</artifactId>
 				<version>${jakarta.el.jakarta.el-api.version}</version>
-			</dependency>
-
-			<!-- Override to satisfy RequireUpperBoundDeps: ecuacion-lib-validation requires 3.20.0 -->
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>3.20.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
