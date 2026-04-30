@@ -187,6 +187,21 @@ public class SplibThymeleafOptionUtil {
     return StringUtil.getSeparatedValuesString(getValues(options, key), " ");
   }
 
+  /**
+   * Escapes single quotes in the options string for use in SpEL string literals.
+   *
+   * <p>In SpEL, a single quote inside a string literal must be escaped by doubling it
+   *     (i.e., {@code '} becomes {@code ''}). Use this method before embedding an options
+   *     value via {@code __...__} preprocessing inside a SpEL single-quoted string literal,
+   *     to prevent syntax errors when the options value contains a single quote.</p>
+   *
+   * @param options options string
+   * @return SpEL-safe options string
+   */
+  public String escapeForSpel(@Nullable String options) {
+    return options == null ? "" : options.replace("'", "''");
+  }
+
   @SuppressWarnings("null")
   private @Nullable String getElementFromPsvNullable(@Nullable String option, int psvIndex) {
 

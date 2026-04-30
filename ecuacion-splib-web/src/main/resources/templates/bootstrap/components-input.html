@@ -321,9 +321,10 @@
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, *{__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
 	</div>
 	
-	<div th:fragment="inputSelectWithLocale(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, 
-				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+	<div th:fragment="inputSelectWithLocale(itemPropertyPath, options)" th:remove="tag"
+			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)}">
+		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath},
+				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -334,9 +335,10 @@
 		  - firstCharOfCodeLessThanOrEqualTo: Shows selections whose first character is less than or equal to the one spefied. Compared by ascii code number.
 		  - firstCharOfCodeGreaterThanOrEqualTo: Shows selections whose first character is greaterl than or equal to the one spefied. Compared by ascii code number.
 	 */-->
-	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, 
-				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag"
+			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)}">
+		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath},
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* component for file upload */-->
