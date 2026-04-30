@@ -44,8 +44,8 @@
 		<remote-location.javadoc>sftp://javadoc.ecuacion.jp/home/ytbiz/www/javadoc.ecuacion.jp</remote-location.javadoc>
 		<checkstyle.config.site>https://ecuacion-jp.github.io/config/common/checkstyle</checkstyle.config.site>
 		<ecuacion-splib.version>0.0.1-SNAPSHOT</ecuacion-splib.version>
-		<ecuacion-lib.version>15.1.0</ecuacion-lib.version>
-		<ecuacion-util.version>4.7.2</ecuacion-util.version>
+		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
+		<ecuacion-util.version>0.0.1-SNAPSHOT</ecuacion-util.version>
 		<!-- 3rd party module versions -->
 		<org.apache.maven.plugins.maven-war-plugin.version>3.2.2</org.apache.maven.plugins.maven-war-plugin.version>
 		<org.apache.maven.wagon.version>3.5.3</org.apache.maven.wagon.version>
