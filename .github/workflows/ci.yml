@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Verify
-        run: mvn verify -Dwagon.skip=true -Decuacion-lib.version=15.1.0 -Decuacion-util.version=4.7.2
+        run: mvn verify -Dwagon.skip=true -Decuacion-lib.version=16.0.0-beta.3 -Decuacion-util.version=4.7.2
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
