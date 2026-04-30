@@ -83,14 +83,16 @@
 		  - firstCharOfCodeLessThanOrEqualTo: Compares the first character of the code by ASCII value (less than or equal).
 		  - firstCharOfCodeGreaterThanOrEqualTo: Compares the first character of the code by ASCII value (greater than or equal).
 	 */-->
-	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag"
+			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)}">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
-				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
 
-	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag">
+	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag"
+			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)}">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
-				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${options}__')}, ${options})}"></div>
+				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
 
 	<!--/*
