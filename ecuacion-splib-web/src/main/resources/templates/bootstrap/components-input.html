@@ -77,12 +77,13 @@
 							<th:block th:if="${needsLabel}"
 									th:with="itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey()}">								
 								<label th:for="${inputId}" class="form-label text-dark mb-0">
-									[[${@msgUtil.getValue(#locale, '__${itemNameKey}__') + labelPostfix}]]
+									[[#{__${itemNameKey}__}]][[${labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
-									[[${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? ' ' + @msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitOnChangeToRefresh') : ''}]]
+									[[${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? ' ' + #messages.msg('jp.ecuacion.splib.web.common.label.submitOnChangeToRefresh') : ''}]]
 									<span th:if="${@optUtil.hasKey(options, 'tooltip')}"
-											th:data-bs-toggle="${@optUtil.hasKey(options, 'tooltip') ? 'tooltip' : ' '}" 
-											th:data-bs-title="${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'tooltip', ''))}"
+											th:with="tooltipKey=${@optUtil.getValueOrElse(options, 'tooltip', '')}"
+											th:data-bs-toggle="${@optUtil.hasKey(options, 'tooltip') ? 'tooltip' : ' '}"
+											th:data-bs-title="${#strings.isEmpty(tooltipKey) ? '' : (#messages.msgOrNull(tooltipKey) ?: tooltipKey)}"
 											th:data-tooltip-sanitize="${@optUtil.getValueOrElse(options, 'tooltipSanitize', true)}"
 											data-bs-custom-class="bs-tooltip">
 										<svg width="20" height="20">
@@ -98,7 +99,7 @@
 							<th:block th:replace="${allInputContents}" />
 							
 							<!--/* field messages */-->
-							<th:block th:if="${@propUtil.getValueOrElse('jp.ecuacion.splib.web.process-result-message.shown-at-each-item', true)} and ${needsFieldEmssages}">
+							<th:block th:if="${@environment.getProperty('jp.ecuacion.splib.web.process-result-message.shown-at-each-item') ?: true} and ${needsFieldEmssages}">
 								<div class="text-danger" th:if="${messagesBean.getErrorMessagesAtEachItem('__${itemPropertyPath}__').size() > 0}"
 									th:classappend="${@optUtil.hasKey(options, 'componentType') and @optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
 									th:each="message : ${messagesBean.getErrorMessagesAtEachItem('__${itemPropertyPath}__')}">[[${message}]]</div>
@@ -123,7 +124,7 @@
 	*/-->
 	<div th:fragment="internalAllHtmlInputComponent(position)" th:remove="tag">
 		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" 
-				th:value="${@optUtil.hasKey(options, 'value') ? @msgUtil.getValue(#locale, @optUtil.getValue(options, 'value')) : inputValue}"
+				th:value="${@optUtil.hasKey(options, 'value') ? (#messages.msgOrNull(@optUtil.getValue(options, 'value')) ?: @optUtil.getValue(options, 'value')) : inputValue}"
 				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{getStringLength('__${propertyPathField}__')}"
 				class="form-control text-dark"
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
@@ -361,7 +362,7 @@
 			<th:block th:with="photoData=*{__${recordPropertyPath + 'RegisteredBase64'}__}">
 				<th:block th:if="${!#strings.isEmpty(photoData)}">
 					<br>
-					[[${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhoto.registeredPhoto')}]]
+					[[#{jp.ecuacion.splib.web.components.inputTakenPhoto.registeredPhoto}]]
 					<img class="img-fluid" th:src="${photoData}" style="border: 1px solid #000;">
 				</th:block>
 			</th:block>
@@ -378,12 +379,12 @@
 			<img th:id="${'photo-' + inputId}" src="#" alt="taken photo" style="border: 1px solid #000;">
 			<input type="hidden" th:id="${inputId}" th:name="${inputName}" th:value="${inputValue}">
 			<div class="mt-2"></div>
-			<button th:id="${'allowance-' + inputId}" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient" 
-					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.photoShootingButtonLabel')}"></button>
+			<button th:id="${'allowance-' + inputId}" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient"
+					th:text="#{jp.ecuacion.splib.web.components.inputTakenPhotoPc.photoShootingButtonLabel}"></button>
 			<button th:id="${'capture-' + inputId}" type="button" style="vertical-align: center;" class="btn btn-sm btn-color-btn text-white bg-gradient"
-					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.shootButtonLabel')}"></button>
+					th:text="#{jp.ecuacion.splib.web.components.inputTakenPhotoPc.shootButtonLabel}"></button>
 			<button th:id="${'recapture-' + inputId}" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient"
-					th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.components.inputTakenPhotoPc.reshootButtonLabel')}"></button>
+					th:text="#{jp.ecuacion.splib.web.components.inputTakenPhotoPc.reshootButtonLabel}"></button>
 		
 			<script>
 				const video = document.getElementById('video-[[${inputId}]]');
@@ -488,9 +489,9 @@
 
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
- 		<div th:replace="~{bootstrap/components :: internalButtonCommonComponent(${name}, ${label}, true, 
- 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ? 
- 						('attr=data-disabled-on-submit|true,attr=data-original-label|' + @msgUtil.getValue(#locale, label) + ',') : ''} 
+ 		<div th:replace="~{bootstrap/components :: internalButtonCommonComponent(${name}, ${label}, true,
+ 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ?
+ 						('attr=data-disabled-on-submit|true,attr=data-original-label|' + (#messages.msgOrNull(label) ?: label) + ',') : ''}
  				+ ${options})}"></div>
 	</div>
 

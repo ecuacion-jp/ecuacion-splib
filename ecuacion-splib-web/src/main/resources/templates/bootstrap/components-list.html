@@ -138,7 +138,7 @@
 				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
 			<th:block th:with="id=${recordName + '.' + fieldName},
 					itemNameKey=${@optUtil.hasKey(options, 'itemNameKey') ? @optUtil.getValue(options, 'itemNameKey') : listForm.__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey()}">
-				<th:block th:with="itemName=${@msgUtil.getValue(#locale, itemNameKey)}">
+				<th:block th:with="itemName=#{__${itemNameKey}__}">
 					<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
 						<th scope="col" style="cursor: pointer" th:text="${itemName}"
 								th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
@@ -161,7 +161,7 @@
 	<div th:fragment="headerFreeText(label, options)" th:remove="tag">
 		<th scope="col" class="text-center text-white bg-color-tbl-header"
 				th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
-				th:text="${@msgUtil.getValue(#locale, label)}"></th>
+				th:text="#{__${label}__}"></th>
 	</div>
 
 	<!-- update button -->
@@ -318,7 +318,7 @@
 
 	<!--/* submitButtonWithIds */-->
 	<div th:fragment="submitButtonWithIds(name, label, options)" th:remove="tag">
-		<div th:replace="~{ :: submitButton(${name}, ${@msgUtil.getValue(#locale, @optUtil.getValueOrElse(options, 'text', label))},
+		<div th:replace="~{ :: submitButton(${name}, ${(#messages.msgOrNull(@optUtil.getValueOrElse(options, 'text', label)) ?: @optUtil.getValueOrElse(options, 'text', label))},
 					'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions}
 					 + ',' + ${options} + ',event=click|tdSubmitButtonWithIds')}">
 		</div>

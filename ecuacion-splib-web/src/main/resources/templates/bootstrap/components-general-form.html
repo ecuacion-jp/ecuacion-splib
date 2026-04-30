@@ -56,7 +56,7 @@
 							th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
 							th:object="${__${javaFormName + '.' + rootRecordName}__}"
 							onsubmit="doubleClickPreventionLockButtonsOnSubmit(event, this)"
-							th:data-submitting-message="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.label.submitting')}">
+							th:data-submitting-message="#{jp.ecuacion.splib.web.common.label.submitting}">
 
 						<th:block th:if="${@optUtil.getValueOrElse(options, 'transactionToken', 'true') != 'false'}">
 							<input type="hidden" name="transactionToken" th:value="${transactionToken}">

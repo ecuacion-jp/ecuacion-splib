@@ -122,9 +122,9 @@
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentMessageCommonComponent}, true, ${options})}"></div>
  		
 		<th:block th:if="false"><div th:fragment="fragmentMessageCommonComponent" th:remove="tag">
-			<div class="text-dark" 
-					th:with="titleString=${@msgUtil.getValue(#locale, title)},
-					messageString=${@msgUtil.getValue(#locale, message)},
+			<div class="text-dark"
+					th:with="titleString=${#strings.isEmpty(title) ? '' : (#messages.msgOrNull(title) ?: title)},
+					messageString=${#strings.isEmpty(message) ? '' : (#messages.msgOrNull(message) ?: message)},
 					isSelectable=${@optUtil.hasKey(options, 'selectable')}">
 
 				<th:block th:replace="${contents}" />
@@ -305,7 +305,7 @@
 					bgColor=${@optUtil.getValueOrElse(options, 'backgroundColor', '')},
 					bgColorStyle=${bgColor == '' ? '' : 'background-color: ' + bgColor + '; '},
 					class=${'align-middle fs-6'},
-					text=${@msgUtil.getValue(#locale, string)},
+					text=${#strings.isEmpty(string) ? '' : (#messages.msgOrNull(string) ?: string)},
 					isUtext=${@optUtil.hasKey(options, 'utext') ? true : false},
 					textAlignment=${'text-' + @optUtil.getValueOrElse(options, 'textAlignment', isHeader ? 'center' : 'left')},
 					style=${'white-space: pre-wrap; ' + textColorStyle + bgColorStyle},
@@ -455,7 +455,7 @@
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavbarCommonComponent}, false, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarCommonComponent" th:remove="tag">
-			<th:block th:with="labelString=${@msgUtil.getValue(#locale, '__${label}__')}">
+			<th:block th:with="labelString=#{__${label}__}">
 				<th:block th:replace="${contents}" />
 			</th:block>
 		</div></th:block>
@@ -698,7 +698,7 @@
 			<button th:attr="${attr1Key}=${attr1Value}, ${attr2Key}=${attr2Value}, ${attr3Key}=${attr3Value}, ${attr4Key}=${attr4Value}, ${attr5Key}=${attr5Value},
 							 ${attr6Key}=${attr6Value}, ${attr7Key}=${attr7Value}, ${attr8Key}=${attr8Value}, ${attr9Key}=${attr9Value}, ${attr10Key}=${attr10Value}"
 					th:type="${submits ? 'submit' : 'button'}" th:name="${name}" th:id="${id}" th:classappend="${buttonLookClasses}"
-					th:text="${@msgUtil.getValue(#locale, label)}" th:disabled="${@optUtil.hasKey(options, 'disabled')}">
+					th:text="${#messages.msgOrNull(label) ?: label}" th:disabled="${@optUtil.hasKey(options, 'disabled')}">
 			</button>
 
 		</div></th:block>
