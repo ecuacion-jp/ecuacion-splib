@@ -378,6 +378,7 @@
 						<requireMavenVersion>
 							<version>3.9.5</version>
 						</requireMavenVersion>
+						<requireUpperBoundDeps/>
 					</rules>
 				</configuration>
 			</plugin>
