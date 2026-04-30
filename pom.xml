@@ -388,6 +388,23 @@
 	<dependencyManagement>
 		<dependencies>
 
+			<!-- Overrides to satisfy RequireUpperBoundDeps (must appear before BOM imports) -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.20.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jaxb</groupId>
+				<artifactId>jaxb-runtime</artifactId>
+				<version>4.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.xml.bind</groupId>
+				<artifactId>jakarta.xml.bind-api</artifactId>
+				<version>4.0.5</version>
+			</dependency>
+
 			<!-- ecuacion-lib-import -->
 			<dependency>
 				<type>pom</type>
