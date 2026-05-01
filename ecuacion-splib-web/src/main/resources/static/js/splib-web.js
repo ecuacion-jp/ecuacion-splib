@@ -119,3 +119,97 @@ window.submitOnChangeToRefresh = function(_event, item) {
 	item.form.elements['submitOnChangeToRefresh'].value = 'true';
 	item.form.submit();
 };
+
+function initTakenPhotoPc(inputId) {
+	const video = document.getElementById('video-' + inputId);
+	const canvas = document.getElementById('canvas-' + inputId);
+	const photo = document.getElementById('photo-' + inputId);
+	const hidden = document.getElementById(inputId);
+	const allowanceButton = document.getElementById('allowance-' + inputId);
+	const captureButton = document.getElementById('capture-' + inputId);
+	const recaptureButton = document.getElementById('recapture-' + inputId);
+	let stream;
+
+	video.style.display = 'none';
+	canvas.style.display = 'none';
+	photo.style.display = 'none';
+	captureButton.style.display = 'none';
+	recaptureButton.style.display = 'none';
+
+	if (hidden.value != "") {
+		photo.style.display = 'flex';
+		photo.setAttribute('src', hidden.value);
+	}
+
+	allowanceButton.addEventListener('click', function() {
+		navigator.mediaDevices.getUserMedia({ video: true })
+			.then(function(mediaStream) {
+				stream = mediaStream;
+				video.srcObject = stream;
+				video.onloadedmetadata = function(e) {
+					video.play();
+				};
+				video.style.display = 'flex';
+				photo.style.display = 'none';
+				allowanceButton.style.display = 'none';
+				captureButton.style.display = 'flex';
+				photo.setAttribute('src', '');
+				hidden.value = '';
+			})
+			.catch(function(err) {
+				console.log("Access error to camera: " + err);
+			});
+	});
+
+	captureButton.addEventListener('click', function() {
+		const context = canvas.getContext('2d');
+		context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		video.style.display = 'none';
+		photo.style.display = 'flex';
+		captureButton.style.display = 'none';
+		recaptureButton.style.display = 'inline-block';
+		photo.setAttribute('src', canvas.toDataURL('image/jpeg'));
+		hidden.value = canvas.toDataURL('image/jpeg');
+	});
+
+	recaptureButton.addEventListener('click', function() {
+		const context = canvas.getContext('2d');
+		context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		video.style.display = 'flex';
+		photo.style.display = 'none';
+		captureButton.style.display = 'inline-block';
+		recaptureButton.style.display = 'none';
+		photo.setAttribute('src', '');
+		hidden.value = '';
+	});
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+	var warnMessage = document.getElementById('warnMessage');
+	if (!warnMessage) return;
+	var bl = confirm(warnMessage.value);
+	var obj = warnMessage.form.elements['confirmedWarnings'];
+	if (bl) {
+		obj.value = obj.value + "," + warnMessage.dataset.msgId;
+		var buttonName = warnMessage.dataset.buttonName;
+		if (typeof buttonName === "undefined") {
+			buttonName = "";
+		}
+		if (buttonName == "") {
+			warnMessage.form.submit();
+		} else {
+			var btn = warnMessage.form.elements[buttonName];
+			btn.click();
+		}
+	} else {
+		obj.value = "";
+	}
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+	[...tooltipTriggerList].filter(el => el.dataset.tooltipSanitize == "true")
+			.forEach(el => new bootstrap.Tooltip(el));
+	[...tooltipTriggerList].filter(el => el.dataset.tooltipSanitize == "false")
+			.forEach(el => new bootstrap.Tooltip(el, {sanitize: false, html: true}));
+});

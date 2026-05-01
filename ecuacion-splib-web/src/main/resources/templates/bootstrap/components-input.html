@@ -141,7 +141,7 @@
 			</th:block>
 			<th:block th:if="${needsCommas}">
 				<script th:inline="javascript">
-					addNumberFormatFunction(/*[[${inputId}]]*/);
+					document.addEventListener('DOMContentLoaded', () => addNumberFormatFunction(/*[[${inputId}]]*/));
 				</script>
 			</th:block>
 		</th:block>
@@ -393,82 +393,7 @@
 			<button th:id="${'recapture-' + inputId}" type="button" style="vertical-align: bottom;" class="btn btn-sm btn-color-btn text-white bg-gradient"
 					th:text="#{jp.ecuacion.splib.web.components.inputTakenPhotoPc.reshootButtonLabel}"></button>
 		
-			<script>
-				const video = document.getElementById('video-[[${inputId}]]');
-				const canvas = document.getElementById('canvas-[[${inputId}]]');
-				const photo = document.getElementById('photo-[[${inputId}]]');
-				const hidden = document.getElementById('[[${inputId}]]');
-				const allowanceButton = document.getElementById('allowance-[[${inputId}]]');
-				const captureButton = document.getElementById('capture-[[${inputId}]]');
-				const recaptureButton = document.getElementById('recapture-[[${inputId}]]');
-				let stream;
-		
-				video.style.display = 'none';
-				canvas.style.display = 'none';
-				photo.style.display = 'none';
-				captureButton.style.display = 'none';
-				recaptureButton.style.display = 'none';
-				
-				if (hidden.value != "") {
-					photo.style.display = 'flex';
-					photo.setAttribute('src', hidden.value);
-				}
-				
-				// Procedure for allowance button pressed
-				allowanceButton.addEventListener('click', function() {
-					// Request for the access allowance of camera.
-					navigator.mediaDevices.getUserMedia({ video: true })
-						.then(function(mediaStream) {
-							stream = mediaStream;
-							video.srcObject = stream;
-							video.onloadedmetadata = function(e) {
-							  video.play();
-							};
-		
-							video.style.display = 'flex';
-							photo.style.display = 'none';
-							allowanceButton.style.display = 'none';
-							captureButton.style.display = 'flex';
-							
-							// Get photo data from canvas.
-							photo.setAttribute('src', '');
-							hidden.value = '';
-						})
-						.catch(function(err) {
-							console.log("Access error to camera: " + err);
-						});
-				});
-		
-				// Procedure for capture button pressed
-				captureButton.addEventListener('click', function() {
-					const context = canvas.getContext('2d');
-					context.drawImage(video, 0, 0, canvas.width, canvas.height);
-					 
-					video.style.display = 'none';
-					photo.style.display = 'flex';
-					captureButton.style.display = 'none';
-					recaptureButton.style.display = 'inline-block';
-
-					// Get photo data from canvas.
-					photo.setAttribute('src', canvas.toDataURL('image/jpeg'));
-					hidden.value = canvas.toDataURL('image/jpeg');
-				});
-
-				// Procedure for recapture button pressed
-				recaptureButton.addEventListener('click', function() {
-					const context = canvas.getContext('2d');
-					context.drawImage(video, 0, 0, canvas.width, canvas.height);
-	
-					video.style.display = 'flex';
-					photo.style.display = 'none';
-					captureButton.style.display = 'inline-block';
-					recaptureButton.style.display = 'none';
-					
-					// Clear photo data.
-					photo.setAttribute('src', '');
-					hidden.value = '';
-				});
-			</script>
+			<script>document.addEventListener('DOMContentLoaded', () => initTakenPhotoPc('[[${inputId}]]'));</script>
 		</div></th:block>
 	</div>
 	

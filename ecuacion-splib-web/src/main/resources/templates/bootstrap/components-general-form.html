@@ -93,30 +93,6 @@
 		<div th:object="${messagesBean}">
 			<th:block th:if="*{warnMessage != null}">
 				<input type="hidden" name="warnMessage" id="warnMessage" th:data-button-name="*{warnMessage.buttonName}" th:data-msg-id="*{warnMessage.messageId}" th:value="*{warnMessage.message}">
-				<script>
-					var warnMessage = document.getElementById('warnMessage');
-					var bl = confirm(warnMessage.value);
-					var obj = warnMessage.form.elements['confirmedWarnings'];
-					if (bl) {
-						obj.value = obj.value + "," + warnMessage.dataset.msgId;
-
-						var buttonName = warnMessage.dataset.buttonName;
-						if (typeof buttonName === "undefined") {
-							buttonName = "";
-						}
-
-						if (buttonName == "") {
-							warnMessage.form.submit();
-
-						} else {
-							var btn = warnMessage.form.elements[buttonName];
-							btn.click();
-						}
-
-					} else {
-						obj.value = "";
-					}
-				</script>
 			</th:block>
 		</div>
 	</div>
