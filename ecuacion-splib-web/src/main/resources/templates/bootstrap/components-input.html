@@ -280,14 +280,19 @@
 		</div></th:block>
 	</div>
 
+	<!--/* internal common component for checkbox and switch. */-->
+	<div th:fragment="internalInputCheckboxOrSwitchComponent(itemPropertyPath, isFormSwitch, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::internalAllHtmlCheckboxComponent(${isFormSwitch})}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
+	</div>
+
 	<!--/* checkbox */-->
 	<div th:fragment="inputCheckbox(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::internalAllHtmlCheckboxComponent(false)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
+		<div th:replace="~{ :: internalInputCheckboxOrSwitchComponent(${itemPropertyPath}, false, ${options})}"></div>
 	</div>
 
 	<!--/* checkbox (switch) */-->
 	<div th:fragment="inputSwitch(itemPropertyPath, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::internalAllHtmlCheckboxComponent(true)}, ~{bootstrap/components :: nullFragment}, ${options + ',componentType=switch'})}"></div>
+		<div th:replace="~{ :: internalInputCheckboxOrSwitchComponent(${itemPropertyPath}, true, ${options})}"></div>
 	</div>
 	 
 	<!--/* checkbox */-->
@@ -365,7 +370,7 @@
 				<th:block th:if="${!#strings.isEmpty(photoData)}">
 					<br>
 					[[#{jp.ecuacion.splib.web.components.inputTakenPhoto.registeredPhoto}]]
-					<img class="img-fluid" th:src="${photoData}" style="border: 1px solid #000;">
+					<img class="img-fluid" th:src="${photoData}" alt="" style="border: 1px solid #000;">
 				</th:block>
 			</th:block>
 		</div></th:block>
@@ -477,7 +482,7 @@
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputCaptcha}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputCaptcha" th:remove="tag">
-			<img class="img-fluid mb-2" th:src="*{__${itemPropertyPath}__ImageData}" style="border: 1px solid #000;">
+			<img class="img-fluid mb-2" th:src="*{__${itemPropertyPath}__ImageData}" alt="CAPTCHA" style="border: 1px solid #000;">
 
 			<div th:with="type=text,needsMaxLength=false,isReadOnly=false">
 				<div th:replace="~{ :: internalAllHtmlInputComponent('left')}"></div>

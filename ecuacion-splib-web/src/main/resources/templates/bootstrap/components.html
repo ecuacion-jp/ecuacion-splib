@@ -509,7 +509,7 @@
 					<div class="container-fluid">
 						<a class="navbar-brand" th:href="${defaultPagePath == '' ? null : defaultPagePath}">
 							<th:block th:if="${imagePath != ''}">
-								<img th:src="${imagePath}" width="30" height="24" th:classappend="${navbarTitle == '' ? '' : 'd-inline-block align-text-top'}">
+								<img th:src="${imagePath}" alt="" width="30" height="24" th:classappend="${navbarTitle == '' ? '' : 'd-inline-block align-text-top'}">
 							</th:block>
 							<th:block th:if="${title != ''}">
 								<span th:text="${title}"></span>
@@ -570,7 +570,7 @@
 				<a th:if="${imagePath == ''}" class="nav-link dropdown-toggle" href="#" role="button"
 						data-bs-toggle="dropdown" aria-expanded="false" th:text="${labelString}" />
 				<a th:if="${imagePath != ''}" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-					<img th:src="${imagePath}" alt="" width="27" height="27" style="filter: brightness(1) invert(1);" />
+					<img th:src="${imagePath}" th:alt="${labelString}" width="27" height="27" style="filter: brightness(1) invert(1);" />
 				</a>
 
 				<ul class="dropdown-menu dropdown-menu-dark"
