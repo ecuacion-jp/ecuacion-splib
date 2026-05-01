@@ -194,7 +194,7 @@
 	*/-->
 	<div th:fragment="listReadOnlyCustomizable(value, position, options)" th:remove="tag">
 		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
-				th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
+				th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
 				th:classappend="${(deleted != null && deleted) || @optUtil.hasKey(options, 'deleted')} ? 'text-deleted' : 'text-dark'">
 			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl')}">
 				<a th:href="${@optUtil.getValue(options, 'linkUrl')}" target="_blank">[[${value}]]</a>
@@ -247,7 +247,7 @@
 
 	<!--/* td readOnly checkbox */-->
 	<div th:fragment="listReadOnlyCheckbox(itemPropertyPath, options)" th:remove="tag">
-		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${itemPropertyPath}__}" disabled>
 		</td>
 	</div>
@@ -268,7 +268,7 @@
 
 	<!--/* internalCommon */-->
 	<div th:fragment="internalCommon(itemPropertyPath, allInputContents, options)" th:remove="tag">
-		<td class="align-middle text-center" th:th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
 			<div th:replace="~{ :: internalInsideCommon(${itemPropertyPath}, ${allInputContents}, ${options})}"></div>
 		</td>
 	</div>
@@ -300,20 +300,23 @@
 		<div th:replace="~{bootstrap/components-input :: submitButton('showInsertForm', 'jp.ecuacion.splib.web.common.button.insert', ${options})}"></div>
 	</div>
 
+	<!--/* internalTdButtonWrapper */-->
+	<div th:fragment="internalTdButtonWrapper(content, options)" th:remove="tag">
+		<td class="text-center p-1 align-middle" height="10px"
+				th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}"
+				th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+			<div th:replace="${content}"></div>
+		</td>
+	</div>
+
 	<!--/* scriptButton */-->
 	<div th:fragment="scriptButton(id, label, options)" th:remove="tag">
-		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-	 		<div th:replace="~{bootstrap/components :: scriptButton(${id}, ${label}, 'classappend=btn-sm,' + ${options})}">
-	 		</div>
-		</td>
+		<div th:replace="~{ :: internalTdButtonWrapper(~{bootstrap/components :: scriptButton(${id}, ${label}, 'classappend=btn-sm,' + ${options})}, ${options})}"></div>
 	</div>
 
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
-		<td class="text-center p-1 align-middle" height="10px" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
-	 		<div th:replace="~{bootstrap/components-input :: submitButton(${name}, ${label}, 'classappend=btn-sm,' + ${options})}">
-	 		</div>
-		</td>
+		<div th:replace="~{ :: internalTdButtonWrapper(~{bootstrap/components-input :: submitButton(${name}, ${label}, 'classappend=btn-sm,' + ${options})}, ${options})}"></div>
 	</div>
 
 	<!--/* submitButtonWithIds */-->

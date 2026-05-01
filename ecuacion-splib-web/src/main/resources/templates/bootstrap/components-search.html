@@ -44,24 +44,16 @@
 	</div>
 
 	<div th:fragment="searchNumber(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::searchNumberInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
-
-		<th:block th:if="false"><div th:fragment="numberInternal(itemPropertyPath, options)" th:remove="tag">
-			<input type="text" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" th:name="${inputId}" th:value="${inputValue}"
-				class="text-end"
-				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(inputId)}"
-				th:maxlength="${isReadOnly} ? '' : *{getStringLength('__${fieldName}__')}"
-				th:readonly="${isReadOnly}">
-		</div></th:block>
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('right')}, '', ${options})}"></div>
 	</div>
 
 	<div th:fragment="searchDate(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ ::searchDateInternal(${itemPropertyPath}, ${options})}, '',  ${options})}"></div>
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: searchDateInputInternal}, '', ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="dateInternal(itemPropertyPath, options)" th:remove="tag">
-			<input type="date" th:id="${@optUtil.hasKey(options, 'id') ? inputId : null}" th:name="${inputId}" th:value="${inputValue}"
-				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(inputId)}"
-				th:readonly="${isReadOnly}">
+		<th:block th:if="false"><div th:fragment="searchDateInputInternal" th:remove="tag">
+			<th:block th:with="type='date'">
+				<div th:replace="~{bootstrap/components-input :: internalAllHtmlInputComponent('left')}"></div>
+			</th:block>
 		</div></th:block>
 	</div>
 
@@ -89,10 +81,8 @@
 				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
 
-	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag"
-			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)}">
-		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
-				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
+	<div th:fragment="searchSelectFromBoolean(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: searchSelectFromEnum(${itemPropertyPath}, ${options})}"></div>
 	</div>
 
 	<!--/*

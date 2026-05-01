@@ -104,6 +104,11 @@
 	<div th:fragment="nullFragment" th:remove="tag">
 	</div>
 
+	<!--/* internal paragraph text fragment. shared by paragraph, paragraphWithSubtitle and paragraphWithSubsubtitle. */-->
+	<th:block th:if="false"><div th:fragment="paragraphTextInternal(extraClass)" th:remove="tag">
+		<div th:class="${extraClass}" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+	</div></th:block>
+
 	<!--/* 
 		### message components
 	 */-->
@@ -157,7 +162,7 @@
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subtitleInternal}"></div>
-			<div class="mt-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+			<div th:replace="~{ :: paragraphTextInternal('mt-3')}"></div>
 		</div></th:block>
 	</div>
 	
@@ -180,7 +185,7 @@
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubsubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subsubtitleInternal}"></div>
-			<div class="mt-3" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+			<div th:replace="~{ :: paragraphTextInternal('mt-3')}"></div>
 		</div></th:block>
 	</div>
 	
@@ -189,7 +194,7 @@
  		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphInternal}, ${'mt=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphInternal" th:remove="tag">
-			<div class="" style="white-space: pre-wrap;" th:text="${messageString}"></div>
+			<div th:replace="~{ :: paragraphTextInternal('')}"></div>
 		</div></th:block>
 	</div>
 	
@@ -558,19 +563,18 @@
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarSubMenu}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarSubMenu" th:remove="tag">
-			<li class="nav-item dropdown" th:id="${componentId}" style="margin-left: 20px" 
-					th:with="imagePath=${@optUtil.getValueOrElse(options, 'imagePath', '')}">
-					
-				<a th:if="${imagePath == ''}" class="nav-link dropdown-toggle" href="#" role="button" 
+			<li class="nav-item dropdown" th:id="${componentId}" style="margin-left: 20px"
+					th:with="imagePath=${@optUtil.getValueOrElse(options, 'imagePath', '')},
+							navBgClass=${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
+
+				<a th:if="${imagePath == ''}" class="nav-link dropdown-toggle" href="#" role="button"
 						data-bs-toggle="dropdown" aria-expanded="false" th:text="${labelString}" />
 				<a th:if="${imagePath != ''}" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
 					<img th:src="${imagePath}" alt="" width="27" height="27" style="filter: brightness(1) invert(1);" />
 				</a>
-				
-				<ul class="dropdown-menu dropdown-menu-dark" 
-						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-						+ ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)
-						+ ' ' + (isPositionRight ? 'dropdown-menu-end' : '')}">
+
+				<ul class="dropdown-menu dropdown-menu-dark"
+						th:classappend="${navBgClass} + ' ' + ${isPositionRight ? 'dropdown-menu-end' : ''}">
 						
 					<th:block th:replace="${menuItems}" />
 
@@ -595,15 +599,14 @@
 		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavbarDropDownSubMenu}, ${label}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownSubMenu" th:remove="tag">
-			<li th:id="${componentId}">
+			<li th:id="${componentId}"
+					th:with="navBgClass=${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
 				<a class="dropdown-item nav-link" href="#">
 					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
 					<div style="text-align: right;" th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
 				</a>
 				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark"
-						th:classappend="${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') 
-						+ ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)
-						+ ' ' + (@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : '')}">
+						th:classappend="${navBgClass} + ' ' + ${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : ''}">
 					<th:block th:replace="${menuItems}" />
 				</ul>
 			</li>
@@ -666,7 +669,7 @@
 		</th:block>
 		
 	 	<th:block th:if="${!isButtonLook}">
-	 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentANoButtonLook}, ${options})}"></div>
+	 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentANoButtonLook}, false, ${options})}"></div>
 
 			<th:block th:if="false"><div th:fragment="fragmentANoButtonLook" th:remove="tag">
 				<a th:href=${href}>[[${label}]]</a>
