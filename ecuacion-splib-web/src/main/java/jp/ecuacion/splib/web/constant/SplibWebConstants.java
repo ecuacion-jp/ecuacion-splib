@@ -26,10 +26,11 @@ public class SplibWebConstants {
 
   public static final String KEY_FORMS = "forms";
 
-  public static final String KEY_CONTEXT_ID = "contextId";
-  public static final String KEY_CONTEXT_MAP_PREFIX = "contextId-";
   public static final String KEY_MESSAGES_BEAN = "messagesBean";
   public static final String KEY_MODEL = "model";
+
+  /** Flash attribute key used to carry model attributes across a PRG redirect. */
+  public static final String KEY_SAVED_MODEL = "_splibSavedModel";
   
   public static final String KEY_MODEL_MESSAGES_AT_ITEMS = "showsMessagesLinkedToItemsAtEachItem";
   

@@ -45,6 +45,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Provides abstract general controller.
@@ -475,39 +476,43 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   /**
-   * Returns the redirect URL which redirects to the same page 
+   * Returns the redirect URL which redirects to the same page
    *     and takes over {@code model} to the transitioned page.
-   * 
-   * <p>This is a utility method to use redirect easily 
-   *     without understanding {@code ReturnUrlBean}. 
+   *
+   * <p>This is a utility method to use redirect easily
+   *     without understanding {@code ReturnUrlBean}.
    *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
-   * 
+   *
    * @param model model
+   * @param redirectAttributes redirectAttributes
    * @return URL
    */
-  public String redirectToSamePageTakingOverModel(Model model) {
-    return redirectToSamePageTakingOverModel(model, false);
+  public String redirectToSamePageTakingOverModel(Model model,
+      RedirectAttributes redirectAttributes) {
+    return redirectToSamePageTakingOverModel(model, false, redirectAttributes);
   }
 
   /**
-   * Returns the redirect URL which redirects to the same page 
+   * Returns the redirect URL which redirects to the same page
    *     and takes over {@code model} to the transitioned page.
-   * 
-   * <p>This is a utility method to use redirect easily 
-   *     without understanding {@code ReturnUrlBean}. 
+   *
+   * <p>This is a utility method to use redirect easily
+   *     without understanding {@code ReturnUrlBean}.
    *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
-   * 
+   *
    * @param model model
    * @param showsSuccessMessage showsSuccessMessage
+   * @param redirectAttributes redirectAttributes
    * @return URL
    */
-  public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage) {
+  public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage,
+      RedirectAttributes redirectAttributes) {
     ReturnUrlBean bean = new ReturnUrlBean(this, util);
     if (showsSuccessMessage) {
       bean.showSuccessMessage();
     }
 
-    return util.prepareForPageTransition(request, bean, model, false);
+    return util.prepareForPageTransition(redirectAttributes, bean, model, false);
   }
 
   /**

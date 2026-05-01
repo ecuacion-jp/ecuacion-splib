@@ -17,7 +17,6 @@ package jp.ecuacion.splib.web.advice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
@@ -77,40 +76,22 @@ public class SplibControllerAdvice {
 
   private void recoverRequestParametersFromRedirectContextId(Model model) {
 
-    // If messages and model are carried over from the redirect source, add them to model.
-    String contextId = request.getParameter(SplibWebConstants.KEY_CONTEXT_ID);
-    if (contextId != null && !contextId.isEmpty()) {
+    // Flash attributes saved before the redirect are already merged into the model by Spring.
+    // If KEY_SAVED_MODEL is present, restore the model attributes saved before the redirect.
+    @SuppressWarnings("unchecked")
+    Map<String, Object> savedModel =
+        (Map<String, Object>) model.getAttribute(SplibWebConstants.KEY_SAVED_MODEL);
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> contextMap = (Map<String, Object>) request.getSession()
-          .getAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
+    if (savedModel != null) {
+      model.addAllAttributes(savedModel);
 
-      // when contextId is appended to the URL
-      // maybe because of the reuse of the URL with contextId but no contextMap is saved.
-      if (contextMap != null) {
-        // model
-        Model redirectFromModel =
-            (Model) ObjectsUtil.requireNonNull(contextMap.get(SplibWebConstants.KEY_MODEL));
-        Map<String, Object> modelMapRedirectFrom = redirectFromModel.asMap();
-        modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
-        model.addAllAttributes(modelMapRedirectFrom);
+      // Validation was already performed before the redirect, so disable re-validation.
+      model.asMap().values().stream()
+          .filter(SplibGeneralForm.class::isInstance)
+          .map(SplibGeneralForm.class::cast)
+          .forEach(SplibGeneralForm::noValidate);
 
-        // messageBean
-        model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
-            contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
-
-        // Retrieve forms from model and change settings.
-        // Validation should have been performed before the redirect if needed,
-        // so there is no need to re-validate when reusing.
-        model.asMap().values().stream()
-            .filter(SplibGeneralForm.class::isInstance)
-            .map(SplibGeneralForm.class::cast)
-            .forEach(SplibGeneralForm::noValidate);
-
-        // remove contextMap from session
-        request.getSession()
-            .removeAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
-      }
+      model.asMap().remove(SplibWebConstants.KEY_SAVED_MODEL);
     }
 
     // add new MessagesBean if null

@@ -51,6 +51,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -100,7 +101,8 @@ public abstract class SplibExceptionHandler {
   }
 
   private ModelAndView appExceptionFinalHandler(SplibGeneralController<?> ctrl,
-      @Nullable UserDetails loginUser, boolean isRedirect, @Nullable ReturnUrlBean redirectBean) {
+      @Nullable UserDetails loginUser, boolean isRedirect, @Nullable ReturnUrlBean redirectBean,
+      @Nullable RedirectAttributes redirectAttributes) {
 
     SplibGeneralForm[] forms =
         (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
@@ -123,8 +125,8 @@ public abstract class SplibExceptionHandler {
       return new ModelAndView(ctrl.getDefaultHtmlPageName(), getModel().asMap());
 
     } else {
-      // When redirectBean is null it is a same-page transition; in that case model info is kept.
-      String path = util.prepareForPageTransition(request, redirectBean, getModel(), true);
+      String path = util.prepareForPageTransition(
+          Objects.requireNonNull(redirectAttributes), redirectBean, getModel(), true);
 
       return new ModelAndView(path);
     }
@@ -155,8 +157,7 @@ public abstract class SplibExceptionHandler {
 
     // Since warning means the submit did not complete, processing returns to the same page,
     // so no redirect to a different page occurs.
-    // isRedirect is set to true for PRG.
-    return appExceptionFinalHandler(getController(), loginUser, false, null);
+    return appExceptionFinalHandler(getController(), loginUser, false, null, null);
   }
 
   /**
@@ -170,7 +171,8 @@ public abstract class SplibExceptionHandler {
   @SuppressWarnings("null")
   @ExceptionHandler({ViolationException.class})
   public ModelAndView handleViolationException(ViolationException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+      @Nullable @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
 
     boolean needsMsgAtItemDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
@@ -218,7 +220,8 @@ public abstract class SplibExceptionHandler {
     }
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
-    return appExceptionFinalHandler(getController(), loginUser, true, redirectBean);
+    return appExceptionFinalHandler(getController(), loginUser, true, redirectBean,
+        redirectAttributes);
   }
 
   /**
@@ -231,13 +234,15 @@ public abstract class SplibExceptionHandler {
    */
   @ExceptionHandler({ConstraintViolationException.class})
   public ModelAndView handleConstraintViolationException(ConstraintViolationException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+      @Nullable @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
     MessageParameters params = exception instanceof ConstraintViolationExceptionWithParameters
         ? ((ConstraintViolationExceptionWithParameters) exception).getMessageParameters()
         : new MessageParameters();
     Violations violations =
         new Violations().addAll(exception.getConstraintViolations()).messageParameters(params);
-    return handleViolationException(new ViolationException(violations), loginUser);
+    return handleViolationException(new ViolationException(violations), loginUser,
+        redirectAttributes);
   }
 
   /**
@@ -251,7 +256,8 @@ public abstract class SplibExceptionHandler {
   @ExceptionHandler({OverlappingFileLockException.class})
   public ModelAndView handleOptimisticLockingFailureException(
       @Nullable OverlappingFileLockException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
+      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model,
+      RedirectAttributes redirectAttributes) throws Exception {
 
     String msgId = "jp.ecuacion.splib.web.common.message.optimisticLocking";
     if (getController() instanceof SplibEditController) {
@@ -259,11 +265,12 @@ public abstract class SplibExceptionHandler {
       String path = "/" + loginState + "/" + getController().getFunction() + "/"
           + getController().getDefaultDestSubFunctionOnNormalEnd() + "/"
           + getController().getDefaultDestPageOnNormalEnd();
-      return handleRedirectNeededExceptions(new RedirectException(path, msgId), model);
+      return handleRedirectNeededExceptions(new RedirectException(path, msgId), model,
+          redirectAttributes);
     } else {
       Violations v = new Violations();
       v.add(new BusinessViolation(msgId));
-      return handleViolationException(new ViolationException(v), loginUser);
+      return handleViolationException(new ViolationException(v), loginUser, redirectAttributes);
     }
   }
 
@@ -286,7 +293,7 @@ public abstract class SplibExceptionHandler {
   @SuppressWarnings({"unused", "null"})
   @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
   public ModelAndView handleRedirectNeededExceptions(Exception exception,
-      @Nullable Model newModel) {
+      @Nullable Model newModel, RedirectAttributes redirectAttributes) {
     RedirectException redirectException = null;
 
     // Setup model if it's new.
@@ -326,7 +333,7 @@ public abstract class SplibExceptionHandler {
 
     // redirect
     ReturnUrlBean redirectBean = new ReturnUrlBean(redirectException.getRedirectPath());
-    String path = util.prepareForPageTransition(request, redirectBean, model, true);
+    String path = util.prepareForPageTransition(redirectAttributes, redirectBean, model, true);
     return new ModelAndView(path);
   }
 

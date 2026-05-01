@@ -20,12 +20,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Provides utility methods for splib-web.
@@ -130,38 +130,27 @@ public class SplibUtil {
 
   /**
    * Prepares for page transition and returns url.
-   * 
-   * @param request request
+   *
+   * @param redirectAttributes redirectAttributes
    * @param redirectBean redirectBean
    * @param model model
    * @param takeOverMessages takeOverMessages
    * @return String
    */
-  public String prepareForPageTransition(HttpServletRequest request,
+  public String prepareForPageTransition(RedirectAttributes redirectAttributes,
       ReturnUrlBean redirectBean, Model model, boolean takeOverMessages) {
-    
-    // contextId and contextMap
-    String contextId = UUID.randomUUID().toString();
-    Map<String, Object> contextMap = new HashMap<>();
-    request.getSession().setAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId,
-        contextMap);
 
-    // messagesBean
+    // Save model contents (excluding messagesBean) as a flash attribute.
+    Map<String, Object> modelSnapshot = new HashMap<>(model.asMap());
+    modelSnapshot.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
+    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_SAVED_MODEL, modelSnapshot);
+
+    // Save messagesBean as a separate flash attribute when needed.
     if (takeOverMessages) {
-      contextMap.put(SplibWebConstants.KEY_MESSAGES_BEAN,
+      redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
           model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
     }
 
-    // model
-    if (model != null) {
-      // For same-page transitions, make the model available at the redirect destination.
-      contextMap.put(SplibWebConstants.KEY_MODEL, model);
-    }
-
-    // Add the current UUID to redirectBean.
-    redirectBean.putParam(SplibWebConstants.KEY_CONTEXT_ID, new String[] {contextId.toString()});
-
-    // returns url
     return redirectBean.getUrl();
   }
 
