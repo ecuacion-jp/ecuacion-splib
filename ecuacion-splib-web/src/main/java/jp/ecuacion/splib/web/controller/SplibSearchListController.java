@@ -29,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Controls the search and listing of the search result.
@@ -142,7 +143,8 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    */
   @GetMapping(value = "action", params = "action=search")
   public String search(Model model, FST searchForm, FLT listForm,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+      @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
 
     // Prepare searchForm before validating it.
     // This is meaningful when showing errors on opening searchList page
@@ -159,27 +161,29 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       throw ve;
     }
 
-    return redirectToSamePageTakingOverModel(model);
+    return redirectToSamePageTakingOverModel(model, redirectAttributes);
   }
 
   /**
    * Searches from the search conditions in {@code searchForm}.
-   * 
+   *
    * <p>This is exactly the same procedure as {@code search}, but there seems to be no way
    *     to integrate these
    *     because multiple {@code @GetMapping} cannot be added to a single method.</p>
-   *     
+   *
    * @param model model
    * @param searchForm searchForm
    * @param listForm listForm
    * @param loginUser loginUser
+   * @param redirectAttributes redirectAttributes
    * @return URL
    * @throws Exception Exception
    */
   @GetMapping(value = "action", params = "action=searchAgain")
   public String searchAgain(Model model, FST searchForm, FLT listForm,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    return search(model, searchForm, listForm, loginUser);
+      @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
+    return search(model, searchForm, listForm, loginUser, redirectAttributes);
   }
 
   private void prepareForm(FST searchForm, FLT listForm, UserDetails loginUser) {
