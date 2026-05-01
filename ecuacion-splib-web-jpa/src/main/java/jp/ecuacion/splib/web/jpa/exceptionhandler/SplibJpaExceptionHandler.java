@@ -30,6 +30,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Provides JPA related exception handling 
@@ -73,8 +74,10 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
   public ModelAndView handleObjectOptimisticLockingFailureException(
       ObjectOptimisticLockingFailureException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
-    return super.handleOptimisticLockingFailureException(null, loginUser, model);
+      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model,
+      RedirectAttributes redirectAttributes) throws Exception {
+    return super.handleOptimisticLockingFailureException(null, loginUser, model,
+        redirectAttributes);
   }
 
   /**
@@ -87,10 +90,10 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
    */
   @ExceptionHandler({PessimisticLockingFailureException.class})
   public ModelAndView handlePessimisticLockingFailureException(
-      PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser)
-      throws Exception {
+      PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
     Violations v = new Violations();
     v.add(new BusinessViolation("jp.ecuacion.splib.web.common.message.pessimisticLocking"));
-    return handleViolationException(new ViolationException(v), loginUser);
+    return handleViolationException(new ViolationException(v), loginUser, redirectAttributes);
   }
 }
