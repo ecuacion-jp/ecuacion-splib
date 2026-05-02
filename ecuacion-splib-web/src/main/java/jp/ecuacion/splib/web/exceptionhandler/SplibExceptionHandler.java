@@ -20,6 +20,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ConstraintViolationExceptionWithParameters;
@@ -33,9 +35,8 @@ import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.core.violation.Violations.MessageParameters;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.bean.MessagesBean;
-import jp.ecuacion.splib.web.bean.MessagesBean.WarnMessageBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
+import jp.ecuacion.splib.web.bean.WarnMessageBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibEditController;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
@@ -49,6 +50,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -144,16 +146,16 @@ public abstract class SplibExceptionHandler {
   @ExceptionHandler({ViolationWarningException.class})
   public ModelAndView handleWarning(ViolationWarningException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    MessagesBean messagesBean =
-        ((MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
 
     BusinessViolation v = exception.getViolations().getBusinessViolations().get(0);
     String buttonId = exception instanceof ViolationWebWarningException
         ? ((ViolationWebWarningException) exception).getButtonIdPressedIfConfirmed()
         : null;
-    messagesBean.setWarnMessage(new WarnMessageBean(v.getMessageId(),
-        PropertiesFileUtil.getMessage(request.getLocale(), v.getMessageId(), v.getMessageArgs()),
-        buttonId));
+    getModel().addAttribute(SplibWebConstants.KEY_WARN_MESSAGE,
+        new WarnMessageBean(v.getMessageId(),
+            PropertiesFileUtil.getMessage(request.getLocale(), v.getMessageId(),
+                v.getMessageArgs()),
+            buttonId));
 
     // Since warning means the submit did not complete, processing returns to the same page,
     // so no redirect to a different page occurs.
@@ -185,38 +187,51 @@ public abstract class SplibExceptionHandler {
               + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.");
     }
 
-    MessagesBean messagesBean =
-        (MessagesBean) getModel().getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
-
     Violations violations = exception.getViolations();
     MessageParameters params = violations.messageParameters();
 
-    for (ConstraintViolation<?> cv : violations.getConstraintViolations()) {
+    // Sort violations by propertyPath for stable display order across requests.
+    List<ConstraintViolation<?>> sortedCvs = violations.getConstraintViolations().stream()
+        .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString()))
+        .toList();
+
+    boolean atEachItemErrorAdded = false;
+
+    for (ConstraintViolation<?> cv : sortedCvs) {
       boolean needsMsgAtItem = needsMsgAtItemDefault
           && (params.isMessageWithItemName() != null ? !params.isMessageWithItemName() : true);
       boolean needsMsgAtTop = needsMsgAtTopDefault;
+
+      BindingResult br = findBindingResultForViolation(cv);
+      String propertyPath = cv.getPropertyPath().toString();
+      String errorCode = cv.getConstraintDescriptor().getAnnotation().annotationType()
+          .getSimpleName();
+
       if (needsMsgAtItem) {
         String message =
             ExceptionUtil.getMessageList(new Violations().messageParameters(params).add(cv),
                 request.getLocale(), false).get(0);
-        if (messagesBean.getErrorMessagesAtEachItem().isEmpty()) {
-          String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
-          messagesBean.setErrorMessage(PropertiesFileUtil.getMessage(request.getLocale(), key),
-              false);
-        }
-        messagesBean.setErrorMessage(message, true, new String[] {});
+        addFieldError(br, propertyPath, errorCode, message);
+        atEachItemErrorAdded = true;
       }
       if (needsMsgAtTop) {
         String message =
             ExceptionUtil.getMessageList(new Violations().messageParameters(params).add(cv),
                 request.getLocale(), true).get(0);
-        messagesBean.setErrorMessage(message, false, new String[] {});
+        addGlobalError(br, errorCode, message);
       }
     }
 
     for (BusinessViolation bv : violations.getBusinessViolations()) {
-      setMessage(messagesBean, bv, needsMsgAtItemDefault, needsMsgAtTopDefault,
+      atEachItemErrorAdded |= addBusinessViolation(bv, needsMsgAtItemDefault, needsMsgAtTopDefault,
           request.getLocale());
+    }
+
+    // When at-each-item errors exist, prepend a summary message at the top.
+    if (atEachItemErrorAdded && needsMsgAtTopDefault) {
+      String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
+      addGlobalError(getPrimaryBindingResult(), key,
+          PropertiesFileUtil.getMessage(request.getLocale(), key));
     }
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
@@ -300,7 +315,6 @@ public abstract class SplibExceptionHandler {
     Model model = getModel();
     if (model == null) {
       model = Objects.requireNonNull(newModel);
-      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
     }
 
     if (!StringUtils.isEmpty(exception.getMessage())) {
@@ -324,11 +338,10 @@ public abstract class SplibExceptionHandler {
 
     // Showing message
     if (!StringUtils.isEmpty(redirectException.getMessageId())) {
-      MessagesBean messagesBean =
-          ((MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
-
-      setMessage(messagesBean, new BusinessViolation(redirectException.getMessageId(),
-          redirectException.getMessageArgs()), false, true, request.getLocale());
+      addBusinessViolation(
+          new BusinessViolation(redirectException.getMessageId(),
+              redirectException.getMessageArgs()),
+          false, true, request.getLocale());
     }
 
     // redirect
@@ -359,8 +372,13 @@ public abstract class SplibExceptionHandler {
     return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
   }
 
+  /**
+   * Adds a {@code BusinessViolation} to the appropriate {@code BindingResult}.
+   *
+   * @return {@code true} if any at-each-item error was added.
+   */
   @SuppressWarnings("null")
-  private void setMessage(MessagesBean messagesBean, BusinessViolation violation,
+  private boolean addBusinessViolation(BusinessViolation violation,
       boolean needsMsgAtItemAsDefault, boolean needsMsgAtTopAsDefault, Locale locale) {
 
     if (!needsMsgAtItemAsDefault && !needsMsgAtTopAsDefault) {
@@ -371,21 +389,83 @@ public abstract class SplibExceptionHandler {
 
     boolean needsMsgAtItem = needsMsgAtItemAsDefault && violation.getItemPropertyPaths().length > 0;
     boolean needsMsgAtTop = needsMsgAtTopAsDefault;
+    boolean atEachItemAdded = false;
+
+    String errorCode = violation.getMessageId();
+    BindingResult br = getPrimaryBindingResult();
 
     if (needsMsgAtItem) {
       String message =
           ExceptionUtil.getMessageList(new Violations().add(violation), locale, false).get(0);
-      if (messagesBean.getErrorMessagesAtEachItem().isEmpty()) {
-        String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
-        messagesBean.setErrorMessage(PropertiesFileUtil.getMessage(locale, key), false);
+      for (String propertyPath : violation.getItemPropertyPaths()) {
+        addFieldError(br, propertyPath, errorCode, message);
+        atEachItemAdded = true;
       }
-      messagesBean.setErrorMessage(message, true, violation.getItemPropertyPaths());
     }
 
     if (needsMsgAtTop) {
       String message =
           ExceptionUtil.getMessageList(new Violations().add(violation), locale, true).get(0);
-      messagesBean.setErrorMessage(message, false, violation.getItemPropertyPaths());
+      addGlobalError(br, errorCode, message);
     }
+
+    return atEachItemAdded;
+  }
+
+  /**
+   * Returns the {@code BindingResult} that owns the field touched by the violation.
+   *
+   * <p>Falls back to the primary {@code BindingResult} when the rootBean cannot be matched.</p>
+   */
+  @SuppressWarnings("null")
+  private BindingResult findBindingResultForViolation(ConstraintViolation<?> cv) {
+    Object rootBean = cv.getRootBean();
+    if (rootBean instanceof SplibGeneralForm form) {
+      BindingResult br = getBindingResult(form);
+      if (br != null) {
+        return br;
+      }
+    }
+    return getPrimaryBindingResult();
+  }
+
+  /**
+   * Returns the {@code BindingResult} for the first form in the model, used as the
+   *     destination for global errors that are not bound to a specific form.
+   */
+  private BindingResult getPrimaryBindingResult() {
+    SplibGeneralForm[] forms =
+        (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
+    if (forms == null || forms.length == 0) {
+      throw new RuntimeException(
+          "No forms registered in the model; cannot locate a BindingResult.");
+    }
+    BindingResult br = getBindingResult(forms[0]);
+    if (br == null) {
+      throw new RuntimeException(
+          "BindingResult is not registered for form: " + forms[0].getClass().getName());
+    }
+    return br;
+  }
+
+  private @Nullable BindingResult getBindingResult(SplibGeneralForm form) {
+    String formName = StringUtils.uncapitalize(form.getClass().getSimpleName());
+    String key = BindingResult.MODEL_KEY_PREFIX + formName;
+    return (BindingResult) getModel().getAttribute(key);
+  }
+
+  /**
+   * Adds a {@code FieldError} (at-each-item) to the given {@code BindingResult}.
+   */
+  private void addFieldError(BindingResult br, String propertyPath, String errorCode,
+      String message) {
+    br.rejectValue(propertyPath, errorCode, new Object[] {}, message);
+  }
+
+  /**
+   * Adds a global error (at-the-top) to the given {@code BindingResult}.
+   */
+  private void addGlobalError(BindingResult br, String errorCode, String message) {
+    br.reject(errorCode, new Object[] {}, message);
   }
 }

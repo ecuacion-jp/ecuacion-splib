@@ -16,13 +16,13 @@
 package jp.ecuacion.splib.web.controller;
 
 import java.util.Objects;
-import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
 import jp.ecuacion.splib.web.util.SplibUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -136,10 +135,10 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
     prepare(model, loginUser, form);
 
     // Do not re-fetch data if there was an error at the redirect source.
-    MessagesBean messageBean =
-        (MessagesBean) model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN);
+    BindingResult bindingResult = (BindingResult) model.getAttribute(
+        BindingResult.MODEL_KEY_PREFIX + StringUtils.uncapitalize(form.getClass().getSimpleName()));
 
-    if (messageBean.getErrorMessages().isEmpty()) {
+    if (bindingResult == null || !bindingResult.hasErrors()) {
       form.setIsInsert(isInsert);
       getService().page(form, loginUser);
     }
@@ -151,20 +150,19 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
 
   /**
    * Edits (= inserts or updates) specified record.
-   * 
+   *
    * @param form form
-   * @param result result
    * @param model model
    * @param loginUser loginUser
    * @return URL
    * @throws Exception Exception
    */
   @PostMapping(value = "action", params = "action=insertOrUpdate")
-  public String edit(@Validated F form, BindingResult result, Model model,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+  public String edit(F form, Model model, @AuthenticationPrincipal UserDetails loginUser)
+      throws Exception {
     addParamToParamListOnRedirectToSelf("action",
         Boolean.TRUE.equals(form.isInsert()) ? PARAM_INSERT : PARAM_UPDATE);
-    prepare(model, loginUser, form.validate(result));
+    prepare(model, loginUser, form.validate(null));
     getService().edit(form, loginUser);
 
     @NonNull ReturnUrlBean redirectBean =
@@ -178,14 +176,13 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
 
   /**
    * Returns the prior page.
-   * 
+   *
    * @param editForm editForm
-   * @param result BindingResult
    * @param model Model
    * @return URL
    */
   @PostMapping(value = "action", params = "action=back")
-  public String back(@Validated F editForm, BindingResult result, Model model) {
+  public String back(F editForm, Model model) {
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;
 
     String retunPageFunction = isSingle ? "edit" : "searchList";

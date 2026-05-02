@@ -16,13 +16,16 @@
 package jp.ecuacion.splib.web.advice;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -65,6 +68,10 @@ public class SplibControllerAdvice {
     // Restore model and messages carried over from the redirect source and add to model.
     recoverRequestParametersFromRedirectContextId(model);
 
+    // Aggregate global errors from all BindingResults, so the page-base template can
+    // display them at the top without iterating over forms.
+    aggregateGlobalErrors(model);
+
     // transactionToken
     model.addAttribute(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN,
         new TransactionTokenUtil().issueNewToken(request));
@@ -72,6 +79,21 @@ public class SplibControllerAdvice {
     // Add url path. Direct use of request in Thymeleaf is no longer allowed,
     // and it is recommended to set url etc. to model in the controller.
     model.addAttribute("loginState", util.getLoginState());
+  }
+
+  private void aggregateGlobalErrors(Model model) {
+    List<String> messages = new ArrayList<>();
+    for (Map.Entry<String, Object> entry : model.asMap().entrySet()) {
+      if (entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX)
+          && entry.getValue() instanceof BindingResult br) {
+        for (ObjectError err : br.getGlobalErrors()) {
+          if (err.getDefaultMessage() != null) {
+            messages.add(err.getDefaultMessage());
+          }
+        }
+      }
+    }
+    model.addAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, messages);
   }
 
   private void recoverRequestParametersFromRedirectContextId(Model model) {
@@ -92,11 +114,6 @@ public class SplibControllerAdvice {
           .forEach(SplibGeneralForm::noValidate);
 
       model.asMap().remove(SplibWebConstants.KEY_SAVED_MODEL);
-    }
-
-    // add new MessagesBean if null
-    if (model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN) == null) {
-      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
     }
   }
 }
