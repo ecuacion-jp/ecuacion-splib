@@ -78,8 +78,7 @@ public abstract class SplibExceptionHandler {
    * @param loginStateUtil loginStateUtil
    */
   protected SplibExceptionHandler(HttpServletRequest request,
-      @Nullable SplibExceptionHandlerAction actionOnThrowable,
-      SplibLoginStateUtil loginStateUtil) {
+      @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibLoginStateUtil loginStateUtil) {
     this.request = request;
     this.actionOnThrowable = actionOnThrowable;
     this.loginStateUtil = loginStateUtil;
@@ -103,36 +102,16 @@ public abstract class SplibExceptionHandler {
     return (Model) request.getAttribute(SplibWebConstants.KEY_MODEL);
   }
 
-  private ModelAndView appExceptionFinalHandler(SplibGeneralController<?> ctrl,
-      @Nullable UserDetails loginUser, boolean isRedirect, @Nullable ReturnUrlBean redirectBean,
-      @Nullable RedirectAttributes redirectAttributes) {
-
-    SplibGeneralForm[] forms =
-        (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
-
+  /**
+   * Runs the form preparation that exception handlers share before returning a view.
+   */
+  private void prepareFormForReturn(@Nullable UserDetails loginUser) {
     // #603:
     // Ideally prepareForm should only be called when not redirecting within the ExceptionHandler,
     // but that handling is not yet implemented. To be refactored when needed.
+    SplibGeneralForm[] forms =
+        (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
     getController().getService().prepareForm(Arrays.asList(forms), loginUser);
-
-    // redirectBean
-    // If redirectBean is null, transition to the same page.
-    // In that case all model information is also passed to the destination.
-    // To simplify subsequent processing, generate a redirectBean for same-page transitions.
-    if (redirectBean == null) {
-      redirectBean = new ReturnUrlBean(ctrl, loginStateUtil, false);
-    }
-
-    // Branch on whether redirect is needed.
-    if (!isRedirect) {
-      return new ModelAndView(ctrl.getDefaultHtmlPageName(), getModel().asMap());
-
-    } else {
-      String path = redirectBean.applyTo(getModel(),
-          Objects.requireNonNull(redirectAttributes), true);
-
-      return new ModelAndView(path);
-    }
   }
 
   /**
@@ -152,15 +131,15 @@ public abstract class SplibExceptionHandler {
     String buttonId = exception instanceof ViolationWebWarningException
         ? ((ViolationWebWarningException) exception).getButtonIdPressedIfConfirmed()
         : null;
-    getModel().addAttribute(SplibWebConstants.KEY_WARN_MESSAGE,
-        new WarnMessageBean(v.getMessageId(),
-            PropertiesFileUtil.getMessage(request.getLocale(), v.getMessageId(),
-                v.getMessageArgs()),
-            buttonId));
+    getModel().addAttribute(SplibWebConstants.KEY_WARN_MESSAGE, new WarnMessageBean(
+        v.getMessageId(),
+        PropertiesFileUtil.getMessage(request.getLocale(), v.getMessageId(), v.getMessageArgs()),
+        buttonId));
 
     // Since warning means the submit did not complete, processing returns to the same page,
     // so no redirect to a different page occurs.
-    return appExceptionFinalHandler(getController(), loginUser, false, null, null);
+    prepareFormForReturn(loginUser);
+    return new ModelAndView(getController().getDefaultHtmlPageName(), getModel().asMap());
   }
 
   /**
@@ -181,63 +160,41 @@ public abstract class SplibExceptionHandler {
         "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
     boolean needsMsgAtTopDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
         "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
-
-    if (!needsMsgAtItemDefault && !needsMsgAtTopDefault) {
-      throw new RuntimeException(
-          "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
-              + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.");
-    }
+    validateMessageDisplayConfig(needsMsgAtItemDefault, needsMsgAtTopDefault);
 
     Violations violations = exception.getViolations();
     MessageParameters params = violations.messageParameters();
+    Locale locale = request.getLocale();
 
     // Sort violations by propertyPath for stable display order across requests.
     List<ConstraintViolation<?>> sortedCvs = violations.getConstraintViolations().stream()
-        .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString()))
-        .toList();
+        .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString())).toList();
 
     boolean atEachItemErrorAdded = false;
 
     for (ConstraintViolation<?> cv : sortedCvs) {
-      boolean needsMsgAtItem = needsMsgAtItemDefault
-          && (params.isMessageWithItemName() != null ? !params.isMessageWithItemName() : true);
-      boolean needsMsgAtTop = needsMsgAtTopDefault;
-
-      BindingResult br = findBindingResultForViolation(cv);
-      String propertyPath = cv.getPropertyPath().toString();
-      String errorCode = cv.getConstraintDescriptor().getAnnotation().annotationType()
-          .getSimpleName();
-
-      if (needsMsgAtItem) {
-        String message =
-            ExceptionUtil.getMessageList(new Violations().messageParameters(params).add(cv),
-                request.getLocale(), false).get(0);
-        addFieldError(br, propertyPath, errorCode, message);
-        atEachItemErrorAdded = true;
-      }
-      if (needsMsgAtTop) {
-        String message =
-            ExceptionUtil.getMessageList(new Violations().messageParameters(params).add(cv),
-                request.getLocale(), true).get(0);
-        addGlobalError(br, errorCode, message);
-      }
+      atEachItemErrorAdded |=
+          addConstraintViolation(cv, params, needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
     }
-
     for (BusinessViolation bv : violations.getBusinessViolations()) {
-      atEachItemErrorAdded |= addBusinessViolation(bv, needsMsgAtItemDefault, needsMsgAtTopDefault,
-          request.getLocale());
+      atEachItemErrorAdded |=
+          addBusinessViolation(bv, needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
     }
 
     // When at-each-item errors exist, prepend a summary message at the top.
     if (atEachItemErrorAdded && needsMsgAtTopDefault) {
       String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
-      addGlobalError(getPrimaryBindingResult(), key,
-          PropertiesFileUtil.getMessage(request.getLocale(), key));
+      addGlobalError(getPrimaryBindingResult(), key, PropertiesFileUtil.getMessage(locale, key));
     }
 
+    prepareFormForReturn(loginUser);
+
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
-    return appExceptionFinalHandler(getController(), loginUser, true, redirectBean,
-        redirectAttributes);
+    if (redirectBean == null) {
+      redirectBean = new ReturnUrlBean(getController(), loginStateUtil, false);
+    }
+    String path = redirectBean.applyTo(getModel(), redirectAttributes, true);
+    return new ModelAndView(path);
   }
 
   /**
@@ -308,8 +265,8 @@ public abstract class SplibExceptionHandler {
    */
   @SuppressWarnings({"unused", "null"})
   @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
-  public ModelAndView handleRedirectNeededExceptions(Exception exception,
-      @Nullable Model newModel, RedirectAttributes redirectAttributes) {
+  public ModelAndView handleRedirectNeededExceptions(Exception exception, @Nullable Model newModel,
+      RedirectAttributes redirectAttributes) {
     RedirectException redirectException = null;
 
     // Setup model if it's new.
@@ -339,10 +296,8 @@ public abstract class SplibExceptionHandler {
 
     // Showing message
     if (!StringUtils.isEmpty(redirectException.getMessageId())) {
-      addBusinessViolation(
-          new BusinessViolation(redirectException.getMessageId(),
-              redirectException.getMessageArgs()),
-          false, true, request.getLocale());
+      addBusinessViolation(new BusinessViolation(redirectException.getMessageId(),
+          redirectException.getMessageArgs()), false, true, request.getLocale());
     }
 
     // redirect
@@ -374,42 +329,69 @@ public abstract class SplibExceptionHandler {
   }
 
   /**
+   * Throws if neither at-item nor at-top messaging is enabled.
+   */
+  private void validateMessageDisplayConfig(boolean atItem, boolean atTop) {
+    if (!atItem && !atTop) {
+      throw new RuntimeException(
+          "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
+              + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.");
+    }
+  }
+
+  /**
+   * Adds a {@code ConstraintViolation} to the appropriate {@code BindingResult}.
+   *
+   * @return {@code true} if any at-each-item error was added.
+   */
+  private boolean addConstraintViolation(ConstraintViolation<?> cv, MessageParameters params,
+      boolean needsMsgAtItemDefault, boolean needsMsgAtTopDefault, Locale locale) {
+    boolean needsMsgAtItem =
+        needsMsgAtItemDefault && !Boolean.TRUE.equals(params.isMessageWithItemName());
+    BindingResult br = findBindingResultForViolation(cv);
+    String errorCode =
+        cv.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
+    String[] propertyPaths = {cv.getPropertyPath().toString()};
+    Violations single = new Violations().messageParameters(params).add(cv);
+    return addViolation(br, errorCode, propertyPaths, single, needsMsgAtItem, needsMsgAtTopDefault,
+        locale);
+  }
+
+  /**
    * Adds a {@code BusinessViolation} to the appropriate {@code BindingResult}.
    *
    * @return {@code true} if any at-each-item error was added.
    */
   @SuppressWarnings("null")
-  private boolean addBusinessViolation(BusinessViolation violation,
-      boolean needsMsgAtItemAsDefault, boolean needsMsgAtTopAsDefault, Locale locale) {
-
-    if (!needsMsgAtItemAsDefault && !needsMsgAtTopAsDefault) {
-      String msg = "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
-          + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.";
-      throw new RuntimeException(msg);
-    }
-
-    boolean needsMsgAtItem = needsMsgAtItemAsDefault && violation.getItemPropertyPaths().length > 0;
-    boolean needsMsgAtTop = needsMsgAtTopAsDefault;
-    boolean atEachItemAdded = false;
-
-    String errorCode = violation.getMessageId();
+  private boolean addBusinessViolation(BusinessViolation violation, boolean needsMsgAtItemDefault,
+      boolean needsMsgAtTopDefault, Locale locale) {
+    boolean needsMsgAtItem = needsMsgAtItemDefault && violation.getItemPropertyPaths().length > 0;
     BindingResult br = getPrimaryBindingResult();
+    String errorCode = violation.getMessageId();
+    Violations single = new Violations().add(violation);
+    return addViolation(br, errorCode, violation.getItemPropertyPaths(), single, needsMsgAtItem,
+        needsMsgAtTopDefault, locale);
+  }
 
+  /**
+   * Adds at-item / at-top messages for a single violation to the given {@code BindingResult}.
+   *
+   * @return {@code true} if any at-each-item error was added.
+   */
+  private boolean addViolation(BindingResult br, String errorCode, String[] propertyPaths,
+      Violations singleViolation, boolean needsMsgAtItem, boolean needsMsgAtTop, Locale locale) {
+    boolean atEachItemAdded = false;
     if (needsMsgAtItem) {
-      String message =
-          ExceptionUtil.getMessageList(new Violations().add(violation), locale, false).get(0);
-      for (String propertyPath : violation.getItemPropertyPaths()) {
+      String message = ExceptionUtil.getMessageList(singleViolation, locale, false).get(0);
+      for (String propertyPath : propertyPaths) {
         addFieldError(br, propertyPath, errorCode, message);
         atEachItemAdded = true;
       }
     }
-
     if (needsMsgAtTop) {
-      String message =
-          ExceptionUtil.getMessageList(new Violations().add(violation), locale, true).get(0);
+      String message = ExceptionUtil.getMessageList(singleViolation, locale, true).get(0);
       addGlobalError(br, errorCode, message);
     }
-
     return atEachItemAdded;
   }
 
