@@ -143,3 +143,6 @@ products/
 
 # allure
 .allure
+
+# Claude Code (local-only personal settings)
+.claude/

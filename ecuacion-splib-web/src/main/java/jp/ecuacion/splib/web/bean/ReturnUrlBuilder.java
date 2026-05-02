@@ -49,7 +49,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Saving the model into flash attributes for the redirect target is handled by
  * {@code SplibSavedModelUtil#saveToFlash}, not by this class.</p>
  */
-public class ReturnUrlBean {
+public class ReturnUrlBuilder {
 
   /*
    * Is the protocol (redirect / forward) part of the URL.
@@ -99,7 +99,7 @@ public class ReturnUrlBean {
   /**
    * Constructs a new instance from controller-derived path components.
    */
-  private ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
+  private ReturnUrlBuilder(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
       String subFunction, String page) {
     this.controller = Objects.requireNonNull(controller);
     this.loginState = Objects.requireNonNull(loginStateUtil).getLoginState();
@@ -107,13 +107,13 @@ public class ReturnUrlBean {
     this.page = Objects.requireNonNull(page);
     this.path = buildPath(controller, Objects.requireNonNull(loginState), subFunction, page);
 
-    putParamList(controller.getParamListOnRedirectToSelf());
+    putParamList(controller.getParamListOnRedirect());
   }
 
   /**
    * Constructs a new instance from an explicit path.
    */
-  private ReturnUrlBean(String path) {
+  private ReturnUrlBuilder(String path) {
     this.controller = null;
     this.loginState = null;
     this.path = Objects.requireNonNull(path);
@@ -127,12 +127,12 @@ public class ReturnUrlBean {
    *
    * @param controller controller
    * @param loginStateUtil loginStateUtil
-   * @return ReturnUrlBean
+   * @return ReturnUrlBuilder
    */
-  public static ReturnUrlBean forNormalEnd(SplibGeneralController<?> controller,
+  public static ReturnUrlBuilder forNormalEnd(SplibGeneralController<?> controller,
       SplibLoginStateUtil loginStateUtil) {
     Objects.requireNonNull(controller);
-    return new ReturnUrlBean(controller, loginStateUtil,
+    return new ReturnUrlBuilder(controller, loginStateUtil,
         controller.getDefaultDestSubFunctionOnNormalEnd(),
         controller.getDefaultDestPageOnNormalEnd());
   }
@@ -142,16 +142,16 @@ public class ReturnUrlBean {
    *
    * <p>This factory is intended to be used from exception handling code paths
    *     ({@code SplibExceptionHandler} and library controllers preparing
-   *     {@code redirectUrlOnAppExceptionBean}). Application code does not normally call this.</p>
+   *     {@code redirectUrlOnAppException}). Application code does not normally call this.</p>
    *
    * @param controller controller
    * @param loginStateUtil loginStateUtil
-   * @return ReturnUrlBean
+   * @return ReturnUrlBuilder
    */
-  public static ReturnUrlBean forAbnormalEnd(SplibGeneralController<?> controller,
+  public static ReturnUrlBuilder forAbnormalEnd(SplibGeneralController<?> controller,
       SplibLoginStateUtil loginStateUtil) {
     Objects.requireNonNull(controller);
-    return new ReturnUrlBean(controller, loginStateUtil,
+    return new ReturnUrlBuilder(controller, loginStateUtil,
         controller.getDefaultDestSubFunctionOnAbnormalEnd(),
         controller.getDefaultDestPageOnAbnormalEnd());
   }
@@ -162,20 +162,27 @@ public class ReturnUrlBean {
    * <p>{@link #toSubFunction(String)} and {@link #toPage(String)} are not applicable
    *     for instances created this way and will throw {@code IllegalStateException}.</p>
    *
-   * @param path path
-   * @return ReturnUrlBean
+   * <p><b>Contract</b>: {@code path} must not contain a query string ({@code ?...}).
+   *     The {@code ?}/{@code &amp;} separator inserted before parameters is decided by
+   *     a simple {@code path.contains("?")} check, so a path containing a literal
+   *     {@code ?} would produce a malformed URL. Pass only the path portion and add
+   *     query parameters via {@link #putParam(String, String)} /
+   *     {@link #putParamMap(Map)}.</p>
+   *
+   * @param path path (without a query string)
+   * @return ReturnUrlBuilder
    */
-  public static ReturnUrlBean ofPath(String path) {
-    return new ReturnUrlBean(Objects.requireNonNull(path));
+  public static ReturnUrlBuilder ofPath(String path) {
+    return new ReturnUrlBuilder(Objects.requireNonNull(path));
   }
 
   /**
    * Overrides the subFunction part of the path.
    *
    * @param subFunction subFunction
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean toSubFunction(String subFunction) {
+  public ReturnUrlBuilder toSubFunction(String subFunction) {
     Objects.requireNonNull(subFunction);
     this.subFunction = subFunction;
     rebuildPathFromController("toSubFunction");
@@ -186,9 +193,9 @@ public class ReturnUrlBean {
    * Overrides the page part of the path.
    *
    * @param page page
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean toPage(String page) {
+  public ReturnUrlBuilder toPage(String page) {
     Objects.requireNonNull(page);
     this.page = page;
     rebuildPathFromController("toPage");
@@ -221,9 +228,9 @@ public class ReturnUrlBean {
   /**
    * Switches the URL protocol from {@code redirect} to {@code forward}.
    *
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean asForward() {
+  public ReturnUrlBuilder asForward() {
     this.isForward = true;
     return this;
   }
@@ -255,7 +262,7 @@ public class ReturnUrlBean {
    *
    * <p>This method does not mutate {@code paramMap}; it works on a local copy
    *     so that calling {@link #getUrl()} multiple times yields the same result
-   *     and leaves the bean's state untouched.</p>
+   *     and leaves the builder's state untouched.</p>
    *
    * <p>Keys and values are URL-encoded with UTF-8.</p>
    *
@@ -264,7 +271,7 @@ public class ReturnUrlBean {
   private String getParamsString() {
     Map<String, String[]> effectiveParams = new LinkedHashMap<>(paramMap);
 
-    // When adding request parameters to RedirectUrlBean in bulk, the transactionToken may be
+    // When adding request parameters to ReturnUrlBuilder in bulk, the transactionToken may be
     // included, but redirecting with it would cause a check error,
     // so remove transactionToken from params.
     effectiveParams.remove(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
@@ -306,9 +313,9 @@ public class ReturnUrlBean {
    *
    * @param key key
    * @param value value; {@code null} is normalized to empty string
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean putParam(String key, @Nullable String value) {
+  public ReturnUrlBuilder putParam(String key, @Nullable String value) {
     Objects.requireNonNull(key);
     paramMap.put(key, value == null ? new String[] {""} : new String[] {value});
 
@@ -323,9 +330,9 @@ public class ReturnUrlBean {
    *
    * @param key key
    * @param values values; {@code null} is normalized to a single empty-string value
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean putParam(String key, @Nullable String[] values) {
+  public ReturnUrlBuilder putParam(String key, @Nullable String[] values) {
     Objects.requireNonNull(key);
     paramMap.put(key, values == null ? new String[] {""} : values.clone());
 
@@ -338,12 +345,12 @@ public class ReturnUrlBean {
    * <p>This is used when you want to put {@code request.parameterMap()} to the paramMap.</p>
    *
    * <p>The value arrays are defensively copied, so later mutations to the source
-   *     map's arrays do not affect this bean's state.</p>
+   *     map's arrays do not affect this builder's state.</p>
    *
    * @param paramMap paramMap
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean putParamMap(Map<String, String[]> paramMap) {
+  public ReturnUrlBuilder putParamMap(Map<String, String[]> paramMap) {
     Objects.requireNonNull(paramMap);
     for (Entry<String, String[]> entry : paramMap.entrySet()) {
       this.paramMap.put(entry.getKey(), entry.getValue().clone());
@@ -363,9 +370,9 @@ public class ReturnUrlBean {
    * Removes the argument key from {@code paramMap}.
    *
    * @param key key
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean removeParam(String key) {
+  public ReturnUrlBuilder removeParam(String key) {
     paramMap.remove(key);
     return this;
   }
@@ -373,9 +380,9 @@ public class ReturnUrlBean {
   /**
    * add parameter to show success message.
    *
-   * @return ReturnUrlBean (for method chain)
+   * @return ReturnUrlBuilder (for method chain)
    */
-  public ReturnUrlBean showSuccessMessage() {
+  public ReturnUrlBuilder showSuccessMessage() {
     putParam("success", new String[] {""});
     return this;
   }
