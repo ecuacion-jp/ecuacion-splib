@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
@@ -45,7 +44,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Optional adjustments are applied via setter chain methods such as
  * {@link #toSubFunction(String)}, {@link #toPage(String)},
  * {@link #putParam(String, String)}, {@link #showSuccessMessage()}, and
- * {@link #setProtocolForward()}. Call {@link #getUrl()} to obtain the final URL string.</p>
+ * {@link #asForward()}. Call {@link #getUrl()} to obtain the final URL string.</p>
  *
  * <p>Saving the model into flash attributes for the redirect target is handled by
  * {@code SplibSavedModelUtil#saveToFlash}, not by this class.</p>
@@ -102,10 +101,10 @@ public class ReturnUrlBean {
    */
   private ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
       String subFunction, String page) {
-    this.controller = ObjectsUtil.requireNonNull(controller);
-    this.loginState = ObjectsUtil.requireNonNull(loginStateUtil).getLoginState();
-    this.subFunction = ObjectsUtil.requireNonNull(subFunction);
-    this.page = ObjectsUtil.requireNonNull(page);
+    this.controller = Objects.requireNonNull(controller);
+    this.loginState = Objects.requireNonNull(loginStateUtil).getLoginState();
+    this.subFunction = Objects.requireNonNull(subFunction);
+    this.page = Objects.requireNonNull(page);
     this.path = buildPath(controller, Objects.requireNonNull(loginState), subFunction, page);
 
     putParamList(controller.getParamListOnRedirectToSelf());
@@ -117,7 +116,7 @@ public class ReturnUrlBean {
   private ReturnUrlBean(String path) {
     this.controller = null;
     this.loginState = null;
-    this.path = ObjectsUtil.requireNonNull(path);
+    this.path = Objects.requireNonNull(path);
   }
 
   /**
@@ -132,7 +131,7 @@ public class ReturnUrlBean {
    */
   public static ReturnUrlBean forNormalEnd(SplibGeneralController<?> controller,
       SplibLoginStateUtil loginStateUtil) {
-    ObjectsUtil.requireNonNull(controller);
+    Objects.requireNonNull(controller);
     return new ReturnUrlBean(controller, loginStateUtil,
         controller.getDefaultDestSubFunctionOnNormalEnd(),
         controller.getDefaultDestPageOnNormalEnd());
@@ -151,7 +150,7 @@ public class ReturnUrlBean {
    */
   public static ReturnUrlBean forAbnormalEnd(SplibGeneralController<?> controller,
       SplibLoginStateUtil loginStateUtil) {
-    ObjectsUtil.requireNonNull(controller);
+    Objects.requireNonNull(controller);
     return new ReturnUrlBean(controller, loginStateUtil,
         controller.getDefaultDestSubFunctionOnAbnormalEnd(),
         controller.getDefaultDestPageOnAbnormalEnd());
@@ -167,7 +166,7 @@ public class ReturnUrlBean {
    * @return ReturnUrlBean
    */
   public static ReturnUrlBean ofPath(String path) {
-    return new ReturnUrlBean(ObjectsUtil.requireNonNull(path));
+    return new ReturnUrlBean(Objects.requireNonNull(path));
   }
 
   /**
@@ -177,7 +176,7 @@ public class ReturnUrlBean {
    * @return ReturnUrlBean (for method chain)
    */
   public ReturnUrlBean toSubFunction(String subFunction) {
-    ObjectsUtil.requireNonNull(subFunction);
+    Objects.requireNonNull(subFunction);
     this.subFunction = subFunction;
     rebuildPathFromController("toSubFunction");
     return this;
@@ -190,7 +189,7 @@ public class ReturnUrlBean {
    * @return ReturnUrlBean (for method chain)
    */
   public ReturnUrlBean toPage(String page) {
-    ObjectsUtil.requireNonNull(page);
+    Objects.requireNonNull(page);
     this.page = page;
     rebuildPathFromController("toPage");
     return this;
@@ -220,11 +219,11 @@ public class ReturnUrlBean {
   }
 
   /**
-   * Sets isForward.
+   * Switches the URL protocol from {@code redirect} to {@code forward}.
    *
    * @return ReturnUrlBean (for method chain)
    */
-  public ReturnUrlBean setProtocolForward() {
+  public ReturnUrlBean asForward() {
     this.isForward = true;
     return this;
   }
@@ -300,8 +299,13 @@ public class ReturnUrlBean {
   /**
    * Adds the argument parameter to {@code paramMap}.
    *
+   * <p>A {@code null} {@code value} is treated as an empty string and produces
+   *     {@code key=} in the URL — the same output as passing {@code ""}. To omit
+   *     the parameter entirely, do not call this method (or call
+   *     {@link #removeParam(String)}).</p>
+   *
    * @param key key
-   * @param value value
+   * @param value value; {@code null} is normalized to empty string
    * @return ReturnUrlBean (for method chain)
    */
   public ReturnUrlBean putParam(String key, @Nullable String value) {
@@ -314,13 +318,16 @@ public class ReturnUrlBean {
   /**
    * Adds the argument parameter to {@code paramMap}.
    *
+   * <p>A {@code null} {@code values} array is treated as a single empty-string value
+   *     and produces {@code key=} in the URL.</p>
+   *
    * @param key key
-   * @param values values
+   * @param values values; {@code null} is normalized to a single empty-string value
    * @return ReturnUrlBean (for method chain)
    */
   public ReturnUrlBean putParam(String key, @Nullable String[] values) {
     Objects.requireNonNull(key);
-    paramMap.put(key, values == null ? new String[] {""} : values);
+    paramMap.put(key, values == null ? new String[] {""} : values.clone());
 
     return this;
   }
@@ -330,12 +337,17 @@ public class ReturnUrlBean {
    *
    * <p>This is used when you want to put {@code request.parameterMap()} to the paramMap.</p>
    *
+   * <p>The value arrays are defensively copied, so later mutations to the source
+   *     map's arrays do not affect this bean's state.</p>
+   *
    * @param paramMap paramMap
    * @return ReturnUrlBean (for method chain)
    */
   public ReturnUrlBean putParamMap(Map<String, String[]> paramMap) {
     Objects.requireNonNull(paramMap);
-    this.paramMap.putAll(paramMap);
+    for (Entry<String, String[]> entry : paramMap.entrySet()) {
+      this.paramMap.put(entry.getKey(), entry.getValue().clone());
+    }
 
     return this;
   }
