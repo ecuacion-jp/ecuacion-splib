@@ -60,19 +60,4 @@ public class HtmlItemSelect extends HtmlItem {
     return (HtmlItemSelect) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
-  @Override
-  public HtmlItemSelect notEmptyOnSearch() {
-    return (HtmlItemSelect) super.notEmptyOnSearch();
-  }
-  
-  @Override
-  public HtmlItemSelect isNotEmptyOnSearch(boolean isNotEmpty) {
-    return (HtmlItemSelect) super.isNotEmptyOnSearch(isNotEmpty);
-  }
-
-  @Override
-  public HtmlItemSelect isNotEmptyOnSearch(HtmlItemConditionKeyEnum authKind, String authString,
-      boolean isNotEmpty) {
-    return (HtmlItemSelect) super.isNotEmptyOnSearch(authKind, authString, isNotEmpty);
-  }
 }

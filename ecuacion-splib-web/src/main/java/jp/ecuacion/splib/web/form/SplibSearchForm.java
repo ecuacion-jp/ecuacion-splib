@@ -384,6 +384,6 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
     if (bean == null) {
       return new java.util.ArrayList<>();
     }
-    return rootRecord.getNotEmptyOnSearchItemPropertyPathList(loginState, bean);
+    return rootRecord.getNotEmptyItemPropertyPathList(loginState, bean);
   }
 }
