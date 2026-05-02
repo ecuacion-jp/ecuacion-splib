@@ -122,36 +122,6 @@ public interface HtmlItemContainer extends ItemContainer {
     return getNotEmptyItemPropertyPathList(loginState, bean).contains(itemPropertyPath);
   }
 
-  /**
-   * Obtains NotEmpty fields.
-   * 
-   * @param loginState loginState
-   * @param bean bean
-   * @return {@code List<String>}
-   */
-  @SuppressWarnings("null")
-  default List<String> getNotEmptyOnSearchItemPropertyPathList(String loginState,
-      RolesAndAuthoritiesBean bean) {
-    return Arrays.asList(getHtmlItems()).stream()
-        .filter(item -> item.getIsNotEmptyOnSearch(loginState, bean))
-        .map(item -> item.getPropertyPath()).toList();
-  }
-
-  /**
-   * Returns whether isNotEmpty or not.
-   * 
-   * @param itemPropertyPath itemPropertyPath
-   * @param loginState loginState
-   * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
-   * @return boolean
-   */
-  default boolean isNotEmptyOnSearch(String itemPropertyPath, String loginState,
-      String rolesOrAuthoritiesString) {
-    SplibSecurityUtil.RolesAndAuthoritiesBean bean =
-        new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
-    return getNotEmptyOnSearchItemPropertyPathList(loginState, bean).contains(itemPropertyPath);
-  }
-
   /** Returns search pattern for each item. */
   default Map<String, StringMatchingConditionBean> getSearchPatterns() {
     Map<String, StringMatchingConditionBean> map = new HashMap<>();

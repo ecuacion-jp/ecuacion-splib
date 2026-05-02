@@ -62,22 +62,6 @@ public class HtmlItemString extends HtmlItem {
     return (HtmlItemString) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
-  @Override
-  public HtmlItemString notEmptyOnSearch() {
-    return (HtmlItemString) super.notEmptyOnSearch();
-  }
-  
-  @Override
-  public HtmlItemString isNotEmptyOnSearch(boolean isNotEmpty) {
-    return (HtmlItemString) super.isNotEmptyOnSearch(isNotEmpty);
-  }
-
-  @Override
-  public HtmlItemString isNotEmptyOnSearch(HtmlItemConditionKeyEnum authKind, String authString,
-      boolean isNotEmpty) {
-    return (HtmlItemString) super.isNotEmptyOnSearch(authKind, authString, isNotEmpty);
-  }
-
   /**
    * Offers the string search pattern.
    * 

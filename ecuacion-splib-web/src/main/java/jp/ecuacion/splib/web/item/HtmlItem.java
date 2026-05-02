@@ -43,9 +43,6 @@ public class HtmlItem extends Item {
   protected HtmlItemConditionContainer<Boolean> isNotEmpty =
       new HtmlItemConditionContainer<>(false);
 
-  protected HtmlItemConditionContainer<Boolean> isNotEmptyOnSearch =
-      new HtmlItemConditionContainer<>(false);
-
   /**
    * Constructs a new instance.
    * 
@@ -112,54 +109,6 @@ public class HtmlItem extends Item {
    */
   public boolean getIsNotEmpty(String loginState, RolesAndAuthoritiesBean bean) {
     return isNotEmpty.getValue(loginState, bean);
-  }
-
-  /**
-   * Sets required.
-   * 
-   * @return HtmlItem
-   */
-  public HtmlItem notEmptyOnSearch() {
-    this.isNotEmptyOnSearch.setDefaultValue(true);
-    return this;
-  }
-
-  /**
-   * Sets required.
-   * 
-   * @return HtmlItem
-   */
-  public HtmlItem isNotEmptyOnSearch(boolean isRequired) {
-    this.isNotEmptyOnSearch.setDefaultValue(isRequired);
-    return this;
-  }
-
-  /**
-   * Sets isNotEmptyOnSearch with the conditions of 
-   *     {@code HtmlItemConditionKeyEnum}, {@code authString}.
-   * 
-   * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
-   * 
-   * @param authKind authKind
-   * @param authString authString
-   * @param isRequired isRequired
-   * @return HtmlItem
-   */
-  public HtmlItem isNotEmptyOnSearch(HtmlItemConditionKeyEnum authKind, String authString,
-      boolean isRequired) {
-    this.isNotEmptyOnSearch.add(new HtmlItemCondition<Boolean>(authKind, authString, isRequired));
-    return this;
-  }
-
-  /**
-   * Obtains isNotEmpty.
-   * 
-   * @param loginState loginState
-   * @param bean bean
-   * @return boolean
-   */
-  public boolean getIsNotEmptyOnSearch(String loginState, RolesAndAuthoritiesBean bean) {
-    return isNotEmptyOnSearch.getValue(loginState, bean);
   }
 
   /**
