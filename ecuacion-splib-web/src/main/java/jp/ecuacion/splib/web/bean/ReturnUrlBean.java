@@ -22,10 +22,14 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
+import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.jspecify.annotations.Nullable;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Returns the URL to redirect / forward pages to use as the return string in 
@@ -52,78 +56,80 @@ public class ReturnUrlBean {
   private final Map<String, String[]> paramMap = new HashMap<>();
 
   /**
-   * Constructs a new instance with controller, util.
-   * 
-   * <p>Since {@code isNormalEnd == false} is used 
+   * Constructs a new instance with controller, loginStateUtil.
+   *
+   * <p>Since {@code isNormalEnd == false} is used
    *     only from ExceptionHandler normally implemented not by app-developers,
    *     {@code isNormalEnd} is set to {@code true} by default.</p>
-   *  
+   *
    * @param controller controller
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util) {
-    this(controller, util, true);
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil) {
+    this(controller, loginStateUtil, true);
   }
 
   /**
-   * Constructs a new instance with controller, util, isNormalEnd.
-   * 
-   * @param isNormalEnd when it's {@code true} 
-   *     the default subFunction and page on normal end set in the controller is used. 
+   * Constructs a new instance with controller, loginStateUtil, isNormalEnd.
+   *
+   * @param isNormalEnd when it's {@code true}
+   *     the default subFunction and page on normal end set in the controller is used.
    * @param controller controller
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, boolean isNormalEnd) {
-    this(ObjectsUtil.requireNonNull(controller), util, isNormalEnd,
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
+      boolean isNormalEnd) {
+    this(ObjectsUtil.requireNonNull(controller), loginStateUtil, isNormalEnd,
         isNormalEnd ? controller.getDefaultDestPageOnNormalEnd()
             : controller.getDefaultDestPageOnAbnormalEnd());
   }
 
   /**
-   * Constructs a new instance with controller, util, page.
-   * 
-   * <p>Since {@code isNormalEnd == false} is used 
+   * Constructs a new instance with controller, loginStateUtil, page.
+   *
+   * <p>Since {@code isNormalEnd == false} is used
    *     only from ExceptionHandler normally implemented not by app-developers,
    *     {@code isNormalEnd} is set to {@code true} by default.</p>
-   *     
+   *
    * @param controller controller
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    * @param page page
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, String page) {
-    this(controller, util, true, page);
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
+      String page) {
+    this(controller, loginStateUtil, true, page);
   }
 
   /**
-   * Constructs a new instance with controller, util, page.
-   * 
-   * @param isNormalEnd when it's {@code true} 
-   *     the default subFunction on normal end set in the controller is used. 
+   * Constructs a new instance with controller, loginStateUtil, page.
+   *
+   * @param isNormalEnd when it's {@code true}
+   *     the default subFunction on normal end set in the controller is used.
    * @param controller controller
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    * @param page page
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, boolean isNormalEnd,
-      String page) {
-    this(ObjectsUtil.requireNonNull(controller), util,
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
+      boolean isNormalEnd, String page) {
+    this(ObjectsUtil.requireNonNull(controller), loginStateUtil,
         isNormalEnd ? controller.getDefaultDestSubFunctionOnNormalEnd()
             : controller.getDefaultDestSubFunctionOnAbnormalEnd(),
         page);
   }
 
   /**
-   * Constructs a new instance with controller, util, subFunction, page.
-   * 
+   * Constructs a new instance with controller, loginStateUtil, subFunction, page.
+   *
    * @param controller controller
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    * @param subFunction subFunction
    * @param page page
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibUtil util, String subFunction,
-      String page) {
+  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
+      String subFunction, String page) {
     path = getPathFromParams(ObjectsUtil.requireNonNull(controller),
-        ObjectsUtil.requireNonNull(util).getLoginState(), ObjectsUtil.requireNonNull(subFunction),
-        ObjectsUtil.requireNonNull(page));
+        ObjectsUtil.requireNonNull(loginStateUtil).getLoginState(),
+        ObjectsUtil.requireNonNull(subFunction), ObjectsUtil.requireNonNull(page));
 
     putParamList(controller.getParamListOnRedirectToSelf());
   }
@@ -139,11 +145,41 @@ public class ReturnUrlBean {
 
   /**
    * Returns the URL.
-   * 
+   *
    * @return URL string
    */
   public String getUrl() {
     return getProtocol() + ":" + path + getParamsString();
+  }
+
+  /**
+   * Prepares for page transition by carrying over the model via flash attributes,
+   * and returns the URL.
+   *
+   * <p>When {@code takeOverMessages} is {@code false}, warning / success-flag /
+   *     {@code BindingResult}-prefixed entries are stripped from the snapshot so the
+   *     redirected page starts with a clean error/warning state.</p>
+   *
+   * @param model model
+   * @param redirectAttributes redirectAttributes
+   * @param takeOverMessages whether to carry over warning / error / success messages
+   * @return URL string
+   */
+  public String applyTo(Model model, RedirectAttributes redirectAttributes,
+      boolean takeOverMessages) {
+
+    Map<String, Object> modelSnapshot = new HashMap<>(model.asMap());
+
+    if (!takeOverMessages) {
+      modelSnapshot.remove(SplibWebConstants.KEY_WARN_MESSAGE);
+      modelSnapshot.remove(SplibWebConstants.KEY_NEEDS_SUCCESS_MESSAGE);
+      modelSnapshot.entrySet()
+          .removeIf(entry -> entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX));
+    }
+
+    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_SAVED_MODEL, modelSnapshot);
+
+    return getUrl();
   }
 
   public boolean isForward() {

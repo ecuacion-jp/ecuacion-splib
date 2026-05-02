@@ -21,7 +21,7 @@ import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -45,11 +45,12 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
    *
    * @param request request
    * @param actionOnThrowable actionOnThrowable, may be {@code null}
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    */
   protected SplibJpaExceptionHandler(HttpServletRequest request,
-      @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibUtil util) {
-    super(request, actionOnThrowable, util);
+      @Nullable SplibExceptionHandlerAction actionOnThrowable,
+      SplibLoginStateUtil loginStateUtil) {
+    super(request, actionOnThrowable, loginStateUtil);
   }
 
   /**

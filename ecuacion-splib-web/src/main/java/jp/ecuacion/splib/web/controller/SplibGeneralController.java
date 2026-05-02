@@ -33,9 +33,9 @@ import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
 import jp.ecuacion.splib.web.service.SplibGeneralService;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
-import jp.ecuacion.splib.web.util.SplibUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
@@ -351,7 +351,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   @Autowired
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
 
   /**
    * Constructs a new instance with {@code function}.
@@ -473,7 +473,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @return URL
    */
   protected String getRedirectUrlOnSuccess() {
-    return new ReturnUrlBean(this, util).showSuccessMessage().getUrl();
+    return new ReturnUrlBean(this, loginStateUtil).showSuccessMessage().getUrl();
   }
 
   /**
@@ -508,12 +508,12 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    */
   public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage,
       RedirectAttributes redirectAttributes) {
-    ReturnUrlBean bean = new ReturnUrlBean(this, util);
+    ReturnUrlBean bean = new ReturnUrlBean(this, loginStateUtil);
     if (showsSuccessMessage) {
       bean.showSuccessMessage();
     }
 
-    return util.prepareForPageTransition(redirectAttributes, bean, model, false);
+    return bean.applyTo(model, redirectAttributes, false);
   }
 
   /**
@@ -644,7 +644,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     for (SplibGeneralForm form : forms) {
       if (form.getPrepareSettings().validates()) {
-        validationCheck(form, util.getLoginState(), rolesAndAuthoritiesBean);
+        validationCheck(form, loginStateUtil.getLoginState(), rolesAndAuthoritiesBean);
       }
     }
   }
@@ -722,8 +722,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     try {
       Object itemContainer = field.get(form);
-      form.validateNotEmpty(itemContainer, violations, request.getLocale(), util.getLoginState(),
-          bean);
+      form.validateNotEmpty(itemContainer, violations, request.getLocale(),
+          loginStateUtil.getLoginState(), bean);
 
     } catch (IllegalAccessException ex) {
       throw new RuntimeException(ex);

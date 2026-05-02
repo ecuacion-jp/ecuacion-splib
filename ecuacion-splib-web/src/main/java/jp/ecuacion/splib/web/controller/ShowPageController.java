@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ShowPageController extends SplibBaseController {
 
   @Autowired
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
 
   /**
    * Shows the page designated by {@code id} parameter of the url.
@@ -121,7 +121,7 @@ public class ShowPageController extends SplibBaseController {
 
     // Validate.
     if (list.size() != 1 || !list.get(0).contains("=")
-        || !list.get(0).split("=")[1].contains(util.getLoginState())) {
+        || !list.get(0).split("=")[1].contains(loginStateUtil.getLoginState())) {
       throw new RedirectToHomePageException(Level.INFO,
           "jp.ecuacion.splib.web.common.message.htmlFileNotAllowedToOpen", new String[] {page});
     }

@@ -21,7 +21,7 @@ import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -54,7 +54,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
   protected ReturnUrlBean redirectOnSuccess;
 
   @Autowired
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
 
   /**
    * Construct a new instance with {@code function}.
@@ -166,7 +166,8 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
     getService().edit(form, loginUser);
 
     @NonNull ReturnUrlBean redirectBean =
-        redirectOnSuccess == null ? new ReturnUrlBean(this, util, true).showSuccessMessage()
+        redirectOnSuccess == null
+            ? new ReturnUrlBean(this, loginStateUtil, true).showSuccessMessage()
             : Objects.requireNonNull(redirectOnSuccess);
     redirectBean.putParam(SplibWebConstants.KEY_DATA_KIND, form.getDataKind());
     redirectBean.putParam("action", PARAM_UPDATE);
@@ -186,7 +187,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;
 
     String retunPageFunction = isSingle ? "edit" : "searchList";
-    ReturnUrlBean rtnBean = new ReturnUrlBean(this, util, retunPageFunction, "page")
+    ReturnUrlBean rtnBean = new ReturnUrlBean(this, loginStateUtil, retunPageFunction, "page")
         .putParam(SplibWebConstants.KEY_DATA_KIND, editForm.getDataKind());
     if (isSingle) {
       rtnBean.putParam("showUpdateForm", (String) null);

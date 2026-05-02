@@ -24,7 +24,7 @@ import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.exceptionhandler.ViolationWebWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibDatetimeFormatUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,9 +36,6 @@ public abstract class SplibGeneralService {
 
   @Autowired
   private HttpServletRequest request;
-
-  @Autowired
-  private SplibUtil util;
 
   private DetailLogger detailLog = new DetailLogger(this);
 
@@ -75,7 +72,7 @@ public abstract class SplibGeneralService {
    * <p>It's often used to construct a record.</p>
    */
   public DatetimeFormatParameters getParams() {
-    return util.getParams(request);
+    return SplibDatetimeFormatUtil.getParams(request);
   }
 
   /** 
