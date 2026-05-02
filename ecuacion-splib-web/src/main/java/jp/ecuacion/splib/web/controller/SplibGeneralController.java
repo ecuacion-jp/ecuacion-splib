@@ -27,13 +27,14 @@ import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
-import jp.ecuacion.splib.web.bean.ReturnUrlBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
 import jp.ecuacion.splib.web.service.SplibGeneralService;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
+import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
@@ -397,40 +398,48 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    *  <p>{@code BizLogicRedirectAppException} redirect settings is priotized over this settings.</p>
    */
   @Nullable
-  protected ReturnUrlBean redirectUrlOnAppExceptionBean;
+  protected ReturnUrlBuilder redirectUrlOnAppException;
 
-  public @Nullable ReturnUrlBean getRedirectUrlOnAppExceptionBean() {
-    return redirectUrlOnAppExceptionBean;
+  public @Nullable ReturnUrlBuilder getRedirectUrlOnAppException() {
+    return redirectUrlOnAppException;
   }
 
   /**
-   * Returns parameter list needed to add when the response is redirect to the original page.
-   * 
-   * <p>It can be used with the redirect by both normal end and abnormal end 
-   *     (= in the case that ViolationException is thrown).</p>
+   * Holds the parameters that should be appended to any redirect URL produced from
+   * this controller (both normal end and abnormal end, including
+   * {@code ViolationException}).
+   *
+   * <p>Picked up by {@code ReturnUrlBuilder} via
+   * {@link #getParamListOnRedirect()} during construction.</p>
    */
-  protected List<String[]> paramListOnRedirectToSelf = new ArrayList<>();
+  protected List<String[]> paramListOnRedirect = new ArrayList<>();
 
   /**
-   * Adds html parameter with no value when the request redirects to the same page.
-   * 
+   * Adds an html parameter with no value to {@link #paramListOnRedirect}.
+   *
    * @param key key
    */
-  protected void addParamToParamListOnRedirectToSelf(String key) {
-    paramListOnRedirectToSelf.add(new String[] {key, ""});
+  protected void addParamToParamListOnRedirect(String key) {
+    paramListOnRedirect.add(new String[] {key, ""});
   }
 
   /**
-   * Adds html parameter when the request redirects to the same page.
-   * 
+   * Adds an html parameter to {@link #paramListOnRedirect}.
+   *
    * @param key key
+   * @param value value
    */
-  protected void addParamToParamListOnRedirectToSelf(String key, String value) {
-    paramListOnRedirectToSelf.add(new String[] {key, value});
+  protected void addParamToParamListOnRedirect(String key, String value) {
+    paramListOnRedirect.add(new String[] {key, value});
   }
 
-  public List<String[]> getParamListOnRedirectToSelf() {
-    return paramListOnRedirectToSelf;
+  /**
+   * Returns {@link #paramListOnRedirect}.
+   *
+   * @return the parameter list
+   */
+  public List<String[]> getParamListOnRedirect() {
+    return paramListOnRedirect;
   }
 
   /**
@@ -467,13 +476,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * Returns the redirect URL which redirects to the same page with success message.
    * 
    * <p>This is a utility method to use redirect easily 
-   *     without understanding {@code ReturnUrlBean}. 
-   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
+   *     without understanding {@code ReturnUrlBuilder}. 
+   *     It's also allowed to use {@code ReturnUrlBuilder} directly from apps.</p>
    *     
    * @return URL
    */
   protected String getRedirectUrlOnSuccess() {
-    return new ReturnUrlBean(this, loginStateUtil).showSuccessMessage().getUrl();
+    return ReturnUrlBuilder.forNormalEnd(this, loginStateUtil).showSuccessMessage().getUrl();
   }
 
   /**
@@ -481,8 +490,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    *     and takes over {@code model} to the transitioned page.
    *
    * <p>This is a utility method to use redirect easily
-   *     without understanding {@code ReturnUrlBean}.
-   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
+   *     without understanding {@code ReturnUrlBuilder}.
+   *     It's also allowed to use {@code ReturnUrlBuilder} directly from apps.</p>
    *
    * @param model model
    * @param redirectAttributes redirectAttributes
@@ -498,8 +507,8 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    *     and takes over {@code model} to the transitioned page.
    *
    * <p>This is a utility method to use redirect easily
-   *     without understanding {@code ReturnUrlBean}.
-   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
+   *     without understanding {@code ReturnUrlBuilder}.
+   *     It's also allowed to use {@code ReturnUrlBuilder} directly from apps.</p>
    *
    * @param model model
    * @param showsSuccessMessage showsSuccessMessage
@@ -508,12 +517,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    */
   public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage,
       RedirectAttributes redirectAttributes) {
-    ReturnUrlBean bean = new ReturnUrlBean(this, loginStateUtil);
+    ReturnUrlBuilder builder = ReturnUrlBuilder.forNormalEnd(this, loginStateUtil);
     if (showsSuccessMessage) {
-      bean.showSuccessMessage();
+      builder.showSuccessMessage();
     }
 
-    return bean.applyTo(model, redirectAttributes, false);
+    SplibSavedModelUtil.saveToFlash(model, redirectAttributes, false);
+    return builder.getUrl();
   }
 
   /**

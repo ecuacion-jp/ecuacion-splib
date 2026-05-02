@@ -35,7 +35,7 @@ import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.core.violation.Violations.MessageParameters;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.bean.ReturnUrlBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.bean.WarnMessageBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibEditController;
@@ -44,6 +44,7 @@ import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
+import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
@@ -189,12 +190,12 @@ public abstract class SplibExceptionHandler {
 
     prepareFormForReturn(loginUser);
 
-    ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
-    if (redirectBean == null) {
-      redirectBean = new ReturnUrlBean(getController(), loginStateUtil, false);
+    ReturnUrlBuilder redirectBuilder = getController().getRedirectUrlOnAppException();
+    if (redirectBuilder == null) {
+      redirectBuilder = ReturnUrlBuilder.forAbnormalEnd(getController(), loginStateUtil);
     }
-    String path = redirectBean.applyTo(getModel(), redirectAttributes, true);
-    return new ModelAndView(path);
+    SplibSavedModelUtil.saveToFlash(getModel(), redirectAttributes, true);
+    return new ModelAndView(redirectBuilder.getUrl());
   }
 
   /**
@@ -301,9 +302,9 @@ public abstract class SplibExceptionHandler {
     }
 
     // redirect
-    ReturnUrlBean redirectBean = new ReturnUrlBean(redirectException.getRedirectPath());
-    String path = redirectBean.applyTo(model, redirectAttributes, true);
-    return new ModelAndView(path);
+    ReturnUrlBuilder redirectBuilder = ReturnUrlBuilder.ofPath(redirectException.getRedirectPath());
+    SplibSavedModelUtil.saveToFlash(model, redirectAttributes, true);
+    return new ModelAndView(redirectBuilder.getUrl());
   }
 
   /**
