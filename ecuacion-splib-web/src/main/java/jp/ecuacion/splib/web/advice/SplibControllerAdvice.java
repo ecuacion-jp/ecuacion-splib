@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -37,17 +37,17 @@ public class SplibControllerAdvice {
 
   private HttpServletRequest request;
 
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
 
   /**
    * Constructs a new instance.
    *
    * @param request request
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    */
-  public SplibControllerAdvice(HttpServletRequest request, SplibUtil util) {
+  public SplibControllerAdvice(HttpServletRequest request, SplibLoginStateUtil loginStateUtil) {
     this.request = request;
-    this.util = util;
+    this.loginStateUtil = loginStateUtil;
   }
 
   /**
@@ -78,7 +78,7 @@ public class SplibControllerAdvice {
 
     // Add url path. Direct use of request in Thymeleaf is no longer allowed,
     // and it is recommended to set url etc. to model in the controller.
-    model.addAttribute("loginState", util.getLoginState());
+    model.addAttribute("loginState", loginStateUtil.getLoginState());
   }
 
   private void aggregateGlobalErrors(Model model) {

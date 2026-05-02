@@ -22,7 +22,7 @@ import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -57,7 +57,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   private FST newSearchForm;
 
   @Autowired
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
 
   private static final String KEY_ERROR_OCCURS_WHILE_SEARCHING = "errorWhileSearching";
 
@@ -95,7 +95,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     searchForm = getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
-    return new ReturnUrlBean(this, util, "searchList", "page").getUrl();
+    return new ReturnUrlBean(this, loginStateUtil, "searchList", "page").getUrl();
   }
 
   /**
@@ -107,7 +107,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     searchForm = getProperSearchForm(model, searchForm);
     listForm.setDataKind(java.util.Objects.toString(searchForm.getDataKind(), ""));
-    redirectUrlOnAppExceptionBean = new ReturnUrlBean(this, util, false);
+    redirectUrlOnAppExceptionBean = new ReturnUrlBean(this, loginStateUtil, false);
 
     prepare(model, loginUser, searchForm, listForm);
 
@@ -214,7 +214,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
     prepare(model, loginUser, searchForm, listForm);
     String dataKindStr = java.util.Objects.toString(searchForm.getDataKind(), "");
-    return new ReturnUrlBean(this, util, true)
+    return new ReturnUrlBean(this, loginStateUtil, true)
         .putParam(SplibWebConstants.KEY_DATA_KIND, dataKindStr).getUrl();
   }
 
@@ -287,7 +287,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     prepare(model, loginUser, searchForm, listForm);
     getService().delete(listForm, loginUser);
 
-    return new ReturnUrlBean(this, util, true).showSuccessMessage()
+    return new ReturnUrlBean(this, loginStateUtil, true).showSuccessMessage()
         .putParam(SplibWebConstants.KEY_DATA_KIND, listForm.getDataKind()).getUrl();
   }
 
@@ -303,7 +303,8 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
     ReturnUrlBean bean =
-        new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
+        new ReturnUrlBean(this, loginStateUtil, "edit", "page")
+            .putParamMap(request.getParameterMap());
     return bean.getUrl();
   }
 
@@ -319,7 +320,8 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
     ReturnUrlBean bean =
-        new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
+        new ReturnUrlBean(this, loginStateUtil, "edit", "page")
+            .putParamMap(request.getParameterMap());
     return bean.getUrl();
   }
 }

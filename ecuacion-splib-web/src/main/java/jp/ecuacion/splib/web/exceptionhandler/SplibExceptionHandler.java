@@ -43,7 +43,7 @@ import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
@@ -68,20 +68,21 @@ public abstract class SplibExceptionHandler {
   @Nullable
   SplibExceptionHandlerAction actionOnThrowable;
 
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
 
   /**
    * Constructs a new instance.
    *
    * @param request request
    * @param actionOnThrowable actionOnThrowable, may be {@code null}
-   * @param util util
+   * @param loginStateUtil loginStateUtil
    */
   protected SplibExceptionHandler(HttpServletRequest request,
-      @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibUtil util) {
+      @Nullable SplibExceptionHandlerAction actionOnThrowable,
+      SplibLoginStateUtil loginStateUtil) {
     this.request = request;
     this.actionOnThrowable = actionOnThrowable;
-    this.util = util;
+    this.loginStateUtil = loginStateUtil;
   }
 
   /**
@@ -119,7 +120,7 @@ public abstract class SplibExceptionHandler {
     // In that case all model information is also passed to the destination.
     // To simplify subsequent processing, generate a redirectBean for same-page transitions.
     if (redirectBean == null) {
-      redirectBean = new ReturnUrlBean(ctrl, util, false);
+      redirectBean = new ReturnUrlBean(ctrl, loginStateUtil, false);
     }
 
     // Branch on whether redirect is needed.
@@ -127,8 +128,8 @@ public abstract class SplibExceptionHandler {
       return new ModelAndView(ctrl.getDefaultHtmlPageName(), getModel().asMap());
 
     } else {
-      String path = util.prepareForPageTransition(
-          Objects.requireNonNull(redirectAttributes), redirectBean, getModel(), true);
+      String path = redirectBean.applyTo(getModel(),
+          Objects.requireNonNull(redirectAttributes), true);
 
       return new ModelAndView(path);
     }
@@ -346,7 +347,7 @@ public abstract class SplibExceptionHandler {
 
     // redirect
     ReturnUrlBean redirectBean = new ReturnUrlBean(redirectException.getRedirectPath());
-    String path = util.prepareForPageTransition(redirectAttributes, redirectBean, model, true);
+    String path = redirectBean.applyTo(model, redirectAttributes, true);
     return new ModelAndView(path);
   }
 
