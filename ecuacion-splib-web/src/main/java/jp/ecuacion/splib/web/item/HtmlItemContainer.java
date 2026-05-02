@@ -24,7 +24,7 @@ import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
-import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
+import jp.ecuacion.splib.web.bean.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
