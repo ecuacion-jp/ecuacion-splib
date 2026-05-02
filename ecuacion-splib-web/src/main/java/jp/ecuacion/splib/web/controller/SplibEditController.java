@@ -167,7 +167,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
 
     @NonNull ReturnUrlBean redirectBean =
         redirectOnSuccess == null
-            ? new ReturnUrlBean(this, loginStateUtil, true).showSuccessMessage()
+            ? ReturnUrlBean.forNormalEnd(this, loginStateUtil).showSuccessMessage()
             : Objects.requireNonNull(redirectOnSuccess);
     redirectBean.putParam(SplibWebConstants.KEY_DATA_KIND, form.getDataKind());
     redirectBean.putParam("action", PARAM_UPDATE);
@@ -187,7 +187,8 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;
 
     String retunPageFunction = isSingle ? "edit" : "searchList";
-    ReturnUrlBean rtnBean = new ReturnUrlBean(this, loginStateUtil, retunPageFunction, "page")
+    ReturnUrlBean rtnBean = ReturnUrlBean.forNormalEnd(this, loginStateUtil)
+        .toSubFunction(retunPageFunction).toPage("page")
         .putParam(SplibWebConstants.KEY_DATA_KIND, editForm.getDataKind());
     if (isSingle) {
       rtnBean.putParam("showUpdateForm", (String) null);

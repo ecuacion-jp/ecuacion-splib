@@ -44,6 +44,7 @@ import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
+import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
@@ -191,10 +192,10 @@ public abstract class SplibExceptionHandler {
 
     ReturnUrlBean redirectBean = getController().getRedirectUrlOnAppExceptionBean();
     if (redirectBean == null) {
-      redirectBean = new ReturnUrlBean(getController(), loginStateUtil, false);
+      redirectBean = ReturnUrlBean.forAbnormalEnd(getController(), loginStateUtil);
     }
-    String path = redirectBean.applyTo(getModel(), redirectAttributes, true);
-    return new ModelAndView(path);
+    SplibSavedModelUtil.saveToFlash(getModel(), redirectAttributes, true);
+    return new ModelAndView(redirectBean.getUrl());
   }
 
   /**
@@ -301,9 +302,9 @@ public abstract class SplibExceptionHandler {
     }
 
     // redirect
-    ReturnUrlBean redirectBean = new ReturnUrlBean(redirectException.getRedirectPath());
-    String path = redirectBean.applyTo(model, redirectAttributes, true);
-    return new ModelAndView(path);
+    ReturnUrlBean redirectBean = ReturnUrlBean.ofPath(redirectException.getRedirectPath());
+    SplibSavedModelUtil.saveToFlash(model, redirectAttributes, true);
+    return new ModelAndView(redirectBean.getUrl());
   }
 
   /**

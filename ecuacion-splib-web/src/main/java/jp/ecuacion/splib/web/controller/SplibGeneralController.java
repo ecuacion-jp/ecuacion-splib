@@ -34,6 +34,7 @@ import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
 import jp.ecuacion.splib.web.service.SplibGeneralService;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
+import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
@@ -473,7 +474,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @return URL
    */
   protected String getRedirectUrlOnSuccess() {
-    return new ReturnUrlBean(this, loginStateUtil).showSuccessMessage().getUrl();
+    return ReturnUrlBean.forNormalEnd(this, loginStateUtil).showSuccessMessage().getUrl();
   }
 
   /**
@@ -508,12 +509,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    */
   public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage,
       RedirectAttributes redirectAttributes) {
-    ReturnUrlBean bean = new ReturnUrlBean(this, loginStateUtil);
+    ReturnUrlBean bean = ReturnUrlBean.forNormalEnd(this, loginStateUtil);
     if (showsSuccessMessage) {
       bean.showSuccessMessage();
     }
 
-    return bean.applyTo(model, redirectAttributes, false);
+    SplibSavedModelUtil.saveToFlash(model, redirectAttributes, false);
+    return bean.getUrl();
   }
 
   /**

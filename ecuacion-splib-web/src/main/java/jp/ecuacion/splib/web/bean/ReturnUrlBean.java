@@ -15,25 +15,40 @@
  */
 package jp.ecuacion.splib.web.bean;
 
-import java.util.HashMap;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
-import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
 import org.jspecify.annotations.Nullable;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * Returns the URL to redirect / forward pages to use as the return string in 
+ * Returns the URL to redirect / forward pages to use as the return string in
  * {@code @RequestMapping, @GetMapping and @PostMapping} methods.
+ *
+ * <p>Construction is via static factory methods:</p>
+ * <ul>
+ *   <li>{@link #forNormalEnd(SplibGeneralController, SplibLoginStateUtil)} —
+ *       used by application controllers on normal end.</li>
+ *   <li>{@link #forAbnormalEnd(SplibGeneralController, SplibLoginStateUtil)} —
+ *       used internally by exception handlers; not for direct use by application code.</li>
+ *   <li>{@link #ofPath(String)} — wraps an explicit path string.</li>
+ * </ul>
+ *
+ * <p>Optional adjustments are applied via setter chain methods such as
+ * {@link #toSubFunction(String)}, {@link #toPage(String)},
+ * {@link #putParam(String, String)}, {@link #showSuccessMessage()}, and
+ * {@link #setProtocolForward()}. Call {@link #getUrl()} to obtain the final URL string.</p>
+ *
+ * <p>Saving the model into flash attributes for the redirect target is handled by
+ * {@code SplibSavedModelUtil#saveToFlash}, not by this class.</p>
  */
 public class ReturnUrlBean {
 
@@ -49,98 +64,146 @@ public class ReturnUrlBean {
 
   /**
    * Is the parameters part of the URL.
-   * 
-   * <p>The data type of the value is an array 
+   *
+   * <p>The data type of the value is an array
    *     because html request parameter allows multiple values.</p>
+   *
+   * <p>{@code LinkedHashMap} is used so that the parameter order in the produced URL
+   *     follows insertion order and is therefore deterministic.</p>
    */
-  private final Map<String, String[]> paramMap = new HashMap<>();
+  private final Map<String, String[]> paramMap = new LinkedHashMap<>();
 
   /**
-   * Constructs a new instance with controller, loginStateUtil.
+   * Holds the controller used to construct the path.
    *
-   * <p>Since {@code isNormalEnd == false} is used
-   *     only from ExceptionHandler normally implemented not by app-developers,
-   *     {@code isNormalEnd} is set to {@code true} by default.</p>
-   *
-   * @param controller controller
-   * @param loginStateUtil loginStateUtil
+   * <p>{@code null} when this instance was created via {@link #ofPath(String)}.</p>
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil) {
-    this(controller, loginStateUtil, true);
-  }
+  private final @Nullable SplibGeneralController<?> controller;
 
   /**
-   * Constructs a new instance with controller, loginStateUtil, isNormalEnd.
+   * Holds the login state used to construct the path.
    *
-   * @param isNormalEnd when it's {@code true}
-   *     the default subFunction and page on normal end set in the controller is used.
-   * @param controller controller
-   * @param loginStateUtil loginStateUtil
+   * <p>{@code null} when this instance was created via {@link #ofPath(String)}.</p>
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
-      boolean isNormalEnd) {
-    this(ObjectsUtil.requireNonNull(controller), loginStateUtil, isNormalEnd,
-        isNormalEnd ? controller.getDefaultDestPageOnNormalEnd()
-            : controller.getDefaultDestPageOnAbnormalEnd());
-  }
+  private final @Nullable String loginState;
 
   /**
-   * Constructs a new instance with controller, loginStateUtil, page.
-   *
-   * <p>Since {@code isNormalEnd == false} is used
-   *     only from ExceptionHandler normally implemented not by app-developers,
-   *     {@code isNormalEnd} is set to {@code true} by default.</p>
-   *
-   * @param controller controller
-   * @param loginStateUtil loginStateUtil
-   * @param page page
+   * Holds the current subFunction used to construct the path.
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
-      String page) {
-    this(controller, loginStateUtil, true, page);
-  }
+  private String subFunction = "";
 
   /**
-   * Constructs a new instance with controller, loginStateUtil, page.
-   *
-   * @param isNormalEnd when it's {@code true}
-   *     the default subFunction on normal end set in the controller is used.
-   * @param controller controller
-   * @param loginStateUtil loginStateUtil
-   * @param page page
+   * Holds the current page used to construct the path.
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
-      boolean isNormalEnd, String page) {
-    this(ObjectsUtil.requireNonNull(controller), loginStateUtil,
-        isNormalEnd ? controller.getDefaultDestSubFunctionOnNormalEnd()
-            : controller.getDefaultDestSubFunctionOnAbnormalEnd(),
-        page);
-  }
+  private String page = "";
 
   /**
-   * Constructs a new instance with controller, loginStateUtil, subFunction, page.
-   *
-   * @param controller controller
-   * @param loginStateUtil loginStateUtil
-   * @param subFunction subFunction
-   * @param page page
+   * Constructs a new instance from controller-derived path components.
    */
-  public ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
+  private ReturnUrlBean(SplibGeneralController<?> controller, SplibLoginStateUtil loginStateUtil,
       String subFunction, String page) {
-    path = getPathFromParams(ObjectsUtil.requireNonNull(controller),
-        ObjectsUtil.requireNonNull(loginStateUtil).getLoginState(),
-        ObjectsUtil.requireNonNull(subFunction), ObjectsUtil.requireNonNull(page));
+    this.controller = ObjectsUtil.requireNonNull(controller);
+    this.loginState = ObjectsUtil.requireNonNull(loginStateUtil).getLoginState();
+    this.subFunction = ObjectsUtil.requireNonNull(subFunction);
+    this.page = ObjectsUtil.requireNonNull(page);
+    this.path = buildPath(controller, Objects.requireNonNull(loginState), subFunction, page);
 
     putParamList(controller.getParamListOnRedirectToSelf());
   }
 
   /**
-   * Constructs a new instance with explicit path.
-   * 
-   * @param path path
+   * Constructs a new instance from an explicit path.
    */
-  public ReturnUrlBean(String path) {
+  private ReturnUrlBean(String path) {
+    this.controller = null;
+    this.loginState = null;
     this.path = ObjectsUtil.requireNonNull(path);
+  }
+
+  /**
+   * Creates an instance for a normal-end redirect.
+   *
+   * <p>The default subFunction and page configured on the controller for normal end are used.
+   *     Override them with {@link #toSubFunction(String)} / {@link #toPage(String)} as needed.</p>
+   *
+   * @param controller controller
+   * @param loginStateUtil loginStateUtil
+   * @return ReturnUrlBean
+   */
+  public static ReturnUrlBean forNormalEnd(SplibGeneralController<?> controller,
+      SplibLoginStateUtil loginStateUtil) {
+    ObjectsUtil.requireNonNull(controller);
+    return new ReturnUrlBean(controller, loginStateUtil,
+        controller.getDefaultDestSubFunctionOnNormalEnd(),
+        controller.getDefaultDestPageOnNormalEnd());
+  }
+
+  /**
+   * Creates an instance for an abnormal-end redirect.
+   *
+   * <p>This factory is intended to be used from exception handling code paths
+   *     ({@code SplibExceptionHandler} and library controllers preparing
+   *     {@code redirectUrlOnAppExceptionBean}). Application code does not normally call this.</p>
+   *
+   * @param controller controller
+   * @param loginStateUtil loginStateUtil
+   * @return ReturnUrlBean
+   */
+  public static ReturnUrlBean forAbnormalEnd(SplibGeneralController<?> controller,
+      SplibLoginStateUtil loginStateUtil) {
+    ObjectsUtil.requireNonNull(controller);
+    return new ReturnUrlBean(controller, loginStateUtil,
+        controller.getDefaultDestSubFunctionOnAbnormalEnd(),
+        controller.getDefaultDestPageOnAbnormalEnd());
+  }
+
+  /**
+   * Creates an instance from an explicit path.
+   *
+   * <p>{@link #toSubFunction(String)} and {@link #toPage(String)} are not applicable
+   *     for instances created this way and will throw {@code IllegalStateException}.</p>
+   *
+   * @param path path
+   * @return ReturnUrlBean
+   */
+  public static ReturnUrlBean ofPath(String path) {
+    return new ReturnUrlBean(ObjectsUtil.requireNonNull(path));
+  }
+
+  /**
+   * Overrides the subFunction part of the path.
+   *
+   * @param subFunction subFunction
+   * @return ReturnUrlBean (for method chain)
+   */
+  public ReturnUrlBean toSubFunction(String subFunction) {
+    ObjectsUtil.requireNonNull(subFunction);
+    this.subFunction = subFunction;
+    rebuildPathFromController("toSubFunction");
+    return this;
+  }
+
+  /**
+   * Overrides the page part of the path.
+   *
+   * @param page page
+   * @return ReturnUrlBean (for method chain)
+   */
+  public ReturnUrlBean toPage(String page) {
+    ObjectsUtil.requireNonNull(page);
+    this.page = page;
+    rebuildPathFromController("toPage");
+    return this;
+  }
+
+  private void rebuildPathFromController(String methodName) {
+    SplibGeneralController<?> ctrl = controller;
+    String state = loginState;
+    if (ctrl == null || state == null) {
+      throw new IllegalStateException(
+          methodName + "() is not applicable for instances created via ofPath().");
+    }
+    this.path = buildPath(ctrl, state, subFunction, page);
   }
 
   /**
@@ -152,54 +215,23 @@ public class ReturnUrlBean {
     return getProtocol() + ":" + path + getParamsString();
   }
 
-  /**
-   * Prepares for page transition by carrying over the model via flash attributes,
-   * and returns the URL.
-   *
-   * <p>When {@code takeOverMessages} is {@code false}, warning / success-flag /
-   *     {@code BindingResult}-prefixed entries are stripped from the snapshot so the
-   *     redirected page starts with a clean error/warning state.</p>
-   *
-   * @param model model
-   * @param redirectAttributes redirectAttributes
-   * @param takeOverMessages whether to carry over warning / error / success messages
-   * @return URL string
-   */
-  public String applyTo(Model model, RedirectAttributes redirectAttributes,
-      boolean takeOverMessages) {
-
-    Map<String, Object> modelSnapshot = new HashMap<>(model.asMap());
-
-    if (!takeOverMessages) {
-      modelSnapshot.remove(SplibWebConstants.KEY_WARN_MESSAGE);
-      modelSnapshot.remove(SplibWebConstants.KEY_NEEDS_SUCCESS_MESSAGE);
-      modelSnapshot.entrySet()
-          .removeIf(entry -> entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX));
-    }
-
-    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_SAVED_MODEL, modelSnapshot);
-
-    return getUrl();
-  }
-
   public boolean isForward() {
     return isForward;
   }
 
   /**
    * Sets isForward.
-   * 
+   *
    * @return ReturnUrlBean (for method chain)
    */
   public ReturnUrlBean setProtocolForward() {
     this.isForward = true;
-    putParam("forwarded", (String) null);
     return this;
   }
 
   /**
    * Returns protocol string.
-   * 
+   *
    * @return protocol
    */
   private String getProtocol() {
@@ -207,15 +239,9 @@ public class ReturnUrlBean {
   }
 
   /**
-   * Returns path by concatenating the arguments.
-   * 
-   * @param ctrl ctrl
-   * @param loginState loginState
-   * @param subFunction subFunction
-   * @param page page
-   * @return path
+   * Builds the path by concatenating the arguments.
    */
-  private String getPathFromParams(SplibGeneralController<?> ctrl, String loginState,
+  private static String buildPath(SplibGeneralController<?> ctrl, String loginState,
       String subFunction, String page) {
     String functionKindPath = ctrl.getFunctionKinds().length == 0 ? ""
         : (StringUtil.getSeparatedValuesString(ctrl.getFunctionKinds(), "/") + "/");
@@ -227,24 +253,32 @@ public class ReturnUrlBean {
 
   /**
    * Constructs the parameter part of the URL from {@code paramMap} and returns it.
-   *  
+   *
+   * <p>This method does not mutate {@code paramMap}; it works on a local copy
+   *     so that calling {@link #getUrl()} multiple times yields the same result
+   *     and leaves the bean's state untouched.</p>
+   *
+   * <p>Keys and values are URL-encoded with UTF-8.</p>
+   *
    * @return parameter part of the URL
    */
   private String getParamsString() {
+    Map<String, String[]> effectiveParams = new LinkedHashMap<>(paramMap);
+
     // When adding request parameters to RedirectUrlBean in bulk, the transactionToken may be
     // included, but redirecting with it would cause a check error,
     // so remove transactionToken from params.
-    removeParam(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
+    effectiveParams.remove(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
 
-    // If forwarding, add a parameter to indicate that.
+    // If forwarding, add a parameter to indicate that
+    // (consumed by SplibGeneralController#transactionTokenCheck to skip the check).
     if (isForward) {
-      putParam("forward", "true");
+      effectiveParams.put("forward", new String[] {"true"});
     }
 
     boolean is1st = true;
     StringBuilder sb = new StringBuilder();
-    // Add forward param to URL.
-    for (Entry<String, String[]> entry : paramMap.entrySet()) {
+    for (Entry<String, String[]> entry : effectiveParams.entrySet()) {
       for (String value : entry.getValue()) {
         if (is1st) {
           is1st = false;
@@ -254,7 +288,9 @@ public class ReturnUrlBean {
           sb.append("&");
         }
 
-        sb.append(entry.getKey()).append("=").append(value);
+        sb.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8))
+            .append("=")
+            .append(URLEncoder.encode(value, StandardCharsets.UTF_8));
       }
     }
 
@@ -263,7 +299,7 @@ public class ReturnUrlBean {
 
   /**
    * Adds the argument parameter to {@code paramMap}.
-   * 
+   *
    * @param key key
    * @param value value
    * @return ReturnUrlBean (for method chain)
@@ -277,7 +313,7 @@ public class ReturnUrlBean {
 
   /**
    * Adds the argument parameter to {@code paramMap}.
-   * 
+   *
    * @param key key
    * @param values values
    * @return ReturnUrlBean (for method chain)
@@ -291,9 +327,9 @@ public class ReturnUrlBean {
 
   /**
    * Adds the argument map to {@code paramMap}.
-   * 
+   *
    * <p>This is used when you want to put {@code request.parameterMap()} to the paramMap.</p>
-   * 
+   *
    * @param paramMap paramMap
    * @return ReturnUrlBean (for method chain)
    */
@@ -313,7 +349,7 @@ public class ReturnUrlBean {
 
   /**
    * Removes the argument key from {@code paramMap}.
-   * 
+   *
    * @param key key
    * @return ReturnUrlBean (for method chain)
    */
@@ -324,7 +360,7 @@ public class ReturnUrlBean {
 
   /**
    * add parameter to show success message.
-   * 
+   *
    * @return ReturnUrlBean (for method chain)
    */
   public ReturnUrlBean showSuccessMessage() {

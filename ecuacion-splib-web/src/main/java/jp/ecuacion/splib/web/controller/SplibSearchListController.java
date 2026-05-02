@@ -95,7 +95,8 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     searchForm = getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
-    return new ReturnUrlBean(this, loginStateUtil, "searchList", "page").getUrl();
+    return ReturnUrlBean.forNormalEnd(this, loginStateUtil)
+        .toSubFunction("searchList").toPage("page").getUrl();
   }
 
   /**
@@ -107,7 +108,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     searchForm = getProperSearchForm(model, searchForm);
     listForm.setDataKind(java.util.Objects.toString(searchForm.getDataKind(), ""));
-    redirectUrlOnAppExceptionBean = new ReturnUrlBean(this, loginStateUtil, false);
+    redirectUrlOnAppExceptionBean = ReturnUrlBean.forAbnormalEnd(this, loginStateUtil);
 
     prepare(model, loginUser, searchForm, listForm);
 
@@ -214,7 +215,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
 
     prepare(model, loginUser, searchForm, listForm);
     String dataKindStr = java.util.Objects.toString(searchForm.getDataKind(), "");
-    return new ReturnUrlBean(this, loginStateUtil, true)
+    return ReturnUrlBean.forNormalEnd(this, loginStateUtil)
         .putParam(SplibWebConstants.KEY_DATA_KIND, dataKindStr).getUrl();
   }
 
@@ -287,7 +288,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     prepare(model, loginUser, searchForm, listForm);
     getService().delete(listForm, loginUser);
 
-    return new ReturnUrlBean(this, loginStateUtil, true).showSuccessMessage()
+    return ReturnUrlBean.forNormalEnd(this, loginStateUtil).showSuccessMessage()
         .putParam(SplibWebConstants.KEY_DATA_KIND, listForm.getDataKind()).getUrl();
   }
 
@@ -302,15 +303,15 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String showInsertForm(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
-    ReturnUrlBean bean =
-        new ReturnUrlBean(this, loginStateUtil, "edit", "page")
-            .putParamMap(request.getParameterMap());
+    ReturnUrlBean bean = ReturnUrlBean.forNormalEnd(this, loginStateUtil)
+        .toSubFunction("edit").toPage("page")
+        .putParamMap(request.getParameterMap());
     return bean.getUrl();
   }
 
   /**
    * Shows edit page in update mode.
-   * 
+   *
    * @param model model
    * @param loginUser loginUser
    * @return URL
@@ -319,9 +320,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String showUpdateForm(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
-    ReturnUrlBean bean =
-        new ReturnUrlBean(this, loginStateUtil, "edit", "page")
-            .putParamMap(request.getParameterMap());
+    ReturnUrlBean bean = ReturnUrlBean.forNormalEnd(this, loginStateUtil)
+        .toSubFunction("edit").toPage("page")
+        .putParamMap(request.getParameterMap());
     return bean.getUrl();
   }
 }
