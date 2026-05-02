@@ -379,6 +379,7 @@ public abstract class SplibExceptionHandler {
    *
    * @return {@code true} if any at-each-item error was added.
    */
+  @SuppressWarnings("null")
   private boolean addViolation(BindingResult br, String errorCode, String[] propertyPaths,
       Violations singleViolation, boolean needsMsgAtItem, boolean needsMsgAtTop, Locale locale) {
     boolean atEachItemAdded = false;
@@ -401,7 +402,6 @@ public abstract class SplibExceptionHandler {
    *
    * <p>Falls back to the primary {@code BindingResult} when the rootBean cannot be matched.</p>
    */
-  @SuppressWarnings("null")
   private BindingResult findBindingResultForViolation(ConstraintViolation<?> cv) {
     Object rootBean = cv.getRootBean();
     if (rootBean instanceof SplibGeneralForm form) {
