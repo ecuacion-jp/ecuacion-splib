@@ -181,24 +181,17 @@
 					</div>
 				</div>
 				
-				<!-- messages from ${messagesBean} -->
-				<div th:object="${messagesBean}">
-					<!--/* success message */-->
-					<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
-						<div class="text-success" th:if="${param.success}" th:text="#{jp.ecuacion.splib.web.common.message.success}"></div>
-						<div class="text-success" th:if="*{needsSuccessMessage}" th:text="#{jp.ecuacion.splib.web.common.message.success}"></div>
-					</div>
+				<!--/* success message */-->
+				<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || needsSuccessMessage}">
+					<div class="text-success" th:if="${param.success != null || needsSuccessMessage}" th:text="#{jp.ecuacion.splib.web.common.message.success}"></div>
+				</div>
 
-					<!--/* error message */-->
-					<div class="all-error-messages-list-wrapper text-danger">
-						<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
-							<ul class="all-error-messages-list-ul">
-								<!--/* showing non-item-related messages */-->
-								<th:block th:if="*{errorMessagesAtTheTop.size() > 0}">
-									<div th:replace="~{ :: internalDisplayMessages(*{errorMessagesAtTheTop})}"></div>
-								</th:block>
-							</ul>
-						</div>
+				<!--/* error messages aggregated from all BindingResults' global errors */-->
+				<div class="all-error-messages-list-wrapper text-danger" th:if="${splibGlobalErrors != null && !splibGlobalErrors.isEmpty()}">
+					<div class="bg-color-msg-error-bg p-2 rounded-1">
+						<ul class="all-error-messages-list-ul">
+							<div th:replace="~{ :: internalDisplayMessages(${splibGlobalErrors})}"></div>
+						</ul>
 					</div>
 				</div>
 			</div>

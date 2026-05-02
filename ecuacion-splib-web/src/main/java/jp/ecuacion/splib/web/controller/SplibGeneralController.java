@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -627,6 +628,10 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
       model.addAttribute(form);
       // Set controller context.
       form.setControllerContext(context);
+
+      // Register a BindingResult for the form so that ExceptionHandler can populate
+      // validation errors and Thymeleaf's th:errors / #fields can read them.
+      registerBindingResult(model, form);
     }
 
     // Also store forms as an array in the model so they can be retrieved as an array.
@@ -635,16 +640,27 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     // Store controller in model for error handling.
     model.addAttribute(SplibWebConstants.KEY_CONTROLLER, this);
 
-    // // Set prepareSettings to controller.
-    // this.prepareSettings = (settings == null) ? new PrepareSettings() : settings;
-
     transactionTokenCheck();
 
     for (SplibGeneralForm form : forms) {
       if (form.getPrepareSettings().validates()) {
-        validationCheck(form, form.getPrepareSettings().bindingResult(), util.getLoginState(),
-            rolesAndAuthoritiesBean);
+        validationCheck(form, util.getLoginState(), rolesAndAuthoritiesBean);
       }
+    }
+  }
+
+  /**
+   * Registers a {@code BindingResult} for {@code form} in {@code model} under the
+   *     conventional Spring MVC key, unless one is already present.
+   *
+   * @param model model
+   * @param form form
+   */
+  private void registerBindingResult(Model model, SplibGeneralForm form) {
+    String formName = StringUtils.uncapitalize(form.getClass().getSimpleName());
+    String key = BindingResult.MODEL_KEY_PREFIX + formName;
+    if (model.getAttribute(key) == null) {
+      model.addAttribute(key, new BeanPropertyBindingResult(form, formName));
     }
   }
 
@@ -682,15 +698,13 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
   /**
    * Provides validation check feature.
-   * 
+   *
    * @param form form
-   * @param result result
    * @param loginState loginState
    * @param bean bean
-   * @throws FormInputValidationException FormInputValidationException
    */
-  private void validationCheck(SplibGeneralForm form, @Nullable BindingResult result,
-      String loginState, @Nullable RolesAndAuthoritiesBean bean) {
+  private void validationCheck(SplibGeneralForm form, String loginState,
+      @Nullable RolesAndAuthoritiesBean bean) {
     // input validation
     Violations violations = new Violations();
     getBeanValidationAppExceptionList(violations, form, bean);

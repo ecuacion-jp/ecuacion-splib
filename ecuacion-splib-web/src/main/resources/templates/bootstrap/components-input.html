@@ -100,9 +100,9 @@
 							
 							<!--/* field messages */-->
 							<th:block th:if="${@environment.getProperty('jp.ecuacion.splib.web.process-result-message.shown-at-each-item') ?: true} and ${needsFieldEmssages}">
-								<div class="text-danger" th:if="${messagesBean.getErrorMessagesAtEachItem('__${itemPropertyPath}__').size() > 0}"
+								<div class="text-danger" th:if="${#fields.hasErrors('__${itemPropertyPath}__')}"
 									th:classappend="${@optUtil.hasKey(options, 'componentType') and @optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
-									th:each="message : ${messagesBean.getErrorMessagesAtEachItem('__${itemPropertyPath}__')}">[[${message}]]</div>
+									th:each="message : ${#fields.errors('__${itemPropertyPath}__')}">[[${message}]]</div>
 							</th:block>
 							
 							<!--/* postfix content */-->
@@ -129,7 +129,7 @@
 				class="form-control text-dark"
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
 						+ ' ' + ${position == 'right' ? 'text-end' : ''}
-						+ ' ' + ${messagesBean.isValid(itemPropertyPath)}" 
+						+ ' ' + ${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}" 
 				th:readonly="${isReadOnly}">
 	</div>
 
@@ -157,7 +157,7 @@
 		<select th:id="${inputId}" th:name="${inputName}"
 				class="form-select text-dark" 
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
-				 + ' ' + ${messagesBean.isValid(itemPropertyPath)}"
+				 + ' ' + ${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
 				th:disabled="${isReadOnly}">
 				
 			<option th:if="${!@optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
@@ -182,7 +182,7 @@
 				<input th:id="${inputId}" th:name="${isReadOnly ? '' : inputName}"
 					class="form-check-input align-bottom mb-1" type="checkbox" 
 					th:checked="${inputValue}"
-					th:classappend="${messagesBean.isValid(itemPropertyPath)}"
+					th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
 					th:disabled="${isReadOnly}">
 			</div>
 		</div>
@@ -262,7 +262,7 @@
 			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
 				th:maxlength="*{getStringLength('__${propertyPathField}__')}" 
 				class="text-dark"
-				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + messagesBean.isValid(itemPropertyPath)}" 
+				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + (#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : '')}"
 				th:readonly="${isReadOnly}" rows="3">
 			</textarea>
 		</div></th:block>
@@ -305,7 +305,7 @@
 					<input th:id="${optionId}" class="form-check-input align-bottom mb-1" type="checkbox" 
 						th:name="${isReadOnly ? '' : recordPropertyPath}" 
 						th:checked="${inputValue == null ? false : #strings.contains(inputValue, optionId)}"
-						th:classappend="${messagesBean.isValid(itemPropertyPath)}"
+						th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
 						th:disabled="${isReadOnly}"
 						th:value="${optionId}">
 					<label class="form-check-label text-dark" th:for="${optionId}" th:text="${optionLabel}"></label>
@@ -352,7 +352,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentInputFile" th:remove="tag">
 			<input class="form-control" type="file" th:id="${inputId}" th:name="${inputName}" 
-					th:classappend="${messagesBean.isValid(itemPropertyPath)}">
+					th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}">
 		</div></th:block>
 	</div>
 	
@@ -361,7 +361,7 @@
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoMobile}, ~{ :: fragmentInputTakenPhotoMobilePostfix}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTakenPhotoMobile" th:remove="tag">
-			<input class="form-control" th:classappend="${messagesBean.isValid(itemPropertyPath)}" 
+			<input class="form-control" th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}" 
 					type="file" th:name="${recordPropertyPath}"  th:id="${inputId}" accept="image/*" capture="user">
 		</div></th:block>
 		

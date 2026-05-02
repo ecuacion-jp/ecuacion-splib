@@ -25,6 +25,7 @@ import jp.ecuacion.splib.web.bean.ReturnUrlBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -140,16 +141,19 @@ public class SplibUtil {
   public String prepareForPageTransition(RedirectAttributes redirectAttributes,
       ReturnUrlBean redirectBean, Model model, boolean takeOverMessages) {
 
-    // Save model contents (excluding messagesBean) as a flash attribute.
     Map<String, Object> modelSnapshot = new HashMap<>(model.asMap());
-    modelSnapshot.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
-    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_SAVED_MODEL, modelSnapshot);
 
-    // Save messagesBean as a separate flash attribute when needed.
-    if (takeOverMessages) {
-      redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
-          model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN));
+    // When messages should not be carried over (e.g., after a successful action),
+    // strip warnMessage / needsSuccessMessage / BindingResults so the redirected
+    // page starts with a clean error/warning state.
+    if (!takeOverMessages) {
+      modelSnapshot.remove(SplibWebConstants.KEY_WARN_MESSAGE);
+      modelSnapshot.remove(SplibWebConstants.KEY_NEEDS_SUCCESS_MESSAGE);
+      modelSnapshot.entrySet()
+          .removeIf(entry -> entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX));
     }
+
+    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_SAVED_MODEL, modelSnapshot);
 
     return redirectBean.getUrl();
   }
