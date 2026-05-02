@@ -15,8 +15,8 @@
  */
 package jp.ecuacion.splib.web.item;
 
-import jp.ecuacion.splib.web.record.StringMatchingConditionBean;
-import jp.ecuacion.splib.web.record.StringMatchingConditionBean.StringMatchingPatternEnum;
+import jp.ecuacion.splib.web.bean.StringMatchingConditionBean;
+import jp.ecuacion.splib.web.bean.StringMatchingConditionBean.StringMatchingPatternEnum;
 
 /**
  * Is used for string item.
