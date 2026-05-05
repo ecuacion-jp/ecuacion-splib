@@ -81,8 +81,12 @@ public class SplibControllerAdvice {
     model.addAttribute("loginState", loginStateUtil.getLoginState());
   }
 
+  @SuppressWarnings("unchecked")
   private void aggregateGlobalErrors(Model model) {
-    List<String> messages = new ArrayList<>();
+    // Preserve errors already present in the model (e.g. carried via flash attribute).
+    Object existing = model.getAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS);
+    List<String> messages =
+        existing instanceof List<?> ? new ArrayList<>((List<String>) existing) : new ArrayList<>();
     for (Map.Entry<String, Object> entry : model.asMap().entrySet()) {
       if (entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX)
           && entry.getValue() instanceof BindingResult br) {

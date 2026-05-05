@@ -32,7 +32,7 @@ public class SplibWebConstants {
   public static final String KEY_SAVED_MODEL = "_splibSavedModel";
 
   /** Model attribute key holding aggregated global errors collected from all BindingResults. */
-  public static final String KEY_GLOBAL_ERRORS = "splibGlobalErrors";
+  public static final String KEY_GLOBAL_ERRORS = "globalErrors";
 
   /** Model attribute key holding the warning message that requires user confirmation. */
   public static final String KEY_WARN_MESSAGE = "warnMessage";

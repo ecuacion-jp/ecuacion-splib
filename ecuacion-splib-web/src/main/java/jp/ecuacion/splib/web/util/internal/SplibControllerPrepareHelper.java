@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.util.internal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Validation;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Set;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
@@ -110,15 +111,17 @@ public class SplibControllerPrepareHelper {
     Violations violations = new Violations();
     violations.addAll(Validation.buildDefaultValidatorFactory().getValidator().validate(form));
 
-    Field field = form.getRootRecordFields().get(0);
+    List<Field> rootRecordFields = form.getRootRecordFields();
+    if (!rootRecordFields.isEmpty()) {
+      Field field = rootRecordFields.get(0);
+      try {
+        Object itemContainer = field.get(form);
+        form.validateNotEmpty(itemContainer, violations, request.getLocale(),
+            loginStateUtil.getLoginState(), bean);
 
-    try {
-      Object itemContainer = field.get(form);
-      form.validateNotEmpty(itemContainer, violations, request.getLocale(),
-          loginStateUtil.getLoginState(), bean);
-
-    } catch (IllegalAccessException ex) {
-      throw new RuntimeException(ex);
+      } catch (IllegalAccessException ex) {
+        throw new RuntimeException(ex);
+      }
     }
 
     violations.throwIfAny();

@@ -187,10 +187,10 @@
 				</div>
 
 				<!--/* error messages aggregated from all BindingResults' global errors */-->
-				<div class="all-error-messages-list-wrapper text-danger" th:if="${splibGlobalErrors != null && !splibGlobalErrors.isEmpty()}">
+				<div class="all-error-messages-list-wrapper text-danger" th:if="${globalErrors != null && !globalErrors.isEmpty()}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
 						<ul class="all-error-messages-list-ul">
-							<div th:replace="~{ :: internalDisplayMessages(${splibGlobalErrors})}"></div>
+							<div th:replace="~{ :: internalDisplayMessages(${globalErrors})}"></div>
 						</ul>
 					</div>
 				</div>

@@ -23,10 +23,12 @@ import java.util.Map;
 import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import jp.ecuacion.lib.core.util.ReflectionUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.bean.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Has features related web environment.
@@ -35,10 +37,22 @@ public interface HtmlItemContainer extends ItemContainer {
 
   /**
    * Returns HtmlItem.
-   * 
+   *
    * @return HtmlItem[]
    */
   public HtmlItem[] getHtmlItems();
+
+  /**
+   * Returns the value of the field specified by {@code propertyPath}.
+   *
+   * <p>Uses {@link ReflectionUtil#getValue(Object, String)} internally.</p>
+   *
+   * @param propertyPath property path (e.g. {@code "name"})
+   * @return the field value, or {@code null} if not found
+   */
+  default @Nullable Object getValue(String propertyPath) {
+    return ReflectionUtil.getValue(this, propertyPath);
+  }
 
   /**
    * Returns HtmlItem.
