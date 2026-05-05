@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Supplies utilities.
  */
-public class SplibCoreBl extends ReflectionUtil {
+public class SplibCoreBl {
 
   /**
    * Throws an exception when duplicated. 
@@ -80,15 +80,18 @@ public class SplibCoreBl extends ReflectionUtil {
   protected <T> void internalDuplicateCheck(boolean checkFromAllGroups, List<T> entityList,
       ItemContainer rec, String itemNameKeyClass, String idItemPropertyPath,
       String... checkTargetItemPropertyPaths) {
-    List<T> listWithoutMyself =
-        entityList.stream().filter(e -> !Objects.requireNonNull(getValue(e, idItemPropertyPath))
-            .toString().equals(getValue(rec, idItemPropertyPath))).toList();
+    List<T> listWithoutMyself = entityList.stream()
+        .filter(e -> !Objects.requireNonNull(ReflectionUtil.getValue(e, idItemPropertyPath))
+            .toString().equals(ReflectionUtil.getValue(rec, idItemPropertyPath)))
+        .toList();
 
     for (String path : checkTargetItemPropertyPaths) {
       listWithoutMyself = listWithoutMyself.stream()
-          .filter(e -> (getValue(e, path) == null && getValue(rec, path) == null)
-              || getValue(e, path) != null && Objects.requireNonNull(getValue(e, path)).toString()
-                  .equals(getValue(rec, path)))
+          .filter(e -> (ReflectionUtil.getValue(e, path) == null
+              && ReflectionUtil.getValue(rec, path) == null)
+              || ReflectionUtil.getValue(e, path) != null
+                  && Objects.requireNonNull(ReflectionUtil.getValue(e, path)).toString()
+                      .equals(ReflectionUtil.getValue(rec, path)))
           .toList();
     }
 
@@ -132,10 +135,12 @@ public class SplibCoreBl extends ReflectionUtil {
 
     if (conditions != null) {
       for (ChildExistenceCheckConditionBean condition : conditions) {
-        list = list.stream()
-            .filter(e -> Objects.requireNonNull(getValue(e, condition.itemPropertyPath))
-                .equals(condition.conditionValue))
-            .toList();
+        list =
+            list.stream()
+                .filter(e -> Objects
+                    .requireNonNull(ReflectionUtil.getValue(e, condition.itemPropertyPath))
+                    .equals(condition.conditionValue))
+                .toList();
       }
     }
 
@@ -151,8 +156,10 @@ public class SplibCoreBl extends ReflectionUtil {
 
       Arg[] args = recordSpecifyingFieldName == null ? new Arg[] {Arg.message(entityMessageIdPart)}
           : new Arg[] {Arg.message(entityMessageIdPart),
-              Arg.string(referingRecordDataLabelMsgIdPart), Arg.string(Objects
-                  .requireNonNull(getValue(list.get(0), recordSpecifyingFieldName)).toString())};
+              Arg.string(referingRecordDataLabelMsgIdPart),
+              Arg.string(Objects
+                  .requireNonNull(ReflectionUtil.getValue(list.get(0), recordSpecifyingFieldName))
+                  .toString())};
       throw new ViolationException(new Violations().add(new BusinessViolation(msgId, args)));
     }
   }
