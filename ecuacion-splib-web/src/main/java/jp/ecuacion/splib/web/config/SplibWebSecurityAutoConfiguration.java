@@ -22,13 +22,34 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Auto-configures a permissive {@link SecurityFilterChain} when no other
- * {@link SecurityFilterChain} bean is present in the application context.
+ * Auto-configures a permissive {@link SecurityFilterChain} fallback
+ * when no other {@link SecurityFilterChain} bean is present in the application context.
  *
- * <p>This allows applications that use only a subset of {@code ecuacion-splib-web}
- *     (e.g. only Jakarta Validation) to run without defining a {@code SecurityConfig}.
- *     Applications that extend {@link SplibWebSecurityConfig} will have their own
- *     {@link SecurityFilterChain} bean, so this auto-configuration will not be applied.</p>
+ * <p><strong>Intended use.</strong> This auto-configuration exists so that applications
+ *     depending on {@code ecuacion-splib-web} for non-web concerns
+ *     (e.g. only Jakarta Validation utilities) can start up
+ *     without having to define a {@code SecurityConfig}.
+ *     It is a fallback for such limited-use cases,
+ *     not a general-purpose security configuration for web applications.</p>
+ *
+ * <p><strong>Web applications must extend {@link SplibWebSecurityConfig}.</strong>
+ *     {@link SplibWebSecurityConfig} provides the form login URLs, OAuth2 login wiring,
+ *     role/authority-based authorization
+ *     (including the reserved {@code ACCOUNT_FULL_ACCESS} role for {@code /account/**}),
+ *     and other conventions that the rest of {@code ecuacion-splib-web} relies on.
+ *     Applications that extend it will register their own {@link SecurityFilterChain} bean,
+ *     so this auto-configuration will be skipped.</p>
+ *
+ * <p><strong>Coexistence with a hand-rolled
+ *     {@code @Configuration + @EnableWebSecurity + @Bean SecurityFilterChain} is
+ *     not supported.</strong> The {@code @ConditionalOnMissingBean} guard cannot be
+ *     relied upon in that arrangement: depending on bean-definition processing order,
+ *     both filter chains may end up registered, which causes
+ *     {@code UnreachableFilterChainException}
+ *     (a filter chain matching {@code anyRequest()} has already been configured).
+ *     If you need a custom security configuration in a web application,
+ *     extend {@link SplibWebSecurityConfig} instead of declaring
+ *     a separate {@link SecurityFilterChain} bean.</p>
  */
 @AutoConfiguration
 public class SplibWebSecurityAutoConfiguration {
