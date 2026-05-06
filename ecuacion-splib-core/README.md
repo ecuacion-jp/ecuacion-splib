@@ -34,7 +34,7 @@
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/apidocs/ecuacion-splib-core/)
+- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-core/)
 
 ## Installation
 

@@ -42,7 +42,7 @@
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/apidocs/ecuacion-splib-batch/)
+- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-batch/)
 
 ## Installation
 

@@ -56,7 +56,7 @@ It is designed to release created war into `tomcat`.
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/apidocs/ecuacion-splib-web-jpa/)
+- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-web-jpa/)
 
 ## Installation
 
