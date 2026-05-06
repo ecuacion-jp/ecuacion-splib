@@ -41,7 +41,7 @@
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/apidocs/ecuacion-splib-jpa/)
+- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-jpa/)
 
 ## Installation
 

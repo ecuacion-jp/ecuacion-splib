@@ -49,7 +49,7 @@ or you can embed application servers in a war with a little change.
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/apidocs/ecuacion-splib-web/)
+- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-web/)
 
 ## Installation
 
