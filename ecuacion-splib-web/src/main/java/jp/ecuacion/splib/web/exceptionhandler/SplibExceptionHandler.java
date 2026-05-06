@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.nio.channels.OverlappingFileLockException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -151,17 +152,11 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    * @throws Exception Exception
    */
-  @SuppressWarnings("null")
+  @SuppressWarnings({"null", "unused"})
   @ExceptionHandler({ViolationException.class})
   public ModelAndView handleViolationException(ViolationException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser,
       RedirectAttributes redirectAttributes) throws Exception {
-
-    boolean needsMsgAtItemDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
-    boolean needsMsgAtTopDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
-    validateMessageDisplayConfig(needsMsgAtItemDefault, needsMsgAtTopDefault);
 
     Violations violations = exception.getViolations();
     MessageParameters params = violations.messageParameters();
@@ -170,6 +165,29 @@ public abstract class SplibExceptionHandler {
     // Sort violations by propertyPath for stable display order across requests.
     List<ConstraintViolation<?>> sortedCvs = violations.getConstraintViolations().stream()
         .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString())).toList();
+
+    // Fallback for plain @Controller (no SplibGeneralController registered in model).
+    // Collects error messages without item names and redirects back to the referring page.
+    if (getController() == null) {
+      List<String> errorMessages = new ArrayList<>();
+      for (ConstraintViolation<?> cv : sortedCvs) {
+        errorMessages.addAll(ExceptionUtil.getMessageList(
+            new Violations().messageParameters(params).add(cv), locale, false));
+      }
+      for (BusinessViolation bv : violations.getBusinessViolations()) {
+        errorMessages.addAll(
+            ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
+      }
+      redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
+      String referer = request.getHeader("Referer");
+      return new ModelAndView("redirect:" + (referer != null ? referer : "/"));
+    }
+
+    boolean needsMsgAtItemDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
+        "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
+    boolean needsMsgAtTopDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
+        "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
+    validateMessageDisplayConfig(needsMsgAtItemDefault, needsMsgAtTopDefault);
 
     boolean atEachItemErrorAdded = false;
 

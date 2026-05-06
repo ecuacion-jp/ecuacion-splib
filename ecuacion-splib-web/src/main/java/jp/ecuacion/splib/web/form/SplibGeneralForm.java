@@ -275,10 +275,8 @@ public abstract class SplibGeneralForm {
 
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
-      // String rootRecordName = rootRecordField.getName();
-      HtmlItemContainer rootRecord = (HtmlItemContainer) getRootRecord(rootRecordField);
-
-      if (rootRecord == null) {
+      // Skip records that don't implement HtmlItemContainer (also handles null).
+      if (!(getRootRecord(rootRecordField) instanceof HtmlItemContainer rootRecord)) {
         continue;
       }
       for (String notEmptyItemPropertyPath : getNotEmptyItemPropertyPathList(rootRecord, loginState,
