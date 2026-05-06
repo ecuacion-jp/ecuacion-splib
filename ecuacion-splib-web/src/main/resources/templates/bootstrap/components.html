@@ -496,7 +496,7 @@
 		- isBackgroundGradient		Specifies whether isBackgroundGradient.
  	 */-->
  	<div th:fragment="navbarRoot(contentsOfNavBarRootLeft, title, imagePath, defaultPagePath, contentsOfNavBarRootRight, options)" th:remove="tag">
-		<div th:replace="~{ :: internalNavbarCommonComponent(~{ :: fragmentNavBarRoot}, ${label}, ${options})}"></div>
+		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavBarRoot}, false, ${options})}"></div>
 		<th:block th:if="false"><div th:fragment="fragmentNavBarRoot" th:remove="tag">
 			<th:block th:with="
 					navbarBgColor=${@optUtil.getValueOrElse(options, 'backgroundColorClass', '')}
@@ -603,7 +603,7 @@
 					th:with="navBgClass=${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
 				<a class="dropdown-item nav-link" href="#">
 					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
-					<div style="text-align: right;" th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
+					<div style="text-align: right;" th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">?�?</div>
 				</a>
 				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark"
 						th:classappend="${navBgClass} + ' ' + ${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : ''}">

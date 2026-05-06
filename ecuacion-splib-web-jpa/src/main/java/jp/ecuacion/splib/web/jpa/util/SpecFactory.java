@@ -21,6 +21,7 @@ import jakarta.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.web.bean.StringMatchingConditionBean.StringMatchingPatternEnum;
@@ -48,9 +49,9 @@ public class SpecFactory<T extends SplibEntity> {
   public @Nullable Specification<T> equals(String propertyPath, @Nullable Object value) {
 
     return (root, query, cb) -> {
-      Path<?> path = getPath(root, propertyPath, value);
+      Path<?> path = getPath(root, propertyPath);
 
-      return (value == null || (value instanceof String && ((String) value).isEmpty()) ? null
+      return (value == null || (value instanceof String string && string.isEmpty()) ? null
           : cb.equal(path, value));
     };
   }
@@ -65,9 +66,9 @@ public class SpecFactory<T extends SplibEntity> {
   @SuppressWarnings("null")
   public Specification<T> stringEqualsIgnoringCase(String propertyPath, String value) {
     return (root, query, cb) -> {
-      Expression<String> criteriaField = getPath(root, propertyPath, value);
+      Expression<String> criteriaField = getPath(root, propertyPath);
       return StringUtils.isEmpty(value) ? null
-          : cb.equal(cb.upper(criteriaField), value.toUpperCase());
+          : cb.equal(cb.upper(criteriaField), value.toUpperCase(Locale.ROOT));
     };
   }
 
@@ -81,11 +82,11 @@ public class SpecFactory<T extends SplibEntity> {
   public @Nullable Specification<T> stringEquals(String propertyPath, @Nullable String value,
       boolean ignoresCase) {
     return (root, query, cb) -> {
-      Expression<String> criteriaFieldTmp = getPath(root, propertyPath, value);
+      Expression<String> criteriaFieldTmp = getPath(root, propertyPath);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
       String criteriaValue = ignoresCase
-          ? (value == null ? "" : value.toUpperCase()) : (value == null ? "" : value);
+          ? (value == null ? "" : value.toUpperCase(Locale.ROOT)) : (value == null ? "" : value);
 
       return StringUtils.isEmpty(value) ? null : cb.equal(criteriaField, criteriaValue);
     };
@@ -101,7 +102,7 @@ public class SpecFactory<T extends SplibEntity> {
   @SuppressWarnings("null")
   public Specification<T> stringNotEquals(String propertyPath, String value) {
     return (root, query, cb) -> {
-      Expression<String> criteriaField = getPath(root, propertyPath, value);
+      Expression<String> criteriaField = getPath(root, propertyPath);
       String criteriaValue = value;
 
       return StringUtils.isEmpty(value) ? null : cb.notEqual(criteriaField, criteriaValue);
@@ -186,9 +187,10 @@ public class SpecFactory<T extends SplibEntity> {
 
   /**
    * Returns Specification for stringEndsWith.
-   * 
-   * @param field field
+   *
+   * @param propertyPath propertyPath
    * @param value value
+   * @param ignoresCase ignoresCase
    * @return {@code Specification<T>}
    */
   private @Nullable Specification<T> stringEndsWith(String propertyPath, @Nullable String value,
@@ -216,14 +218,14 @@ public class SpecFactory<T extends SplibEntity> {
         return null;
       }
 
-      Expression<String> criteriaFieldTmp = getPath(root, propertyPath, value);
+      Expression<String> criteriaFieldTmp = getPath(root, propertyPath);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
       String finalCriteriaValue = ignoresCase
-          ? (criteriaValue == null ? "" : criteriaValue.toUpperCase())
+          ? (criteriaValue == null ? "" : criteriaValue.toUpperCase(Locale.ROOT))
           : (criteriaValue == null ? "" : criteriaValue);
 
-      return cb.like((criteriaField), finalCriteriaValue);
+      return cb.like(criteriaField, finalCriteriaValue);
     };
   }
 
@@ -294,20 +296,20 @@ public class SpecFactory<T extends SplibEntity> {
         return null;
       }
 
-      Path<String> criteriaFieldTmp = getPath(root, propertyPath, value);
+      Path<String> criteriaFieldTmp = getPath(root, propertyPath);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
       String finalCriteriaValue = ignoresCase
-          ? (criteriaValue == null ? "" : criteriaValue.toUpperCase())
+          ? (criteriaValue == null ? "" : criteriaValue.toUpperCase(Locale.ROOT))
           : (criteriaValue == null ? "" : criteriaValue);
 
-      return cb.like((criteriaField), finalCriteriaValue);
+      return cb.like(criteriaField, finalCriteriaValue);
     };
   }
 
-  private <X> @Nullable Path<X> getPath(Root<T> root, String propertyPath, @Nullable X value) {
+  private <X> @Nullable Path<X> getPath(Root<T> root, String propertyPath) {
     // Loop the number of "." in propertyPath
-    String[] fields = propertyPath.split("\\.");
+    String[] fields = propertyPath.split("\\.", -1);
     Path<X> path = null;
     for (int i = 0; i < fields.length; i++) {
       if (path == null) {
@@ -346,9 +348,7 @@ public class SpecFactory<T extends SplibEntity> {
         }
       }
 
-      if (item instanceof HtmlItemString) {
-        HtmlItemString stringItem = ((HtmlItemString) item);
-
+      if (item instanceof HtmlItemString stringItem) {
         Specification<T> spec = null;
         if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.EXACT) {
           spec = stringEquals(propertyPath, (String) value, stringItem.isIgnoresCase());
