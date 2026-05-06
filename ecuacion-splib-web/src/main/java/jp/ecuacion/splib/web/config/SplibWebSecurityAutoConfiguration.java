@@ -23,7 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Auto-configures a permissive {@link SecurityFilterChain} fallback
- * when no other {@link SecurityFilterChain} bean is present in the application context.
+ * when no {@link SplibWebSecurityConfig} subclass bean is present in the application context.
  *
  * <p><strong>Intended use.</strong> This auto-configuration exists so that applications
  *     depending on {@code ecuacion-splib-web} for non-web concerns
@@ -37,19 +37,16 @@ import org.springframework.security.web.SecurityFilterChain;
  *     role/authority-based authorization
  *     (including the reserved {@code ACCOUNT_FULL_ACCESS} role for {@code /account/**}),
  *     and other conventions that the rest of {@code ecuacion-splib-web} relies on.
- *     Applications that extend it will register their own {@link SecurityFilterChain} bean,
- *     so this auto-configuration will be skipped.</p>
+ *     When a subclass of {@link SplibWebSecurityConfig} is registered as a bean,
+ *     this auto-configuration is skipped.</p>
  *
- * <p><strong>Coexistence with a hand-rolled
- *     {@code @Configuration + @EnableWebSecurity + @Bean SecurityFilterChain} is
- *     not supported.</strong> The {@code @ConditionalOnMissingBean} guard cannot be
- *     relied upon in that arrangement: depending on bean-definition processing order,
- *     both filter chains may end up registered, which causes
- *     {@code UnreachableFilterChainException}
- *     (a filter chain matching {@code anyRequest()} has already been configured).
- *     If you need a custom security configuration in a web application,
- *     extend {@link SplibWebSecurityConfig} instead of declaring
- *     a separate {@link SecurityFilterChain} bean.</p>
+ * <p><strong>Condition uses {@link SplibWebSecurityConfig} rather than
+ *     {@link SecurityFilterChain}.</strong>
+ *     Using {@code @ConditionalOnMissingBean(SecurityFilterChain.class)} was unreliable
+ *     when the application's {@code @Configuration} class uses
+ *     {@code proxyBeanMethods = false} and inherits the {@code @Bean} method from
+ *     a non-{@code @Configuration} parent. Checking for {@link SplibWebSecurityConfig}
+ *     instead detects the configuration class bean directly and avoids that limitation.</p>
  */
 @AutoConfiguration
 public class SplibWebSecurityAutoConfiguration {
@@ -57,14 +54,20 @@ public class SplibWebSecurityAutoConfiguration {
   /**
    * Provides a permissive {@link SecurityFilterChain} that allows all requests.
    *
-   * <p>Applied only when no other {@link SecurityFilterChain} bean is present.</p>
+   * <p>Applied only when no {@link SplibWebSecurityConfig} subclass bean is present.
+   *     Checking for {@link SplibWebSecurityConfig} rather than {@link SecurityFilterChain}
+   *     avoids a Spring Boot limitation 
+   *     where {@code @ConditionalOnMissingBean(SecurityFilterChain.class)}
+   *     fails to detect the filter chain bean when the declaring {@code @Configuration} class
+   *     uses {@code proxyBeanMethods = false} and the {@code @Bean} method is inherited
+   *     from a non-{@code @Configuration} parent class.</p>
    *
    * @param http the {@link HttpSecurity} to configure
    * @return a {@link SecurityFilterChain} that permits all requests
    * @throws Exception if an error occurs during configuration
    */
   @Bean
-  @ConditionalOnMissingBean(SecurityFilterChain.class)
+  @ConditionalOnMissingBean(SplibWebSecurityConfig.class)
   SecurityFilterChain splibDefaultPermitAllFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
     return http.build();

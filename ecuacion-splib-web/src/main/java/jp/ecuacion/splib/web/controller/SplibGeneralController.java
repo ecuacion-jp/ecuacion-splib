@@ -19,6 +19,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
@@ -37,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -424,6 +427,20 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     prepareHelper.transactionTokenCheck();
     prepareHelper.validateForms(forms, rolesAndAuthoritiesBean);
+
+    // Re-apply FieldErrors saved before the redirect; form re-binding clears them.
+    @SuppressWarnings("unchecked")
+    Map<String, List<FieldError>> flashFieldErrors = (Map<String, List<FieldError>>) model
+        .getAttribute(SplibWebConstants.KEY_FLASH_FIELD_ERRORS);
+    if (flashFieldErrors != null) {
+      for (Map.Entry<String, List<FieldError>> entry : flashFieldErrors.entrySet()) {
+        Object br = model.getAttribute(entry.getKey());
+        if (br instanceof BindingResult bindingResult) {
+          entry.getValue().forEach(bindingResult::addError);
+        }
+      }
+      model.asMap().remove(SplibWebConstants.KEY_FLASH_FIELD_ERRORS);
+    }
   }
 
 }

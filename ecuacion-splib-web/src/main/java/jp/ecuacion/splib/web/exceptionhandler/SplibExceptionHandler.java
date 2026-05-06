@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.exceptionhandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import java.lang.reflect.Field;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,10 +29,12 @@ import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ConstraintViolationExceptionWithParameters;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.exception.ViolationWarningException;
+import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import jp.ecuacion.lib.core.util.ReflectionUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.core.violation.Violations.MessageParameters;
@@ -53,6 +56,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -192,16 +196,14 @@ public abstract class SplibExceptionHandler {
     boolean atEachItemErrorAdded = false;
 
     for (ConstraintViolation<?> cv : sortedCvs) {
-      atEachItemErrorAdded |=
-          addConstraintViolation(cv, params, needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
+      atEachItemErrorAdded |= addConstraintViolation(cv, params, needsMsgAtTopDefault, locale);
     }
     for (BusinessViolation bv : violations.getBusinessViolations()) {
-      atEachItemErrorAdded |=
-          addBusinessViolation(bv, needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
+      atEachItemErrorAdded |= addBusinessViolation(bv, needsMsgAtTopDefault, locale);
     }
 
     // When at-each-item errors exist, prepend a summary message at the top.
-    if (atEachItemErrorAdded && needsMsgAtTopDefault) {
+    if (atEachItemErrorAdded && needsMsgAtItemDefault && needsMsgAtTopDefault) {
       String key = "jp.ecuacion.splib.web.common.message.messagesLinkedToItemsExist";
       addGlobalError(getPrimaryBindingResult(), key, PropertiesFileUtil.getMessage(locale, key));
     }
@@ -212,6 +214,21 @@ public abstract class SplibExceptionHandler {
     if (redirectBuilder == null) {
       redirectBuilder = ReturnUrlBuilder.forAbnormalEnd(getController(), loginStateUtil);
     }
+    // Save FieldErrors separately so they survive form re-binding after the redirect.
+    java.util.Map<String, java.util.List<FieldError>> fieldErrorsSnapshot =
+        new java.util.LinkedHashMap<>();
+    for (java.util.Map.Entry<String, Object> entry : getModel().asMap().entrySet()) {
+      if (entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX)
+          && entry.getValue() instanceof BindingResult br
+          && !br.getFieldErrors().isEmpty()) {
+        fieldErrorsSnapshot.put(entry.getKey(), new java.util.ArrayList<>(br.getFieldErrors()));
+      }
+    }
+    if (!fieldErrorsSnapshot.isEmpty()) {
+      redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_FLASH_FIELD_ERRORS,
+          fieldErrorsSnapshot);
+    }
+
     SplibSavedModelUtil.saveToFlash(getModel(), redirectAttributes, true);
     return new ModelAndView(redirectBuilder.getUrl());
   }
@@ -317,7 +334,7 @@ public abstract class SplibExceptionHandler {
     if (!StringUtils.isEmpty(redirectException.getMessageId())) {
       if (getModel() != null) {
         addBusinessViolation(new BusinessViolation(redirectException.getMessageId(),
-            redirectException.getMessageArgs()), false, true, request.getLocale());
+            redirectException.getMessageArgs()), true, request.getLocale());
       } else {
         // Controller#prepare did not run, so no form/BindingResult is available.
         // Resolve the message and pass it via flash attribute so the redirect target can show it.
@@ -374,16 +391,13 @@ public abstract class SplibExceptionHandler {
    * @return {@code true} if any at-each-item error was added.
    */
   private boolean addConstraintViolation(ConstraintViolation<?> cv, MessageParameters params,
-      boolean needsMsgAtItemDefault, boolean needsMsgAtTopDefault, Locale locale) {
-    boolean needsMsgAtItem =
-        needsMsgAtItemDefault && !Boolean.TRUE.equals(params.isMessageWithItemName());
+      boolean needsMsgAtTopDefault, Locale locale) {
     BindingResult br = findBindingResultForViolation(cv);
     String errorCode =
         cv.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
     String[] propertyPaths = {cv.getPropertyPath().toString()};
     Violations single = new Violations().messageParameters(params).add(cv);
-    return addViolation(br, errorCode, propertyPaths, single, needsMsgAtItem, needsMsgAtTopDefault,
-        locale);
+    return addViolation(br, errorCode, propertyPaths, single, needsMsgAtTopDefault, locale);
   }
 
   /**
@@ -392,14 +406,58 @@ public abstract class SplibExceptionHandler {
    * @return {@code true} if any at-each-item error was added.
    */
   @SuppressWarnings("null")
-  private boolean addBusinessViolation(BusinessViolation violation, boolean needsMsgAtItemDefault,
-      boolean needsMsgAtTopDefault, Locale locale) {
-    boolean needsMsgAtItem = needsMsgAtItemDefault && violation.getItemPropertyPaths().length > 0;
+  private boolean addBusinessViolation(BusinessViolation violation, boolean needsMsgAtTopDefault,
+      Locale locale) {
     BindingResult br = getPrimaryBindingResult();
     String errorCode = violation.getMessageId();
     Violations single = new Violations().add(violation);
-    return addViolation(br, errorCode, violation.getItemPropertyPaths(), single, needsMsgAtItem,
-        needsMsgAtTopDefault, locale);
+    String[] qualifiedPaths = qualifyItemPropertyPaths(br, violation.getItemPropertyPaths());
+    return addViolation(br, errorCode, qualifiedPaths, single, needsMsgAtTopDefault, locale);
+  }
+
+  /**
+   * Qualifies each {@code itemPropertyPath} with the owning record's field name
+   * so that it matches the path Spring binds in the {@code BindingResult}.
+   *
+   * <p>When the form's rootBean is itself an {@code ItemContainer}, no prefix is needed.
+   *     Otherwise, the path is resolved against each record returned by
+   *     {@code SplibGeneralForm#getRootRecordFields()} and the field name of the first
+   *     record under which the path resolves is prepended.</p>
+   */
+  private String[] qualifyItemPropertyPaths(BindingResult br, String[] paths) {
+    Object rootBean = br.getTarget();
+    if (rootBean == null || rootBean instanceof ItemContainer) {
+      return paths;
+    }
+    if (!(rootBean instanceof SplibGeneralForm form)) {
+      return paths;
+    }
+    String[] result = new String[paths.length];
+    for (int i = 0; i < paths.length; i++) {
+      result[i] = qualifyForForm(form, paths[i]);
+    }
+    return result;
+  }
+
+  private String qualifyForForm(SplibGeneralForm form, String itemPropertyPath) {
+    for (Field field : form.getRootRecordFields()) {
+      field.setAccessible(true);
+      try {
+        Object value = field.get(form);
+        if (!(value instanceof ItemContainer)) {
+          continue;
+        }
+        try {
+          ReflectionUtil.getClass(value.getClass(), itemPropertyPath);
+          return field.getName() + "." + itemPropertyPath;
+        } catch (RuntimeException ignored) {
+          // path doesn't fit this record; try the next one
+        }
+      } catch (IllegalAccessException ignored) {
+        // skip inaccessible field
+      }
+    }
+    return itemPropertyPath;
   }
 
   /**
@@ -409,9 +467,9 @@ public abstract class SplibExceptionHandler {
    */
   @SuppressWarnings("null")
   private boolean addViolation(BindingResult br, String errorCode, String[] propertyPaths,
-      Violations singleViolation, boolean needsMsgAtItem, boolean needsMsgAtTop, Locale locale) {
+      Violations singleViolation, boolean needsMsgAtTop, Locale locale) {
     boolean atEachItemAdded = false;
-    if (needsMsgAtItem) {
+    if (propertyPaths.length > 0) {
       String message = ExceptionUtil.getMessageList(singleViolation, locale, false).get(0);
       for (String propertyPath : propertyPaths) {
         addFieldError(br, propertyPath, errorCode, message);
@@ -471,7 +529,8 @@ public abstract class SplibExceptionHandler {
    */
   private void addFieldError(BindingResult br, String propertyPath, String errorCode,
       String message) {
-    br.rejectValue(propertyPath, errorCode, new Object[] {}, message);
+    br.addError(new FieldError(br.getObjectName(), propertyPath, null, false,
+        new String[] {errorCode}, new Object[] {}, message));
   }
 
   /**
