@@ -437,14 +437,14 @@
 								<goal>run</goal>
 							</goals>
 							<configuration>
-								<target>
+								<target xmlns:if="ant:if" xmlns:unless="ant:unless">
 									<available
 										file="${project.build.directory}/site/allure-maven-plugin"
 										type="dir" property="allure.report.dir.exists"/>
 									<zip
 										destfile="${project.build.directory}/${project.build.finalName}-allure-report.zip"
 										basedir="${project.build.directory}/site/allure-maven-plugin"
-										if="allure.report.dir.exists"/>
+										if:set="allure.report.dir.exists"/>
 								</target>
 							</configuration>
 						</execution>
@@ -455,14 +455,14 @@
 								<goal>run</goal>
 							</goals>
 							<configuration>
-								<target>
+								<target xmlns:if="ant:if" xmlns:unless="ant:unless">
 									<available
 										file="${project.build.directory}/site/jacoco"
 										type="dir" property="jacoco.report.dir.exists"/>
 									<zip
 										destfile="${project.build.directory}/${project.build.finalName}-jacoco-report.zip"
 										basedir="${project.build.directory}/site/jacoco"
-										if="jacoco.report.dir.exists"/>
+										if:set="jacoco.report.dir.exists"/>
 								</target>
 							</configuration>
 						</execution>
