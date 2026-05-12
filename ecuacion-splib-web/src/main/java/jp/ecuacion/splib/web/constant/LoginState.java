@@ -44,7 +44,7 @@ public enum LoginState {
    */
   ECUACION_PUBLIC("ecuacion-public");
 
-  private String code;
+  private final String code;
 
   private LoginState(String code) {
     this.code = code;

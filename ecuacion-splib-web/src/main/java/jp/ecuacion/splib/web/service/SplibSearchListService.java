@@ -92,8 +92,8 @@ public abstract class SplibSearchListService
       return listToSort.stream()
           .sorted(
               (rec1,
-                  rec2) -> directionVal * (Integer.valueOf((String) rec1.getValue(itemPropertyPath))
-                      .compareTo(Integer.valueOf((String) rec2.getValue(itemPropertyPath)))))
+                  rec2) -> directionVal * Integer.valueOf((String) rec1.getValue(itemPropertyPath))
+                      .compareTo(Integer.valueOf((String) rec2.getValue(itemPropertyPath))))
           .toList();
 
     } else {

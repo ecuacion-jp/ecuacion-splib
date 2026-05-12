@@ -57,11 +57,11 @@ public abstract class SplibDataStoreDependentControllerAdvice {
       return;
     }
 
-    SplibRecord loginAcc = null;
     boolean isAdmin = loginUser.getAuthorities().stream()
         .anyMatch(auth -> auth.getAuthority().startsWith("ROLE_ADMIN"));
 
-    loginAcc = isAdmin ? service.getAccAdmin(loginUser) : service.getAccGeneral(loginUser);
+    SplibRecord loginAcc =
+        isAdmin ? service.getAccAdmin(loginUser) : service.getAccGeneral(loginUser);
 
     if (!isAdmin) {
       executeForAccountBelongingToGroup(loginAcc);

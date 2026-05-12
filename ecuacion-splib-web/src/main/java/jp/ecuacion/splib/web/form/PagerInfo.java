@@ -51,7 +51,7 @@ public class PagerInfo {
    */
   public PagerInfo(String displayString, boolean isActive, int goToPage) {
     this.displayString = displayString;
-    this.status = (isActive) ? "active" : "";
+    this.status = isActive ? "active" : "";
     this.goToPage = Integer.toString(goToPage);
   }
 

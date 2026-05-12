@@ -117,7 +117,7 @@ public class SplibCoreConfig {
    */
   private void registerExtraBasenames(Environment env) {
     String basenames = env.getProperty("spring.messages.basename", "messages");
-    for (String rawBasename : basenames.split(",")) {
+    for (String rawBasename : basenames.split(",", -1)) {
       String basename = rawBasename.trim();
       // Extract the filename part from paths like "classpath:/i18n/messages_myapp".
       String filename = basename.substring(basename.lastIndexOf('/') + 1);
@@ -125,16 +125,15 @@ public class SplibCoreConfig {
       if (filename.equals("messages") || filename.equals("item_names")
           || filename.equals("enum_names") || filename.equals("messages_with_item_names")) {
         // Base filenames without postfix; already covered by PropertiesFileUtil.
-        continue;
-      } else if (filename.startsWith("messages_with_item_names_")) {
-        PropertiesFileUtil.addResourceBundlePostfix(
-            filename.substring("messages_with_item_names_".length()));
       } else if (filename.startsWith("messages_")) {
         PropertiesFileUtil.addResourceBundlePostfix(filename.substring("messages_".length()));
       } else if (filename.startsWith("item_names_")) {
         PropertiesFileUtil.addResourceBundlePostfix(filename.substring("item_names_".length()));
       } else if (filename.startsWith("enum_names_")) {
         PropertiesFileUtil.addResourceBundlePostfix(filename.substring("enum_names_".length()));
+      } else if (filename.startsWith("messages_with_item_names_")) {
+        PropertiesFileUtil.addResourceBundlePostfix(
+            filename.substring("messages_with_item_names_".length()));
       } else {
         throw new RuntimeException(
             "Non-standard basename '" + basename + "' in 'spring.messages.basename' is not "

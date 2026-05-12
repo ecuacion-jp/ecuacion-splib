@@ -23,7 +23,7 @@ import java.util.Map;
 import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
-import jp.ecuacion.lib.core.util.ReflectionUtil;
+import jp.ecuacion.lib.core.util.PropertyPathUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.bean.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
@@ -45,22 +45,23 @@ public interface HtmlItemContainer extends ItemContainer {
   /**
    * Returns the value of the field specified by {@code propertyPath}.
    *
-   * <p>Uses {@link ReflectionUtil#getValue(Object, String)} internally.</p>
+   * <p>Uses {@link PropertyPathUtil#getValue(Object, String)} internally.</p>
    *
    * @param propertyPath property path (e.g. {@code "name"})
    * @return the field value, or {@code null} if not found
    */
   default @Nullable Object getValue(String propertyPath) {
-    return ReflectionUtil.getValue(this, propertyPath);
+    return PropertyPathUtil.getValue(this, propertyPath);
   }
 
   /**
    * Returns HtmlItem.
-   * 
+   *
    * @return HtmlItem[]
    */
+  @Override
   default HtmlItem[] customizedItems() {
-    return (HtmlItem[]) getHtmlItems();
+    return getHtmlItems();
   }
 
   /**
@@ -71,6 +72,7 @@ public interface HtmlItemContainer extends ItemContainer {
     List<HtmlItem> list = Arrays.asList(items).stream().map(item -> (HtmlItem) item).toList();
     return list.toArray(new HtmlItem[list.size()]);
   }
+
 
   /**
    * Returns {@code HtmlItem} from {@code HtmlItem[]} and {@code fieldId}. 
@@ -85,6 +87,7 @@ public interface HtmlItemContainer extends ItemContainer {
   /**
    * Returns a new instance.
    */
+  @Override
   public default HtmlItem getNewItem(String itemPropertyPath) {
     return new HtmlItem(itemPropertyPath);
   }
@@ -98,11 +101,10 @@ public interface HtmlItemContainer extends ItemContainer {
   default boolean needsCommas(String rootRecordName, String itemPropertyPath) {
     HtmlItem item = getHtmlItem(itemPropertyPath);
 
-    if (item == null || !(item instanceof HtmlItemNumber)) {
+    if (item == null || !(item instanceof HtmlItemNumber numItem)) {
       return false;
     }
 
-    HtmlItemNumber numItem = (HtmlItemNumber) item;
     return numItem.getNeedsCommas();
   }
 
@@ -142,9 +144,8 @@ public interface HtmlItemContainer extends ItemContainer {
 
     HtmlItem[] htmlItems = getHtmlItems();
     for (HtmlItem item : htmlItems) {
-      if (item instanceof HtmlItemString
-          && ((HtmlItemString) item).getStringSearchPatternEnum() != null) {
-        HtmlItemString itemStr = (HtmlItemString) item;
+      if (item instanceof HtmlItemString itemStr
+          && itemStr.getStringSearchPatternEnum() != null) {
         map.put(item.getPropertyPath(), new StringMatchingConditionBean(
             itemStr.getStringSearchPatternEnum(), itemStr.isIgnoresCase()));
       }

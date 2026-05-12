@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import jp.ecuacion.lib.core.util.ItemUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.record.SplibRecord;
@@ -283,8 +284,11 @@ public abstract class SplibGeneralForm {
           bean)) {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
-        if (value == null || (value instanceof String && ((String) value).isEmpty())) {
-          violations.add(new BusinessViolation(rootBean, new String[] {notEmptyItemPropertyPath},
+        if (value == null || (value instanceof String s && s.isEmpty())) {
+          violations.add(new BusinessViolation(
+              new String[] {ItemUtil.resolveItem(
+                  notEmptyItemPropertyPath, rootBean, rootBean).getItemNameKey()},
+              new String[] {notEmptyItemPropertyPath},
               validationClass + ".message"));
           // rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this,
           // "(empty)",

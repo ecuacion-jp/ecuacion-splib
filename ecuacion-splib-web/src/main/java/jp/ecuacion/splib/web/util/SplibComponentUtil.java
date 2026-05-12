@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import jp.ecuacion.lib.core.util.DateTimeApiUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
@@ -85,8 +86,9 @@ public class SplibComponentUtil {
 
 
     // Timestamp-threadId-filenameInMultipartFile
-    String tmpFilename = DateTimeApiUtil.getTimestampStringForFilename(LocalDateTime.now()) + "-"
-        + Thread.currentThread().threadId() + "-" + filename;
+    String tmpFilename =
+        DateTimeApiUtil.getTimestampStringForFilename(LocalDateTime.now(ZoneId.systemDefault()))
+        + "-" + Thread.currentThread().threadId() + "-" + filename;
 
     String tmpFilePath = workDirPath + "/" + tmpFilename;
 

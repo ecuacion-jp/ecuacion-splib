@@ -24,7 +24,7 @@ import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil.Arg;
-import jp.ecuacion.lib.core.util.ReflectionUtil;
+import jp.ecuacion.lib.core.util.PropertyPathUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
@@ -70,7 +70,7 @@ public class SplibCoreBl {
           "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
           "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
       throw new ViolationException(new Violations().add(new BusinessViolation(itemPropertyPaths,
-          msgId, new Arg[] {ObjectsUtil.requireNonNull(Arg.formattedString(str))})));
+          msgId, ObjectsUtil.requireNonNull(Arg.formattedString(str)))));
     }
   }
 
@@ -81,17 +81,17 @@ public class SplibCoreBl {
       ItemContainer rec, String itemNameKeyClass, String idItemPropertyPath,
       String... checkTargetItemPropertyPaths) {
     List<T> listWithoutMyself = entityList.stream()
-        .filter(e -> !Objects.requireNonNull(ReflectionUtil.getValue(e, idItemPropertyPath))
-            .toString().equals(ReflectionUtil.getValue(rec, idItemPropertyPath)))
+        .filter(e -> !Objects.requireNonNull(PropertyPathUtil.getValue(e, idItemPropertyPath))
+            .toString().equals(PropertyPathUtil.getValue(rec, idItemPropertyPath)))
         .toList();
 
     for (String path : checkTargetItemPropertyPaths) {
       listWithoutMyself = listWithoutMyself.stream()
-          .filter(e -> (ReflectionUtil.getValue(e, path) == null
-              && ReflectionUtil.getValue(rec, path) == null)
-              || ReflectionUtil.getValue(e, path) != null
-                  && Objects.requireNonNull(ReflectionUtil.getValue(e, path)).toString()
-                      .equals(ReflectionUtil.getValue(rec, path)))
+          .filter(e -> (PropertyPathUtil.getValue(e, path) == null
+              && PropertyPathUtil.getValue(rec, path) == null)
+              || (PropertyPathUtil.getValue(e, path) != null
+                  && Objects.requireNonNull(PropertyPathUtil.getValue(e, path)).toString()
+                      .equals(PropertyPathUtil.getValue(rec, path))))
           .toList();
     }
 
@@ -138,7 +138,7 @@ public class SplibCoreBl {
         list =
             list.stream()
                 .filter(e -> Objects
-                    .requireNonNull(ReflectionUtil.getValue(e, condition.itemPropertyPath))
+                    .requireNonNull(PropertyPathUtil.getValue(e, condition.itemPropertyPath))
                     .equals(condition.conditionValue))
                 .toList();
       }
@@ -154,12 +154,12 @@ public class SplibCoreBl {
           referingRecordDataLabel == null ? msgCmnPrefix + "Part.targetData"
               : referingRecordDataLabel;
 
-      Arg[] args = recordSpecifyingFieldName == null ? new Arg[] {Arg.message(entityMessageIdPart)}
-          : new Arg[] {Arg.message(entityMessageIdPart),
-              Arg.string(referingRecordDataLabelMsgIdPart),
-              Arg.string(Objects
-                  .requireNonNull(ReflectionUtil.getValue(list.get(0), recordSpecifyingFieldName))
-                  .toString())};
+      Object[] args = recordSpecifyingFieldName == null
+          ? new Object[] {Arg.message(entityMessageIdPart)}
+          : new Object[] {Arg.message(entityMessageIdPart),
+              referingRecordDataLabelMsgIdPart,
+              Objects.requireNonNull(
+                  PropertyPathUtil.getValue(list.get(0), recordSpecifyingFieldName)).toString()};
       throw new ViolationException(new Violations().add(new BusinessViolation(msgId, args)));
     }
   }

@@ -325,9 +325,9 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   public String getDefaultHtmlPageName() {
     String functionKindPath = context.functionKinds().length == 0 ? ""
         : StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/";
+    String postfix = context.htmlFilenamePostfix();
     return functionKindPath + context.function()
-        + StringUtils.capitalize(context.htmlFilenamePostfix() == null ? context.subFunction()
-            : context.htmlFilenamePostfix());
+        + StringUtils.capitalize(postfix == null ? context.subFunction() : postfix);
   }
 
   /**

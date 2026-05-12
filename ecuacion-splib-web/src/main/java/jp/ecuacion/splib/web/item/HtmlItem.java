@@ -22,22 +22,22 @@ import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 
 /**
- * Stores attributes of an html component which control the behaviors of the component 
+ * Stores attributes of an html component which control the behaviors of the component
  *     in html pages.
- * 
+ *
  * <p>{@code HtmlItem} is a kind of "item"s. See <a href="https://github.com/ecuacion-jp/ecuacion-jp.github.io/blob/main/documentation/common/naming-convention.md">naming-convention.md</a></p>
  */
 public class HtmlItem extends Item {
 
   /**
    * Shows whether an item allows empty.
-   * 
+   *
    * <p>When this value is {@code true}, required validation is executed on server side,
    *     and "required" mark is shown on the component in the html page.</p>
-   * 
+   *
    * <p>It doesn't depend on the data type. You can use this for number or any other data type.</p>
-   * 
-   * <p>The default value is preset: {@code false}. So the value becomes {@code false} 
+   *
+   * <p>The default value is preset: {@code false}. So the value becomes {@code false}
    *     if you don't set this value.</p>
    */
   protected HtmlItemConditionContainer<Boolean> isNotEmpty =
@@ -45,18 +45,18 @@ public class HtmlItem extends Item {
 
   /**
    * Constructs a new instance.
-   * 
+   *
    * @param itemPropertyPath itemPropertyPath
    */
   public HtmlItem(String itemPropertyPath) {
     super(itemPropertyPath);
   }
-  
+
   @Override
   public HtmlItem itemNameKey(@RequireNonEmpty String itemNameKey) {
     return (HtmlItem) super.itemNameKey(itemNameKey);
   }
-  
+
   @Override
   public HtmlItem hideValue() {
     return (HtmlItem) super.hideValue();
@@ -64,7 +64,7 @@ public class HtmlItem extends Item {
 
   /**
    * Sets isNotEmpty == true, which means you want the item to be not empty.
-   * 
+   *
    * @return HtmlItem
    */
   public HtmlItem notEmpty() {
@@ -74,7 +74,7 @@ public class HtmlItem extends Item {
 
   /**
    * Sets isNotEmpty to {@code isNotEmpty}.
-   * 
+   *
    * @param isNotEmpty isNotEmpty
    * @return HtmlItem
    */
@@ -84,11 +84,11 @@ public class HtmlItem extends Item {
   }
 
   /**
-   * Sets isNotEmpty to {@code isNotEmpty} 
+   * Sets isNotEmpty to {@code isNotEmpty}
    *     with the conditions of {@code HtmlItemConditionKeyEnum}, {@code authString}.
-   * 
+   *
    * <p>When you set multiple conditions to it, the order matters. First condition prioritized.</p>
-   * 
+   *
    * @param authKind authKind
    * @param authString authString
    * @param isNotEmpty isNotEmpty
@@ -102,7 +102,7 @@ public class HtmlItem extends Item {
 
   /**
    * Obtains isNotEmpty.
-   * 
+   *
    * @param loginState loginState
    * @param bean bean
    * @return boolean
@@ -120,17 +120,17 @@ public class HtmlItem extends Item {
 
   /**
    * Stores multiple HtmlItem conditions.
-   * 
+   *
    * <p>Conditions are stored in {@code List}, so the order matters.<br>
    *     If you set {@code new HtmlItem("name").setXxx(KEYWORD, "update", "A")
-   *     .setXxx(ROLE, "admin", "B").setXxx("X")} 
+   *     .setXxx(ROLE, "admin", "B").setXxx("X")}
    *     and parameters have keyword update and role "admin",
    *     the resultant value becomes "A".<br>
    *     .setXxx("C") sets the default value so even if you set as follows
    *     and you give a parameter keyword "update", the resultant value is "A".<br>
-   *     {@code new HtmlItem("name").setXxx("X").setXxx(KEYWORD, "update", "A")} 
+   *     {@code new HtmlItem("name").setXxx("X").setXxx(KEYWORD, "update", "A")}
    *     </p>
-   * 
+   *
    * @param <T> data type of the value
    */
   public static class HtmlItemConditionContainer<T> {
@@ -139,7 +139,7 @@ public class HtmlItem extends Item {
 
     /**
      * Returns the defaultValue.
-     * 
+     *
      * @param defaultValue defaultValue
      */
     public HtmlItemConditionContainer(T defaultValue) {
@@ -148,7 +148,7 @@ public class HtmlItem extends Item {
 
     /**
      * adds condition.
-     * 
+     *
      * @param authInfo authInfo
      */
     public void add(HtmlItemCondition<T> authInfo) {
@@ -173,7 +173,7 @@ public class HtmlItem extends Item {
 
     /**
      * Returns value.
-     * 
+     *
      * @param loginState loginState
      * @param bean bean
      * @return T
@@ -206,7 +206,7 @@ public class HtmlItem extends Item {
 
   /**
    * Stores one HtmlItem condition. See {@link HtmlItemConditionContainer}.
-   * 
+   *
    * @param <T> data type of the value
    */
   public static class HtmlItemCondition<T> {
@@ -216,7 +216,7 @@ public class HtmlItem extends Item {
 
     /**
      * Constructs a new instance.
-     * 
+     *
      * @param conditionKey conditionKey
      * @param conditionValue conditionValue
      * @param value value

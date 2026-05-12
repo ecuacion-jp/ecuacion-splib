@@ -21,6 +21,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Locale;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -81,7 +82,7 @@ public class SplibOauth2AuthSuccessHandler
 
     String email = oidcUser.getEmail();
     String name = resolveName(oidcUser, registrationId, request);
-    String provider = registrationId.toUpperCase();
+    String provider = registrationId.toUpperCase(Locale.ROOT);
 
     UserDetails userDetails = userHandler.findOrCreateUser(email, name, provider);
 

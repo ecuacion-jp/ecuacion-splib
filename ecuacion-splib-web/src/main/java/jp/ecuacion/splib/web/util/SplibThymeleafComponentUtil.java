@@ -64,6 +64,6 @@ public class SplibThymeleafComponentUtil {
 
     return PropertiesFileUtil.getMessage(request.getLocale(),
         "jp.ecuacion.splib.web.common.message.deleteConfirmation",
-        new String[] {fieldNames.toString()});
+        (Object[]) new String[] {fieldNames.toString()});
   }
 }

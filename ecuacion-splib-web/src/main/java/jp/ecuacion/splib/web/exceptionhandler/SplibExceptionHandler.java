@@ -34,7 +34,7 @@ import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
-import jp.ecuacion.lib.core.util.ReflectionUtil;
+import jp.ecuacion.lib.core.util.PropertyPathUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.core.violation.Violations.MessageParameters;
@@ -134,8 +134,8 @@ public abstract class SplibExceptionHandler {
       @Nullable @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     BusinessViolation v = exception.getViolations().getBusinessViolations().get(0);
-    String buttonId = exception instanceof ViolationWebWarningException
-        ? ((ViolationWebWarningException) exception).getButtonIdPressedIfConfirmed()
+    String buttonId = exception instanceof ViolationWebWarningException vwwe
+        ? vwwe.getButtonIdPressedIfConfirmed()
         : null;
     getModel().addAttribute(SplibWebConstants.KEY_WARN_MESSAGE, new WarnMessageBean(
         v.getMessageId(),
@@ -245,8 +245,8 @@ public abstract class SplibExceptionHandler {
   public ModelAndView handleConstraintViolationException(ConstraintViolationException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser,
       RedirectAttributes redirectAttributes) throws Exception {
-    MessageParameters params = exception instanceof ConstraintViolationExceptionWithParameters
-        ? ((ConstraintViolationExceptionWithParameters) exception).getMessageParameters()
+    MessageParameters params = exception instanceof ConstraintViolationExceptionWithParameters cvewp
+        ? cvewp.getMessageParameters()
         : new MessageParameters();
     Violations violations =
         new Violations().addAll(exception.getConstraintViolations()).messageParameters(params);
@@ -315,8 +315,8 @@ public abstract class SplibExceptionHandler {
       detailLog.info(exception.getMessage());
     }
 
-    if (exception instanceof NoResourceFoundException) {
-      String path = ((NoResourceFoundException) exception).getResourcePath();
+    if (exception instanceof NoResourceFoundException nrfe) {
+      String path = nrfe.getResourcePath();
 
       redirectException = new RedirectToHomePageException(
           "jp.ecuacion.splib.web.common.message.NoResourceFoundException", path);
@@ -334,12 +334,12 @@ public abstract class SplibExceptionHandler {
     if (!StringUtils.isEmpty(redirectException.getMessageId())) {
       if (getModel() != null) {
         addBusinessViolation(new BusinessViolation(redirectException.getMessageId(),
-            redirectException.getMessageArgs()), true, request.getLocale());
+            (Object[]) redirectException.getMessageArgs()), true, request.getLocale());
       } else {
         // Controller#prepare did not run, so no form/BindingResult is available.
         // Resolve the message and pass it via flash attribute so the redirect target can show it.
         String resolved = PropertiesFileUtil.getMessage(request.getLocale(),
-            redirectException.getMessageId(), redirectException.getMessageArgs());
+            redirectException.getMessageId(), (Object[]) redirectException.getMessageArgs());
         List<String> errorMessages = new ArrayList<>();
         errorMessages.add(resolved);
         redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
@@ -448,7 +448,7 @@ public abstract class SplibExceptionHandler {
           continue;
         }
         try {
-          ReflectionUtil.getClass(value.getClass(), itemPropertyPath);
+          PropertyPathUtil.getClass(value.getClass(), itemPropertyPath);
           return field.getName() + "." + itemPropertyPath;
         } catch (RuntimeException ignored) {
           // path doesn't fit this record; try the next one

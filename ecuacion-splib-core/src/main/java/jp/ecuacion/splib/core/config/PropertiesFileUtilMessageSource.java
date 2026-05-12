@@ -27,7 +27,7 @@ import org.springframework.context.support.AbstractMessageSource;
  * that delegates to {@link PropertiesFileUtil}.
  *
  * <p>Key resolution priority is: {@code messages_*.properties} first,
- * then {@code strings_*.properties}, then {@code item_names_*.properties}.
+ * then {@code constants_*.properties}, then {@code item_names_*.properties}.
  * Returns {@code null} when a key is not found in any of them.</p>
  *
  * <p>Supports type-aware {@link MessageFormat} formatting
@@ -44,7 +44,7 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
   /**
    * Resolves the given message code via {@link PropertiesFileUtil}.
    *
-   * <p>Searches in order: {@code messages}, {@code strings}, {@code item_names}.
+   * <p>Searches in order: {@code messages}, {@code constants}, {@code item_names}.
    * Returns {@code null} when the key does not exist in any file.</p>
    *
    * @param code the message code to resolve
@@ -57,8 +57,8 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
     String template;
     if (PropertiesFileUtil.hasMessage(key)) {
       template = PropertiesFileUtil.getMessage(locale, key);
-    } else if (PropertiesFileUtil.hasString(key)) {
-      template = PropertiesFileUtil.getString(key);
+    } else if (PropertiesFileUtil.hasConstant(key)) {
+      template = PropertiesFileUtil.getConstant(key);
     } else if (PropertiesFileUtil.hasItemName(key)) {
       template = PropertiesFileUtil.getItemName(locale, key);
     } else {

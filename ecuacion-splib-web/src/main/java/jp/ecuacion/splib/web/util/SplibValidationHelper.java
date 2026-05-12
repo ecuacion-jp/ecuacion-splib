@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.util;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Validation;
 import java.lang.reflect.Field;
+import jp.ecuacion.lib.core.util.ItemUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
@@ -144,7 +145,9 @@ public class SplibValidationHelper {
       Object value = container.getValue(path);
       if (value == null || (value instanceof String s && s.isEmpty())) {
         String fullPath = fieldPrefix == null ? path : fieldPrefix + "." + path;
-        violations.add(new BusinessViolation(rootBean, new String[] {fullPath}, messageKey));
+        violations.add(new BusinessViolation(
+            new String[] {ItemUtil.resolveItem(fullPath, rootBean, rootBean).getItemNameKey()},
+            new String[] {fullPath}, messageKey));
       }
     }
   }
