@@ -287,7 +287,7 @@ public abstract class SplibGeneralForm {
         if (value == null || (value instanceof String s && s.isEmpty())) {
           violations.add(new BusinessViolation(
               new String[] {ItemUtil.resolveItem(
-                  notEmptyItemPropertyPath, rootBean, rootBean).getItemNameKey()},
+                  notEmptyItemPropertyPath, rootBean).getItemNameKey()},
               new String[] {notEmptyItemPropertyPath},
               validationClass + ".message"));
           // rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this,

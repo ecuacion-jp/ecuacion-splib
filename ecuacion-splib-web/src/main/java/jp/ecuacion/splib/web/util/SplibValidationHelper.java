@@ -146,7 +146,7 @@ public class SplibValidationHelper {
       if (value == null || (value instanceof String s && s.isEmpty())) {
         String fullPath = fieldPrefix == null ? path : fieldPrefix + "." + path;
         violations.add(new BusinessViolation(
-            new String[] {ItemUtil.resolveItem(fullPath, rootBean, rootBean).getItemNameKey()},
+            new String[] {ItemUtil.resolveItem(fullPath, rootBean).getItemNameKey()},
             new String[] {fullPath}, messageKey));
       }
     }

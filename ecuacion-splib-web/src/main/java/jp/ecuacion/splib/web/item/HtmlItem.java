@@ -43,6 +43,9 @@ public class HtmlItem extends Item {
   protected HtmlItemConditionContainer<Boolean> isNotEmpty =
       new HtmlItemConditionContainer<>(false);
 
+  /** Tracks whether any {@code notEmpty()} / {@code isNotEmpty()} variant was explicitly called. */
+  private boolean notEmptyExplicitlySet = false;
+
   /**
    * Constructs a new instance.
    *
@@ -69,6 +72,7 @@ public class HtmlItem extends Item {
    */
   public HtmlItem notEmpty() {
     this.isNotEmpty.setDefaultValue(true);
+    this.notEmptyExplicitlySet = true;
     return this;
   }
 
@@ -80,6 +84,7 @@ public class HtmlItem extends Item {
    */
   public HtmlItem isNotEmpty(boolean isNotEmpty) {
     this.isNotEmpty.setDefaultValue(isNotEmpty);
+    this.notEmptyExplicitlySet = true;
     return this;
   }
 
@@ -97,7 +102,23 @@ public class HtmlItem extends Item {
   public HtmlItem isNotEmpty(HtmlItemConditionKeyEnum authKind, String authString,
       boolean isNotEmpty) {
     this.isNotEmpty.add(new HtmlItemCondition<Boolean>(authKind, authString, isNotEmpty));
+    this.notEmptyExplicitlySet = true;
     return this;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Also inherits {@code isNotEmpty} from {@code parent} if not explicitly set on this item.</p>
+   */
+  @Override
+  protected void mergeFromParent(Item parent) {
+    super.mergeFromParent(parent);
+    if (!notEmptyExplicitlySet && parent instanceof HtmlItem htmlParent
+        && htmlParent.notEmptyExplicitlySet) {
+      this.isNotEmpty = htmlParent.isNotEmpty;
+      this.notEmptyExplicitlySet = true;
+    }
   }
 
   /**

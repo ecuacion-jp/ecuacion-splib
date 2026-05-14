@@ -36,11 +36,30 @@ import org.jspecify.annotations.Nullable;
 public interface HtmlItemContainer extends ItemContainer {
 
   /**
-   * Returns HtmlItem.
+   * Returns {@code HtmlItem[]} for this class level.
+   *
+   * <p>Override this method instead of {@link #customizedItems()} when implementing
+   *     {@code HtmlItemContainer}. The framework collects items from the entire class hierarchy
+   *     automatically.</p>
    *
    * @return HtmlItem[]
    */
-  public HtmlItem[] getHtmlItems();
+  @Override
+  HtmlItem[] customizedItems();
+
+  /**
+   * Returns all {@code HtmlItem}s merged across the entire class hierarchy.
+   *
+   * <p>Each item is resolved via {@link #getHtmlItem(String)}, which applies the same
+   *     property-level inheritance as {@link ItemContainer#getItem(String)}.</p>
+   *
+   * @return HtmlItem[]
+   */
+  default HtmlItem[] getHtmlItems() {
+    return allCustomizedPropertyPaths().stream()
+        .map(path -> getHtmlItem(path))
+        .toArray(HtmlItem[]::new);
+  }
 
   /**
    * Returns the value of the field specified by {@code propertyPath}.
@@ -55,16 +74,6 @@ public interface HtmlItemContainer extends ItemContainer {
   }
 
   /**
-   * Returns HtmlItem.
-   *
-   * @return HtmlItem[]
-   */
-  @Override
-  default HtmlItem[] customizedItems() {
-    return getHtmlItems();
-  }
-
-  /**
    * Merge htmlItems.
    */
   default HtmlItem[] mergeHtmlItems(HtmlItem[] items1, HtmlItem[] items2) {
@@ -73,10 +82,9 @@ public interface HtmlItemContainer extends ItemContainer {
     return list.toArray(new HtmlItem[list.size()]);
   }
 
-
   /**
-   * Returns {@code HtmlItem} from {@code HtmlItem[]} and {@code fieldId}. 
-   * 
+   * Returns {@code HtmlItem} from {@code HtmlItem[]} and {@code fieldId}.
+   *
    * @param itemPropertyPath itemPropertyPath
    * @return HtmlItem
    */
@@ -110,7 +118,7 @@ public interface HtmlItemContainer extends ItemContainer {
 
   /**
    * Obtrains NotEmpty fields.
-   * 
+   *
    * @param loginState loginState
    * @param bean bean
    * @return {@code List<String>}
@@ -125,7 +133,7 @@ public interface HtmlItemContainer extends ItemContainer {
 
   /**
    * Returns whether isNotEmpty or not.
-   * 
+   *
    * @param itemPropertyPath itemPropertyPath
    * @param loginState loginState
    * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
@@ -156,7 +164,7 @@ public interface HtmlItemContainer extends ItemContainer {
 
   /**
    * Gets SearchPatternComment.
-   * 
+   *
    * @param locale locale
    * @param itemPropertyPath itemPropertyPath
    * @return String
