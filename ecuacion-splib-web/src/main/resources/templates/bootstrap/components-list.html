@@ -334,7 +334,7 @@
 
 	<!--/* inline delete button */-->
 	<div th:fragment="deleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag"
-			th:with="itemNameKey=*{getItem('__${itemDisplayedOnDelete}__').getItemNameKey('__${rootRecordName}__')}">
+			th:with="itemNameKey=*{getItem('__${itemDisplayedOnDelete}__').getItemNameKey()}">
 		<div th:replace="~{ :: submitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete',
 				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete}
 				+ ',attr=data-confirm-message|' + ${@compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}

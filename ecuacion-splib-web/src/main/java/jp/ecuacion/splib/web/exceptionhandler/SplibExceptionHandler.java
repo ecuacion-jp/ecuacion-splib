@@ -18,7 +18,11 @@ package jp.ecuacion.splib.web.exceptionhandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import jp.ecuacion.lib.core.jakartavalidation.constraints.ClassValidator;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -395,9 +399,47 @@ public abstract class SplibExceptionHandler {
     BindingResult br = findBindingResultForViolation(cv);
     String errorCode =
         cv.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
-    String[] propertyPaths = {cv.getPropertyPath().toString()};
+
+    String[] propertyPaths;
+    if (isClassValidatorConstraint(cv)) {
+      String beanPath = cv.getPropertyPath().toString();
+      String[] annotationPaths =
+          getPropertyPathsFromAnnotation(cv.getConstraintDescriptor().getAnnotation());
+      if (annotationPaths.length > 0) {
+        if (beanPath.isEmpty()) {
+          propertyPaths = qualifyItemPropertyPaths(br, annotationPaths);
+        } else {
+          propertyPaths = Arrays.stream(annotationPaths)
+              .map(p -> beanPath + "." + p).toArray(String[]::new);
+        }
+      } else {
+        propertyPaths = new String[] {beanPath};
+      }
+    } else {
+      propertyPaths = new String[] {cv.getPropertyPath().toString()};
+    }
+
     Violations single = new Violations().messageParameters(params).add(cv);
     return addViolation(br, errorCode, propertyPaths, single, needsMsgAtTopDefault, locale);
+  }
+
+  @SuppressWarnings("rawtypes")
+  private boolean isClassValidatorConstraint(ConstraintViolation<?> cv) {
+    return cv.getConstraintDescriptor().getConstraintValidatorClasses()
+        .stream().anyMatch(c -> ClassValidator.class.isAssignableFrom(c));
+  }
+
+  private String[] getPropertyPathsFromAnnotation(Annotation annotation) {
+    try {
+      Method method = annotation.annotationType().getMethod("propertyPath");
+      Object result = method.invoke(annotation);
+      if (result instanceof String[] paths) {
+        return paths;
+      }
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ignored) {
+      // annotation doesn't have propertyPath attribute
+    }
+    return new String[] {};
   }
 
   /**
