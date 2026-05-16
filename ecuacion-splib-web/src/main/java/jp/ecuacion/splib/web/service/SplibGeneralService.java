@@ -58,7 +58,7 @@ public abstract class SplibGeneralService {
       @Nullable String buttonIdToPressOnConfirm, String msgId, String... params) {
 
     if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
-      Violations violations = new Violations().add(msgId, params);
+      Violations violations = new Violations().add(msgId, (Object[]) params);
       if (buttonIdToPressOnConfirm != null) {
         throw new ViolationWebWarningException(violations, buttonIdToPressOnConfirm);
       }

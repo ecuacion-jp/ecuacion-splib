@@ -121,7 +121,7 @@ public class ShowPageController extends SplibBaseController {
 
     // Validate.
     if (list.size() != 1 || !list.get(0).contains("=")
-        || !list.get(0).split("=")[1].contains(loginStateUtil.getLoginState())) {
+        || !list.get(0).split("=", -1)[1].contains(loginStateUtil.getLoginState())) {
       throw new RedirectToHomePageException(Level.INFO,
           "jp.ecuacion.splib.web.common.message.htmlFileNotAllowedToOpen", new String[] {page});
     }

@@ -129,7 +129,7 @@
 				class="form-control text-dark"
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
 						+ ' ' + ${position == 'right' ? 'text-end' : ''}
-						+ ' ' + ${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}" 
+						+ ' ' + ${(recordPropertyPath != null and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
 				th:readonly="${isReadOnly}">
 	</div>
 
@@ -182,7 +182,7 @@
 				<input th:id="${inputId}" th:name="${isReadOnly ? '' : inputName}"
 					class="form-check-input align-bottom mb-1" type="checkbox" 
 					th:checked="${inputValue}"
-					th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
+					th:classappend="${(recordPropertyPath != null and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
 					th:disabled="${isReadOnly}">
 			</div>
 		</div>

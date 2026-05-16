@@ -66,9 +66,10 @@ public class ControllerContext {
   private String mainRootRecordName;
 
   /**
-   * Stores {@code functionKind} and returns {@code ControllerContext}.
+   * Stores {@code functionKinds} and returns {@code ControllerContext}.
    *
    * @param functionKinds functionKinds
+   * @return ControllerContext
    */
   public ControllerContext functionKinds(String... functionKinds) {
     this.functionKinds = functionKinds;

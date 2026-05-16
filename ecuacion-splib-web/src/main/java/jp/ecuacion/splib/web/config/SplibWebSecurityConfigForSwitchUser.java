@@ -106,7 +106,7 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     private String switchingUserDonePagePath;
     private String exitingUserDonePagePath;
 
-    public CustomLoginSuccessHandler(String switchingUserDonePagePath,
+    private CustomLoginSuccessHandler(String switchingUserDonePagePath,
         String exitingUserDonePagePath) {
       this.switchingUserDonePagePath = switchingUserDonePagePath;
       this.exitingUserDonePagePath = exitingUserDonePagePath;
@@ -132,7 +132,7 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
 
     private String exitingUserDonePagePath;
 
-    public CustomLoginFailureHandler(String exitingUserDonePagePath) {
+    private CustomLoginFailureHandler(String exitingUserDonePagePath) {
       this.exitingUserDonePagePath = exitingUserDonePagePath;
     }
 

@@ -90,8 +90,8 @@ public abstract class SplibAppParentBatchConfig {
 
   private TaskletStepBuilder buildTasklet(Object builder, Tasklet tasklet,
       PlatformTransactionManager transactionManager) {
-    TaskletStepBuilder tlBuilder = builder instanceof StepBuilder
-        ? ((StepBuilder) builder).tasklet(tasklet, transactionManager)
+    TaskletStepBuilder tlBuilder = builder instanceof StepBuilder sb
+        ? sb.tasklet(tasklet, transactionManager)
         : ((TaskletStepBuilder) builder).tasklet(tasklet, transactionManager);
     
     return tlBuilder.exceptionHandler(exceptionHandler);

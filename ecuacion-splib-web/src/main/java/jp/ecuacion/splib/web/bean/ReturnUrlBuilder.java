@@ -163,7 +163,7 @@ public class ReturnUrlBuilder {
    *     for instances created this way and will throw {@code IllegalStateException}.</p>
    *
    * <p><b>Contract</b>: {@code path} must not contain a query string ({@code ?...}).
-   *     The {@code ?}/{@code &amp;} separator inserted before parameters is decided by
+   *     The {@code ?}/{@code &} separator inserted before parameters is decided by
    *     a simple {@code path.contains("?")} check, so a path containing a literal
    *     {@code ?} would produce a malformed URL. Pass only the path portion and add
    *     query parameters via {@link #putParam(String, String)} /

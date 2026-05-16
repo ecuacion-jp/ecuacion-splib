@@ -64,7 +64,7 @@ public class HtmlItemString extends HtmlItem {
 
   /**
    * Offers the string search pattern.
-   * 
+   *
    * @param stringMatchingPattern stringMatchingPattern
    * @param ignoresCase ignoresCase
    * @return HtmlItemString

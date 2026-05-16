@@ -52,9 +52,9 @@ public class SplibThymeleafPropertiesUtil {
   }
 
   /**
-   * Returns value from the argument key 
+   * Returns value from the argument key
    *     or defaultValue when the key does not exist in application[...].properties.
-   * 
+   *
    * @param key key
    * @return value
    */

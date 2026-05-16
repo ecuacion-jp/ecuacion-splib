@@ -39,8 +39,12 @@ public class SplibWebConstants {
 
   /** Model attribute key holding a boolean flag indicating a success message should be shown. */
   public static final String KEY_NEEDS_SUCCESS_MESSAGE = "needsSuccessMessage";
-  
+
   public static final String KEY_MODEL_MESSAGES_AT_ITEMS = "showsMessagesLinkedToItemsAtEachItem";
-  
+
   public static final String KEY_BASE_PAGE_LOGIN_STATE = "data-show-page-login-state";
+
+  /** Flash attribute key used to carry FieldErrors across a redirect 
+   * so they survive form re-binding. */
+  public static final String KEY_FLASH_FIELD_ERRORS = "_splibFlashFieldErrors";
 }

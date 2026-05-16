@@ -33,7 +33,7 @@
 	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 	<link th:href="@{/css/splib-web.css}" rel="stylesheet">
 	<link th:href="@{/css/app.css}" rel="stylesheet">
-	<title th:text="${headTitle == null || headTitle == '' ? (#messages.msgOrNull(title) ?: title) : (#messages.msgOrNull(headTitle) ?: headTitle)}"></title>
+	<title th:text="${#strings.isEmpty(headTitle) ? (#strings.isEmpty(title) ? '' : (#messages.msgOrNull(title) ?: title)) : (#messages.msgOrNull(headTitle) ?: headTitle)}"></title>
 </head>
 <body th:style="${bodyBgColor} != '' ? 'background-color: ' + ${bodyBgColor} : 
 		(${bodyBgImage} != '' ? 'background-image: ' + ${bodyBgImage} : '')"
@@ -182,8 +182,8 @@
 				</div>
 				
 				<!--/* success message */-->
-				<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || needsSuccessMessage}">
-					<div class="text-success" th:if="${param.success != null || needsSuccessMessage}" th:text="#{jp.ecuacion.splib.web.common.message.success}"></div>
+				<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || (needsSuccessMessage != null && needsSuccessMessage)}">
+					<div class="text-success" th:if="${param.success != null || (needsSuccessMessage != null && needsSuccessMessage)}" th:text="#{jp.ecuacion.splib.web.common.message.success}"></div>
 				</div>
 
 				<!--/* error messages aggregated from all BindingResults' global errors */-->

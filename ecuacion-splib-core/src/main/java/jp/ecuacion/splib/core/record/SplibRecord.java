@@ -101,7 +101,7 @@ public abstract class SplibRecord {
           return null;
         }
 
-        rtn = (relationRec).getValue(subPropertyPath);
+        rtn = relationRec.getValue(subPropertyPath);
 
       } else {
         // The case that the value which is wanted to obtain is hold in this record.

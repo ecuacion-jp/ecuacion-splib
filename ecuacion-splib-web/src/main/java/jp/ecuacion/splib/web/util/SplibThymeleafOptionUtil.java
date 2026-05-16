@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.StringUtil;
@@ -71,7 +72,7 @@ public class SplibThymeleafOptionUtil {
     @SuppressWarnings("unused")
     String key = null;
     String value = null;
-    String[] options = optionCsv.split(",");
+    String[] options = optionCsv.split(",", -1);
     for (String option : options) {
       if (option.contains("=")) {
         key = StringUtils.trim(option.substring(0, option.indexOf("=")));
@@ -89,7 +90,7 @@ public class SplibThymeleafOptionUtil {
       }
 
       // Change key string to lowercase to ignore case mistakes.
-      String lowerCaseKey = key.toLowerCase();
+      String lowerCaseKey = key.toLowerCase(Locale.ROOT);
 
       if (!rtnMap.containsKey(lowerCaseKey)) {
         rtnMap.put(lowerCaseKey, new ArrayList<>());
@@ -98,7 +99,7 @@ public class SplibThymeleafOptionUtil {
       // if the key already exists in the map and allowsDuplicateKey == false,
       // the value is updated and output log.
       if (!rtnMap.get(lowerCaseKey).isEmpty() && duplicationCheckKey != null
-          && duplicationCheckKey.toLowerCase().equals(lowerCaseKey)) {
+          && duplicationCheckKey.toLowerCase(Locale.ROOT).equals(lowerCaseKey)) {
         rtnMap.get(lowerCaseKey).clear();
         detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
       }
@@ -120,7 +121,7 @@ public class SplibThymeleafOptionUtil {
    * Returns if specified key exists in options.
    */
   public boolean hasKey(String options, String key) {
-    return optionMap(options).containsKey(key.toLowerCase());
+    return optionMap(options).containsKey(key.toLowerCase(Locale.ROOT));
   }
 
   /**
@@ -131,10 +132,10 @@ public class SplibThymeleafOptionUtil {
    * @return value
    */
   public @Nullable String getValue(String options, String key) {
-    String lowerCaseKey = key.toLowerCase();
-    Map<String, List<String>> map = (optionMap(options, key));
+    String lowerCaseKey = key.toLowerCase(Locale.ROOT);
+    Map<String, List<String>> map = optionMap(options, key);
 
-    return map.containsKey(lowerCaseKey) ? (map.get(lowerCaseKey)).get(0) : null;
+    return map.containsKey(lowerCaseKey) ? map.get(lowerCaseKey).get(0) : null;
   }
 
   /**
@@ -168,11 +169,11 @@ public class SplibThymeleafOptionUtil {
    * @return value
    */
   public String[] getValues(String options, String key) {
-    String lowerCaseKey = key.toLowerCase();
-    Map<String, List<String>> map = (optionMap(options));
+    String lowerCaseKey = key.toLowerCase(Locale.ROOT);
+    Map<String, List<String>> map = optionMap(options);
 
     if (map.containsKey(lowerCaseKey)) {
-      List<String> list = (map.get(lowerCaseKey));
+      List<String> list = map.get(lowerCaseKey);
       return list.toArray(new String[list.size()]);
 
     } else {
@@ -208,11 +209,11 @@ public class SplibThymeleafOptionUtil {
     if (StringUtils.isEmpty(option)) {
       return null;
 
-    } else if (option.split("\\|").length <= psvIndex) {
+    } else if (option.split("\\|", -1).length <= psvIndex) {
       return null;
 
     } else {
-      String value = option.split("\\|")[psvIndex];
+      String value = option.split("\\|", -1)[psvIndex];
       // if the value is "null", return null.
       return "null".equals(value) ? null : value;
     }

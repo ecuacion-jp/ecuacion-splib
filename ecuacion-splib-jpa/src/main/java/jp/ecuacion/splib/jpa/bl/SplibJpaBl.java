@@ -47,7 +47,7 @@ public abstract class SplibJpaBl<E extends SplibEntity, I, V> extends SplibCoreB
    * Is used for {@code findAndOptimisticLockingCheck()}.
    * 
    * <p>It obtains the versions for optimistic exclusive control.
-   *     See {@link #findAndOptimisticLockingCheck(String, String...)}.</p>
+   *     See {@link #findAndOptimisticLockingCheck(I, V)}.</p>
    */
   public abstract V getVersionForOptimisticLocking(E e);
 

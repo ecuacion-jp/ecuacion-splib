@@ -116,7 +116,8 @@ public class RedirectException extends RuntimeException {
       String[] messageArgs) {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
-    this.logString = PropertiesFileUtil.getMessage(Locale.ENGLISH, messageId, messageArgs);
+    this.logString =
+        PropertiesFileUtil.getMessage(Locale.ENGLISH, messageId, (Object[]) messageArgs);
     this.messageId = messageId;
     this.messageArgs = messageArgs;
   }

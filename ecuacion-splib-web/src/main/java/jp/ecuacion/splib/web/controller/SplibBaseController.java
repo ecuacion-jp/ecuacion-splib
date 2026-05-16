@@ -75,7 +75,7 @@ public abstract class SplibBaseController {
         // https://stackoverflow.com/questions/1809494/post-unchecked-html-checkboxes
         //
         // In that case the first value should be ignored.
-        String[] arr = text.split(",");
+        String[] arr = text.split(",", -1);
         super.setAsText(arr[arr.length - 1]);
 
       } else {

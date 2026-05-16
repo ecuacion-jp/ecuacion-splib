@@ -460,7 +460,7 @@
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavbarCommonComponent}, false, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarCommonComponent" th:remove="tag">
-			<th:block th:with="labelString=#{__${label}__}">
+			<th:block th:with="labelString=${#strings.isEmpty(label) ? '' : (#messages.msgOrNull(label) ?: label)}">
 				<th:block th:replace="${contents}" />
 			</th:block>
 		</div></th:block>
@@ -632,7 +632,8 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuGroupLabel" th:remove="tag">
 			<li th:id="${componentId}" class="mb-1"><small>
-				<div class="ms-3" style="font-weight: bold" th:text="${'&lt; &nbsp;' + labelString + '&nbsp; &gt;'}"></div>
+				<div class="ms-3" style="font-weight: bold; white-space: nowrap"
+						th:text="${'&lt; &nbsp;' + labelString + '&nbsp; &gt;'}"></div>
 			</small></li>
 		</div>
 	</div>
