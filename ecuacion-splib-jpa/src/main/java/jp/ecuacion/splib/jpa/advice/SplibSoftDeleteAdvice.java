@@ -15,8 +15,6 @@
  */
 package jp.ecuacion.splib.jpa.advice;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.Optional;
 import jp.ecuacion.splib.jpa.bean.SplibControllerAdviceInfoBean;
 import jp.ecuacion.splib.jpa.entity.SplibEntity;
@@ -24,7 +22,6 @@ import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Before;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Provides the feature to delete the soft-deleted record physically
@@ -45,10 +42,6 @@ public abstract class SplibSoftDeleteAdvice {
   protected SplibSoftDeleteAdvice(SplibJpaFilterUtil filterUtil) {
     this.filterUtil = filterUtil;
   }
-
-  @PersistenceContext
-  @Nullable
-  private EntityManager em;
 
   /**
    * Provides the entrypoint of the feature.

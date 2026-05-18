@@ -23,6 +23,7 @@ import com.nimbusds.jwt.SignedJWT;
 import java.security.KeyFactory;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,8 +81,8 @@ public class SplibAppleClientSecretService {
 
       JWTClaimsSet claims = new JWTClaimsSet.Builder()
           .issuer(teamId)
-          .issueTime(new Date())
-          .expirationTime(new Date(System.currentTimeMillis() + EXPIRY_MS))
+          .issueTime(Date.from(Instant.now()))
+          .expirationTime(Date.from(Instant.now().plusMillis(EXPIRY_MS)))
           .audience("https://appleid.apple.com")
           .subject(clientId)
           .build();

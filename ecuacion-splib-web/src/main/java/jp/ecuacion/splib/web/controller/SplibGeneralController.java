@@ -237,6 +237,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param model model
    * @param loginUser UserDetails
    */
+  @SuppressWarnings("UnusedMethod")
   @ModelAttribute
   private void setParamsToModel(Model model,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) {
