@@ -13,24 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form;
-
-import jakarta.validation.Valid;
-import jp.ecuacion.splib.web.record.LoginRecord;
 
 /**
- * Stores data for login.
+ * Provides batch-related configurations for Spring Batch integration.
  */
-public class LoginForm extends SplibGeneralForm {
+@NullMarked
+package jp.ecuacion.splib.batch;
 
-  @Valid
-  private LoginRecord login = new LoginRecord();
-
-  public LoginRecord getLogin() {
-    return login;
-  }
-
-  public void setLogin(LoginRecord login) {
-    this.login = login;
-  }
-}
+import org.jspecify.annotations.NullMarked;

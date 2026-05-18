@@ -24,8 +24,8 @@
 		xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 		th:with="
-			bodyBgColor=${@propUtil.getValueOrElse('jp.ecuacion.splib.web.body.background-color', '')}
-			, bodyBgImage=${@propUtil.getValueOrElse('jp.ecuacion.splib.web.body.background-image', '')}
+			bodyBgColor=${@environment.getProperty('jp.ecuacion.splib.web.body.background-color') ?: ''}
+			, bodyBgImage=${@environment.getProperty('jp.ecuacion.splib.web.body.background-image') ?: ''}
 		">
 <head>
 	<meta charset="UTF-8"/>
@@ -33,27 +33,73 @@
 	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 	<link th:href="@{/css/splib-web.css}" rel="stylesheet">
 	<link th:href="@{/css/app.css}" rel="stylesheet">
-	<script th:src="@{/js/splib-web.js}"></script>
-	<title th:text="${headTitle == null || headTitle == '' ? @msgUtil.getValue(#locale, title) : @msgUtil.getValue(#locale, headTitle)}"></title>
+	<title th:text="${#strings.isEmpty(headTitle) ? (#strings.isEmpty(title) ? '' : (#messages.msgOrNull(title) ?: title)) : (#messages.msgOrNull(headTitle) ?: headTitle)}"></title>
 </head>
 <body th:style="${bodyBgColor} != '' ? 'background-color: ' + ${bodyBgColor} : 
 		(${bodyBgImage} != '' ? 'background-image: ' + ${bodyBgImage} : '')"
 		th:with="
-			bsBgGradient=${@propUtil.getValueOrElse('jp.ecuacion.splib.web.bootstrap.is-background-gradient', false)}
+			bsBgGradient=${@environment.getProperty('jp.ecuacion.splib.web.bootstrap.is-background-gradient') ?: false}
 		">
 	<div class="content-wrapper">
 		<!--/* navbar */-->
 		<th:block th:with="
-				titleDefaultApp=${@propUtil.getValueOrElse('jp.ecuacion.splib.web.navbar.title', '')},
-				titleDefault=${titleDefaultApp} == '' ? ${@msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title', '')} : ${titleDefaultApp},
-				titleAccountApp=${@propUtil.getValueOrElse('jp.ecuacion.splib.web.navbar.title-account', '')},
-				titleAccount=${titleAccountApp} == '' ? ${@msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title-account', titleDefault)} : ${titleAccountApp},
-				titleAdminApp=${@propUtil.getValueOrElse('jp.ecuacion.splib.web.navbar.title-admin', '')},
-				titleAdmin=${titleAdminApp} == '' ? ${@msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title-admin', titleDefault)} : ${titleAdminApp},
-				title=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)}
+				titleDefaultApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title') ?: ''},
+				titleDefault=${titleDefaultApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title') ?: '')} : ${titleDefaultApp},
+				titleAccountApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title-account') ?: ''},
+				titleAccount=${titleAccountApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title-account') ?: titleDefault)} : ${titleAccountApp},
+				titleAdminApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title-admin') ?: ''},
+				titleAdmin=${titleAdminApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title-admin') ?: titleDefault)} : ${titleAdminApp},
+				title=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)},
+				imagePathValue=${@propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.image-path', '')},
+				imagePathTmp=@{${imagePathValue}},
+				imagePath=${(!#strings.isEmpty(imagePathTmp) && !#strings.startsWith(imagePathTmp, '/') ? '/' : '') + imagePathTmp},
+				defaultPagePathValue=${@propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.default-page-path', '')},
+				defaultPagePathTmp=@{${defaultPagePathValue}},
+				defaultPagePath=${(!#strings.isEmpty(defaultPagePathTmp) && !#strings.startsWith(defaultPagePathTmp, '/') ? '/' : '') + defaultPagePathTmp},
+				optionBgColor=${@environment.getProperty('jp.ecuacion.splib.web.navbar.background-color-class') ?: ''},
+				options=(${optionBgColor} == '' ? '' : ('backgroundColorClass=' + ${optionBgColor})) + ','
+						+ (${bsBgGradient} == '' ? '' : ('isBackgroundGradient=' + ${bsBgGradient})) + ','
+						+ ${showsNavbarMenuItems == false ? 'showsNavbarMenuItems=false' : ''}
 				">
+			<div th:replace="~{bootstrap/components :: navbarRoot(~{ :: fragmentNavbarBasePage},
+					${title}, ${imagePath}, ${defaultPagePath},	~{ :: fragmentNavbarBasePageRight}, ${options})}"></div>
 
-			
+			<th:block th:if="false"><div th:fragment="fragmentNavbarBasePage" th:remove="tag">
+				<!--/* Change navbar dependent on loginState */-->
+				<th:block th:if="${loginState == 'public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'account'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-account}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'admin'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-admin}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'ecuacion-public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
+				</th:block>
+				<h1 style="color: red"
+						th:if="${loginState != 'public' && loginState != 'account' && loginState != 'admin' && loginState != 'ecuacion-public'}">
+					parameter: ${loginState} is not properly designated.
+				</h1>
+			</div></th:block>
+
+			<th:block th:if="false"><div th:fragment="fragmentNavbarBasePageRight" th:remove="tag">
+				<!--/* Change navbar dependent on loginState */-->
+				<th:block th:if="${loginState == 'public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public-right}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'account'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-account-right}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'admin'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-admin-right}"></span>
+				</th:block>
+				<th:block th:if="${loginState == 'ecuacion-public'}">
+					<span th:replace="~{splib-web/parts :: nav-bar-public-right}"></span>
+				</th:block>
+			</div></th:block>
+
 		</th:block>
 		
 		<div class="ms-5 me-5">
@@ -89,14 +135,7 @@
 		</div>
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-	<script>
-		// Initialize all tooltips
-		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-		const tooltipSanitizeList = [...tooltipTriggerList].filter(el => el.dataset.tooltipSanitize == "true")
-				.map(el => new bootstrap.Tooltip(el));
-		const tooltipNonSanitizeList = [...tooltipTriggerList].filter(el => el.dataset.tooltipSanitize == "false")
-				.map(el => new bootstrap.Tooltip(el, {sanitize: false, html: true}));
-	</script>
+	<script th:src="@{/js/splib-web.js}"></script>
 
 	<!--/* fragment: page-base-title-part */-->
 	<th:block th:if="false"><div th:fragment="page-base-title-part" th:remove="tag">
@@ -123,43 +162,36 @@
 						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
 								or param.switchUserFailure != null or param.logoutDoneBecauseMailAddressChanged != null}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
-						<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.error')}"></div>
-						<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.logoutDone')}"></div>
-						<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.accessDenied')}"></div>
-						<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.notFound')}"></div>
+						<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.error}"></div>
+						<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.logoutDone}"></div>
+						<div th:if="${param.accessDenied}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.accessDenied}"></div>
+						<div th:if="${param.notFound}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.notFound}"></div>
 						<!--/* switchUser */-->
-						<div th:if="${param.switchUserFailure}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.failure')}"></div>
+						<div th:if="${param.switchUserFailure}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.switchUser.failure}"></div>
 						<!--/* mailAddress changed */-->
-						<div th:if="${param.logoutDoneBecauseMailAddressChanged}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.login.message.logoutDoneBecauseMailAddressChanged')}"></div>
+						<div th:if="${param.logoutDoneBecauseMailAddressChanged}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.logoutDoneBecauseMailAddressChanged}"></div>
 					</div>
 				</div>
 				<!--/* success */-->
 				<div class="all-error-messages-list-wrapper text-success"
 						th:if="${param.switchUserSuccess != null || param.switchUserExit != null}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
-						<div th:if="${param.switchUserSuccess}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.success')}"></div>
-						<div th:if="${param.switchUserExit}" style="white-space: pre-wrap;" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.switchUser.exit')}"></div>
+						<div th:if="${param.switchUserSuccess}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.switchUser.success}"></div>
+						<div th:if="${param.switchUserExit}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.switchUser.exit}"></div>
 					</div>
 				</div>
 				
-				<!-- messages from ${messagesBean} -->
-				<div th:object="${messagesBean}">
-					<!--/* success message */-->
-					<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || messagesBean.needsSuccessMessage}">
-						<div class="text-success" th:if="${param.success}" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-						<div class="text-success" th:if="*{needsSuccessMessage}" th:text="${@msgUtil.getValue(#locale, 'jp.ecuacion.splib.web.common.message.success')}"></div>
-					</div>
+				<!--/* success message */-->
+				<div class="bg-color-msg-success-bg p-2 rounded-1" th:if="${param.keySet().contains('success') || (needsSuccessMessage != null && needsSuccessMessage)}">
+					<div class="text-success" th:if="${param.success != null || (needsSuccessMessage != null && needsSuccessMessage)}" th:text="#{jp.ecuacion.splib.web.common.message.success}"></div>
+				</div>
 
-					<!--/* error message */-->
-					<div class="all-error-messages-list-wrapper text-danger">
-						<div class="bg-color-msg-error-bg p-2 rounded-1" th:if="*{errorMessages != null && errorMessages.size() > 0}">
-							<ul class="all-error-messages-list-ul">
-								<!--/* showing non-item-related messages */-->
-								<th:block th:if="*{errorMessagesAtTheTop.size() > 0}">
-									<div th:replace="~{ :: internalDisplayMessages(*{errorMessagesAtTheTop})}"></div>
-								</th:block>
-							</ul>
-						</div>
+				<!--/* error messages aggregated from all BindingResults' global errors */-->
+				<div class="all-error-messages-list-wrapper text-danger" th:if="${globalErrors != null && !globalErrors.isEmpty()}">
+					<div class="bg-color-msg-error-bg p-2 rounded-1">
+						<ul class="all-error-messages-list-ul">
+							<div th:replace="~{ :: internalDisplayMessages(${globalErrors})}"></div>
+						</ul>
 					</div>
 				</div>
 			</div>

@@ -17,4 +17,7 @@
 /**
  * Provides Items and ItemContainers.
  */
+@NullMarked
 package jp.ecuacion.splib.web.item;
+
+import org.jspecify.annotations.NullMarked;

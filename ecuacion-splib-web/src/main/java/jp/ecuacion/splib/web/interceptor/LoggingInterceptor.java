@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.StringUtil;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -31,6 +31,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
 
   private final DetailLogger detailLog = new DetailLogger(this);
 
+  @SuppressWarnings("null")
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
@@ -38,18 +39,20 @@ public class LoggingInterceptor implements HandlerInterceptor {
         .map(e -> e.getKey() + "=" + StringUtil.getCsv(e.getValue())).toList();
 
     detailLog.debug(getPrefix(request) + "request process started. request: "
-        + request.getRequestURI() + (paramList.size() == 0 ? ""
+        + request.getRequestURI() + (paramList.isEmpty() ? ""
             : ", parameters: " + StringUtil.getSeparatedValuesString(paramList, "&")));
 
     return true;
   }
 
+  @SuppressWarnings("null")
   @Override
   public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
       @Nullable ModelAndView modelAndView) throws Exception {
     detailLog.debug(getPrefix(request) + "request process finished.");
   }
 
+  @SuppressWarnings("null")
   @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
       Object handler, Exception ex) throws Exception {

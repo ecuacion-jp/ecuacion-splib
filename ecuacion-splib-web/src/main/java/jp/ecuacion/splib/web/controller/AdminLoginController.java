@@ -15,7 +15,10 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jp.ecuacion.splib.web.form.AdminLoginForm;
+import jakarta.validation.Valid;
+import jp.ecuacion.splib.web.controller.AdminLoginController.AdminLoginForm;
+import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import jp.ecuacion.splib.web.record.LoginRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -27,13 +30,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @Scope("prototype")
 @RequestMapping("/public/adminLogin")
-public class AdminLoginController extends
-    SplibGeneral1FormController<AdminLoginForm, SplibGeneral1FormDoNothingService<AdminLoginForm>> {
+public class AdminLoginController extends SplibGeneral1FormController<AdminLoginForm,
+    SplibGeneral1FormDoNothingService<AdminLoginForm>> {
 
   /**
    * Constructs a new instance.
    */
   public AdminLoginController() {
     super("adminLogin");
+  }
+
+  /**
+   * Stores data for admin login.
+   */
+  public static class AdminLoginForm extends SplibGeneralForm {
+
+    @Valid
+    private LoginRecord adminLogin = new LoginRecord();
+
+    /** Returns adminLogin. */
+    public LoginRecord getAdminLogin() {
+      return adminLogin;
+    }
+
+    /** Sets adminLogin. */
+    public void setAdminLogin(LoginRecord adminLogin) {
+      this.adminLogin = adminLogin;
+    }
   }
 }

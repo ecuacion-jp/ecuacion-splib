@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.exception;
 
 import java.util.Locale;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.event.Level;
 
 /** 
@@ -29,15 +30,18 @@ public class RedirectException extends RuntimeException {
   private String redirectPath;
 
   /** messageId to show message at the redirected page. */
+  @Nullable
   private String messageId;
 
   /** messageArgs to show message at the redirected page. */
-  private String[] messageArgs;
+  private String[] messageArgs = new String[] {};
 
   /** logLevel to log to file. */
+  @Nullable
   private Level logLevel;
 
   /** log message to log to file. */
+  @Nullable
   private String logString;
 
   /**
@@ -69,7 +73,8 @@ public class RedirectException extends RuntimeException {
    * @param logLevel logLevel
    * @param logString logString
    */
-  public RedirectException(String redirectPath, Level logLevel, String logString) {
+  public RedirectException(String redirectPath, @Nullable Level logLevel,
+      @Nullable String logString) {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
     this.logString = logString;
@@ -84,8 +89,8 @@ public class RedirectException extends RuntimeException {
    * @param logLevel logLevel
    * @param logString logString
    */
-  public RedirectException(String redirectPath, Level logLevel, String logString, String messageId,
-      String... messageArgs) {
+  public RedirectException(String redirectPath, @Nullable Level logLevel,
+      @Nullable String logString, @Nullable String messageId, String... messageArgs) {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
     this.logString = logString;
@@ -107,11 +112,12 @@ public class RedirectException extends RuntimeException {
    * @param messageArgs messageArgs
    * @param logLevel logLevel
    */
-  public RedirectException(String redirectPath, Level logLevel, String messageId,
+  public RedirectException(String redirectPath, @Nullable Level logLevel, String messageId,
       String[] messageArgs) {
     this.redirectPath = redirectPath;
     this.logLevel = logLevel;
-    this.logString = PropertiesFileUtil.getMessage(Locale.ENGLISH, messageId, messageArgs);
+    this.logString =
+        PropertiesFileUtil.getMessage(Locale.ENGLISH, messageId, (Object[]) messageArgs);
     this.messageId = messageId;
     this.messageArgs = messageArgs;
   }
@@ -120,7 +126,7 @@ public class RedirectException extends RuntimeException {
     return redirectPath;
   }
 
-  public String getMessageId() {
+  public @Nullable String getMessageId() {
     return messageId;
   }
 
@@ -128,11 +134,11 @@ public class RedirectException extends RuntimeException {
     return messageArgs;
   }
 
-  public Level getLogLevel() {
+  public @Nullable Level getLogLevel() {
     return logLevel;
   }
 
-  public String getLogString() {
+  public @Nullable String getLogString() {
     return logString;
   }
 }

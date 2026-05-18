@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.core.record;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.Map;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides a store which holds info about single something.
@@ -68,7 +70,7 @@ public abstract class SplibRecord {
    * @param itemName itemName
    * @return Integer
    */
-  public Integer getStringLength(String itemName) {
+  public @Nullable Integer getStringLength(String itemName) {
     return stringLengthMap.get(itemName);
   }
 
@@ -82,7 +84,7 @@ public abstract class SplibRecord {
    * @param itemPropertyPath itemName
    * @return Object
    */
-  public Object getValue(String itemPropertyPath) {
+  public @Nullable Object getValue(String itemPropertyPath) {
     Object rtn = null;
 
     try {
@@ -99,7 +101,7 @@ public abstract class SplibRecord {
           return null;
         }
 
-        rtn = (relationRec).getValue(subPropertyPath);
+        rtn = relationRec.getValue(subPropertyPath);
 
       } else {
         // The case that the value which is wanted to obtain is hold in this record.
@@ -107,7 +109,7 @@ public abstract class SplibRecord {
         rtn = m.invoke(this);
       }
 
-    } catch (Exception e) {
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
 

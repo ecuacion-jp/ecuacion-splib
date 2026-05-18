@@ -15,37 +15,33 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Validation;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
+import java.util.Map;
 import jp.ecuacion.lib.core.util.StringUtil;
-import jp.ecuacion.lib.core.violation.BusinessViolation;
-import jp.ecuacion.lib.core.violation.Violations;
-import jp.ecuacion.splib.web.bean.ReturnUrlBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
 import jp.ecuacion.splib.web.service.SplibGeneralService;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
+import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
-import jp.ecuacion.splib.web.util.SplibUtil;
-import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
+import jp.ecuacion.splib.web.util.internal.SplibControllerPrepareHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Provides abstract general controller.
@@ -54,229 +50,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  */
 public abstract class SplibGeneralController<S extends SplibGeneralService>
     extends SplibBaseController {
-
-  /**
-   * Stores controller properties.
-   * 
-   * <p>Since properties are many, 
-   *     the properties are passed not by the constructor, but by method chains.</p>
-   */
-  public static class ControllerContext {
-
-    /** 
-     * Constructs a new instance.
-     * 
-     * <p>It's not public because it's supposed 
-     * to use {@code newContext()} to get the new instance.</p>
-     */
-    ControllerContext() {
-
-    }
-
-
-    /**
-     * See functionKind().
-     */
-    private String[] functionKinds = new String[] {};
-
-    /** 
-     * See function().
-     */
-    @Nonnull
-    private String function;
-
-    /** 
-     * See subFunction().
-     */
-    @Nonnull
-    private String subFunction = "";
-
-    /** 
-     * See htmlFilenamePostfix().
-     */
-    @Nullable
-    private String htmlFilenamePostfix;
-
-    /** 
-     * See rootRecordName().
-     */
-    @Nullable
-    private String mainRootRecordName;
-
-    /**
-     * Stores {@code functionKind} and returns {@code ControllerContext}.
-     * 
-     * @param functionKinds functionKinds
-     */
-    public ControllerContext functionKinds(String... functionKinds) {
-      this.functionKinds = functionKinds;
-      return this;
-    }
-
-    /**
-     * Returns {@code functionKinds}.
-     * 
-     * <p>{@code functionKind} designates a kind of functions. <br>
-     *     It's used for paths of html files. 
-     *     If the default url path is {@code /public/account/page} 
-     *     and functionKind is {@code master-maintenance}, 
-     *     the resultant URL would be {@code  /public/master-maintenance/account/page}.</p>
-     * 
-     * <p>You can specify multiple clasification strings 
-     *     like {@code "master-maintenance", "account-related-master"}.</p>
-     *     
-     * @return functionKinds functionKinds
-     */
-    public String[] functionKinds() {
-      return functionKinds;
-    }
-
-    /**
-     * Stores {@code function} and returns {@code ControllerContext}.
-     * 
-     * <p>See {@link ControllerContext#function()}.</p>
-     * 
-     * @param function function
-     * @return ControllerContext
-     */
-    @Nonnull
-    public ControllerContext function(String function) {
-      this.function = function == null ? "" : function;
-      return this;
-    }
-
-    /**
-     * Returns a name that describes its functionality. 
-     * 
-     * <p>It is used for the prefix of various classes such as form and record, 
-     *     and the "xxx" part of URLs such as /account/xxx/search. <br>
-     *     It is not possible to have the same function name for multiple functions.</p>
-     *     
-     * <p>It is recommended to use the same name as the entity name, such as "accGroup". 
-     * (Due to implementation, the entity name is given to the function name and each class, 
-     * which makes it easier to understand)<br>
-     * However, in reality, there can be multiple screens in which the same entity is mainly used.
-     * In that case you can change the name, like "accGroupManagement" and "accGroupReference".</p>
-     * 
-     * <p>It is not possible to specify the same function in different Controllers. 
-     *     The value of this field is also passed to the html side 
-     *     and used with the same parameter name.</p>
-     *     
-     * @return function
-     */
-    @Nonnull
-    public String function() {
-      return function;
-    }
-
-    /**
-     * Stores {@code subFunction} and returns {@code ControllerContext}.
-     * 
-     * <p>See {@link ControllerContext#subFunction()}.</p>
-     * 
-     * @param subFunction subFunction
-     * @return ControllerContext
-     */
-    @Nonnull
-    public ControllerContext subFunction(String subFunction) {
-      this.subFunction = ObjectsUtil.requireNonNull(subFunction);
-      return this;
-    }
-
-    /**
-     * Returns a name that classifies the functions specified in {@code function} field.
-     * 
-     * <p>It is used when a function includes a series of functions 
-     *     such as search-list-edit, the name for each function (edit).</p>
-     * 
-     * <p>It cannot be {@code null}. Even if not specified, it's "" by default.<br>
-     * 
-     * <p>There is usually no problem in not specifying it 
-     *     unless there are multiple controllers with the same function.</p>
-     * 
-     * @return subFunction
-     */
-    @Nonnull
-    public String subFunction() {
-      return subFunction;
-    }
-
-    /**
-     * Stores {@code htmlFilenamePostfix} and returns {@code ControllerContext}.
-     * 
-     * <p>See {@link ControllerContext#htmlFilenamePostfix()}.</p>
-     * 
-     * @param htmlFilenamePostfix htmlFilenamePostfix
-     * @return ControllerContext
-     */
-    @Nonnull
-    public ControllerContext htmlFilenamePostfix(String htmlFilenamePostfix) {
-      this.htmlFilenamePostfix = htmlFilenamePostfix;
-      return this;
-    }
-
-    /**
-     * Returns a html filename linked to the controller.
-     * 
-     * <p>Normally, an html filename is specified as {@code function + capitalize(subFunction)}.
-     *     But if there are multiple controllers on one screen (= means "for one html file"),
-     *     the subFunction of each controller and the postfix of the html file name 
-     *     may be different.<br>
-     *     In that case, specify postfix with {@code htmlFilePostfix.}<br>
-     *     The filename would be {@code function + capitalize(htmlFilenamePostfix)}.</p>
-     * 
-     * <p>It may be {@code null}. 
-     *     In that case {@link SplibGeneralController#getDefaultHtmlPageName()}
-     *     takes care.</p>
-     *     
-     * @return htmlFilenamePostfix
-     */
-    @Nullable
-    public String htmlFilenamePostfix() {
-      return htmlFilenamePostfix;
-    }
-
-    /**
-     * Stores {@code rootRecordName} and returns {@code ControllerContext}.
-     * 
-     * <p>See {@link ControllerContext#mainRootRecordName()}.</p>
-     * 
-     * @param rootRecordName rootRecordName
-     * @return ControllerContext
-     */
-    @Nonnull
-    public ControllerContext mainRootRecordName(String rootRecordName) {
-      this.mainRootRecordName = rootRecordName;
-      return this;
-    }
-
-    /**
-     * Returns a rootRecordName linked to the controller.
-     * 
-     * <p>The Field name of the record directly defined in the form 
-     *     normally uses the corresponding entity name.<br>
-     *     Especially when you use the list-edit template, 
-     *     there is a rule that only one record is kept under the form, 
-     *     so it is recommended to make it the same as the entity name. <br>
-     *     (In list-edit template, other patterns are not supported 
-     *     as they are not necessary and have not been implemented before.)</p>
-     * 
-     * <p>On the java side, recordName is used for automatic completion 
-     *     when it is troublesome to write it every time. <br>
-     *     The value of this field is also passed to the template 
-     *     on the html side and used with the same parameter name.</p>
-     *     
-     * <p>In the case of page-general, the record may not exist. 
-     *     In that case, rootRecordName field stored in the controller becomes null.
-     *     If not set, the value which is same as function is returned.</p>
-     *     
-     * @return rootRecordName 
-     */
-    @Nonnull
-    public String mainRootRecordName() {
-      return mainRootRecordName == null ? function : mainRootRecordName;
-    }
-  }
 
   @Autowired
   protected HttpServletResponse response;
@@ -304,6 +77,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     return new ControllerContext();
   }
 
+  @Nullable
   protected RolesAndAuthoritiesBean rolesAndAuthoritiesBean;
 
   /**
@@ -358,14 +132,17 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   }
 
   @Autowired
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
+
+  @Autowired
+  private SplibControllerPrepareHelper prepareHelper;
 
   /**
    * Constructs a new instance with {@code function}.
    * 
    * @param function function
    */
-  public SplibGeneralController(@Nonnull String function) {
+  public SplibGeneralController(String function) {
     this(function, newContext());
   }
 
@@ -375,7 +152,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param function function
    * @param context context
    */
-  protected SplibGeneralController(@Nonnull String function, @NonNull ControllerContext context) {
+  protected SplibGeneralController(String function, ControllerContext context) {
     context.function(function);
     this.context = context;
   }
@@ -403,40 +180,49 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    *  
    *  <p>{@code BizLogicRedirectAppException} redirect settings is priotized over this settings.</p>
    */
-  protected ReturnUrlBean redirectUrlOnAppExceptionBean;
+  @Nullable
+  protected ReturnUrlBuilder redirectUrlOnAppException;
 
-  public ReturnUrlBean getRedirectUrlOnAppExceptionBean() {
-    return redirectUrlOnAppExceptionBean;
+  public @Nullable ReturnUrlBuilder getRedirectUrlOnAppException() {
+    return redirectUrlOnAppException;
   }
 
   /**
-   * Returns parameter list needed to add when the response is redirect to the original page.
-   * 
-   * <p>It can be used with the redirect by both normal end and abnormal end 
-   *     (= in the case that ViolationException is thrown).</p>
+   * Holds the parameters that should be appended to any redirect URL produced from
+   * this controller (both normal end and abnormal end, including
+   * {@code ViolationException}).
+   *
+   * <p>Picked up by {@code ReturnUrlBuilder} via
+   * {@link #getParamListOnRedirect()} during construction.</p>
    */
-  protected List<String[]> paramListOnRedirectToSelf = new ArrayList<>();
+  protected List<String[]> paramListOnRedirect = new ArrayList<>();
 
   /**
-   * Adds html parameter with no value when the request redirects to the same page.
-   * 
+   * Adds an html parameter with no value to {@link #paramListOnRedirect}.
+   *
    * @param key key
    */
-  protected void addParamToParamListOnRedirectToSelf(String key) {
-    paramListOnRedirectToSelf.add(new String[] {key, ""});
+  protected void addParamToParamListOnRedirect(String key) {
+    paramListOnRedirect.add(new String[] {key, ""});
   }
 
   /**
-   * Adds html parameter when the request redirects to the same page.
-   * 
+   * Adds an html parameter to {@link #paramListOnRedirect}.
+   *
    * @param key key
+   * @param value value
    */
-  protected void addParamToParamListOnRedirectToSelf(String key, String value) {
-    paramListOnRedirectToSelf.add(new String[] {key, value});
+  protected void addParamToParamListOnRedirect(String key, String value) {
+    paramListOnRedirect.add(new String[] {key, value});
   }
 
-  public List<String[]> getParamListOnRedirectToSelf() {
-    return paramListOnRedirectToSelf;
+  /**
+   * Returns {@link #paramListOnRedirect}.
+   *
+   * @return the parameter list
+   */
+  public List<String[]> getParamListOnRedirect() {
+    return paramListOnRedirect;
   }
 
   /**
@@ -451,8 +237,10 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param model model
    * @param loginUser UserDetails
    */
+  @SuppressWarnings("UnusedMethod")
   @ModelAttribute
-  private void setParamsToModel(Model model, @AuthenticationPrincipal UserDetails loginUser) {
+  private void setParamsToModel(Model model,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser) {
     model.addAttribute("functionKindsPathString", context.functionKinds().length == 0 ? ""
         : (StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/"));
     model.addAttribute("function", context.function());
@@ -472,49 +260,54 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * Returns the redirect URL which redirects to the same page with success message.
    * 
    * <p>This is a utility method to use redirect easily 
-   *     without understanding {@code ReturnUrlBean}. 
-   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
+   *     without understanding {@code ReturnUrlBuilder}. 
+   *     It's also allowed to use {@code ReturnUrlBuilder} directly from apps.</p>
    *     
    * @return URL
    */
   protected String getRedirectUrlOnSuccess() {
-    return new ReturnUrlBean(this, util).showSuccessMessage().getUrl();
+    return ReturnUrlBuilder.forNormalEnd(this, loginStateUtil).showSuccessMessage().getUrl();
   }
 
   /**
-   * Returns the redirect URL which redirects to the same page 
+   * Returns the redirect URL which redirects to the same page
    *     and takes over {@code model} to the transitioned page.
-   * 
-   * <p>This is a utility method to use redirect easily 
-   *     without understanding {@code ReturnUrlBean}. 
-   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
-   * 
+   *
+   * <p>This is a utility method to use redirect easily
+   *     without understanding {@code ReturnUrlBuilder}.
+   *     It's also allowed to use {@code ReturnUrlBuilder} directly from apps.</p>
+   *
    * @param model model
+   * @param redirectAttributes redirectAttributes
    * @return URL
    */
-  public String redirectToSamePageTakingOverModel(Model model) {
-    return redirectToSamePageTakingOverModel(model, false);
+  public String redirectToSamePageTakingOverModel(Model model,
+      RedirectAttributes redirectAttributes) {
+    return redirectToSamePageTakingOverModel(model, false, redirectAttributes);
   }
 
   /**
-   * Returns the redirect URL which redirects to the same page 
+   * Returns the redirect URL which redirects to the same page
    *     and takes over {@code model} to the transitioned page.
-   * 
-   * <p>This is a utility method to use redirect easily 
-   *     without understanding {@code ReturnUrlBean}. 
-   *     It's also allowed to use {@code ReturnUrlBean} directly from apps.</p>
-   * 
+   *
+   * <p>This is a utility method to use redirect easily
+   *     without understanding {@code ReturnUrlBuilder}.
+   *     It's also allowed to use {@code ReturnUrlBuilder} directly from apps.</p>
+   *
    * @param model model
    * @param showsSuccessMessage showsSuccessMessage
+   * @param redirectAttributes redirectAttributes
    * @return URL
    */
-  public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage) {
-    ReturnUrlBean bean = new ReturnUrlBean(this, util);
+  public String redirectToSamePageTakingOverModel(Model model, boolean showsSuccessMessage,
+      RedirectAttributes redirectAttributes) {
+    ReturnUrlBuilder builder = ReturnUrlBuilder.forNormalEnd(this, loginStateUtil);
     if (showsSuccessMessage) {
-      bean.showSuccessMessage();
+      builder.showSuccessMessage();
     }
 
-    return util.prepareForPageTransition(request, bean, model, false);
+    SplibSavedModelUtil.saveToFlash(model, redirectAttributes, false);
+    return builder.getUrl();
   }
 
   /**
@@ -533,9 +326,9 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
   public String getDefaultHtmlPageName() {
     String functionKindPath = context.functionKinds().length == 0 ? ""
         : StringUtil.getSeparatedValuesString(context.functionKinds(), "/") + "/";
+    String postfix = context.htmlFilenamePostfix();
     return functionKindPath + context.function()
-        + StringUtils.capitalize(context.htmlFilenamePostfix() == null ? context.subFunction()
-            : context.htmlFilenamePostfix());
+        + StringUtils.capitalize(postfix == null ? context.subFunction() : postfix);
   }
 
   /**
@@ -621,175 +414,34 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param loginUser loginUser
    * @param forms forms
    */
-  public void prepare(Model model, UserDetails loginUser, SplibGeneralForm... forms) {
+  public void prepare(Model model, @Nullable UserDetails loginUser, SplibGeneralForm... forms) {
 
     // Common processing for all forms.
     for (SplibGeneralForm form : forms) {
-      // Add form to model.
       model.addAttribute(form);
-      // Set controller context.
       form.setControllerContext(context);
+      prepareHelper.registerBindingResult(model, form);
     }
 
-    // Also store forms as an array in the model so they can be retrieved as an array.
     model.addAttribute(SplibWebConstants.KEY_FORMS, forms);
-
-    // Store controller in model for error handling.
     model.addAttribute(SplibWebConstants.KEY_CONTROLLER, this);
 
-    // // Set prepareSettings to controller.
-    // this.prepareSettings = (settings == null) ? new PrepareSettings() : settings;
+    prepareHelper.transactionTokenCheck();
+    prepareHelper.validateForms(forms, rolesAndAuthoritiesBean);
 
-    transactionTokenCheck();
-
-    for (SplibGeneralForm form : forms) {
-      if (form.getPrepareSettings().validates()) {
-        validationCheck(form, form.getPrepareSettings().bindingResult(), util.getLoginState(),
-            rolesAndAuthoritiesBean);
-      }
-    }
-  }
-
-  /**
-   * Provides token check feature.
-   * 
-   * <p>The token check is not executed when the html page doesn't have a token.</p>
-   */
-  private void transactionTokenCheck() {
-    // When forwarding, all request parameters from before the forward are also included,
-    // causing transactionCheck to run twice and resulting in an error.
-    // To avoid this, skip the process when forwarding.
-    String forward = request.getParameter("forward");
-    if (forward != null && forward.equals("true")) {
-      return;
-    }
-
-    String tokenFromHtml =
-        (String) request.getParameter(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
-
+    // Re-apply FieldErrors saved before the redirect; form re-binding clears them.
     @SuppressWarnings("unchecked")
-    Set<String> tokenSet = (Set<String>) request.getSession()
-        .getAttribute(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
-
-    if (tokenSet != null && tokenFromHtml != null) {
-      if (!tokenSet.contains(tokenFromHtml)) {
-
-        String msgId = "jp.ecuacion.splib.web.common.message.tokenInvalidate";
-        new Violations().add(new BusinessViolation(msgId)).throwIfAny();
+    Map<String, List<FieldError>> flashFieldErrors = (Map<String, List<FieldError>>) model
+        .getAttribute(SplibWebConstants.KEY_FLASH_FIELD_ERRORS);
+    if (flashFieldErrors != null) {
+      for (Map.Entry<String, List<FieldError>> entry : flashFieldErrors.entrySet()) {
+        Object br = model.getAttribute(entry.getKey());
+        if (br instanceof BindingResult bindingResult) {
+          entry.getValue().forEach(bindingResult::addError);
+        }
       }
-
-      tokenSet.remove(tokenFromHtml);
+      model.asMap().remove(SplibWebConstants.KEY_FLASH_FIELD_ERRORS);
     }
   }
 
-  /**
-   * Provides validation check feature.
-   * 
-   * @param form form
-   * @param result result
-   * @param loginState loginState
-   * @param bean bean
-   * @throws FormInputValidationException FormInputValidationException
-   */
-  private void validationCheck(SplibGeneralForm form, BindingResult result, String loginState,
-      RolesAndAuthoritiesBean bean) {
-    // input validation
-    Violations violations = new Violations();
-    getBeanValidationAppExceptionList(violations, form, bean);
-
-    violations.throwIfAny();
-  }
-
-  private void getBeanValidationAppExceptionList(Violations violations, SplibGeneralForm form,
-      RolesAndAuthoritiesBean bean) {
-
-    violations.addAll(Validation.buildDefaultValidatorFactory().getValidator().validate(form));
-
-    // Add NotEmpty check results.
-    Field field = form.getRootRecordFields().get(0);
-
-    try {
-      Object itemContainer = field.get(form);
-      form.validateNotEmpty(itemContainer, violations, request.getLocale(), util.getLoginState(),
-          bean);
-
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
-  }
-
-  // /*
-  // * The standard Jakarta validation validators are suboptimal — for example,
-  // * Size validator errors are shown even for empty strings.
-  // * When the field is empty, only the empty-field error should be shown,
-  // * so if both NotEmpty and another validator exist for the same field,
-  // * remove all validators except NotEmpty.
-  // */
-  // private void removeDuplicatedValidators(List<ConstraintViolation<?>> cvList) {
-  //
-  // // Build a map with field name as key and a set of CVs as value,
-  // // then remove all validators except NotEmpty for keys that have 2+ validators
-  // // and include NotEmpty.
-  // Map<String, Set<ConstraintViolation<?>>> duplicateCheckMap = new HashMap<>();
-  //
-  // // Keep track of keys that hold NotEmpty for use in subsequent processing.
-  // Set<String> keySetWithNotEmpty = new HashSet<>();
-  //
-  // for (ConstraintViolation<?> cv : cvList) {
-  // String key = cv.getPropertyPath().toString();
-  // if (duplicateCheckMap.get(key) == null) {
-  // duplicateCheckMap.put(key, new HashSet<>());
-  // }
-  //
-  // duplicateCheckMap.get(key).add(cv);
-  //
-  // // If NotEmpty, add to keySetWithNotEmpty.
-  // if (isNotEmptyValidator(cv)) {
-  // keySetWithNotEmpty.add(key);
-  // }
-  // }
-  //
-  // // For keys in keySetWithNotEmpty, remove all validators except NotEmpty from their value sets.
-  // for (String key : keySetWithNotEmpty) {
-  // for (ConstraintViolation<?> cv : duplicateCheckMap.get(key)) {
-  // if (!isNotEmptyValidator(cv)) {
-  // cvList.remove(cv);
-  // }
-  // }
-  // }
-  // }
-
-  // private boolean isNotEmptyValidator(ConstraintViolation<?> cv) {
-  // String validatorClass = cv instanceof ConstraintViolationBean
-  // ? ((ConstraintViolationBean<?>) cv).getValidatorClass()
-  // : cv.getConstraintDescriptor().getAnnotation().getClass().getSimpleName();
-  // return validatorClass.endsWith("NotEmpty") || validatorClass.endsWith("NotEmptyIfValid");
-  // }
-
-  // private Comparator<ConstraintViolation<?>> getComparator() {
-  // return new Comparator<>() {
-  // @Override
-  // public int compare(ConstraintViolation<?> f1, ConstraintViolation<?> f2) {
-  // // Compare by field name.
-  // int result = f1.getPropertyPath().toString().compareTo(f2.getPropertyPath().toString());
-  // if (result != 0) {
-  // return result;
-  // }
-  //
-  // // If field names are the same, compare by validator name.
-  // result = f1.getConstraintDescriptor().getConstraintValidatorClasses().get(0).getSimpleName()
-  // .compareTo(f2.getConstraintDescriptor().getConstraintValidatorClasses().get(0)
-  // .getSimpleName());
-  // if (result != 0) {
-  // return result;
-  // }
-  //
-  // // If validator types are also the same, it can only be @Pattern.
-  // // For Pattern, sort order is fixed by regexp, so compare by that.
-  // String s1 = (String) f1.getConstraintDescriptor().getAttributes().get("regexp");
-  // String s2 = (String) f2.getConstraintDescriptor().getAttributes().get("regexp");
-  // return s1 == null ? -1 : s1.compareTo(s2);
-  // }
-  // };
-  // }
 }

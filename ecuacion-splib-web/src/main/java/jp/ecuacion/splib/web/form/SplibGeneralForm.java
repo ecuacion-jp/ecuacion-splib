@@ -22,13 +22,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
+import jp.ecuacion.lib.core.util.ItemUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.record.SplibRecord;
-import jp.ecuacion.splib.web.controller.SplibGeneralController.ControllerContext;
+import jp.ecuacion.splib.web.controller.ControllerContext;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import org.jspecify.annotations.Nullable;
 import org.springframework.validation.BindingResult;
 
 /**
@@ -42,6 +43,7 @@ public abstract class SplibGeneralForm {
   public static class PrepareSettings {
 
     private boolean validates = false;
+    @Nullable
     private BindingResult bindingResult;
 
     /**
@@ -58,7 +60,7 @@ public abstract class SplibGeneralForm {
      * 
      * @return bindingResult
      */
-    public BindingResult bindingResult() {
+    public @Nullable BindingResult bindingResult() {
       return bindingResult;
     }
   }
@@ -72,7 +74,7 @@ public abstract class SplibGeneralForm {
   /**
    * Sets validates = true and bindingResult, and returns this for method chain.
    */
-  public SplibGeneralForm validate(BindingResult bindingResult) {
+  public SplibGeneralForm validate(@Nullable BindingResult bindingResult) {
     prepareSettings.validates = true;
     prepareSettings.bindingResult = bindingResult;
     return this;
@@ -107,6 +109,7 @@ public abstract class SplibGeneralForm {
    * URL is also desirable so that copying and using individual URLs still works.
    * </p>
    */
+  @Nullable
   protected String dataKind;
 
   /**
@@ -118,9 +121,10 @@ public abstract class SplibGeneralForm {
    * (The corresponding hidden input appends "," and the message ID on the JavaScript side.)
    * </p>
    */
+  @Nullable
   protected String confirmedWarnings;
 
-  public String getDataKind() {
+  public @Nullable String getDataKind() {
     return dataKind;
   }
 
@@ -128,9 +132,10 @@ public abstract class SplibGeneralForm {
     this.dataKind = dataKind;
   }
 
+  @Nullable
   private ControllerContext controllerContext;
 
-  public ControllerContext getControllerContext() {
+  public @Nullable ControllerContext getControllerContext() {
     return controllerContext;
   }
 
@@ -180,22 +185,25 @@ public abstract class SplibGeneralForm {
   /**
    * Gets root record.
    */
-  public Object getRootRecord(String recordName) {
-    Field field = getRootRecordFields().stream().collect(Collectors.toMap(f -> f.getName(), f -> f))
-        .get(recordName);
+  public @Nullable Object getRootRecord(String recordName) {
+    Field field = getRootRecordFields().stream()
+        .filter(f -> f.getName().equals(recordName)).findFirst().orElse(null);
+    if (field == null) {
+      return null;
+    }
     return getRootRecord(field);
   }
 
   /**
    * Gets root record.
    */
-  protected Object getRootRecord(Field rootRecordField) {
+  protected @Nullable Object getRootRecord(Field rootRecordField) {
     rootRecordField.setAccessible(true);
 
     Object rootRecord = null;
 
     try {
-      rootRecord = (Object) rootRecordField.get(this);
+      rootRecord = rootRecordField.get(this);
 
     } catch (IllegalArgumentException | IllegalAccessException e) {
       throw new RuntimeException(e);
@@ -204,7 +212,7 @@ public abstract class SplibGeneralForm {
     return rootRecord;
   }
 
-  public String getConfirmedWarnings() {
+  public @Nullable String getConfirmedWarnings() {
     return confirmedWarnings;
   }
 
@@ -215,17 +223,18 @@ public abstract class SplibGeneralForm {
    * @return boolean
    */
   public boolean containsConfirmedWarning(String messageId) {
-    return getConfirmedWarningMessageSet().size() > 0;
+    return getConfirmedWarningMessageSet().contains(messageId);
   }
 
   /**
    * Returns already confirmed message ID set.
    * @return {@code Set<String>}
    */
+  @SuppressWarnings("null")
   public Set<String> getConfirmedWarningMessageSet() {
     Set<String> rtnSet = new HashSet<>();
 
-    if (confirmedWarnings == null || confirmedWarnings.equals("")) {
+    if (confirmedWarnings == null || confirmedWarnings.isEmpty()) {
       return rtnSet;
     }
 
@@ -241,18 +250,18 @@ public abstract class SplibGeneralForm {
    * Has a notEmpty error.
    */
   public boolean hasNotEmptyError(Object rootBean, String loginState,
-      RolesAndAuthoritiesBean bean) {
+      @Nullable RolesAndAuthoritiesBean bean) {
     Violations violations = new Violations();
     validateNotEmpty(rootBean, violations, loginState, bean);
-    return violations.getBusinessViolations().size() != 0
-        || violations.getConstraintViolations().size() != 0;
+    return !violations.getBusinessViolations().isEmpty()
+        || !violations.getConstraintViolations().isEmpty();
   }
 
   /**
    * Validates notEmpty.
    */
   public void validateNotEmpty(Object rootBean, Violations violations, String loginState,
-      RolesAndAuthoritiesBean bean) {
+      @Nullable RolesAndAuthoritiesBean bean) {
     validateNotEmpty(rootBean, violations, Locale.getDefault(), loginState, bean);
   }
 
@@ -260,22 +269,26 @@ public abstract class SplibGeneralForm {
    * Validates notEmpty.
    */
   public void validateNotEmpty(Object rootBean, Violations violations, Locale locale,
-      String loginState, RolesAndAuthoritiesBean bean) {
+      String loginState, @Nullable RolesAndAuthoritiesBean bean) {
 
     final String validationClass = "jakarta.validation.constraints.NotEmpty";
     // Set<ConstraintViolationBean<SplibGeneralForm>> rtnSet = new HashSet<>();
 
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
-      // String rootRecordName = rootRecordField.getName();
-      HtmlItemContainer rootRecord = (HtmlItemContainer) getRootRecord(rootRecordField);
-
+      // Skip records that don't implement HtmlItemContainer (also handles null).
+      if (!(getRootRecord(rootRecordField) instanceof HtmlItemContainer rootRecord)) {
+        continue;
+      }
       for (String notEmptyItemPropertyPath : getNotEmptyItemPropertyPathList(rootRecord, loginState,
           bean)) {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
-        if (value == null || (value instanceof String && ((String) value).equals(""))) {
-          violations.add(new BusinessViolation(rootBean, new String[] {notEmptyItemPropertyPath},
+        if (value == null || (value instanceof String s && s.isEmpty())) {
+          violations.add(new BusinessViolation(
+              new String[] {ItemUtil.resolveItem(
+                  notEmptyItemPropertyPath, rootBean).getItemNameKey()},
+              new String[] {notEmptyItemPropertyPath},
               validationClass + ".message"));
           // rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this,
           // "(empty)",
@@ -287,13 +300,13 @@ public abstract class SplibGeneralForm {
 
   /**
    * Supplies NotEmpty fields in rootRecord.
-   * 
-   * <p>This became a independent method because some form doesn't use "notEmpty()".
-   *     For example, searchForm uses "notEmptyOnSearch()", not "notEmpty()".</p>
    */
+  @SuppressWarnings({"unused", "null"})
   protected List<String> getNotEmptyItemPropertyPathList(HtmlItemContainer rootRecord,
-      String loginState, RolesAndAuthoritiesBean bean) {
-    return rootRecord == null ? new ArrayList<>()
-        : rootRecord.getNotEmptyItemPropertyPathList(loginState, bean);
+      String loginState, @Nullable RolesAndAuthoritiesBean bean) {
+    if (rootRecord == null || bean == null) {
+      return new ArrayList<>();
+    }
+    return rootRecord.getNotEmptyItemPropertyPathList(loginState, bean);
   }
 }

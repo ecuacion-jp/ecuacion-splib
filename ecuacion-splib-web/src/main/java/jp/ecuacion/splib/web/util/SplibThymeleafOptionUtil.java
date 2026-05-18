@@ -18,10 +18,12 @@ package jp.ecuacion.splib.web.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -57,18 +59,20 @@ public class SplibThymeleafOptionUtil {
    *     then the value for key1 is {@code {'a', 'b', 'a')}}</li>
    * </ul>
    */
-  private Map<String, List<String>> optionMap(String optionCsv, String duplicationCheckKey) {
+  private Map<String, List<String>> optionMap(String optionCsv,
+      @Nullable String duplicationCheckKey) {
 
     Map<String, List<String>> rtnMap = new HashMap<>();
 
     // Finish when optionCsv is empty.
-    if (optionCsv == null || optionCsv.equals("")) {
+    if (optionCsv == null || optionCsv.isEmpty()) {
       return rtnMap;
     }
 
+    @SuppressWarnings("unused")
     String key = null;
     String value = null;
-    String[] options = optionCsv.split(",");
+    String[] options = optionCsv.split(",", -1);
     for (String option : options) {
       if (option.contains("=")) {
         key = StringUtils.trim(option.substring(0, option.indexOf("=")));
@@ -81,12 +85,12 @@ public class SplibThymeleafOptionUtil {
       // Ignore empty key because it happens and it's not bad.
       // (It happens when you set an option conditionally like:
       // options = 'a=b,' + (c == null ? '' : 'c=d')
-      if (key.equals("")) {
+      if (key.isEmpty()) {
         continue;
       }
 
       // Change key string to lowercase to ignore case mistakes.
-      String lowerCaseKey = key.toLowerCase();
+      String lowerCaseKey = key.toLowerCase(Locale.ROOT);
 
       if (!rtnMap.containsKey(lowerCaseKey)) {
         rtnMap.put(lowerCaseKey, new ArrayList<>());
@@ -94,8 +98,8 @@ public class SplibThymeleafOptionUtil {
 
       // if the key already exists in the map and allowsDuplicateKey == false,
       // the value is updated and output log.
-      if (rtnMap.get(lowerCaseKey).size() != 0 && duplicationCheckKey != null
-          && duplicationCheckKey.toLowerCase().equals(lowerCaseKey)) {
+      if (!rtnMap.get(lowerCaseKey).isEmpty() && duplicationCheckKey != null
+          && duplicationCheckKey.toLowerCase(Locale.ROOT).equals(lowerCaseKey)) {
         rtnMap.get(lowerCaseKey).clear();
         detailLog.warn("html key is dupliicated in options. Duplicated key: " + key);
       }
@@ -117,7 +121,7 @@ public class SplibThymeleafOptionUtil {
    * Returns if specified key exists in options.
    */
   public boolean hasKey(String options, String key) {
-    return optionMap(options).containsKey(key.toLowerCase());
+    return optionMap(options).containsKey(key.toLowerCase(Locale.ROOT));
   }
 
   /**
@@ -127,11 +131,11 @@ public class SplibThymeleafOptionUtil {
    * @param key key
    * @return value
    */
-  public String getValue(String options, String key) {
-    String lowerCaseKey = key.toLowerCase();
-    Map<String, List<String>> map = (optionMap(options, key));
+  public @Nullable String getValue(String options, String key) {
+    String lowerCaseKey = key.toLowerCase(Locale.ROOT);
+    Map<String, List<String>> map = optionMap(options, key);
 
-    return map.containsKey(lowerCaseKey) ? (map.get(lowerCaseKey)).get(0) : null;
+    return map.containsKey(lowerCaseKey) ? map.get(lowerCaseKey).get(0) : null;
   }
 
   /**
@@ -145,7 +149,7 @@ public class SplibThymeleafOptionUtil {
    */
   public String getValueOrElse(String options, String key, String defaultValue) {
     if (hasKey(options, key)) {
-      return getValue(options, key);
+      return java.util.Objects.requireNonNull(getValue(options, key));
 
     } else {
       return defaultValue;
@@ -165,11 +169,11 @@ public class SplibThymeleafOptionUtil {
    * @return value
    */
   public String[] getValues(String options, String key) {
-    String lowerCaseKey = key.toLowerCase();
-    Map<String, List<String>> map = (optionMap(options));
+    String lowerCaseKey = key.toLowerCase(Locale.ROOT);
+    Map<String, List<String>> map = optionMap(options);
 
     if (map.containsKey(lowerCaseKey)) {
-      List<String> list = (map.get(lowerCaseKey));
+      List<String> list = map.get(lowerCaseKey);
       return list.toArray(new String[list.size()]);
 
     } else {
@@ -184,16 +188,32 @@ public class SplibThymeleafOptionUtil {
     return StringUtil.getSeparatedValuesString(getValues(options, key), " ");
   }
 
-  private String getElementFromPsv(String option, int psvIndex) {
+  /**
+   * Escapes single quotes in the options string for use in SpEL string literals.
+   *
+   * <p>In SpEL, a single quote inside a string literal must be escaped by doubling it
+   *     (i.e., {@code '} becomes {@code ''}). Use this method before embedding an options
+   *     value via {@code __...__} preprocessing inside a SpEL single-quoted string literal,
+   *     to prevent syntax errors when the options value contains a single quote.</p>
+   *
+   * @param options options string
+   * @return SpEL-safe options string
+   */
+  public String escapeForSpel(@Nullable String options) {
+    return options == null ? "" : options.replace("'", "''");
+  }
+
+  @SuppressWarnings("null")
+  private @Nullable String getElementFromPsvNullable(@Nullable String option, int psvIndex) {
 
     if (StringUtils.isEmpty(option)) {
       return null;
 
-    } else if (option.split("\\|").length <= psvIndex) {
+    } else if (option.split("\\|", -1).length <= psvIndex) {
       return null;
 
     } else {
-      String value = option.split("\\|")[psvIndex];
+      String value = option.split("\\|", -1)[psvIndex];
       // if the value is "null", return null.
       return "null".equals(value) ? null : value;
     }
@@ -211,9 +231,9 @@ public class SplibThymeleafOptionUtil {
    *      When you want to list multiple strings of same meaning set xxx=yyy multiple times
    *      (like 'classappend=mt-3,classappend=mb-3'))</p>
    */
-  public String getElementFromPsv(String options, String key, int psvIndex) {
-    String option = getValue(options, key);
-    return getElementFromPsv(option, psvIndex);
+  public @Nullable String getElementFromPsv(String options, String key, int psvIndex) {
+    @Nullable String option = getValue(options, key);
+    return getElementFromPsvNullable(option, psvIndex);
   }
 
   /**
@@ -228,14 +248,14 @@ public class SplibThymeleafOptionUtil {
   /**
    * Obtains an element from an array of psv strings.
    */
-  public String getElementFromValuesOfPsv(String options, String key, int arrayIndex,
+  public @Nullable String getElementFromValuesOfPsv(String options, String key, int arrayIndex,
       int psvIndex) {
     String[] array = getValues(options, key);
     if (array.length <= arrayIndex) {
       return null;
 
     } else {
-      return getElementFromPsv(array[arrayIndex], psvIndex);
+      return getElementFromPsvNullable(array[arrayIndex], psvIndex);
     }
   }
 

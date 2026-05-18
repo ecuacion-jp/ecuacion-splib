@@ -17,4 +17,7 @@
 /**
  * Provides beans.
  */
+@NullMarked
 package jp.ecuacion.splib.web.bean;
+
+import org.jspecify.annotations.NullMarked;

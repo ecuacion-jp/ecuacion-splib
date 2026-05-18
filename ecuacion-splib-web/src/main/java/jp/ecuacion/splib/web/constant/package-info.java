@@ -17,4 +17,7 @@
 /**
  * Provides constants.
  */
+@NullMarked
 package jp.ecuacion.splib.web.constant;
+
+import org.jspecify.annotations.NullMarked;

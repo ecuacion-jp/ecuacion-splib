@@ -39,6 +39,8 @@ public class SplibJpaDataStoreDependentControllerAdvice
 
   @Override
   protected void executeForAll() {
+    // Clear stale group ID left by a previous request on the same thread.
+    SplibControllerAdviceInfoBean.removeGroupId();
     // Enable the soft-delete filter.
     filterUtil.enableSoftDeleteFilter();
   }

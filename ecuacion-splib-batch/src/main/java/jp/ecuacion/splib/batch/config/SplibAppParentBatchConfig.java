@@ -18,13 +18,13 @@ package jp.ecuacion.splib.batch.config;
 import jp.ecuacion.splib.batch.exceptionhandler.SplibExceptionHandler;
 import jp.ecuacion.splib.batch.listener.SplibJobExecutionListener;
 import jp.ecuacion.splib.batch.listener.SplibStepExecutionListener;
+import org.jspecify.annotations.Nullable;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.builder.TaskletStepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -32,12 +32,23 @@ import org.springframework.transaction.PlatformTransactionManager;
  */
 public abstract class SplibAppParentBatchConfig {
 
-  @Autowired
   private SplibJobExecutionListener jobExecutionListener;
-  @Autowired
   private SplibStepExecutionListener stepExecutionListener;
-  @Autowired
   private SplibExceptionHandler exceptionHandler;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param jobExecutionListener jobExecutionListener
+   * @param stepExecutionListener stepExecutionListener
+   * @param exceptionHandler exceptionHandler
+   */
+  protected SplibAppParentBatchConfig(SplibJobExecutionListener jobExecutionListener,
+      SplibStepExecutionListener stepExecutionListener, SplibExceptionHandler exceptionHandler) {
+    this.jobExecutionListener = jobExecutionListener;
+    this.stepExecutionListener = stepExecutionListener;
+    this.exceptionHandler = exceptionHandler;
+  }
 
   /**
    * Provides {@code ecuacion-spilb} standard {@code JobBuilder}.
@@ -60,7 +71,8 @@ public abstract class SplibAppParentBatchConfig {
    * @param tasklets tasklets
    * @return TaskletStepBuilder
    */
-  protected TaskletStepBuilder preparedStepBuilder(String stepName, JobRepository jobRepository,
+  protected @Nullable TaskletStepBuilder preparedStepBuilder(String stepName,
+      JobRepository jobRepository,
       PlatformTransactionManager transactionManager, Tasklet... tasklets) {
     StepBuilder builder = new StepBuilder(stepName, jobRepository).listener(stepExecutionListener);
     TaskletStepBuilder tlBuilder = null;
@@ -78,8 +90,8 @@ public abstract class SplibAppParentBatchConfig {
 
   private TaskletStepBuilder buildTasklet(Object builder, Tasklet tasklet,
       PlatformTransactionManager transactionManager) {
-    TaskletStepBuilder tlBuilder = builder instanceof StepBuilder
-        ? ((StepBuilder) builder).tasklet(tasklet, transactionManager)
+    TaskletStepBuilder tlBuilder = builder instanceof StepBuilder sb
+        ? sb.tasklet(tasklet, transactionManager)
         : ((TaskletStepBuilder) builder).tasklet(tasklet, transactionManager);
     
     return tlBuilder.exceptionHandler(exceptionHandler);

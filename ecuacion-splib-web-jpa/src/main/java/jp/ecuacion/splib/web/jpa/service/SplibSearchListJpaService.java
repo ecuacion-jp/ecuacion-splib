@@ -20,12 +20,13 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
+import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibDatetimeFormatUtil;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,7 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 //@formatter:off
 @Transactional(rollbackFor = Exception.class)
 public abstract class SplibSearchListJpaService<FST extends SplibSearchForm, 
-    FLT extends SplibListForm<?>, E extends EclibEntity>
+    FLT extends SplibListForm<?>, E extends SplibEntity>
     extends SplibSearchListService<FST, FLT> implements SplibJpaServiceInterface<E> {
   //@formatter:on
 
@@ -50,6 +51,7 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
   private HttpServletRequest request;
 
   @PersistenceContext
+  @Nullable
   protected EntityManager em;
 
   //
@@ -60,15 +62,16 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
    * Since this is called on onload of the login screen,
    * the offset value may be null if the login screen is left open and abandoned.
    */
+  @Override
   public DatetimeFormatParameters getParams() {
-    return new SplibUtil().getParams(request);
+    return SplibDatetimeFormatUtil.getParams(request);
   }
 
   /**
    * Gets a localDate field (String) inside a record as a LocalDate.
    */
-  protected LocalDate localDate(String date) {
-    return (date == null || date.equals("")) ? null
+  protected @Nullable LocalDate localDate(String date) {
+    return (date == null || date.isEmpty()) ? null
         : LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
   }
 

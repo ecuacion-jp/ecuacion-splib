@@ -48,7 +48,7 @@ public class SplibThymeleafMessageUtil {
     }
 
     boolean hasMsg = PropertiesFileUtil.hasMessage(key);
-    boolean hasStr = PropertiesFileUtil.hasString(key);
+    boolean hasStr = PropertiesFileUtil.hasConstant(key);
     boolean hasItem = PropertiesFileUtil.hasItemName(key);
 
     return hasMsg || hasStr || hasItem;
@@ -69,7 +69,7 @@ public class SplibThymeleafMessageUtil {
     }
 
     boolean hasMsg = PropertiesFileUtil.hasMessage(key);
-    boolean hasStr = PropertiesFileUtil.hasString(key);
+    boolean hasStr = PropertiesFileUtil.hasConstant(key);
     boolean hasItem = PropertiesFileUtil.hasItemName(key);
 
     // Return id when id not exist in both.
@@ -79,10 +79,10 @@ public class SplibThymeleafMessageUtil {
 
     // Even when hasMsg == false && hasItem = false, Exception doesn't emerge.
     if (hasMsg) {
-      return PropertiesFileUtil.getMessage(locale, key, args);
+      return PropertiesFileUtil.getMessage(locale, key, (Object[]) args);
 
     } else if (hasStr) {
-      return PropertiesFileUtil.getString(key, args);
+      return PropertiesFileUtil.getConstant(key, (Object[]) args);
 
     } else {
       return PropertiesFileUtil.getItemName(locale, key);

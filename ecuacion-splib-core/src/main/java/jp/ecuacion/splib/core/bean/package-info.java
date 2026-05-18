@@ -13,24 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.form;
-
-import jakarta.validation.Valid;
-import jp.ecuacion.splib.web.record.LoginRecord;
 
 /**
- * Stores data for adminLogin.
+ * Provides common bean classes used across the splib framework.
  */
-public class AdminLoginForm extends SplibGeneralForm {
-  
-  @Valid
-  private LoginRecord adminLogin = new LoginRecord();
+@NullMarked
+package jp.ecuacion.splib.core.bean;
 
-  public LoginRecord getAdminLogin() {
-    return adminLogin;
-  }
-
-  public void setAdminLogin(LoginRecord adminLogin) {
-    this.adminLogin = adminLogin;
-  }
-}
+import org.jspecify.annotations.NullMarked;

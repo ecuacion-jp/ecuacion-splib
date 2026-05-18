@@ -15,10 +15,14 @@
  */
 package jp.ecuacion.splib.web.jpa.exceptionhandler;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +30,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Provides JPA related exception handling 
@@ -34,6 +39,19 @@ import org.springframework.web.servlet.ModelAndView;
  * <p>Use this class when the app uses JPA.</p>
  */
 public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param request request
+   * @param actionOnThrowable actionOnThrowable, may be {@code null}
+   * @param loginStateUtil loginStateUtil
+   */
+  protected SplibJpaExceptionHandler(HttpServletRequest request,
+      @Nullable SplibExceptionHandlerAction actionOnThrowable,
+      SplibLoginStateUtil loginStateUtil) {
+    super(request, actionOnThrowable, loginStateUtil);
+  }
 
   /**
    * Catches {@code ObjectOptimisticLockingFailureException} 
@@ -57,8 +75,10 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
   public ModelAndView handleObjectOptimisticLockingFailureException(
       ObjectOptimisticLockingFailureException exception,
-      @AuthenticationPrincipal UserDetails loginUser, Model model) throws Exception {
-    return super.handleOptimisticLockingFailureException(null, loginUser, model);
+      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model,
+      RedirectAttributes redirectAttributes) throws Exception {
+    return super.handleOptimisticLockingFailureException(null, loginUser, model,
+        redirectAttributes);
   }
 
   /**
@@ -71,10 +91,10 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
    */
   @ExceptionHandler({PessimisticLockingFailureException.class})
   public ModelAndView handlePessimisticLockingFailureException(
-      PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser)
-      throws Exception {
+      PessimisticLockingFailureException exception, @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
     Violations v = new Violations();
     v.add(new BusinessViolation("jp.ecuacion.splib.web.common.message.pessimisticLocking"));
-    return handleViolationException(new ViolationException(v), loginUser);
+    return handleViolationException(new ViolationException(v), loginUser, redirectAttributes);
   }
 }

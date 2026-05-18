@@ -18,16 +18,18 @@ package jp.ecuacion.splib.web.form;
 import java.util.ArrayList;
 import java.util.List;
 import jp.ecuacion.splib.core.record.SplibRecord;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Stores data for list.
  */
 public class SplibListForm<R extends SplibRecord> extends SplibGeneralForm {
 
+  @Nullable
   protected R rec;
   private List<R> recList = new ArrayList<>();
 
-  public R getRec() {
+  public @Nullable R getRec() {
     return rec;
   }
 

@@ -17,4 +17,7 @@
 /**
  * Provides advices for JPA features.
  */
+@NullMarked
 package jp.ecuacion.splib.jpa.advice;
+
+import org.jspecify.annotations.NullMarked;

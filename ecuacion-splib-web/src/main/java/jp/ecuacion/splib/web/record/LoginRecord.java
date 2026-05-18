@@ -19,6 +19,7 @@ import jp.ecuacion.lib.core.annotation.ItemNameKeyClass;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Is a record for loginController.
@@ -27,14 +28,16 @@ import jp.ecuacion.splib.web.item.HtmlItemContainer;
 public class LoginRecord extends SplibRecord implements HtmlItemContainer {
 
   @Override
-  public HtmlItem[] getHtmlItems() {
+  public HtmlItem[] customizedItems() {
     return new HtmlItem[] {};
   }
 
+  @Nullable
   private String username;
+  @Nullable
   private String password;
 
-  public String getUsername() {
+  public @Nullable String getUsername() {
     return username;
   }
 
@@ -42,7 +45,7 @@ public class LoginRecord extends SplibRecord implements HtmlItemContainer {
     this.username = username;
   }
 
-  public String getPassword() {
+  public @Nullable String getPassword() {
     return password;
   }
 

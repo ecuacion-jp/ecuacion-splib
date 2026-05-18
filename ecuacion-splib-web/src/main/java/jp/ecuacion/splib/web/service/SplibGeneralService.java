@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.service;
 
-import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +24,8 @@ import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.exceptionhandler.ViolationWebWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibDatetimeFormatUtil;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -58,7 +58,7 @@ public abstract class SplibGeneralService {
       @Nullable String buttonIdToPressOnConfirm, String msgId, String... params) {
 
     if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
-      Violations violations = new Violations().add(msgId, params);
+      Violations violations = new Violations().add(msgId, (Object[]) params);
       if (buttonIdToPressOnConfirm != null) {
         throw new ViolationWebWarningException(violations, buttonIdToPressOnConfirm);
       }
@@ -72,7 +72,7 @@ public abstract class SplibGeneralService {
    * <p>It's often used to construct a record.</p>
    */
   public DatetimeFormatParameters getParams() {
-    return new SplibUtil().getParams(request);
+    return SplibDatetimeFormatUtil.getParams(request);
   }
 
   /** 
@@ -86,7 +86,8 @@ public abstract class SplibGeneralService {
    * @param allFormList a list of forms
    * @param loginUser UserDetails
    */
-  public void prepareForm(List<SplibGeneralForm> allFormList, UserDetails loginUser) {
+  public void prepareForm(List<SplibGeneralForm> allFormList,
+      @Nullable UserDetails loginUser) {
     detailLog
         .debug("prepareForm(List<SplibGeneralForm> allFormList, UserDetails loginUser) called.");
   }

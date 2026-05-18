@@ -20,7 +20,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
@@ -65,8 +66,16 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
    */
   protected abstract String getExitingUserDonePagePath();
 
-  @Autowired
   UserDetailsService userDetailsService;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param userDetailsService userDetailsService
+   */
+  protected SplibWebSecurityConfigForSwitchUser(UserDetailsService userDetailsService) {
+    this.userDetailsService = userDetailsService;
+  }
 
   /**
    *  for impersonate login.
@@ -97,17 +106,20 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     private String switchingUserDonePagePath;
     private String exitingUserDonePagePath;
 
-    public CustomLoginSuccessHandler(String switchingUserDonePagePath,
+    private CustomLoginSuccessHandler(String switchingUserDonePagePath,
         String exitingUserDonePagePath) {
       this.switchingUserDonePagePath = switchingUserDonePagePath;
       this.exitingUserDonePagePath = exitingUserDonePagePath;
     }
 
-    public void onAuthenticationSuccess(final HttpServletRequest request,
-        final HttpServletResponse response, final Authentication authentication)
+    @Override
+    public void onAuthenticationSuccess(final @Nullable HttpServletRequest request,
+        final @Nullable HttpServletResponse response, final @Nullable Authentication authentication)
         throws IOException, ServletException {
 
-      if (request.getRequestURI().endsWith("/admin/switchUser")) {
+      Objects.requireNonNull(response);
+
+      if (Objects.requireNonNull(request).getRequestURI().endsWith("/admin/switchUser")) {
         response.sendRedirect(request.getContextPath() + switchingUserDonePagePath);
 
       } else {
@@ -120,13 +132,18 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
 
     private String exitingUserDonePagePath;
 
-    public CustomLoginFailureHandler(String exitingUserDonePagePath) {
+    private CustomLoginFailureHandler(String exitingUserDonePagePath) {
       this.exitingUserDonePagePath = exitingUserDonePagePath;
     }
 
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-        AuthenticationException exception) throws IOException, ServletException {
+    public void onAuthenticationFailure(@Nullable HttpServletRequest request,
+        @Nullable HttpServletResponse response, @Nullable AuthenticationException exception)
+        throws IOException, ServletException {
+      
+      Objects.requireNonNull(request);
+      Objects.requireNonNull(response);
+
       response.sendRedirect(request.getContextPath() + exitingUserDonePagePath);
     }
   }

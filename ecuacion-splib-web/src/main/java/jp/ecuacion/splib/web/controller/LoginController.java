@@ -15,7 +15,10 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jp.ecuacion.splib.web.form.LoginForm;
+import jakarta.validation.Valid;
+import jp.ecuacion.splib.web.controller.LoginController.LoginForm;
+import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import jp.ecuacion.splib.web.record.LoginRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -35,5 +38,24 @@ public class LoginController
    */
   public LoginController() {
     super("login");
+  }
+
+  /**
+   * Stores data for login.
+   */
+  public static class LoginForm extends SplibGeneralForm {
+
+    @Valid
+    private LoginRecord login = new LoginRecord();
+
+    /** Returns login. */
+    public LoginRecord getLogin() {
+      return login;
+    }
+
+    /** Sets login. */
+    public void setLogin(LoginRecord login) {
+      this.login = login;
+    }
   }
 }

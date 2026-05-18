@@ -21,14 +21,16 @@ import jakarta.persistence.criteria.Root;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import jp.ecuacion.lib.jpa.entity.EclibEntity;
+import java.util.Locale;
 import jp.ecuacion.splib.core.record.SplibRecord;
+import jp.ecuacion.splib.jpa.entity.SplibEntity;
+import jp.ecuacion.splib.web.bean.StringMatchingConditionBean.StringMatchingPatternEnum;
 import jp.ecuacion.splib.web.item.HtmlItem;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.item.HtmlItemSelect;
 import jp.ecuacion.splib.web.item.HtmlItemString;
-import jp.ecuacion.splib.web.record.StringMatchingConditionBean.StringMatchingPatternEnum;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -36,7 +38,7 @@ import org.springframework.data.jpa.domain.Specification;
  * 
  * @param <T> Entity
  */
-public class SpecFactory<T extends EclibEntity> {
+public class SpecFactory<T extends SplibEntity> {
 
   /**
    * Usable generically for String, boolean, numeric types, etc. when doing equality comparison.
@@ -44,13 +46,12 @@ public class SpecFactory<T extends EclibEntity> {
    * The field can include related records, e.g. "name", "parentRecord.id",
    * "parentRecord.childRecord.id".
    */
-  @SuppressWarnings("unused")
-  public Specification<T> equals(String propertyPath, Object value) {
+  public @Nullable Specification<T> equals(String propertyPath, @Nullable Object value) {
 
     return (root, query, cb) -> {
-      Path<?> path = getPath(root, propertyPath, value);
+      Path<?> path = getPath(root, propertyPath);
 
-      return (value == null || (value instanceof String && ((String) value).equals("")) ? null
+      return (value == null || (value instanceof String string && string.isEmpty()) ? null
           : cb.equal(path, value));
     };
   }
@@ -62,12 +63,12 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
+  @SuppressWarnings("null")
   public Specification<T> stringEqualsIgnoringCase(String propertyPath, String value) {
     return (root, query, cb) -> {
-      Expression<String> criteriaField = getPath(root, propertyPath, value);
+      Expression<String> criteriaField = getPath(root, propertyPath);
       return StringUtils.isEmpty(value) ? null
-          : cb.equal(cb.upper(criteriaField), value.toUpperCase());
+          : cb.equal(cb.upper(criteriaField), value.toUpperCase(Locale.ROOT));
     };
   }
 
@@ -78,13 +79,14 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
-  public Specification<T> stringEquals(String propertyPath, String value, boolean ignoresCase) {
+  public @Nullable Specification<T> stringEquals(String propertyPath, @Nullable String value,
+      boolean ignoresCase) {
     return (root, query, cb) -> {
-      Expression<String> criteriaFieldTmp = getPath(root, propertyPath, value);
+      Expression<String> criteriaFieldTmp = getPath(root, propertyPath);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
-      String criteriaValue = ignoresCase ? value.toUpperCase() : value;
+      String criteriaValue = ignoresCase
+          ? (value == null ? "" : value.toUpperCase(Locale.ROOT)) : (value == null ? "" : value);
 
       return StringUtils.isEmpty(value) ? null : cb.equal(criteriaField, criteriaValue);
     };
@@ -97,10 +99,10 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
+  @SuppressWarnings("null")
   public Specification<T> stringNotEquals(String propertyPath, String value) {
     return (root, query, cb) -> {
-      Expression<String> criteriaField = getPath(root, propertyPath, value);
+      Expression<String> criteriaField = getPath(root, propertyPath);
       String criteriaValue = value;
 
       return StringUtils.isEmpty(value) ? null : cb.notEqual(criteriaField, criteriaValue);
@@ -114,12 +116,14 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringContains(String propertyPath, String value) {
+  public @Nullable Specification<T> stringContains(String propertyPath, @Nullable String value) {
     return stringContains(propertyPath, value, false);
   }
 
-  private Specification<T> stringContains(String propertyPath, String value, boolean ignoresCase) {
-    return stringSearchPattern(propertyPath, value, "%" + value + "%", ignoresCase);
+  private @Nullable Specification<T> stringContains(String propertyPath, @Nullable String value,
+      boolean ignoresCase) {
+    return value == null ? null
+        : stringSearchPattern(propertyPath, value, "%" + value + "%", ignoresCase);
   }
 
   /**
@@ -129,7 +133,8 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringContainsIgnoringCase(String propertyPath, String value) {
+  public @Nullable Specification<T> stringContainsIgnoringCase(String propertyPath,
+      @Nullable String value) {
     return stringContains(propertyPath, value, true);
   }
 
@@ -140,7 +145,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringStartsWith(String propertyPath, String value) {
+  public @Nullable Specification<T> stringStartsWith(String propertyPath, @Nullable String value) {
     return stringStartsWith(propertyPath, value, false);
   }
 
@@ -151,9 +156,10 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  private Specification<T> stringStartsWith(String propertyPath, String value,
+  private @Nullable Specification<T> stringStartsWith(String propertyPath, @Nullable String value,
       boolean ignoresCase) {
-    return stringSearchPattern(propertyPath, value, value + "%", ignoresCase);
+    return value == null ? null
+        : stringSearchPattern(propertyPath, value, value + "%", ignoresCase);
   }
 
   /**
@@ -163,7 +169,8 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringStartsWithIgnoringCase(String propertyPath, String value) {
+  public @Nullable Specification<T> stringStartsWithIgnoringCase(String propertyPath,
+      @Nullable String value) {
     return stringStartsWith(propertyPath, value, true);
   }
 
@@ -174,19 +181,22 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringEndsWith(String propertyPath, String value) {
+  public @Nullable Specification<T> stringEndsWith(String propertyPath, @Nullable String value) {
     return stringEndsWith(propertyPath, value, false);
   }
 
   /**
    * Returns Specification for stringEndsWith.
-   * 
-   * @param field field
+   *
+   * @param propertyPath propertyPath
    * @param value value
+   * @param ignoresCase ignoresCase
    * @return {@code Specification<T>}
    */
-  private Specification<T> stringEndsWith(String propertyPath, String value, boolean ignoresCase) {
-    return stringSearchPattern(propertyPath, value, "%" + value, ignoresCase);
+  private @Nullable Specification<T> stringEndsWith(String propertyPath, @Nullable String value,
+      boolean ignoresCase) {
+    return value == null ? null
+        : stringSearchPattern(propertyPath, value, "%" + value, ignoresCase);
   }
 
   /**
@@ -196,24 +206,26 @@ public class SpecFactory<T extends EclibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  public Specification<T> stringEndsWithIgnoringCase(String propertyPath, String value) {
+  public @Nullable Specification<T> stringEndsWithIgnoringCase(String propertyPath,
+      @Nullable String value) {
     return stringEndsWith(propertyPath, value, true);
   }
 
-  @SuppressWarnings("unused")
-  private Specification<T> stringSearchPattern(String propertyPath, String value,
-      String criteriaValue, boolean ignoresCase) {
+  private @Nullable Specification<T> stringSearchPattern(String propertyPath,
+      @Nullable String value, @Nullable String criteriaValue, boolean ignoresCase) {
     return (root, query, cb) -> {
       if (StringUtils.isEmpty(value)) {
         return null;
       }
 
-      Expression<String> criteriaFieldTmp = getPath(root, propertyPath, value);
+      Expression<String> criteriaFieldTmp = getPath(root, propertyPath);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
-      String finalCriteriaValue = ignoresCase ? criteriaValue.toUpperCase() : criteriaValue;
+      String finalCriteriaValue = ignoresCase
+          ? (criteriaValue == null ? "" : criteriaValue.toUpperCase(Locale.ROOT))
+          : (criteriaValue == null ? "" : criteriaValue);
 
-      return cb.like((criteriaField), finalCriteriaValue);
+      return cb.like(criteriaField, finalCriteriaValue);
     };
   }
 
@@ -224,7 +236,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
-  public Specification<T> localDateEqualToOrLessThan(String field, LocalDate date) {
+  public @Nullable Specification<T> localDateEqualToOrLessThan(String field, LocalDate date) {
     return localDateEqualToOrLessThan(null, field, date);
   }
 
@@ -235,8 +247,8 @@ public class SpecFactory<T extends EclibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
-  public Specification<T> localDateEqualToOrLessThan(String entity, String field, LocalDate date) {
+  public @Nullable Specification<T> localDateEqualToOrLessThan(@Nullable String entity,
+      String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       Expression<LocalDate> criteriaField =
           entity == null ? root.get(field) : root.get(entity).get(field);
@@ -252,8 +264,7 @@ public class SpecFactory<T extends EclibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
-  public Specification<T> localDateEqualToOrGreaterThan(String field, LocalDate date) {
+  public @Nullable Specification<T> localDateEqualToOrGreaterThan(String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       return cb.or(cb.equal(root.get(field).as(LocalDate.class), date),
           cb.greaterThan(root.get(field).as(LocalDate.class), date));
@@ -267,9 +278,8 @@ public class SpecFactory<T extends EclibEntity> {
    * @param date date
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("unused")
-  public Specification<T> localDateEqualToOrGreaterThan(String entity, String field,
-      LocalDate date) {
+  public @Nullable Specification<T> localDateEqualToOrGreaterThan(@Nullable String entity,
+      String field, LocalDate date) {
     return date == null ? null : (root, query, cb) -> {
       Expression<LocalDate> criteriaField =
           entity == null ? root.get(field) : root.get(entity).get(field);
@@ -278,7 +288,7 @@ public class SpecFactory<T extends EclibEntity> {
     };
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "null"})
   private Specification<T> selectSearchPattern(String propertyPath, String value,
       String criteriaValue, boolean ignoresCase) {
     return (root, query, cb) -> {
@@ -286,18 +296,20 @@ public class SpecFactory<T extends EclibEntity> {
         return null;
       }
 
-      Path<String> criteriaFieldTmp = getPath(root, propertyPath, value);
+      Path<String> criteriaFieldTmp = getPath(root, propertyPath);
       Expression<String> criteriaField =
           ignoresCase ? cb.upper(criteriaFieldTmp) : criteriaFieldTmp;
-      String finalCriteriaValue = ignoresCase ? criteriaValue.toUpperCase() : criteriaValue;
+      String finalCriteriaValue = ignoresCase
+          ? (criteriaValue == null ? "" : criteriaValue.toUpperCase(Locale.ROOT))
+          : (criteriaValue == null ? "" : criteriaValue);
 
-      return cb.like((criteriaField), finalCriteriaValue);
+      return cb.like(criteriaField, finalCriteriaValue);
     };
   }
 
-  private <X> Path<X> getPath(Root<T> root, String propertyPath, X value) {
+  private <X> @Nullable Path<X> getPath(Root<T> root, String propertyPath) {
     // Loop the number of "." in propertyPath
-    String[] fields = propertyPath.split("\\.");
+    String[] fields = propertyPath.split("\\.", -1);
     Path<X> path = null;
     for (int i = 0; i < fields.length; i++) {
       if (path == null) {
@@ -336,24 +348,29 @@ public class SpecFactory<T extends EclibEntity> {
         }
       }
 
-      if (item instanceof HtmlItemString) {
-        HtmlItemString stringItem = ((HtmlItemString) item);
-
+      if (item instanceof HtmlItemString stringItem) {
+        Specification<T> spec = null;
         if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.EXACT) {
-          list.add(stringEquals(propertyPath, (String) value, stringItem.isIgnoresCase()));
+          spec = stringEquals(propertyPath, (String) value, stringItem.isIgnoresCase());
 
         } else if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.PARTIAL) {
-          list.add(stringContains(propertyPath, (String) value, stringItem.isIgnoresCase()));
+          spec = stringContains(propertyPath, (String) value, stringItem.isIgnoresCase());
 
         } else if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.PREFIX) {
-          list.add(stringStartsWith(propertyPath, (String) value, stringItem.isIgnoresCase()));
+          spec = stringStartsWith(propertyPath, (String) value, stringItem.isIgnoresCase());
 
         } else if (stringItem.getStringSearchPatternEnum() == StringMatchingPatternEnum.POSTFIX) {
-          list.add(stringEndsWith(propertyPath, (String) value, stringItem.isIgnoresCase()));
+          spec = stringEndsWith(propertyPath, (String) value, stringItem.isIgnoresCase());
+        }
+        if (spec != null) {
+          list.add(spec);
         }
 
       } else if (item instanceof HtmlItemSelect) {
-        list.add(equals(propertyPath, value));
+        @Nullable Specification<T> eqSpec = equals(propertyPath, value);
+        if (eqSpec != null) {
+          list.add(eqSpec);
+        }
       }
     }
 

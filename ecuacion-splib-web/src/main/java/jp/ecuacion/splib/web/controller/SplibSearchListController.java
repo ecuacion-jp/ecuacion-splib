@@ -15,21 +15,21 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import jp.ecuacion.lib.core.exception.ViolationException;
-import jp.ecuacion.splib.web.bean.ReturnUrlBean;
+import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Controls the search and listing of the search result.
@@ -57,7 +57,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   private FST newSearchForm;
 
   @Autowired
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
 
   private static final String KEY_ERROR_OCCURS_WHILE_SEARCHING = "errorWhileSearching";
 
@@ -66,7 +66,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * 
    * @param function function
    */
-  public SplibSearchListController(@Nonnull String function) {
+  public SplibSearchListController(String function) {
     this(function, new ControllerContext());
   }
 
@@ -76,7 +76,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param function function
    * @param settings settings
    */
-  public SplibSearchListController(@Nonnull String function, ControllerContext settings) {
+  public SplibSearchListController(String function, ControllerContext settings) {
     super(function, settings.subFunction("searchList"));
   }
 
@@ -95,19 +95,20 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     searchForm = getProperSearchForm(model, searchForm);
     super.submitOnChangeToRefresh(model, searchForm, listForm, loginUser);
 
-    return new ReturnUrlBean(this, util, "searchList", "page").getUrl();
+    return ReturnUrlBuilder.forNormalEnd(this, loginStateUtil)
+        .toSubFunction("searchList").toPage("page").getUrl();
   }
 
   /**
    * Overrides the parent method to add {@code getProperSearchForm, listForm.setDataKind() 
-   * and redirectUrlOnAppExceptionBean} procedures.
+   * and redirectUrlOnAppException} procedures.
    */
   @Override
   public String page(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     searchForm = getProperSearchForm(model, searchForm);
-    listForm.setDataKind(searchForm.getDataKind());
-    redirectUrlOnAppExceptionBean = new ReturnUrlBean(this, util, false);
+    listForm.setDataKind(java.util.Objects.toString(searchForm.getDataKind(), ""));
+    redirectUrlOnAppException = ReturnUrlBuilder.forAbnormalEnd(this, loginStateUtil);
 
     prepare(model, loginUser, searchForm, listForm);
 
@@ -143,7 +144,8 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    */
   @GetMapping(value = "action", params = "action=search")
   public String search(Model model, FST searchForm, FLT listForm,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
+      @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
 
     // Prepare searchForm before validating it.
     // This is meaningful when showing errors on opening searchList page
@@ -160,27 +162,29 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       throw ve;
     }
 
-    return redirectToSamePageTakingOverModel(model);
+    return redirectToSamePageTakingOverModel(model, redirectAttributes);
   }
 
   /**
    * Searches from the search conditions in {@code searchForm}.
-   * 
+   *
    * <p>This is exactly the same procedure as {@code search}, but there seems to be no way
    *     to integrate these
    *     because multiple {@code @GetMapping} cannot be added to a single method.</p>
-   *     
+   *
    * @param model model
    * @param searchForm searchForm
    * @param listForm listForm
    * @param loginUser loginUser
+   * @param redirectAttributes redirectAttributes
    * @return URL
    * @throws Exception Exception
    */
   @GetMapping(value = "action", params = "action=searchAgain")
   public String searchAgain(Model model, FST searchForm, FLT listForm,
-      @AuthenticationPrincipal UserDetails loginUser) throws Exception {
-    return search(model, searchForm, listForm, loginUser);
+      @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) throws Exception {
+    return search(model, searchForm, listForm, loginUser, redirectAttributes);
   }
 
   private void prepareForm(FST searchForm, FLT listForm, UserDetails loginUser) {
@@ -205,15 +209,14 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     // Clear info.
     String formName = getFunction() + "SearchForm";
-    String sessionKey =
-        formName + (searchForm.getDataKind() == null || searchForm.getDataKind().equals("") ? ""
-            : "." + searchForm.getDataKind());
+    String sessionKey = getSessionKey(formName, searchForm);
 
     request.getSession().setAttribute(sessionKey, newSearchForm);
 
     prepare(model, loginUser, searchForm, listForm);
-    return new ReturnUrlBean(this, util, true)
-        .putParam(SplibWebConstants.KEY_DATA_KIND, searchForm.getDataKind()).getUrl();
+    String dataKindStr = java.util.Objects.toString(searchForm.getDataKind(), "");
+    return ReturnUrlBuilder.forNormalEnd(this, loginStateUtil)
+        .putParam(SplibWebConstants.KEY_DATA_KIND, dataKindStr).getUrl();
   }
 
   /**
@@ -227,58 +230,46 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param searchForm searchForm
    * @return proper searchForm
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "null"})
   protected FST getProperSearchForm(Model model, FST searchForm) {
 
     String formName = getFunction() + "SearchForm";
     String key = getSessionKey(formName, searchForm);
 
-    if (searchForm != null) {
+    if (searchForm.isRequestFromSearchForm()) {
+      // Argument searchForm (= submitted by pressing search button in a search page) is adopted
+      // when isRequestFromSearchForm == true.
+      request.getSession().setAttribute(key, searchForm);
 
-      if (searchForm.isRequestFromSearchForm()) {
-        // Argument saerchForm (= submitted by pressing search button in a search page) is adopted
-        // when isRequestFromSearchForm == true.
-        request.getSession().setAttribute(key, searchForm);
-
-        // You've got a search resquest means the condition is not newly created.
-        searchForm.setNewlyCreated(false);
-
-      } else {
-        // SearchForm in session is adopted when isRequestFromSearchForm == false
-        // (= accessed by URL or conditioon clear button pressed)
-
-        if (request.getSession().getAttribute(key) == null) {
-          // Add the argument form (= newly created form) to the session.
-          request.getSession().setAttribute(key, searchForm);
-        }
-
-        searchForm = (FST) request.getSession().getAttribute(key);
-
-        // Manage newlyCreated.
-        if (searchForm.getNewlyCreatedRawValue() == null) {
-          searchForm.setNewlyCreated(true);
-
-        } else if (searchForm.getNewlyCreatedRawValue()) {
-          searchForm.setNewlyCreated(false);
-        }
-      }
+      // You've got a search request means the condition is not newly created.
+      searchForm.setNewlyCreated(false);
 
     } else {
-      // I wonder this condition is not possible to happen now....
-      throw new RuntimeException("Not used anymore I believe...");
-      // if (request.getSession().getAttribute(formName) == null) {
-      // throw new RuntimeException("searchForm == null cannot be occurred.");
-      // }
+      // SearchForm in session is adopted when isRequestFromSearchForm == false
+      // (= accessed by URL or condition clear button pressed)
+
+      if (request.getSession().getAttribute(key) == null) {
+        // Add the argument form (= newly created form) to the session.
+        request.getSession().setAttribute(key, searchForm);
+      }
+
+      searchForm = (FST) request.getSession().getAttribute(key);
+
+      // Manage newlyCreated.
+      if (searchForm.getNewlyCreatedRawValue() == null) {
+        searchForm.setNewlyCreated(true);
+
+      } else if (searchForm.getNewlyCreatedRawValue()) {
+        searchForm.setNewlyCreated(false);
+      }
     }
 
-    FST formUsedForSearch = (FST) request.getSession().getAttribute(key);
-
-    return formUsedForSearch;
+    return (FST) request.getSession().getAttribute(key);
   }
 
   private String getSessionKey(String formName, FST searchForm) {
-    return formName + (searchForm == null || searchForm.getDataKind() == null
-        || searchForm.getDataKind().equals("") ? "" : "." + searchForm.getDataKind());
+    String dataKind = java.util.Objects.toString(searchForm.getDataKind(), "");
+    return formName + (dataKind == null || dataKind.isEmpty() ? "" : "." + dataKind);
   }
 
   /**
@@ -297,7 +288,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     prepare(model, loginUser, searchForm, listForm);
     getService().delete(listForm, loginUser);
 
-    return new ReturnUrlBean(this, util, true).showSuccessMessage()
+    return ReturnUrlBuilder.forNormalEnd(this, loginStateUtil).showSuccessMessage()
         .putParam(SplibWebConstants.KEY_DATA_KIND, listForm.getDataKind()).getUrl();
   }
 
@@ -312,14 +303,15 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String showInsertForm(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
-    ReturnUrlBean bean =
-        new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
-    return bean.getUrl();
+    ReturnUrlBuilder builder = ReturnUrlBuilder.forNormalEnd(this, loginStateUtil)
+        .toSubFunction("edit").toPage("page")
+        .putParamMap(request.getParameterMap());
+    return builder.getUrl();
   }
 
   /**
    * Shows edit page in update mode.
-   * 
+   *
    * @param model model
    * @param loginUser loginUser
    * @return URL
@@ -328,8 +320,9 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String showUpdateForm(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {
     prepare(model, loginUser, searchForm, listForm);
-    ReturnUrlBean bean =
-        new ReturnUrlBean(this, util, "edit", "page").putParamMap(request.getParameterMap());
-    return bean.getUrl();
+    ReturnUrlBuilder builder = ReturnUrlBuilder.forNormalEnd(this, loginStateUtil)
+        .toSubFunction("edit").toPage("page")
+        .putParamMap(request.getParameterMap());
+    return builder.getUrl();
   }
 }

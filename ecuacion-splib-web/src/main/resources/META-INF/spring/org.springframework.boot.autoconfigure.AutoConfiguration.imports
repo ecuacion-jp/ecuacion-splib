@@ -1,0 +1,2 @@
+jp.ecuacion.splib.web.config.SplibWebSecurityAutoConfiguration
+jp.ecuacion.splib.web.config.SplibWebExceptionHandlerAutoConfiguration

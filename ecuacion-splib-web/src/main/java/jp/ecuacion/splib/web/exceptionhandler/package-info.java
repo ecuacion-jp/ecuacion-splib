@@ -17,4 +17,7 @@
 /**
  * Provides exception handlers.
  */
+@NullMarked
 package jp.ecuacion.splib.web.exceptionhandler;
+
+import org.jspecify.annotations.NullMarked;

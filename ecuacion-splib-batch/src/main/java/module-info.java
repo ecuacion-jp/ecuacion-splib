@@ -25,7 +25,7 @@ module jp.ecuacion.splib.batch {
   requires transitive spring.batch.infrastructure;
   requires spring.context;
 
-  requires jp.ecuacion.splib.core;
+  requires transitive jp.ecuacion.splib.core;
   requires jp.ecuacion.lib.core;
 
   requires jakarta.annotation;

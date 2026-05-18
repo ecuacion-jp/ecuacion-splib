@@ -16,14 +16,16 @@
 package jp.ecuacion.splib.web.advice;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import jp.ecuacion.splib.web.bean.MessagesBean;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
-import jp.ecuacion.splib.web.util.SplibUtil;
+import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.internal.TransactionTokenUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -33,11 +35,20 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice
 public class SplibControllerAdvice {
 
-  @Autowired
   private HttpServletRequest request;
 
-  @Autowired
-  private SplibUtil util;
+  private SplibLoginStateUtil loginStateUtil;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param request request
+   * @param loginStateUtil loginStateUtil
+   */
+  public SplibControllerAdvice(HttpServletRequest request, SplibLoginStateUtil loginStateUtil) {
+    this.request = request;
+    this.loginStateUtil = loginStateUtil;
+  }
 
   /**
    * Sets objects to model and add model to request attribute.
@@ -57,53 +68,56 @@ public class SplibControllerAdvice {
     // Restore model and messages carried over from the redirect source and add to model.
     recoverRequestParametersFromRedirectContextId(model);
 
+    // Aggregate global errors from all BindingResults, so the page-base template can
+    // display them at the top without iterating over forms.
+    aggregateGlobalErrors(model);
+
     // transactionToken
     model.addAttribute(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN,
         new TransactionTokenUtil().issueNewToken(request));
 
     // Add url path. Direct use of request in Thymeleaf is no longer allowed,
     // and it is recommended to set url etc. to model in the controller.
-    model.addAttribute("loginState", util.getLoginState());
+    model.addAttribute("loginState", loginStateUtil.getLoginState());
+  }
+
+  @SuppressWarnings("unchecked")
+  private void aggregateGlobalErrors(Model model) {
+    // Preserve errors already present in the model (e.g. carried via flash attribute).
+    Object existing = model.getAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS);
+    List<String> messages =
+        existing instanceof List<?> ? new ArrayList<>((List<String>) existing) : new ArrayList<>();
+    for (Map.Entry<String, Object> entry : model.asMap().entrySet()) {
+      if (entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX)
+          && entry.getValue() instanceof BindingResult br) {
+        for (ObjectError err : br.getGlobalErrors()) {
+          if (err.getDefaultMessage() != null) {
+            messages.add(err.getDefaultMessage());
+          }
+        }
+      }
+    }
+    model.addAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, messages);
   }
 
   private void recoverRequestParametersFromRedirectContextId(Model model) {
 
-    // If messages and model are carried over from the redirect source, add them to model.
-    String contextId = request.getParameter(SplibWebConstants.KEY_CONTEXT_ID);
-    if (contextId != null && !contextId.isEmpty()) {
+    // Flash attributes saved before the redirect are already merged into the model by Spring.
+    // If KEY_SAVED_MODEL is present, restore the model attributes saved before the redirect.
+    @SuppressWarnings("unchecked")
+    Map<String, Object> savedModel =
+        (Map<String, Object>) model.getAttribute(SplibWebConstants.KEY_SAVED_MODEL);
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> contextMap = (Map<String, Object>) request.getSession()
-          .getAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
+    if (savedModel != null) {
+      model.addAllAttributes(savedModel);
 
-      // when contextId is appended to the URL
-      // maybe because of the reuse of the URL with contextId but no contextMap is saved.
-      if (contextMap != null) {
-        // model
-        Map<String, Object> modelMapRedirectFrom =
-            ((Model) contextMap.get(SplibWebConstants.KEY_MODEL)).asMap();
-        modelMapRedirectFrom.remove(SplibWebConstants.KEY_MESSAGES_BEAN);
-        model.addAllAttributes(modelMapRedirectFrom);
+      // Validation was already performed before the redirect, so disable re-validation.
+      model.asMap().values().stream()
+          .filter(SplibGeneralForm.class::isInstance)
+          .map(SplibGeneralForm.class::cast)
+          .forEach(SplibGeneralForm::noValidate);
 
-        // messageBean
-        model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN,
-            contextMap.get(SplibWebConstants.KEY_MESSAGES_BEAN));
-
-        // Retrieve forms from model and change settings.
-        // Validation should have been performed before the redirect if needed,
-        // so there is no need to re-validate when reusing.
-        model.asMap().entrySet().stream().filter(e -> e.getValue() instanceof SplibGeneralForm)
-            .forEach(e -> ((SplibGeneralForm) e.getValue()).noValidate());
-
-        // remove contextMap from session
-        request.getSession()
-            .removeAttribute(SplibWebConstants.KEY_CONTEXT_MAP_PREFIX + contextId);
-      }
-    }
-
-    // add new MessagesBean if null
-    if (model.getAttribute(SplibWebConstants.KEY_MESSAGES_BEAN) == null) {
-      model.addAttribute(SplibWebConstants.KEY_MESSAGES_BEAN, new MessagesBean());
+      model.asMap().remove(SplibWebConstants.KEY_SAVED_MODEL);
     }
   }
 }

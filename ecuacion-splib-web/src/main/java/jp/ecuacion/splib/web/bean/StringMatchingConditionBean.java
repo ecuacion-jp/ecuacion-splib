@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.record;
+package jp.ecuacion.splib.web.bean;
 
 /**
  * Stores string match condition for search function.
@@ -51,10 +51,20 @@ public class StringMatchingConditionBean {
     this.ignoresCase = ignoresCase;
   }
 
+  /**
+   * Returns the string search pattern enum.
+   *
+   * @return string search pattern enum
+   */
   public StringMatchingPatternEnum getStringSearchPatternEnum() {
     return stringSearchPatternEnum;
   }
 
+  /**
+   * Returns whether the case is ignored.
+   *
+   * @return {@code true} if the case is ignored
+   */
   public boolean isIgnoresCase() {
     return ignoresCase;
   }

@@ -30,7 +30,7 @@ public class SplibThymeleafStringUtil {
    * <p>"_" is derived from repository query method definition  when relation is used.</p>
    */
   public String selectListMethodName(String itemName) {
-    String[] strs = itemName.split("\\.");
+    String[] strs = itemName.split("\\.", -1);
 
     boolean is1st = true;
     StringBuilder rtn = new StringBuilder();
@@ -59,7 +59,7 @@ public class SplibThymeleafStringUtil {
    * Change string like acc -> getAcc, acc.name -> getAcc().getName.
    */
   public String getMethodName(String itemPropertyPath) {
-    String[] strs = itemPropertyPath.split("\\.");
+    String[] strs = itemPropertyPath.split("\\.", -1);
 
     boolean is1st = true;
     StringBuilder rtn = new StringBuilder();

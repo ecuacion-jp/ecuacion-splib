@@ -35,6 +35,7 @@ public class SplibSecurityUtil {
   /**
    * Returns RolesAndAuthoritiesBean from userDetails.
    */
+  @SuppressWarnings("unused")
   public RolesAndAuthoritiesBean getRolesAndAuthoritiesBean(UserDetails userDetails) {
     if (userDetails == null) {
       return getRolesAndAuthoritiesBean();

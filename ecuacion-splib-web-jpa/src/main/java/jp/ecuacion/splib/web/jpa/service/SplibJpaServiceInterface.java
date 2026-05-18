@@ -15,13 +15,13 @@
  */
 package jp.ecuacion.splib.web.jpa.service;
 
-import jp.ecuacion.lib.jpa.entity.EclibEntity;
+import jp.ecuacion.splib.jpa.entity.SplibEntity;
 
 /**
  * Is used for optimistic locking procedure with JPA.
  * 
  * @param <E> entity
  */
-public interface SplibJpaServiceInterface<E extends EclibEntity> {
+public interface SplibJpaServiceInterface<E extends SplibEntity> {
   
 }

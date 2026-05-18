@@ -17,7 +17,9 @@ package jp.ecuacion.splib.web.config;
 
 import jakarta.servlet.SessionTrackingMode;
 import java.util.Collections;
+import java.util.Objects;
 import jp.ecuacion.splib.web.interceptor.LoggingInterceptor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,22 +39,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     + ",jp.ecuacion.splib.web.util")
 public class SplibWebConfig implements WebMvcConfigurer {
 
-  /*
-   * Sometimes ";" + jsessionId summgles into urls, spring detects unknown character ";"
-   * and it causes a system error.
-   * 
-   * <pre>
-   * problematic url sample:  https://aws-instance-manager.ecuacion.jp/aws-instance-manager/public/show/page;jsessionid=D51E9ED564B7148E81EE82C4E33EC70A?notFound=&id=home
-   * exceprtion kind and its message： 
-   * - org.springframework.security.web.firewall.RequestRejectedException: 
-   * - The request was rejected because the URL contained a potentially malicious String ";"
-   * </pre>
-   * 
-   * <p>
-   * To avoid the incident above we introduce the following.
-   * https://code-kakikaki.com/springboot-url-jsessionid/
-   * </p>
-   */
+  // Sometimes ";" + jsessionId summgles into urls, spring detects unknown character ";"
+  // and it causes a system error.
+  //
+  // problematic url sample:
+  //   https://aws-instance-manager.ecuacion.jp/aws-instance-manager/public/show/page;jsessionid=D51E9ED564B7148E81EE82C4E33EC70A?notFound=&id=home
+  // exceprtion kind and its message：
+  // - org.springframework.security.web.firewall.RequestRejectedException:
+  // - The request was rejected because the URL contained a potentially malicious String ";"
+  //
+  // To avoid the incident above we introduce the following.
+  // https://code-kakikaki.com/springboot-url-jsessionid/
   @Bean
   ServletContextInitializer servletContextInitializer() {
     ServletContextInitializer initializer = servletContext -> {
@@ -68,7 +65,7 @@ public class SplibWebConfig implements WebMvcConfigurer {
   }
 
   @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(logInterceptor());
+  public void addInterceptors(@Nullable InterceptorRegistry registry) {
+    Objects.requireNonNull(registry).addInterceptor(logInterceptor());
   }
 }

@@ -61,22 +61,6 @@ public class HtmlItemNumber extends HtmlItem {
     return (HtmlItemNumber) super.isNotEmpty(authKind, authString, isNotEmpty);
   }
 
-  @Override
-  public HtmlItemNumber notEmptyOnSearch() {
-    return (HtmlItemNumber) super.notEmptyOnSearch();
-  }
-  
-  @Override
-  public HtmlItemNumber isNotEmptyOnSearch(boolean isNotEmpty) {
-    return (HtmlItemNumber) super.isNotEmptyOnSearch(isNotEmpty);
-  }
-
-  @Override
-  public HtmlItemNumber isNotEmptyOnSearch(HtmlItemConditionKeyEnum authKind, String authString,
-      boolean isNotEmpty) {
-    return (HtmlItemNumber) super.isNotEmptyOnSearch(authKind, authString, isNotEmpty);
-  }
-
   /**
    * Returns needsCommas.
    * 

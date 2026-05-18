@@ -15,30 +15,33 @@
  */
 package jp.ecuacion.splib.jpa.advice;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.Optional;
-import jp.ecuacion.lib.jpa.entity.EclibEntity;
 import jp.ecuacion.splib.jpa.bean.SplibControllerAdviceInfoBean;
+import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Before;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Provides the feature to delete the soft-deleted record physically
- * when inserting a new record with the same unique key as soft-deleted one, 
+ * when inserting a new record with the same unique key as soft-deleted one,
  * even though the soft-deleted record and the inserting record belnog to the other groups.
- * 
+ *
  * @see <a href="https://github.com/ecuacion-jp/ecuacion-splib/tree/main/ecuacion-splib-jpa">README</a> from github for details.
  */
 public abstract class SplibSoftDeleteAdvice {
 
-  @Autowired
   private SplibJpaFilterUtil filterUtil;
-  @PersistenceContext
-  private EntityManager em;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param filterUtil filterUtil
+   */
+  protected SplibSoftDeleteAdvice(SplibJpaFilterUtil filterUtil) {
+    this.filterUtil = filterUtil;
+  }
 
   /**
    * Provides the entrypoint of the feature.
@@ -48,8 +51,8 @@ public abstract class SplibSoftDeleteAdvice {
   @SuppressWarnings("unchecked")
   @Before("execution(* *..*.base.repository.*.save(..))")
   public void onBeforeSave(JoinPoint joinPoint) {
-    beforeAdvice((EclibEntity) joinPoint.getArgs()[0],
-        (SplibRepository<EclibEntity, ?>) joinPoint.getThis());
+    beforeAdvice((SplibEntity) joinPoint.getArgs()[0],
+        (SplibRepository<SplibEntity, ?>) joinPoint.getThis());
   }
 
   /*
@@ -59,7 +62,7 @@ public abstract class SplibSoftDeleteAdvice {
    * in order to handle the case where the same unique key value exists with soft-delete=true
    * in another group, and to process child table relationships when they exist.
    */
-  private void beforeAdvice(EclibEntity entity, SplibRepository<EclibEntity, ?> repo) {
+  private void beforeAdvice(SplibEntity entity, SplibRepository<SplibEntity, ?> repo) {
 
     // Not idiomatic Spring, but ThreadLocal is used because injection via @Bean etc. did not work.
     Object groupId = SplibControllerAdviceInfoBean.getGroupId();
@@ -71,7 +74,7 @@ public abstract class SplibSoftDeleteAdvice {
     filterUtil.enableAllFilters(groupId);
   }
 
-  private <T extends EclibEntity> void physicalDeleteSoftDeletedRecords(T entity,
+  private <T extends SplibEntity> void physicalDeleteSoftDeletedRecords(T entity,
       SplibRepository<T, ?> repo) {
 
     // boolean isUpdate = em.contains(entity);

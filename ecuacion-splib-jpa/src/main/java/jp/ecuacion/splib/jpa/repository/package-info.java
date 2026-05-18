@@ -17,4 +17,7 @@
 /**
  * Provides repositories for JPA.
  */
+@NullMarked
 package jp.ecuacion.splib.jpa.repository;
+
+import org.jspecify.annotations.NullMarked;

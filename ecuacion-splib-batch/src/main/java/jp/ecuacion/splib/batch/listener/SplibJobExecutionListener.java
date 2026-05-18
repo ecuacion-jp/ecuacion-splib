@@ -15,7 +15,9 @@
  */
 package jp.ecuacion.splib.batch.listener;
 
+import java.util.Objects;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
@@ -31,14 +33,15 @@ public class SplibJobExecutionListener implements JobExecutionListener {
   protected static final Logger logger = LoggerFactory.getLogger("summary-logger");
 
   @Override
-  public void beforeJob(JobExecution jobExecution) {
-    logger.info("START: job-name: " + jobExecution.getJobInstance().getJobName());
+  public void beforeJob(@Nullable JobExecution jobExecution) {
+    logger.info(
+        "START: job-name: " + Objects.requireNonNull(jobExecution).getJobInstance().getJobName());
     SplibBatchAdvice.setCurrentJob(jobExecution.getJobInstance().getJobName());
   }
 
   @Override
-  public void afterJob(JobExecution jobExecution) {
-    if (jobExecution.getStatus().isUnsuccessful()) {
+  public void afterJob(@Nullable JobExecution jobExecution) {
+    if (Objects.requireNonNull(jobExecution).getStatus().isUnsuccessful()) {
       logger.error("END  : job-name: " + jobExecution.getJobInstance().getJobName()
           + " [ABNORMAL END] exit status: " + jobExecution.getExitStatus().getExitCode());
       // jobExecution.getAllFailureExceptions().forEach(Throwable::printStackTrace);

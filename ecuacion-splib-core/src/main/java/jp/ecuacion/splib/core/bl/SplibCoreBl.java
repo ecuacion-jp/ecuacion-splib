@@ -24,15 +24,17 @@ import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil.Arg;
-import jp.ecuacion.lib.core.util.ReflectionUtil;
+import jp.ecuacion.lib.core.util.PropertyPathUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Supplies utilities.
  */
-public class SplibCoreBl extends ReflectionUtil {
+public class SplibCoreBl {
 
   /**
    * Throws an exception when duplicated. 
@@ -40,11 +42,11 @@ public class SplibCoreBl extends ReflectionUtil {
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
       boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container) {
-    List<String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
+    List<@NonNull String> itemNameKeyList = Arrays.asList(itemPropertyPaths).stream()
         .map(path -> container.getItem(path).getItemNameKey()).toList();
 
     throwExceptionWhenDuplicated(isDuplicated, checkFromAllGroups, itemPropertyPaths,
-        itemNameKeyList.toArray(new String[itemNameKeyList.size()]));
+        itemNameKeyList.toArray(String[]::new));
   }
 
   /**
@@ -68,7 +70,7 @@ public class SplibCoreBl extends ReflectionUtil {
           "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
           "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
       throw new ViolationException(new Violations().add(new BusinessViolation(itemPropertyPaths,
-          msgId, new Arg[] {ObjectsUtil.requireNonNull(Arg.formattedString(str))})));
+          msgId, ObjectsUtil.requireNonNull(Arg.formattedString(str)))));
     }
   }
 
@@ -78,23 +80,26 @@ public class SplibCoreBl extends ReflectionUtil {
   protected <T> void internalDuplicateCheck(boolean checkFromAllGroups, List<T> entityList,
       ItemContainer rec, String itemNameKeyClass, String idItemPropertyPath,
       String... checkTargetItemPropertyPaths) {
-    List<T> listWithoutMyself =
-        entityList.stream().filter(e -> !Objects.requireNonNull(getValue(e, idItemPropertyPath))
-            .toString().equals(getValue(rec, idItemPropertyPath))).toList();
+    List<T> listWithoutMyself = entityList.stream()
+        .filter(e -> !Objects.requireNonNull(PropertyPathUtil.getValue(e, idItemPropertyPath))
+            .toString().equals(PropertyPathUtil.getValue(rec, idItemPropertyPath)))
+        .toList();
 
     for (String path : checkTargetItemPropertyPaths) {
       listWithoutMyself = listWithoutMyself.stream()
-          .filter(e -> (getValue(e, path) == null && getValue(rec, path) == null)
-              || getValue(e, path) != null && Objects.requireNonNull(getValue(e, path)).toString()
-                  .equals(getValue(rec, path)))
+          .filter(e -> (PropertyPathUtil.getValue(e, path) == null
+              && PropertyPathUtil.getValue(rec, path) == null)
+              || (PropertyPathUtil.getValue(e, path) != null
+                  && Objects.requireNonNull(PropertyPathUtil.getValue(e, path)).toString()
+                      .equals(PropertyPathUtil.getValue(rec, path))))
           .toList();
     }
 
-    List<String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
+    List<@NonNull String> itemNameKeys = Arrays.asList(checkTargetItemPropertyPaths).stream()
         .map(path -> rec.getItem(path).getItemNameKey()).toList();
 
-    SplibCoreBl.throwExceptionWhenDuplicated(listWithoutMyself.size() > 0, checkFromAllGroups,
-        checkTargetItemPropertyPaths, itemNameKeys.toArray(new String[itemNameKeys.size()]));
+    SplibCoreBl.throwExceptionWhenDuplicated(!listWithoutMyself.isEmpty(), checkFromAllGroups,
+        checkTargetItemPropertyPaths, itemNameKeys.toArray(String[]::new));
   }
 
   /**
@@ -107,9 +112,10 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with list.
    */
-  public <T> void internalChildExistenceCheck(List<T> list, String messageId,
+  public <T> void internalChildExistenceCheck(List<T> list, @Nullable String messageId,
       String entityMessageIdPart) {
-    internalChildExistenceCheck(list, messageId, entityMessageIdPart, null, null, null);
+    internalChildExistenceCheck(list, messageId, entityMessageIdPart,
+        new ChildExistenceCheckConditionBean[] {}, null, null);
   }
 
   /**
@@ -123,20 +129,22 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with list.
    */
-  protected <T> void internalChildExistenceCheck(List<T> list, String messageId,
-      String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
-      String referingRecordDataLabel, String recordSpecifyingFieldName) {
+  protected <T> void internalChildExistenceCheck(List<T> list, @Nullable String messageId,
+      String entityMessageIdPart, ChildExistenceCheckConditionBean @Nullable [] conditions,
+      @Nullable String referingRecordDataLabel, @Nullable String recordSpecifyingFieldName) {
 
     if (conditions != null) {
       for (ChildExistenceCheckConditionBean condition : conditions) {
-        list = list.stream()
-            .filter(e -> Objects.requireNonNull(getValue(e, condition.itemPropertyPath))
-                .equals(condition.conditionValue))
-            .toList();
+        list =
+            list.stream()
+                .filter(e -> Objects
+                    .requireNonNull(PropertyPathUtil.getValue(e, condition.itemPropertyPath))
+                    .equals(condition.conditionValue))
+                .toList();
       }
     }
 
-    if (list.size() > 0) {
+    if (!list.isEmpty()) {
       String msgCmnPrefix = "jp.ecuacion.splib.core.bl.SplibCoreBl.message";
       String msgPrefix = msgCmnPrefix + ".cannotBeDeletedBecauseOfReference";
       String msgId = messageId != null ? messageId
@@ -146,10 +154,12 @@ public class SplibCoreBl extends ReflectionUtil {
           referingRecordDataLabel == null ? msgCmnPrefix + "Part.targetData"
               : referingRecordDataLabel;
 
-      Arg[] args = recordSpecifyingFieldName == null ? new Arg[] {Arg.message(entityMessageIdPart)}
-          : new Arg[] {Arg.message(entityMessageIdPart),
-              Arg.string(referingRecordDataLabelMsgIdPart), Arg.string(Objects
-                  .requireNonNull(getValue(list.get(0), recordSpecifyingFieldName)).toString())};
+      Object[] args = recordSpecifyingFieldName == null
+          ? new Object[] {Arg.message(entityMessageIdPart)}
+          : new Object[] {Arg.message(entityMessageIdPart),
+              referingRecordDataLabelMsgIdPart,
+              Objects.requireNonNull(
+                  PropertyPathUtil.getValue(list.get(0), recordSpecifyingFieldName)).toString()};
       throw new ViolationException(new Violations().add(new BusinessViolation(msgId, args)));
     }
   }
@@ -164,9 +174,10 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with optional.
    */
-  public <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
+  public <T> void internalChildExistenceCheck(Optional<T> optional, @Nullable String messageId,
       String entityMessageIdPart) {
-    internalChildExistenceCheck(optional, messageId, entityMessageIdPart, null, null, null);
+    internalChildExistenceCheck(optional, messageId, entityMessageIdPart,
+        new ChildExistenceCheckConditionBean[] {}, null, null);
   }
 
   /**
@@ -180,16 +191,16 @@ public class SplibCoreBl extends ReflectionUtil {
   /**
    * Offers child existence check with optional.
    */
-  protected <T> void internalChildExistenceCheck(Optional<T> optional, String messageId,
-      String entityMessageIdPart, ChildExistenceCheckConditionBean[] conditions,
-      String referingRecordDataLabel, String recordSpecifyingFieldName) {
+  protected <T> void internalChildExistenceCheck(Optional<T> optional, @Nullable String messageId,
+      String entityMessageIdPart, @Nullable ChildExistenceCheckConditionBean[] conditions,
+      @Nullable String referingRecordDataLabel, @Nullable String recordSpecifyingFieldName) {
     List<T> list = new ArrayList<>();
 
     if (optional.isPresent()) {
       list.add(optional.get());
     }
 
-    internalChildExistenceCheck(list, null, entityMessageIdPart, conditions,
+    internalChildExistenceCheck(list, (@Nullable String) null, entityMessageIdPart, conditions,
         referingRecordDataLabel, recordSpecifyingFieldName);
   }
 

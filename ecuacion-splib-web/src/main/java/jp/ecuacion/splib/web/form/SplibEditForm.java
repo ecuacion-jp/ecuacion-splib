@@ -15,15 +15,18 @@
  */
 package jp.ecuacion.splib.web.form;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Stores data for edit.
  */
 public abstract class SplibEditForm extends SplibGeneralForm {
 
   /** Stores whether the edit request is insert or update. */
+  @Nullable
   protected Boolean isInsert;
 
-  public Boolean isInsert() {
+  public @Nullable Boolean isInsert() {
     return isInsert;
   }
 

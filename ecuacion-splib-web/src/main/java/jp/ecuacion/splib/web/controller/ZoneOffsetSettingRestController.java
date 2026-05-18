@@ -16,7 +16,6 @@
 package jp.ecuacion.splib.web.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,8 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ZoneOffsetSettingRestController {
 
-  @Autowired
   private HttpServletRequest request;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param request request
+   */
+  public ZoneOffsetSettingRestController(HttpServletRequest request) {
+    this.request = request;
+  }
   
   /**
    * Receives zone offset value from the user PC and set it into the session.

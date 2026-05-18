@@ -28,6 +28,7 @@ module jp.ecuacion.splib.web {
   exports jp.ecuacion.splib.web.item;
   exports jp.ecuacion.splib.web.record;
   exports jp.ecuacion.splib.web.service;
+  exports jp.ecuacion.splib.web.oauth2;
   exports jp.ecuacion.splib.web.util;
 
   requires transitive spring.beans;
@@ -40,6 +41,11 @@ module jp.ecuacion.splib.web {
   requires spring.security.crypto;
   requires transitive spring.security.web;
   requires transitive spring.security.config;
+  requires transitive spring.security.oauth2.client;
+  requires transitive spring.security.oauth2.core;
+  requires transitive spring.security.oauth2.jose;
+  requires com.nimbusds.jose.jwt;
+  requires com.fasterxml.jackson.databind;
   requires transitive spring.web;
   requires transitive spring.webmvc;
 

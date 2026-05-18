@@ -18,6 +18,7 @@ package jp.ecuacion.splib.batch.exceptionhandler;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
@@ -25,23 +26,33 @@ import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.batch.repeat.RepeatContext;
 import org.springframework.batch.repeat.exception.ExceptionHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
  * Provides {@code ExceptionHandler}.
- * 
- * <p>In batch apps, this class is always used 
+ *
+ * <p>In batch apps, this class is always used
  *     while in web apps the use of {@code SplibExceptionHandler} is arbitrary.<br>
  *     It seems that in batch apps that versatility is not needed.</p>
  */
 @Component
 public class SplibExceptionHandler implements ExceptionHandler {
 
-  @Autowired(required = false)
+  @Nullable
   private SplibExceptionHandlerAction action;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param action action, may be {@code null}
+   */
+  public SplibExceptionHandler(@Nullable SplibExceptionHandlerAction action) {
+    this.action = action;
+  }
 
   private DetailLogger detailLog = new DetailLogger(this);
 
@@ -50,7 +61,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
           + "or the advice to register current {0} is not implemented.)";
 
   @Override
-  public void handleException(RepeatContext context, Throwable throwable)
+  public void handleException(@Nullable RepeatContext context, @Nullable Throwable throwable)
       throws Throwable {
 
     throwable = ObjectsUtil.requireNonNull(throwable);
@@ -64,7 +75,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
 
     if (action != null) {
       try {
-        action.execute(throwable);
+        Objects.requireNonNull(action).execute(throwable);
 
       } catch (Throwable th) {
         LogUtil.logSystemError(detailLog, th);
@@ -73,7 +84,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
 
     // For ViolationException, list all messages so they are visible in the log.
     if (throwable instanceof ViolationException) {
-      List<String> msgList = ExceptionUtil.getMessageList(
+      List<@NonNull String> msgList = ExceptionUtil.getMessageList(
           (ViolationException) throwable, Locale.getDefault());
       detailLog.info("==========");
       detailLog.info("[ViolationException message list]");

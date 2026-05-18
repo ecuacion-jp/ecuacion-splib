@@ -31,7 +31,7 @@ public class ConfigRecord extends SplibRecord implements HtmlItemContainer {
   private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 
   @Override
-  public HtmlItem[] getHtmlItems() {
+  public HtmlItem[] customizedItems() {
     return new HtmlItem[] {};
   }
 

@@ -49,11 +49,11 @@ or you can embed application servers in a war with a little change.
 
 ## Documentation
 
-- [javadoc](https://javadoc.ecuacion.jp/apidocs/ecuacion-splib-web/)
+- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-web/)
 
-## Introduction
+## Installation
 
-Check [Introduction](https://github.com/ecuacion-jp/ecuacion-splib) part of `README` in `ecuacion-splib`.  
+Check [Installation](https://github.com/ecuacion-jp/ecuacion-splib) part of `README` in `ecuacion-splib`.  
 The description of dependent `ecuacion` modules is as follows.
 
 ```xml
