@@ -423,7 +423,6 @@ public abstract class SplibExceptionHandler {
     return addViolation(br, errorCode, propertyPaths, single, needsMsgAtTopDefault, locale);
   }
 
-  @SuppressWarnings("rawtypes")
   private boolean isClassValidatorConstraint(ConstraintViolation<?> cv) {
     return cv.getConstraintDescriptor().getConstraintValidatorClasses()
         .stream().anyMatch(c -> ClassValidator.class.isAssignableFrom(c));
