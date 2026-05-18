@@ -463,7 +463,8 @@
 										unless:set="jacoco.report.dir.exists"/>
 									<zip
 										destfile="${project.build.directory}/${project.build.finalName}-jacoco-report.zip"
-										basedir="${project.build.directory}/site/jacoco"/>
+										basedir="${project.build.directory}/site/jacoco"
+										whenempty="create"/>
 								</target>
 							</configuration>
 						</execution>
