@@ -459,10 +459,11 @@
 									<available
 										file="${project.build.directory}/site/jacoco"
 										type="dir" property="jacoco.report.dir.exists"/>
+									<mkdir dir="${project.build.directory}/site/jacoco"
+										unless:set="jacoco.report.dir.exists"/>
 									<zip
 										destfile="${project.build.directory}/${project.build.finalName}-jacoco-report.zip"
-										basedir="${project.build.directory}/site/jacoco"
-										if:set="jacoco.report.dir.exists"/>
+										basedir="${project.build.directory}/site/jacoco"/>
 								</target>
 							</configuration>
 						</execution>
