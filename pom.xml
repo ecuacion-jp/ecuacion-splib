@@ -574,7 +574,15 @@
 				<artifactId>allure-junit5</artifactId>
 				<version>${io.qameta.allure.allure-junit5.version}</version>
 			</dependency>
-		</dependencies>
+
+			<!-- POI needs newer version than spring boot -->
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commond-codec</artifactId>
+				<version>1.20.0</version>
+			</dependency>
+			
+		</dependencies>		
 	</dependencyManagement>
 	
 	<profiles>
