@@ -39,7 +39,9 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
   /**
    * Constructs a new instance.
    */
-  public PropertiesFileUtilMessageSource() {}
+  public PropertiesFileUtilMessageSource() {
+    setUseCodeAsDefaultMessage(true);
+  }
 
   /**
    * Resolves the given message code via {@link PropertiesFileUtil}.
@@ -52,7 +54,7 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
    * @return a {@link MessageFormat} for the resolved message, or {@code null} if not found
    */
   @Override
-  protected MessageFormat resolveCode(@Nullable String code, @Nullable Locale locale) {
+  protected @Nullable MessageFormat resolveCode(@Nullable String code, @Nullable Locale locale) {
     String key = Objects.requireNonNull(code);
     String template;
     if (PropertiesFileUtil.hasMessage(key)) {
@@ -62,7 +64,7 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
     } else if (PropertiesFileUtil.hasItemName(key)) {
       template = PropertiesFileUtil.getItemName(locale, key);
     } else {
-      template = key;
+      return null;
     }
     return new MessageFormat(template, locale != null ? locale : Locale.ROOT);
   }
