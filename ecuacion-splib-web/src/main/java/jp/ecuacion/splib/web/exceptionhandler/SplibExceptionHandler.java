@@ -22,6 +22,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -188,7 +189,17 @@ public abstract class SplibExceptionHandler {
       }
       redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
       String referer = request.getHeader("Referer");
-      return new ModelAndView("redirect:" + (referer != null ? referer : "/"));
+      String redirectTarget = "/";
+      if (referer != null) {
+        try {
+          URI uri = URI.create(referer);
+          redirectTarget = uri.getRawPath() != null ? uri.getRawPath() : "/";
+          if (uri.getRawQuery() != null) {
+            redirectTarget += "?" + uri.getRawQuery();
+          }
+        } catch (IllegalArgumentException ignored) {}
+      }
+      return new ModelAndView("redirect:" + redirectTarget);
     }
 
     boolean needsMsgAtItemDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
