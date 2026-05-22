@@ -679,6 +679,7 @@
 						<configuration>
 							<publishingServerId>central</publishingServerId>
 							<autoPublish>false</autoPublish>
+							<deploymentName>ecuacion-splib-${project.version}</deploymentName>
 						</configuration>
 					</plugin>
 

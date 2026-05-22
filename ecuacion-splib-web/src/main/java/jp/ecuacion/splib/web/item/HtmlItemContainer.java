@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
@@ -29,6 +30,8 @@ import jp.ecuacion.splib.web.bean.StringMatchingConditionBean;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Has features related web environment.
@@ -56,8 +59,23 @@ public interface HtmlItemContainer extends ItemContainer {
    * @return HtmlItem[]
    */
   default HtmlItem[] getHtmlItems() {
+    Logger log = LoggerFactory.getLogger(HtmlItemContainer.class);
     return allCustomizedPropertyPaths().stream()
-        .map(path -> getHtmlItem(path))
+        .flatMap(path -> {
+          try {
+            return Stream.of(getHtmlItem(path));
+          } catch (RuntimeException e) {
+            Throwable cause = e;
+            while (cause != null) {
+              if (cause instanceof NoSuchFieldException nsfe) {
+                log.info("HtmlItem '{}' not found, skipping. detail: {}", path, nsfe.getMessage());
+                return Stream.empty();
+              }
+              cause = cause.getCause();
+            }
+            throw e;
+          }
+        })
         .toArray(HtmlItem[]::new);
   }
 

@@ -336,11 +336,14 @@ public abstract class SplibExceptionHandler {
 
     // Showing message
     if (!StringUtils.isEmpty(redirectException.getMessageId())) {
-      if (getModel() != null) {
+      SplibGeneralForm[] forms = getModel() != null
+          ? (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS)
+          : null;
+      if (forms != null && forms.length > 0) {
         addBusinessViolation(new BusinessViolation(redirectException.getMessageId(),
             (Object[]) redirectException.getMessageArgs()), true, request.getLocale());
       } else {
-        // Controller#prepare did not run, so no form/BindingResult is available.
+        // Controller#prepare did not run or no forms in model; no form/BindingResult is available.
         // Resolve the message and pass it via flash attribute so the redirect target can show it.
         String resolved = PropertiesFileUtil.getMessage(request.getLocale(),
             redirectException.getMessageId(), (Object[]) redirectException.getMessageArgs());
