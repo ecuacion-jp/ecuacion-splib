@@ -24,6 +24,10 @@ and accelerate development of business applications.
 `ecuacion-splib` uses `Spring Boot 3`. `ecuacion-lib` and other ecuacion libraries,
 utilities and apps use `Jakarta EE 10` for compatibility.
 
+## Versioning
+
+`ecuacion-splib` follows the spirit of Semantic Versioning. Major version increments indicate breaking changes.
+
 ## System Requirements
 
 - JDK 21 or above.
@@ -70,3 +74,7 @@ utilities and apps use `Jakarta EE 10` for compatibility.
 
 4. Add the required external modules to your `pom.xml`.
    (Check the `Dependent External Libraries > Manual Load Needed Libraries` section of the `README` in the module you want to add to your project.)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for bug reports, feature requests, and pull request guidelines.

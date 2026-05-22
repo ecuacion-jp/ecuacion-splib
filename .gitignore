@@ -146,3 +146,6 @@ products/
 
 # Claude Code (local-only personal settings)
 .claude/
+
+# VS Code (local-only settings)
+.vscode/

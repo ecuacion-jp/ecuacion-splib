@@ -30,8 +30,6 @@ public class ConfigController {
    * @throws Exception Exception
    */
   @GetMapping("/api/public/ecuacion/config")
-  public void config() throws Exception {
-    System.out.println("test");
-    //    String scriptFilePath = PropertiesFileUtil.getApp(scriptPathKey);
+  public void config() {
   }
 }
