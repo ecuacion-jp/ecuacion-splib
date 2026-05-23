@@ -26,8 +26,6 @@ public class ConfigController {
 
   /**
    * Provides config response.
-   *
-   * @throws Exception Exception
    */
   @GetMapping("/api/public/ecuacion/config")
   public void config() {
