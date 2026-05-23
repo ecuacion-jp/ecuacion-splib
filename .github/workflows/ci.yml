@@ -42,6 +42,14 @@ jobs:
         working-directory: ecuacion-utils
         run: mvn install -DskipTests -q
 
+      - name: Validate POM after version update
+        working-directory: ecuacion-splib
+        run: |
+          mvn versions:set -DnewVersion=0.0.0-CI-TEST -DgenerateBackupPoms=false
+          mvn versions:update-properties -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DgenerateBackupPoms=false
+          mvn validate
+          git checkout -- .
+
       - name: Verify
         working-directory: ecuacion-splib
         run: mvn verify -Dwagon.skip=true
