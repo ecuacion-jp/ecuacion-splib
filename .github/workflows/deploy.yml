@@ -75,7 +75,6 @@ jobs:
       - name: Update versions
         run: |
           mvn versions:set -DnewVersion=${{ steps.tag.outputs.value }} -DgenerateBackupPoms=false
-          mvn versions:update-parent -DgenerateBackupPoms=false
           mvn versions:update-properties -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DgenerateBackupPoms=false
 
       - name: Verify
