@@ -26,12 +26,8 @@ public class ConfigController {
 
   /**
    * Provides config response.
-   *
-   * @throws Exception Exception
    */
   @GetMapping("/api/public/ecuacion/config")
-  public void config() throws Exception {
-    System.out.println("test");
-    //    String scriptFilePath = PropertiesFileUtil.getApp(scriptPathKey);
+  public void config() {
   }
 }

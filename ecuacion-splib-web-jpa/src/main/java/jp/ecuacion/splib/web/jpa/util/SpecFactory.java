@@ -123,7 +123,7 @@ public class SpecFactory<T extends SplibEntity> {
   private @Nullable Specification<T> stringContains(String propertyPath, @Nullable String value,
       boolean ignoresCase) {
     return value == null ? null
-        : stringSearchPattern(propertyPath, value, "%" + value + "%", ignoresCase);
+        : stringSearchPattern(propertyPath, value, "%" + escapeLike(value) + "%", ignoresCase);
   }
 
   /**
@@ -159,7 +159,7 @@ public class SpecFactory<T extends SplibEntity> {
   private @Nullable Specification<T> stringStartsWith(String propertyPath, @Nullable String value,
       boolean ignoresCase) {
     return value == null ? null
-        : stringSearchPattern(propertyPath, value, value + "%", ignoresCase);
+        : stringSearchPattern(propertyPath, value, escapeLike(value) + "%", ignoresCase);
   }
 
   /**
@@ -196,7 +196,7 @@ public class SpecFactory<T extends SplibEntity> {
   private @Nullable Specification<T> stringEndsWith(String propertyPath, @Nullable String value,
       boolean ignoresCase) {
     return value == null ? null
-        : stringSearchPattern(propertyPath, value, "%" + value, ignoresCase);
+        : stringSearchPattern(propertyPath, value, "%" + escapeLike(value), ignoresCase);
   }
 
   /**
@@ -225,8 +225,13 @@ public class SpecFactory<T extends SplibEntity> {
           ? (criteriaValue == null ? "" : criteriaValue.toUpperCase(Locale.ROOT))
           : (criteriaValue == null ? "" : criteriaValue);
 
-      return cb.like(criteriaField, finalCriteriaValue);
+      return cb.like(criteriaField, finalCriteriaValue, '\\');
     };
+  }
+
+  // Escapes LIKE wildcards (%, _) and backslash in user input to prevent unintended matching.
+  private String escapeLike(String value) {
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
   }
 
   /**
