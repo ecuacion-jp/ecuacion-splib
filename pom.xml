@@ -21,7 +21,9 @@
 	<groupId>jp.ecuacion.splib</groupId>
 	<artifactId>ecuacion-splib-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<!-- Using 0.0.2-SNAPSHOT instead of 0.0.1-SNAPSHOT to avoid a DuplicationOfParentVersion IDE warning:
+	     0.0.1-SNAPSHOT matches the version of the parent POM (ecuacion-lib-parent:0.0.1-SNAPSHOT). -->
+	<version>0.0.2-SNAPSHOT</version>
 	<name>${project.artifactId}</name>
 	<description>Spring Boot 3 based shared libraries for business application development.</description>
 	<url>https://github.com/ecuacion-jp/ecuacion-splib</url>
@@ -46,93 +48,24 @@
 		<url>https://github.com/ecuacion-jp/ecuacion-splib</url>
 	</scm>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.13</version>
+		<groupId>jp.ecuacion.lib</groupId>
+		<artifactId>ecuacion-lib-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
 	</parent>
+	
 	<properties>
-		<java.version>21</java.version>
-		<!-- maven-compiler-plugin referred properties (no need to plugin definition) -->
-		<maven.compiler.release>${java.version}</maven.compiler.release>
-		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<repository.ecuacion-repo-sftp-root>sftp://maven-repo.ecuacion.jp/home/ytbiz/www/maven-repo.ecuacion.jp/public</repository.ecuacion-repo-sftp-root>
-		<repository.ecuacion-repo-http-root>http://maven-repo.ecuacion.jp/public</repository.ecuacion-repo-http-root>
-		<repository.ecuacion-repo-sftp-private-root>sftp://maven-repo.ecuacion.jp/home/ytbiz/www/maven-repo.ecuacion.jp/private</repository.ecuacion-repo-sftp-private-root>
-		<repository.ecuacion-repo-http-private-root>http://maven-repo.ecuacion.jp/private</repository.ecuacion-repo-http-private-root>
-		<remote-location.javadoc>sftp://docs.ecuacion.jp/home/ytbiz/www/docs.ecuacion.jp/javadoc</remote-location.javadoc>
-		<remote-location.docs-work>sftp://docs.ecuacion.jp/home/ytbiz/my-data/scripts/work</remote-location.docs-work>
-		<checkstyle.config.site>https://ecuacion-jp.github.io/config/common/checkstyle</checkstyle.config.site>
-		<ecuacion-splib.version>0.0.1-SNAPSHOT</ecuacion-splib.version>
+		<ecuacion-splib.version>0.0.2-SNAPSHOT</ecuacion-splib.version>
 		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
 		<ecuacion-util.version>0.0.2-SNAPSHOT</ecuacion-util.version>
 		<!-- 3rd party module versions -->
+		<spring-boot.version>3.5.13</spring-boot.version>
 		<org.apache.maven.plugins.maven-war-plugin.version>3.2.2</org.apache.maven.plugins.maven-war-plugin.version>
-		<org.apache.maven.wagon.version>3.5.3</org.apache.maven.wagon.version>
-		<org.codehaus.mojo.exec-maven-plugin.version>3.1.0</org.codehaus.mojo.exec-maven-plugin.version>
-		<org.apache.maven.plugins.maven-compiler-plugin.version>3.15.0</org.apache.maven.plugins.maven-compiler-plugin.version>
-		<org.apache.maven.plugins.maven-source-plugin.version>3.4.0</org.apache.maven.plugins.maven-source-plugin.version>
-		<org.apache.maven.plugins.maven-javadoc-plugin.version>3.12.0</org.apache.maven.plugins.maven-javadoc-plugin.version>
-		<org.codehaus.mojo.wagon-maven-plugin.version>2.0.2</org.codehaus.mojo.wagon-maven-plugin.version>
-		<!-- antrun -->
-		<org.apache.maven.plugins.maven-antrun-plugin.version>3.1.0</org.apache.maven.plugins.maven-antrun-plugin.version>
-		<com.mycila.license-maven-plugin.version>5.0.0</com.mycila.license-maven-plugin.version>
-		<org.apache.maven.plugins.maven-checkstyle-plugin.version>3.6.0</org.apache.maven.plugins.maven-checkstyle-plugin.version>
-		<com.puppycrawl.tools.checkstyle.version>13.4.1</com.puppycrawl.tools.checkstyle.version>
-		<com.github.spotbugs.spotbugs-maven-plugin.version>4.9.8.3</com.github.spotbugs.spotbugs-maven-plugin.version>
-		<com.github.spotbugs.spotbugs.version>4.9.8</com.github.spotbugs.spotbugs.version>
-		<org.apache.maven.plugins.maven-enforcer-plugin.version>3.6.2</org.apache.maven.plugins.maven-enforcer-plugin.version>
-		<org.apache.maven.plugins.maven-gpg-plugin.version>3.2.8</org.apache.maven.plugins.maven-gpg-plugin.version>
-		<!-- allure -->
-		<io.qameta.allure.allure-maven.version>2.14.0</io.qameta.allure.allure-maven.version>
-		<io.qameta.allure.allure-junit5.version>2.29.0</io.qameta.allure.allure-junit5.version>
-		<!-- jacoco -->
-		<org.jacoco.jacoco-maven-plugin.version>0.8.13</org.jacoco.jacoco-maven-plugin.version>
-		<!-- surefire -->
-		<org.apache.maven.plugins.maven-surefire-plugin.version>3.2.5</org.apache.maven.plugins.maven-surefire-plugin.version>
-		<org.sonatype.central.central-publishing-maven-plugin.version>0.10.0</org.sonatype.central.central-publishing-maven-plugin.version>
 		<!-- nullaway / error prone -->
 		<com.uber.nullaway.version>0.13.4</com.uber.nullaway.version>
 		<com.google.errorprone.error_prone_core.version>2.49.0</com.google.errorprone.error_prone_core.version>
-
-		<!-- wagon upload is off by default; enabled only via prod profile -->
-		<wagon.skip>true</wagon.skip>
-
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>ecuacion-repo-http</id>
-			<name>ecuacion-repo-http</name>
-			<url>https://maven-repo.ecuacion.jp/public</url>
-		</repository>
-	</repositories>
-
-	<distributionManagement>
-		<!-- Used only on the build server. Destination for deploying the generated jar. -->
-		<repository>
-			<!-- Not accessible to general users. Only available from the build environment. -->
-			<id>ecuacion-repo-sftp</id>
-			<name>ecuacion maven repository</name>
-			<url>${repository.ecuacion-repo-sftp-root}</url>
-		</repository>
-	</distributionManagement>
 	<build>
-		<extensions>
-			<!-- Enabling the use of SSH -->
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${org.apache.maven.wagon.version}</version>
-			</extension>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh-external</artifactId>
-				<version>${org.apache.maven.wagon.version}</version>
-			</extension>
-		</extensions>
-		
 		<pluginManagement>
 			<plugins>
 
@@ -147,260 +80,16 @@
 					</configuration>
 				</plugin>
 
-				<!-- maven-source-plugin (outputs a jar of source) -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-source-plugin</artifactId>
-					<version>${org.apache.maven.plugins.maven-source-plugin.version}</version>
-					<executions>
-						<execution>
-							<phase>package</phase>
-							<goals>
-								<goal>jar</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-				<!-- maven-javadoc-plugin (outputs a jar of javadocs) -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>${org.apache.maven.plugins.maven-javadoc-plugin.version}</version>
-					<configuration>
-						<show>protected</show>
-						<encoding>UTF-8</encoding>
-						<charset>UTF-8</charset>
-						<docencoding>UTF-8</docencoding>
-						<failOnError>true</failOnError>
-						<failOnWarnings>false</failOnWarnings>
-						<doclint>all,-missing</doclint>
-						<excludePackageNames>*.internal</excludePackageNames>
-						<additionalJOptions>
-							<additionalJOption>-Xmaxerrs</additionalJOption>
-							<additionalJOption>1000</additionalJOption>
-							<additionalJOption>-Xmaxwarns</additionalJOption>
-							<additionalJOption>1000</additionalJOption>
-						</additionalJOptions>
-					</configuration>
-					<executions>
-						<execution>
-							<id>attach-javadocs</id>
-							<phase>package</phase>
-							<goals>
-								<goal>jar</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-				<!-- wagon to upload docs (javadoc, allure, jacoco) -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>wagon-maven-plugin</artifactId>
-					<version>${org.codehaus.mojo.wagon-maven-plugin.version}</version>
-					<configuration>
-						<skip>${wagon.skip}</skip>
-						<serverId>ecuacion-repo-sftp</serverId>
-						<url>${remote-location.docs-work}</url>
-					</configuration>
-					<executions>
-						<execution>
-							<id>upload-javadoc-to-server</id>
-							<phase>deploy</phase>
-							<goals>
-								<goal>upload-single</goal>
-							</goals>
-							<configuration>
-								<fromFile>${project.build.directory}/${project.build.finalName}-javadoc.jar</fromFile>
-								<toFile>${project.artifactId}/${project.build.finalName}-javadoc.jar</toFile>
-							</configuration>
-						</execution>
-						<execution>
-							<id>upload-allure-to-server</id>
-							<phase>deploy</phase>
-							<goals>
-								<goal>upload-single</goal>
-							</goals>
-							<configuration>
-								<fromFile>${project.build.directory}/${project.build.finalName}-allure-report.zip</fromFile>
-								<toFile>${project.artifactId}/${project.build.finalName}-allure-report.zip</toFile>
-							</configuration>
-						</execution>
-						<execution>
-							<id>upload-jacoco-to-server</id>
-							<phase>deploy</phase>
-							<goals>
-								<goal>upload-single</goal>
-							</goals>
-							<configuration>
-								<fromFile>${project.build.directory}/${project.build.finalName}-jacoco-report.zip</fromFile>
-								<toFile>${project.artifactId}/${project.build.finalName}-jacoco-report.zip</toFile>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-
-				<!-- mycila license-maven-plugin -->
-				<plugin>
-					<groupId>com.mycila</groupId>
-					<artifactId>license-maven-plugin</artifactId>
-					<version>${com.mycila.license-maven-plugin.version}</version>
-					<executions>
-					<execution>
-						<id>license</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-					</executions>
-					<configuration>
-						<properties>
-							<owner>ecuacion.jp</owner>
-							<email>info@ecuacion.jp</email>
-							<year>2012</year>
-						</properties>
-						<licenseSets>
-							<licenseSet>
-								<header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
-								<excludes>
-									<exclude>src/test/resources/**</exclude>
-									<exclude>src/main/resources/**</exclude>
-									<exclude>**/*.css</exclude>
-									<exclude>**/*.txt</exclude>
-									<exclude>**/*.md</exclude>
-									<exclude>.allure/**</exclude>
-								</excludes>
-							</licenseSet>
-						</licenseSets>
-					</configuration>
-				</plugin>
-
-				<!-- checkstyle -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>${org.apache.maven.plugins.maven-checkstyle-plugin.version}</version>
-					<dependencies>
-						<dependency>
-							<groupId>com.puppycrawl.tools</groupId>
-							<artifactId>checkstyle</artifactId>
-							<version>${com.puppycrawl.tools.checkstyle.version}</version>
-						</dependency>
-					</dependencies>
-					<configuration>
-						<failOnViolation>false</failOnViolation>
-						<failsOnError>false</failsOnError>
-						<violationSeverity>info</violationSeverity>
-						<configLocation>${checkstyle.config.site}/google_checks.xml</configLocation>
-						<propertiesLocation>${checkstyle.config.site}/checkstyle-for-libs-and-utils.properties</propertiesLocation>
-						<sourceDirectories>
-							<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-							<sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-						</sourceDirectories>
-					</configuration>
-					<executions>
-						<execution>
-							<id>checkstyle</id>
-							<phase>validate</phase>
-							<goals>
-								<goal>check</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-				<!-- spotbugs -->
-				<plugin>
-					<groupId>com.github.spotbugs</groupId>
-					<artifactId>spotbugs-maven-plugin</artifactId>
-					<version>${com.github.spotbugs.spotbugs-maven-plugin.version}</version>
-					<dependencies>
-						<dependency>
-							<groupId>com.github.spotbugs</groupId>
-							<artifactId>spotbugs</artifactId>
-							<version>${com.github.spotbugs.spotbugs.version}</version>
-						</dependency>
-					</dependencies>
-					<executions>
-						<execution>
-							<phase>test-compile</phase>
-							<goals>
-								<goal>check</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<excludeFilterFile>https://ecuacion-jp.github.io/config/common/spotbugs/exclude.xml</excludeFilterFile>
-						<failOnError>true</failOnError>
-					</configuration>
-				</plugin>
-
-				<!-- allure -->
-				<plugin>
-					<groupId>io.qameta.allure</groupId>
-					<artifactId>allure-maven</artifactId>
-					<version>${io.qameta.allure.allure-maven.version}</version>
-					<configuration>
-						<resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
-					</configuration>
-					<executions>
-						<execution>
-							<id>allure-report</id>
-							<phase>prepare-package</phase>
-							<goals>
-								<goal>report</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-				<!-- maven-surefire-plugin: redirect allure results to target/ -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
-					<configuration>
-						<!-- Disable module path: module-info.java in main sources causes surefire
-						     to run in module mode, but Spring Boot dependencies do not fully
-						     support JPMS. Using classpath mode avoids module resolution errors. -->
-						<useModulePath>false</useModulePath>
-						<systemPropertyVariables>
-							<allure.results.directory>
-								${project.build.directory}/allure-results
-							</allure.results.directory>
-						</systemPropertyVariables>
-					</configuration>
-				</plugin>
-
-				<!-- jacoco -->
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>${org.jacoco.jacoco-maven-plugin.version}</version>
-					<executions>
-						<execution>
-							<id>prepare-agent</id>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-						</execution>
-						<execution>
-							<id>report</id>
-							<phase>test</phase>
-							<goals>
-								<goal>report</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-				<!-- maven-compiler-plugin with NullAway -->
+				<!-- maven-compiler-plugin with NullAway / ErrorProne
+				     Defined here rather than inherited from lib-parent for two reasons:
+				     1. lib-parent only defines the compile-for-javadoc execution; NullAway config
+				        lives in lib-dependencies' pluginManagement, which is not propagated via
+				        the parent chain.
+				     2. -Xlint:-requires-transitive-automatic is splib-specific: Spring Boot
+				        dependencies expose JPMS automatic modules that trigger this warning. -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
 					<configuration>
 						<compilerArgs>
 							<arg>-XDcompilePolicy=simple</arg>
@@ -424,102 +113,33 @@
 					</configuration>
 				</plugin>
 
-				<!-- maven-antrun-plugin: zip allure and jacoco reports -->
+				<!-- maven-surefire-plugin: useModulePath=false for Spring Boot + JPMS -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-antrun-plugin</artifactId>
-					<version>${org.apache.maven.plugins.maven-antrun-plugin.version}</version>
-					<executions>
-						<execution>
-							<id>zip-allure-report</id>
-							<phase>package</phase>
-							<goals>
-								<goal>run</goal>
-							</goals>
-							<configuration>
-								<target xmlns:if="ant:if" xmlns:unless="ant:unless">
-									<available
-										file="${project.build.directory}/site/allure-maven-plugin"
-										type="dir" property="allure.report.dir.exists"/>
-									<mkdir dir="${project.build.directory}/site/allure-maven-plugin"
-										unless:set="allure.report.dir.exists"/>
-									<zip
-										destfile="${project.build.directory}/${project.build.finalName}-allure-report.zip"
-										basedir="${project.build.directory}/site/allure-maven-plugin"
-										whenempty="create"/>
-								</target>
-							</configuration>
-						</execution>
-						<execution>
-							<id>zip-jacoco-report</id>
-							<phase>package</phase>
-							<goals>
-								<goal>run</goal>
-							</goals>
-							<configuration>
-								<target xmlns:if="ant:if" xmlns:unless="ant:unless">
-									<available
-										file="${project.build.directory}/site/jacoco"
-										type="dir" property="jacoco.report.dir.exists"/>
-									<mkdir dir="${project.build.directory}/site/jacoco"
-										unless:set="jacoco.report.dir.exists"/>
-									<zip
-										destfile="${project.build.directory}/${project.build.finalName}-jacoco-report.zip"
-										basedir="${project.build.directory}/site/jacoco"
-										whenempty="create"/>
-								</target>
-							</configuration>
-						</execution>
-					</executions>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<!-- Disable module path: module-info.java in main sources causes surefire
+						     to run in module mode, but Spring Boot dependencies do not fully
+						     support JPMS. Using classpath mode avoids module resolution errors. -->
+						<useModulePath>false</useModulePath>
+					</configuration>
 				</plugin>
+
 			</plugins>
 		</pluginManagement>
-		
-		<plugins>
 
-			<!-- maven-enforcer-plugin (specify maven version) -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<rules>
-						<requireMavenVersion>
-							<version>3.9.5</version>
-						</requireMavenVersion>
-						<!-- Excluded artifacts are managed at older versions by spring-boot-starter-parent
-						     than what its own transitive dependencies actually require.
-						     Remove exclusions when upgrading Spring Boot resolves the mismatch. -->
-						<requireUpperBoundDeps>
-							<excludes>
-								<exclude>org.apache.commons:commons-lang3</exclude>
-								<exclude>org.glassfish.jaxb:jaxb-runtime</exclude>
-								<exclude>org.glassfish.jaxb:jaxb-core</exclude>
-								<exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
-							</excludes>
-						</requireUpperBoundDeps>
-					</rules>
-				</configuration>
-			</plugin>
-
-		</plugins>
 	</build>
+
 	<dependencyManagement>
 		<dependencies>
 
-			<!-- ecuacion-lib-import -->
+			<!-- spring-boot-dependencies -->
 			<dependency>
 				<type>pom</type>
 				<scope>import</scope>
-				<groupId>jp.ecuacion.lib</groupId>
-				<artifactId>ecuacion-lib-parent</artifactId>
-				<version>${ecuacion-lib.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
 			</dependency>
 
 			<!-- ecuacion-util-import -->
@@ -530,7 +150,7 @@
 				<artifactId>ecuacion-util-parent</artifactId>
 				<version>${ecuacion-util.version}</version>
 			</dependency>
-			
+
 			<!-- ecuacion-splib -->
 			<dependency>
 				<groupId>jp.ecuacion.splib</groupId>
@@ -567,144 +187,29 @@
 			<dependency>
 				<groupId>jakarta.el</groupId>
 				<artifactId>jakarta.el-api</artifactId>
-				<version>${jakarta.el.jakarta.el-api.version}</version>
+				<version>6.0.1</version>
 			</dependency>
 
-			<!-- allure-junit5 (not managed by Spring Boot BOM) -->
-			<dependency>
-				<groupId>io.qameta.allure</groupId>
-				<artifactId>allure-junit5</artifactId>
-				<version>${io.qameta.allure.allure-junit5.version}</version>
-			</dependency>
-
-			<!-- POI needs newer version than spring boot -->
-			<dependency>
-				<groupId>commons-codec</groupId>
-				<artifactId>commons-codec</artifactId>
-				<version>1.20.0</version>
-			</dependency>
-			
-		</dependencies>		
+		</dependencies>
 	</dependencyManagement>
-	
+
 	<profiles>
-		<profile>
-			<id>dev</id>
-			<properties>
-				<mvn.prof-id>dev</mvn.prof-id>
-			</properties>
-			<repositories>
-				<repository>
-					<id>ecuacion-repo-http-dev</id>
-					<name>ecuacion maven repository (dev)</name>
-					<url>${repository.ecuacion-repo-http-private-root}/profile-dev</url>
-				</repository>
-			</repositories>
-		</profile>
-		
-		<profile>
-			<id>uat</id>
-			<properties>
-				<mvn.prof-id>uat</mvn.prof-id>
-			</properties>
-			<repositories>
-				<repository>
-					<id>ecuacion-repo-http-uat</id>
-					<name>ecuacion maven repository (uat)</name>
-					<url>${repository.ecuacion-repo-http-private-root}/profile-uat</url>
-				</repository>
-			</repositories>
-		</profile>
-		
-		<profile>
-			<id>staging</id>
-			<properties>
-				<mvn.prof-id>staging</mvn.prof-id>
-			</properties>
-			<repositories>
-				<repository>
-					<id>ecuacion-repo-http-staging</id>
-					<name>ecuacion maven repository (staging)</name>
-					<url>${repository.ecuacion-repo-http-private-root}/profile-staging</url>
-				</repository>
-			</repositories>
-		</profile>
-		
-		<profile>
-			<id>ecuacion-repository</id>
-			<properties>
-				<mvn.prof-id>ecuacion-repository</mvn.prof-id>
-				<wagon.skip>false</wagon.skip>
-			</properties>
-		</profile>
-
-		<profile>
-			<id>prod</id>
-			<properties>
-				<mvn.prof-id>prod</mvn.prof-id>
-				<wagon.skip>false</wagon.skip>
-			</properties>
-			<repositories>
-				<repository>
-					<id>ecuacion-repo-http-prod</id>
-					<name>ecuacion maven repository (prod)</name>
-					<url>${repository.ecuacion-repo-http-private-root}/profile-prod</url>
-				</repository>
-			</repositories>
-		</profile>
-
+		<!-- ecuacion-repository profile is also used for builds, but fully inherited from ecuacion-lib, so no definition here. -->
 		<profile>
 			<id>maven-central</id>
 			<build>
 				<plugins>
-
-					<!-- maven-gpg-plugin (signs artifacts for Maven Central) -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${org.apache.maven.plugins.maven-gpg-plugin.version}</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<gpgArguments>
-								<arg>--pinentry-mode</arg>
-								<arg>loopback</arg>
-							</gpgArguments>
-						</configuration>
-					</plugin>
-
-					<!-- central-publishing-maven-plugin (publishes to Maven Central) -->
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>${org.sonatype.central.central-publishing-maven-plugin.version}</version>
-						<extensions>true</extensions>
 						<configuration>
-							<publishingServerId>central</publishingServerId>
-							<autoPublish>false</autoPublish>
 							<deploymentName>ecuacion-splib-${project.version}</deploymentName>
 						</configuration>
 					</plugin>
-
 				</plugins>
 			</build>
 		</profile>
 	</profiles>
-
-	<!-- jspecify -->
-	<dependencies>
-		<dependency>
-		    <groupId>org.jspecify</groupId>
-		    <artifactId>jspecify</artifactId>
-		</dependency>
-	</dependencies>
 
 	<modules>
 		<module>ecuacion-splib-core</module>
