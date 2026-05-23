@@ -441,10 +441,12 @@
 									<available
 										file="${project.build.directory}/site/allure-maven-plugin"
 										type="dir" property="allure.report.dir.exists"/>
+									<mkdir dir="${project.build.directory}/site/allure-maven-plugin"
+										unless:set="allure.report.dir.exists"/>
 									<zip
 										destfile="${project.build.directory}/${project.build.finalName}-allure-report.zip"
 										basedir="${project.build.directory}/site/allure-maven-plugin"
-										if:set="allure.report.dir.exists"/>
+										whenempty="create"/>
 								</target>
 							</configuration>
 						</execution>
