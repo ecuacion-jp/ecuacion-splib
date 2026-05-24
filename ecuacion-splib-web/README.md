@@ -15,7 +15,7 @@ or you can embed application servers in a war with a little change.
 
 ### Automatically Loaded Libraries
 
-- `jp.ecuacion.lib:ecuacion-splib-core`
+- `jp.ecuacion.splib:ecuacion-splib-core`
 
 (modules depending on `ecuacion-splib-core`)
 - `jp.ecuacion.lib:ecuacion-lib-core`

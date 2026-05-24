@@ -14,11 +14,11 @@ It is designed to release created war into `tomcat`.
 
 ### Automatically Loaded Libraries
 
-- `jp.ecuacion.lib:ecuacion-splib-web`
-- `jp.ecuacion.lib:ecuacion-splib-jpa`
+- `jp.ecuacion.splib:ecuacion-splib-web`
+- `jp.ecuacion.splib:ecuacion-splib-jpa`
 
 (modules depending on `ecuacion-splib-web`)
-- `jp.ecuacion.lib:ecuacion-splib-core`
+- `jp.ecuacion.splib:ecuacion-splib-core`
 
 (modules depending on `ecuacion-splib-core`)
 - `jp.ecuacion.lib:ecuacion-lib-core`
