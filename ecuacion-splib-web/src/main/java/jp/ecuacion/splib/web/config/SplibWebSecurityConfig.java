@@ -22,7 +22,7 @@ import jp.ecuacion.splib.core.bean.AuthorizationBean;
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
 import org.jspecify.annotations.Nullable;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -232,7 +232,7 @@ public abstract class SplibWebSecurityConfig {
     if (appleService != null) {
       client.addParametersConverter(grantRequest -> {
         if (!"apple".equals(grantRequest.getClientRegistration().getRegistrationId())) {
-          return null;
+          return new LinkedMultiValueMap<>();
         }
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("client_secret", appleService.generateClientSecret());

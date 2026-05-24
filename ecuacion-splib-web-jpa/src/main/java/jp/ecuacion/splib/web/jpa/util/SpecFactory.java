@@ -63,7 +63,6 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("null")
   public Specification<T> stringEqualsIgnoringCase(String propertyPath, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField = getPath(root, propertyPath);
@@ -99,7 +98,6 @@ public class SpecFactory<T extends SplibEntity> {
    * @param value value
    * @return {@code Specification<T>}
    */
-  @SuppressWarnings("null")
   public Specification<T> stringNotEquals(String propertyPath, String value) {
     return (root, query, cb) -> {
       Expression<String> criteriaField = getPath(root, propertyPath);
@@ -293,7 +291,7 @@ public class SpecFactory<T extends SplibEntity> {
     };
   }
 
-  @SuppressWarnings({"unused", "null"})
+  @SuppressWarnings({"unused"})
   private Specification<T> selectSearchPattern(String propertyPath, String value,
       String criteriaValue, boolean ignoresCase) {
     return (root, query, cb) -> {

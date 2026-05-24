@@ -26,4 +26,4 @@ What actually happened.
 
 - ecuacion-splib version:
 - Java version:
-- Framework (e.g. Spring Boot 3.x):
+- Framework (e.g. Spring Boot 4.x):

@@ -21,7 +21,7 @@ and accelerate development of business applications.
 - `ecuacion-splib-batch` — Spring Batch (job and step listeners)
 - `ecuacion-splib-rest` — REST API (exception handling, Spring Security configuration)
 
-`ecuacion-splib` uses `Spring Boot 3`. `ecuacion-lib` and other ecuacion libraries,
+`ecuacion-splib` uses `Spring Boot 4`. `ecuacion-lib` and other ecuacion libraries,
 utilities and apps use `Jakarta EE 10` for compatibility.
 
 ## Versioning

@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.web.advice;
 
+import java.util.Objects;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.service.SplibDataStoreDependentControllerAdviceService;
 import org.jspecify.annotations.Nullable;
@@ -57,8 +58,9 @@ public abstract class SplibDataStoreDependentControllerAdvice {
       return;
     }
 
-    boolean isAdmin = loginUser.getAuthorities().stream()
-        .anyMatch(auth -> auth.getAuthority().startsWith("ROLE_ADMIN"));
+    boolean isAdmin =
+        loginUser.getAuthorities().stream().anyMatch(auth -> auth.getAuthority() != null
+            && Objects.requireNonNull(auth.getAuthority()).startsWith("ROLE_ADMIN"));
 
     SplibRecord loginAcc =
         isAdmin ? service.getAccAdmin(loginUser) : service.getAccGeneral(loginUser);

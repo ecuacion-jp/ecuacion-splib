@@ -45,7 +45,9 @@ module jp.ecuacion.splib.web {
   requires transitive spring.security.oauth2.core;
   requires transitive spring.security.oauth2.jose;
   requires com.nimbusds.jose.jwt;
-  requires com.fasterxml.jackson.databind;
+  requires tools.jackson.databind;
+  requires spring.boot.webmvc;
+  requires spring.boot.security;
   requires transitive spring.web;
   requires transitive spring.webmvc;
 
