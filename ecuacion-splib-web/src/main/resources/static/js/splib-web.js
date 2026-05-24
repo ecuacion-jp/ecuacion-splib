@@ -104,6 +104,9 @@ function doubleClickPreventionUnlockButtonsOnBrowserBack(window) {
 
 /** Defined as an property of a window to be called from window[]. */
 window.waitForDownloadToFinish = function(_event, _button) {
+	// Delete any leftover cookie from a previous attempt before starting to poll,
+	// to prevent a stale cookie from triggering an immediate redirect.
+	document.cookie = 'download_status=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 	const intervalId = setInterval(function() {
 		let cookie = document.cookie;
 		if (cookie.includes("download_status=completed")) {
