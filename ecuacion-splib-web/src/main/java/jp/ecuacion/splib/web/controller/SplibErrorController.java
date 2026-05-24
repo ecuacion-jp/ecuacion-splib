@@ -35,7 +35,7 @@ import org.springframework.web.servlet.ModelAndView;
  * Shows the error page and the next page moving from it.
  */
 @Controller
-@RequestMapping("/public/error")
+@RequestMapping("${spring.web.error.path:/public/error}")
 public class SplibErrorController implements ErrorController {
 
   private DetailLogger detailLogger = new DetailLogger(this);
