@@ -15,8 +15,6 @@
  */
 package jp.ecuacion.splib.web.oauth2;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,6 +30,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * OAuth2 authentication success handler for splib.
@@ -71,7 +71,6 @@ public class SplibOauth2AuthSuccessHandler
     this.userHandler = userHandler;
   }
 
-  @SuppressWarnings("null")
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
@@ -116,8 +115,10 @@ public class SplibOauth2AuthSuccessHandler
         try {
           JsonNode root = objectMapper.readTree(userParam);
           JsonNode nameNode = root.path("name");
-          String firstName = nameNode.path("firstName").asText("");
-          String lastName = nameNode.path("lastName").asText("");
+          JsonNode fnNode = nameNode.path("firstName");
+          JsonNode lnNode = nameNode.path("lastName");
+          String firstName = fnNode.stringValue("");
+          String lastName = lnNode.stringValue("");
           String fullName = (firstName + " " + lastName).trim();
           if (!fullName.isBlank()) {
             return fullName;

@@ -7,7 +7,7 @@ It covers common guidelines, project-specific SPEC.md, and local setup checks.
 
 ## Project Overview
 
-A shared library suite for Spring Boot 3 / Jakarta EE 10 / JDK 21+, designed to
+A shared library suite for Spring Boot 4 / Jakarta EE 10 / JDK 21+, designed to
 accelerate development and reduce boilerplate code in business applications.
 
 - **Java**: 21

@@ -28,8 +28,8 @@ import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.springframework.batch.repeat.RepeatContext;
-import org.springframework.batch.repeat.exception.ExceptionHandler;
+import org.springframework.batch.infrastructure.repeat.RepeatContext;
+import org.springframework.batch.infrastructure.repeat.exception.ExceptionHandler;
 import org.springframework.stereotype.Component;
 
 /**
