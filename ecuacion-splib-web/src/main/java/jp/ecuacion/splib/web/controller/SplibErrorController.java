@@ -54,10 +54,26 @@ public class SplibErrorController implements ErrorController {
       Model model) {
 
     // Also register the model set in the request (it may contain parameters for rendering).
-    model.addAllAttributes(((Model) request.getAttribute(SplibWebConstants.KEY_MODEL)).asMap());
+    // Defensive null-check: when forwarded from security filters (e.g. CsrfFilter),
+    // KEY_MODEL may not yet be set in the request.
+    Object modelAttr = request.getAttribute(SplibWebConstants.KEY_MODEL);
+    if (modelAttr instanceof Model m) {
+      model.addAllAttributes(m.asMap());
+    }
 
     final Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
     final Exception exception = (Exception) request.getAttribute("jakarta.servlet.error.exception");
+
+    // statusCode is null when this method is reached via a forward from a security filter
+    // (e.g. CsrfFilter → AccessDeniedHandlerImpl) rather than through the normal Servlet
+    // error dispatch mechanism, which is the one that sets jakarta.servlet.error.status_code.
+    // This happens in particular when the session has expired and the CSRF token no longer
+    // matches. Treat it as 403 Forbidden so that autoboxing does not throw a NullPointerException.
+    if (statusCode == null) {
+      detailLogger.info("SplibErrorController#errorHtml called with null statusCode "
+          + "(possibly CSRF error or session timeout). Treating as 403 Forbidden.");
+      return new ModelAndView("error", model.asMap(), HttpStatus.FORBIDDEN);
+    }
 
     // When status is 404.
     if (statusCode == 404) {

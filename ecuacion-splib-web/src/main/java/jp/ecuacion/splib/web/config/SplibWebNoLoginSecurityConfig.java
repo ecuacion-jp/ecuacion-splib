@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.config;
 
 import java.util.List;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.core.bean.AuthorizationBean;
 import org.jspecify.annotations.Nullable;
 
@@ -41,6 +42,23 @@ public abstract class SplibWebNoLoginSecurityConfig extends SplibWebSecurityConf
    */
   protected SplibWebNoLoginSecurityConfig() {
     super(null, null, null);
+  }
+
+  /**
+   * Returns the home page path as the access-denied destination.
+   *
+   * <p>In a no-login application there is no login page to redirect to,
+   *     so CSRF errors and other access-denied events are redirected to the home page
+   *     defined by the {@code jp.ecuacion.splib.web.home-page} property instead.</p>
+   *
+   * <p>Override this method if the application needs a different destination.</p>
+   *
+   * @return the value of {@code jp.ecuacion.splib.web.home-page}
+   */
+  @Override
+  protected String getAccessDeniedPage() {
+    String homePage = PropertiesFileUtil.getApplication("jp.ecuacion.splib.web.home-page");
+    return homePage.startsWith("/") ? homePage : "/" + homePage;
   }
 
   /**
