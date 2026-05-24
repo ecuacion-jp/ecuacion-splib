@@ -56,6 +56,20 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
   /**
    * Adds a cookie for 'downloadButton' to know the download procedure is done.
+   *
+   * <p><strong>IMPORTANT:</strong> This method must be called <em>after</em> the service method
+   *     that generates the download content has completed successfully.
+   *     If this method is called before the service method and the service throws an exception,
+   *     the cookie will still be included in the error response.
+   *     The JavaScript polling ({@code waitForDownloadToFinish}) will then detect the cookie
+   *     and redirect to the success page even though no file was actually downloaded.</p>
+   *
+   * <p>Correct usage:</p>
+   * <pre>{@code
+   * ResponseEntity<Resource> responseEntity = getService().execute(...);
+   * addCookieForDownloadButton(); // call after service succeeds
+   * return responseEntity;
+   * }</pre>
    */
   protected void addCookieForDownloadButton() {
     Cookie cookie = new Cookie("download_status", "completed");
