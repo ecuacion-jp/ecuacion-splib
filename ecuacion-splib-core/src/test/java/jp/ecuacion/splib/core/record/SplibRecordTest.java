@@ -53,14 +53,14 @@ class SplibRecordTest {
   class GetValue {
 
     @Test
-    @DisplayName("シンプルなプロパティを取得できる")
+    @DisplayName("Returns a simple property value")
     void simpleProperty() {
       ConcreteRecord rec = new ConcreteRecord("hello");
       assertThat(rec.getValue("name")).isEqualTo("hello");
     }
 
     @Test
-    @DisplayName("ドット区切りのネストされたパスで値を取得できる")
+    @DisplayName("Returns a value via dot-separated nested path")
     void nestedProperty() {
       ConcreteRecord inner = new ConcreteRecord("inner");
       ConcreteRecord outer = new ConcreteRecord("outer", inner);
@@ -68,7 +68,7 @@ class SplibRecordTest {
     }
 
     @Test
-    @DisplayName("ネストされたオブジェクトがnullの場合はnullを返す")
+    @DisplayName("Returns null when a nested object is null")
     void nestedPropertyWhenRelationIsNull() {
       ConcreteRecord rec = new ConcreteRecord("outer");
       assertThat(rec.getValue("nested.name")).isNull();

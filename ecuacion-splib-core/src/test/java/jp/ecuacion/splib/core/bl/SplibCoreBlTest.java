@@ -35,14 +35,14 @@ class SplibCoreBlTest {
   class InternalChildExistenceCheckWithList {
 
     @Test
-    @DisplayName("リストが空のとき例外をスローしない")
+    @DisplayName("Does not throw an exception when the list is empty")
     void noExceptionWhenListIsEmpty() {
       assertThatCode(() -> bl.internalChildExistenceCheck(List.of(), "someEntity"))
           .doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("リストが非空のときViolationExceptionをスローする")
+    @DisplayName("Throws ViolationException when the list is not empty")
     void throwsExceptionWhenListIsNotEmpty() {
       assertThatThrownBy(() -> bl.internalChildExistenceCheck(List.of("item"), "someEntity"))
           .isInstanceOf(ViolationException.class);
@@ -54,14 +54,14 @@ class SplibCoreBlTest {
   class InternalChildExistenceCheckWithOptional {
 
     @Test
-    @DisplayName("Optionalが空のとき例外をスローしない")
+    @DisplayName("Does not throw an exception when the Optional is empty")
     void noExceptionWhenOptionalIsEmpty() {
       assertThatCode(() -> bl.internalChildExistenceCheck(Optional.empty(), "someEntity"))
           .doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("Optionalに値があるときViolationExceptionをスローする")
+    @DisplayName("Throws ViolationException when the Optional has a value")
     void throwsExceptionWhenOptionalIsPresent() {
       assertThatThrownBy(() -> bl.internalChildExistenceCheck(Optional.of("item"), "someEntity"))
           .isInstanceOf(ViolationException.class);

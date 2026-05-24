@@ -27,17 +27,17 @@
 		<appender-ref ref="app-detail-appender" />
 	</logger>
 
-	<!-- logger name の default 値をxxx とすることで、未指定の際に無駄に出力されることを防ぐ -->
+	<!-- Setting the default logger name to "xxx" prevents unnecessary output when not specified -->
 	<logger name="${app-root:-xxx}" level="${loglevel-app:-error}">
 		<appender-ref ref="app-detail-appender" />
 	</logger>
 
-	<!-- 画面のアクセス先URLを表示するログ。これはapplogに出しておきたい。 -->
+	<!-- Logger for Spring Security: logs the URL of each incoming request; should appear in app log -->
 	<logger name="org.springframework.security" level="${loglevel-security}">
 		<appender-ref ref="app-detail-appender" />
 	</logger>
 
-	<!-- SQL logが、application.propertiesでloglevelを変更できそうに見えるが変更されないので抜き出しのためここで定義。 -->
+	<!-- SQL log level cannot be changed via application.properties despite appearances; defined here explicitly to control it -->
 	<logger name="org.hibernate.SQL" level="${loglevel-sql}">
 		<appender-ref ref="app-detail-appender" />
 	</logger>

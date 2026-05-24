@@ -19,12 +19,12 @@
 <!DOCTYPE xml>
 <included>
 
-	<!-- summary-logのファイル書き出し -->
+	<!-- File output for summary-log -->
 	<appender name="summary-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<!--ファイル名 -->
+		<!-- File name -->
 		<file>${logfile-path}-summary.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<!-- 世代管理されるファイルの命名パターン -->
+			<!-- File naming pattern for rotation -->
 			<fileNamePattern>${archivefile-path}-summary-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>

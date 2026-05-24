@@ -4,6 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    target-branch: "4.30"  # 新リリースブランチ作成時に更新する
+    target-branch: "4.30"  # Update this when a new release branch is created
     ignore:
       - dependency-name: "jp.ecuacion:*"
