@@ -108,7 +108,7 @@ public abstract class SplibWebSecurityConfigForAdmin {
 
       // ADMIN_FULL_ACCESS needs to be added to Authorization settings for each page to keep the
       // permission to access the page.
-      // It might be a each app's task but this is an complecated functions so the permission for
+      // It might be each app's task but this is a complicated function so the permission for
       // ADMIN_FULL_ACCESS is automatically granted here.
       http.authorizeHttpRequests(requests -> requests.requestMatchers(bean.getRequestMatchers())
           .hasAnyRole(bean.addAndGetRolesOrAuthorities(ADMIN_FULL_ACCESS)));
