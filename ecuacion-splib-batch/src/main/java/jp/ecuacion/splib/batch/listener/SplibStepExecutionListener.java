@@ -18,8 +18,8 @@ package jp.ecuacion.splib.batch.listener;
 import java.util.Objects;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
 import org.jspecify.annotations.Nullable;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.core.listener.StepExecutionListener;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.stereotype.Component;
 
 /**

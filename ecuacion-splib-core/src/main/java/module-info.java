@@ -26,10 +26,10 @@ module jp.ecuacion.splib.core {
 
   requires jakarta.annotation;
   requires spring.beans;
-  requires spring.jcl;
   requires transitive spring.boot;
   requires transitive spring.context;
   requires transitive spring.core;
+  requires static org.apache.commons.logging;
   requires transitive jp.ecuacion.lib.core;
   requires org.apache.commons.lang3;
 }

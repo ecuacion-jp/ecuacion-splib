@@ -19,7 +19,7 @@ package jp.ecuacion.splib.web.config;
 import java.util.ArrayList;
 import java.util.List;
 import jp.ecuacion.splib.core.bean.AuthorizationBean;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

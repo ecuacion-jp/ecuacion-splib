@@ -100,7 +100,7 @@ public abstract class SplibExceptionHandler {
    *
    * @return SplibGeneralController
    */
-  protected SplibGeneralController<?> getController() {
+  protected @Nullable SplibGeneralController<?> getController() {
     return (SplibGeneralController<?>) getModel().getAttribute(SplibWebConstants.KEY_CONTROLLER);
   }
 
@@ -122,7 +122,8 @@ public abstract class SplibExceptionHandler {
     // but that handling is not yet implemented. To be refactored when needed.
     SplibGeneralForm[] forms =
         (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS);
-    getController().getService().prepareForm(Arrays.asList(forms), loginUser);
+    Objects.requireNonNull(getController()).getService().prepareForm(Arrays.asList(forms),
+        loginUser);
   }
 
   /**
@@ -150,7 +151,8 @@ public abstract class SplibExceptionHandler {
     // Since warning means the submit did not complete, processing returns to the same page,
     // so no redirect to a different page occurs.
     prepareFormForReturn(loginUser);
-    return new ModelAndView(getController().getDefaultHtmlPageName(), getModel().asMap());
+    return new ModelAndView(Objects.requireNonNull(getController()).getDefaultHtmlPageName(),
+        getModel().asMap());
   }
 
   /**
@@ -161,7 +163,7 @@ public abstract class SplibExceptionHandler {
    * @return ModelAndView
    * @throws Exception Exception
    */
-  @SuppressWarnings({"null", "unused"})
+  @SuppressWarnings({"null"})
   @ExceptionHandler({ViolationException.class})
   public ModelAndView handleViolationException(ViolationException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser,
@@ -180,12 +182,11 @@ public abstract class SplibExceptionHandler {
     if (getController() == null) {
       List<String> errorMessages = new ArrayList<>();
       for (ConstraintViolation<?> cv : sortedCvs) {
-        errorMessages.addAll(ExceptionUtil.getMessageList(
-            new Violations().messageParameters(params).add(cv), locale, false));
+        errorMessages.addAll(ExceptionUtil
+            .getMessageList(new Violations().messageParameters(params).add(cv), locale, false));
       }
       for (BusinessViolation bv : violations.getBusinessViolations()) {
-        errorMessages.addAll(
-            ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
+        errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
       }
       redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
       String referer = request.getHeader("Referer");
@@ -197,7 +198,9 @@ public abstract class SplibExceptionHandler {
           if (uri.getRawQuery() != null) {
             redirectTarget += "?" + uri.getRawQuery();
           }
-        } catch (IllegalArgumentException ignored) {}
+        } catch (IllegalArgumentException ex) {
+          LogUtil.logSystemError(detailLog, ex);
+        }
       }
       return new ModelAndView("redirect:" + redirectTarget);
     }
@@ -234,8 +237,7 @@ public abstract class SplibExceptionHandler {
         new java.util.LinkedHashMap<>();
     for (java.util.Map.Entry<String, Object> entry : getModel().asMap().entrySet()) {
       if (entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX)
-          && entry.getValue() instanceof BindingResult br
-          && !br.getFieldErrors().isEmpty()) {
+          && entry.getValue() instanceof BindingResult br && !br.getFieldErrors().isEmpty()) {
         fieldErrorsSnapshot.put(entry.getKey(), new java.util.ArrayList<>(br.getFieldErrors()));
       }
     }
@@ -283,12 +285,14 @@ public abstract class SplibExceptionHandler {
       @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model,
       RedirectAttributes redirectAttributes) throws Exception {
 
+    SplibGeneralController<?> ctrl = Objects.requireNonNull(getController());
+
     String msgId = "jp.ecuacion.splib.web.common.message.optimisticLocking";
     if (getController() instanceof SplibEditController) {
       String loginState = (String) getModel().getAttribute("loginState");
-      String path = "/" + loginState + "/" + getController().getFunction() + "/"
-          + getController().getDefaultDestSubFunctionOnNormalEnd() + "/"
-          + getController().getDefaultDestPageOnNormalEnd();
+      String path = "/" + loginState + "/" + ctrl.getFunction() + "/"
+          + ctrl.getDefaultDestSubFunctionOnNormalEnd() + "/"
+          + ctrl.getDefaultDestPageOnNormalEnd();
       return handleRedirectNeededExceptions(new RedirectException(path, msgId), model,
           redirectAttributes);
     } else {
@@ -423,8 +427,8 @@ public abstract class SplibExceptionHandler {
         if (beanPath.isEmpty()) {
           propertyPaths = qualifyItemPropertyPaths(br, annotationPaths);
         } else {
-          propertyPaths = Arrays.stream(annotationPaths)
-              .map(p -> beanPath + "." + p).toArray(String[]::new);
+          propertyPaths =
+              Arrays.stream(annotationPaths).map(p -> beanPath + "." + p).toArray(String[]::new);
         }
       } else {
         propertyPaths = new String[] {beanPath};
@@ -438,8 +442,8 @@ public abstract class SplibExceptionHandler {
   }
 
   private boolean isClassValidatorConstraint(ConstraintViolation<?> cv) {
-    return cv.getConstraintDescriptor().getConstraintValidatorClasses()
-        .stream().anyMatch(c -> ClassValidator.class.isAssignableFrom(c));
+    return cv.getConstraintDescriptor().getConstraintValidatorClasses().stream()
+        .anyMatch(c -> ClassValidator.class.isAssignableFrom(c));
   }
 
   private String[] getPropertyPathsFromAnnotation(Annotation annotation) {
