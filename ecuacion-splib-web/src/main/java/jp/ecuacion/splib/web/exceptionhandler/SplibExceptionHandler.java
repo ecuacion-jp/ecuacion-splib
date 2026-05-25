@@ -471,7 +471,10 @@ public abstract class SplibExceptionHandler {
     String errorCode = violation.getMessageId();
     Violations single = new Violations().add(violation);
     String[] qualifiedPaths = qualifyItemPropertyPaths(br, violation.getItemPropertyPaths());
-    return addViolation(br, errorCode, qualifiedPaths, single, needsMsgAtTopDefault, locale);
+    // When no property paths are specified, there is no field to attach the error to.
+    // Always fall back to a global (top-of-page) error so the message is never silently dropped.
+    boolean needsMsgAtTop = needsMsgAtTopDefault || qualifiedPaths.length == 0;
+    return addViolation(br, errorCode, qualifiedPaths, single, needsMsgAtTop, locale);
   }
 
   /**
