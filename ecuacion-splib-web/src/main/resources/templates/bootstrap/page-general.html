@@ -16,7 +16,7 @@
 
 -->
 <!--/*
-	詳細は以下を参照。
+	See the following URL for details.
 	https://spring-library-dev-sample.aws.ecuacion.jp/spring-library-dev-sample/public/ptGeneral/page
  */-->
 <!DOCTYPE html>
@@ -33,7 +33,7 @@
 		<div class="mt-3"></div>
 
 		<th:block th:if="${multipleForms != null && multipleForms}">
-			<!--/* formの使用がゼロということはgeneral pageでは想定していないので、form1は必ず使用する前提であることからusesForm1のパラメータは存在しない。 */-->
+			<!--/* Zero forms on a general page is not a supported case, so form1 is always assumed to be used — hence there is no usesForm1 parameter. */-->
 			<th th:replace="~{bootstrap/components-general-form :: generalForm(~{::internalForm1FormContent}, ~{::internalForm1TopSpaceContent}, ~{::internalForm1BottomSpaceContent}, 
 					${formMethod1}, ${multipart1}, ${subFunction1}, ${options1})}"></th>
 

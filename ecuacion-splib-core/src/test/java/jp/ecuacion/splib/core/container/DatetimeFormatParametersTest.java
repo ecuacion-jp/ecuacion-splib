@@ -37,7 +37,7 @@ class DatetimeFormatParametersTest {
         "300, -5, 0",
         "-330, 5, 30"
     })
-    @DisplayName("JSのgetTimezoneOffset()の値をZoneOffsetに変換する")
+    @DisplayName("Converts JS getTimezoneOffset() value to ZoneOffset")
     void convertsJsMinutesToZoneOffset(int jsMinutes, int expectedHours, int expectedMinutes) {
       DatetimeFormatParameters params = new DatetimeFormatParameters();
       params.setZoneOffsetWithJsMinutes(jsMinutes);

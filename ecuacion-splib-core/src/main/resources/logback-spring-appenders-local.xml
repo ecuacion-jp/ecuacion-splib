@@ -19,11 +19,13 @@
 <!DOCTYPE xml>
 <included>
 
-	<!-- 
-		spring及び他の外部framework, libraryのコンソール出力。local環境でしか使わないのでこちらのファイルに記載。
-		spring frameworkが出力するlogのloglevelは、appenderのfitlter設定では制御できるが、loggerのlevel設定では制御できない。
-		が、app側で設定しているloggingをtraceにしたい場合にspring frameworkで出力するlogのloglevelもtraceになると、ログが出過ぎてしまうので困る。
-		以上から、spring framework用のログ出力appenderを別途保持する必要がある。
+	<!--
+		Console output for Spring and other external frameworks/libraries. Defined here since it is only used in local environments.
+		The log level of Spring Framework output cannot be controlled via logger level settings,
+		only via appender filter settings.
+		However, if the app-side logging is set to TRACE, Spring Framework logs also become TRACE,
+		which results in too much output.
+		Therefore, a separate appender for Spring Framework log output is required.
 	 -->
 	<appender name="all-console" class="ch.qos.logback.core.ConsoleAppender">
 		<target>System.out</target>
@@ -37,10 +39,11 @@
 		</filter>
 	</appender>
 	
-	<!-- 
-		app用のコンソール出力。local環境でしか使わないのでこちらのファイルに記載。
-		こちらは使用せずspring-console側に一本化できるほうが運用が楽なのでそれを目指すが、個別appで埋めたlogはtraceで見たいが
-		spring framkework内のtrace logが大量に出られても困る、という場面の時はこちらを使用すること。
+	<!--
+		Console output for the application. Defined here since it is only used in local environments.
+		Ideally this would be consolidated into the spring-console appender for simplicity,
+		but use this appender when you want to see app-specific logs at TRACE level
+		while avoiding the flood of Spring Framework internal TRACE logs.
 	 -->
 	<appender name="app-console" class="ch.qos.logback.core.ConsoleAppender">
 		<target>System.out</target>

@@ -38,7 +38,7 @@ public class SplibCoreBl {
 
   /**
    * Throws an exception when duplicated. 
-   * It only has a function to throw exception, not one to check the occuring of duplication.
+   * It only has a function to throw exception, not one to check the occurring of duplication.
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
       boolean checkFromAllGroups, String[] itemPropertyPaths, ItemContainer container) {
@@ -51,7 +51,7 @@ public class SplibCoreBl {
 
   /**
    * Throws an exception when duplicated. 
-   * It only has a function to throw exception, not one to check the occuring of duplication.
+   * It only has a function to throw exception, not one to check the occurring of duplication.
    */
   protected static void throwExceptionWhenDuplicated(boolean isDuplicated,
       boolean checkFromAllGroups, String[] itemPropertyPaths, String[] itemNameKeys) {

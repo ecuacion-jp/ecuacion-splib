@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.core.bean.AuthorizationBean;
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
@@ -89,6 +90,21 @@ public abstract class SplibWebSecurityConfig {
   }
 
   /**
+   * Returns whether form login is enabled for this application.
+   *
+   * <p>Returns {@code true} by default.
+   *     No-login applications should override this via
+   *     {@link SplibWebNoLoginSecurityConfig} which returns {@code false},
+   *     causing {@code formLogin} and {@code logout} to be disabled in
+   *     {@link #filterChain(HttpSecurity)}.</p>
+   *
+   * @return {@code true} if login is enabled
+   */
+  protected boolean isLoginEnabled() {
+    return true;
+  }
+
+  /**
    * Returns the url when the login procedure successfully ended.
    */
   protected abstract String getDefaultSuccessUrl();
@@ -117,14 +133,14 @@ public abstract class SplibWebSecurityConfig {
    *
    * @return the role list of AuthorizationBean
    */
-  protected abstract List<AuthorizationBean> getRoleInfo();
+  protected abstract @Nullable List<AuthorizationBean> getRoleInfo();
 
   /**
    * Returns the authority list of {@code AuthorizationBean}.
    *
-   * @return the authority list of AuthorizationBean
+   * @return the authority list of AuthorizationBean, or {@code null} if not used
    */
-  protected abstract List<AuthorizationBean> getAuthorityInfo();
+  protected abstract @Nullable List<AuthorizationBean> getAuthorityInfo();
 
   @Bean
   PasswordEncoder passwordEncoder() {
@@ -139,13 +155,17 @@ public abstract class SplibWebSecurityConfig {
 
     http.httpBasic(basic -> basic.disable());
 
-    http.formLogin(login -> login.loginPage(getLoginNeededPage())
-        .loginProcessingUrl("/public/login/action").usernameParameter("login.username")
-        .passwordParameter("login.password").defaultSuccessUrl(getDefaultSuccessUrl(), true)
-        .failureUrl("/public/login/page?error"));
+    if (isLoginEnabled()) {
+      http.formLogin(login -> login.loginPage(getLoginNeededPage())
+          .loginProcessingUrl("/public/login/action").usernameParameter("login.username")
+          .passwordParameter("login.password").defaultSuccessUrl(getDefaultSuccessUrl(), true)
+          .failureUrl("/public/login/page?error"));
 
-    if (oauth2SuccessHandler != null && clientRegistrationRepository != null) {
-      configureOauth2Login(http);
+      if (oauth2SuccessHandler != null && clientRegistrationRepository != null) {
+        configureOauth2Login(http);
+      }
+    } else {
+      http.formLogin(login -> login.disable());
     }
 
     http.authorizeHttpRequests(
@@ -164,14 +184,14 @@ public abstract class SplibWebSecurityConfig {
 
       // ACCOUNT_FULL_ACCESS needs to be added to Authorization settings for each page to keep the
       // permission to access the page.
-      // It might be a each app's task but this is an complecated functions so the permission for
+      // It might be each app's task but this is a complicated function so the permission for
       // ACCOUNT_FULL_ACCESS is automatically granted here.
       http.authorizeHttpRequests(requests -> requests.requestMatchers(bean.getRequestMatchers())
           .hasAnyRole(bean.addAndGetRolesOrAuthorities(ACCOUNT_FULL_ACCESS)));
     }
 
     if (getAuthorityInfo() != null) {
-      for (AuthorizationBean bean : getAuthorityInfo()) {
+      for (AuthorizationBean bean : Objects.requireNonNull(getAuthorityInfo())) {
         http.authorizeHttpRequests(requests -> requests.requestMatchers(bean.getRequestMatchers())
             .hasAnyAuthority(bean.getRolesOrAuthorities()));
       }
@@ -179,8 +199,10 @@ public abstract class SplibWebSecurityConfig {
 
     http.authorizeHttpRequests(requests -> requests.anyRequest().denyAll());
 
-    http.logout(logout -> logout.logoutUrl("/public/logout")
-        .logoutSuccessUrl("/public/login/page?logoutDone"));
+    if (isLoginEnabled()) {
+      http.logout(logout -> logout.logoutUrl("/public/logout")
+          .logoutSuccessUrl("/public/login/page?logoutDone"));
+    }
 
     http.exceptionHandling(handling -> handling.accessDeniedPage(getAccessDeniedPage()));
 

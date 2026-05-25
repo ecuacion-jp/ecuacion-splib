@@ -12,7 +12,7 @@
 
 ### Automatically Loaded Libraries
 
-- `jp.ecuacion.lib:ecuacion-splib-core`
+- `jp.ecuacion.splib:ecuacion-splib-core`
 
 (modules depending on `ecuacion-splib-core`)
 - `jp.ecuacion.lib:ecuacion-lib-core`
@@ -111,7 +111,7 @@ public class AppAccountControllerAdvice extends SplibJpaAccountControllerAdvice 
 #### Constraint
 
 - When you use native queries (spring `@query` with `native = true` or standard JPA native query), 
-  `group` feature is not suppoted. If you have to use them, filter those records manually because standard JPA, especially `entityManager#find()` is not supported by Hibernate's `@Filter` feature.
+  `group` feature is not supported. If you have to use them, filter those records manually because standard JPA, especially `entityManager#find()` is not supported by Hibernate's `@Filter` feature.
 
 ### Soft Delete
 
@@ -122,7 +122,7 @@ the "deleted" mark is set to the soft-delete column instead of physically delete
 when they are deleted by user operations.
 
 The only reason of the existence of this feature is to keep the deleted data in the database.
-it can be used for investigations of bugs or recoverying the deleted data
+it can be used for investigations of bugs or recovering the deleted data
 (not by the system feature, but the manual task).  
 
 The point is, in the business view the record is definitely deleted.  
@@ -150,7 +150,7 @@ when inserting a new record with the same unique key as soft-deleted one
   `SplibSoftDeleteAdvice#save` is called by AOP right before the `Repository#save` method is called.  
   
   The advice class is able to delete soft deleted record physically because soft delete filter is disabled right before the deletion.
-  The group filter is also disabled at the same time so that the soft deleted record can be deleted even thogh it belongs to the other group than the account who trying to create a new record.
+  The group filter is also disabled at the same time so that the soft deleted record can be deleted even though it belongs to the other group than the account who trying to create a new record.
 
 - This feature is not mandatory. If you want to use the feature, 
   you need to create a class extends this.
@@ -212,4 +212,4 @@ public class AppAccountControllerAdvice extends SplibJpaAccountControllerAdvice 
 #### Constraint
 
 - When you use native queries (spring `@query` with `native = true` or standard JPA native query), 
-  `Soft Delete` feature is not suppoted. If you have to use them, filter those records manually because standard JPA, especially `entityManager#find()` is not supported by Hibernate's `@Filter` feature.
+  `Soft Delete` feature is not supported. If you have to use them, filter those records manually because standard JPA, especially `entityManager#find()` is not supported by Hibernate's `@Filter` feature.

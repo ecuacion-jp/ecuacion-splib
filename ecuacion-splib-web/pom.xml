@@ -119,7 +119,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
-		<!-- spring-data-coreは使用したいが、jpaなどの個別実装は含めたくない。starterにはそのような選択肢がないようなのでmoduleを個別指定 -->
+		<!-- spring-data-core is needed but not individual JPA implementations; no suitable starter exists so modules are specified individually -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-commons</artifactId>
@@ -128,7 +128,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
-		<!-- thymeleafのoptionもここで追加しておく -->
+		<!-- Thymeleaf optional dependencies are also added here -->
 		<dependency>
 			<groupId>nz.net.ultraq.thymeleaf</groupId>
 			<artifactId>thymeleaf-layout-dialect</artifactId>
@@ -139,7 +139,7 @@
 		</dependency>
 		
 		<!-- ecuacion-splib -->
-		<!-- 現時点ではjpaを標準で入れているが、理想はjpaはオプション扱い -->
+		<!-- JPA is currently included by default; ideally it should be treated as optional -->
 		<dependency>
 			<groupId>jp.ecuacion.splib</groupId>
 			<artifactId>ecuacion-splib-core</artifactId>

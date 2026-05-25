@@ -60,12 +60,12 @@ public abstract class SplibGeneral2FormsController
   /**
    * Provides the default method to show page.
    * 
-   * <p>Since Occuring an system error is not prefereble 
+   * <p>Since occurring a system error is not preferable
    *     when this method is accessed with {@code POST} method,
    *     this method also receives {@code POST} method.
-   *     (It happens mostly By being redirected the POST request to this page. 
+   *     (It happens mostly by being redirected the POST request to this page.
    *     (like accessing to the login needed page but the session timed out)</p>
-   *     
+   *
    * @param model model
    * @param form1 form
    * @param form2 form
@@ -90,12 +90,12 @@ public abstract class SplibGeneral2FormsController
    *     and others (B) the names of cities.<br>
    *     When A is selected, refresh the selections of B which names belongs to prefecture A.<br>
    *     To realize this, page should be submitted when A is selected, but not validated
-   *     since it's stile in the middle of the input a form.</p>
-   * 
-   * <p>Since Occuring an system error is not prefereble 
+   *     since it's still in the middle of the input a form.</p>
+   *
+   * <p>Since occurring a system error is not preferable
    *     when this method is accessed with {@code POST} method,
    *     this method also receives {@code POST} method.
-   *     (It happens mostly By being redirected the POST request to this page. 
+   *     (It happens mostly by being redirected the POST request to this page.
    *     (like accessing to the login needed page but the session timed out)</p>
    *     
    * @param model model

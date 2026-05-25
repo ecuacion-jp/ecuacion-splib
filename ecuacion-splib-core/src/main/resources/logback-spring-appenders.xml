@@ -27,18 +27,19 @@
 	<Property name="archive-dir" value="${log-dir}/archive" />
 	<Property name="archivefile-path" value="${archive-dir}/${project-name}" />
 
-	<!-- 
-		spring及び他の外部framework, libraryのファイル書き出し。
-		spring frameworkが出力するlogのloglevelは、appenderのfitlter設定では制御できるが、loggerのlevel設定では制御できない。
-		が、app側で設定しているloggingをtraceにしたい場合にspring frameworkで出力するlogのloglevelもtraceになると、
-		ログが出過ぎてしまうので困る。
-		以上から、spring framework用のログ出力appenderを別途保持する必要がある。
+	<!--
+		File output for Spring and other external frameworks/libraries.
+		The log level of Spring Framework output cannot be controlled via logger level settings,
+		only via appender filter settings.
+		However, if the app-side logging is set to TRACE, Spring Framework logs also become TRACE,
+		which results in too much output.
+		Therefore, a separate appender for Spring Framework log output is required.
 	 -->
 	<appender name="all-detail-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<!--ファイル名 -->
+		<!-- File name -->
 		<file>${logfile-path}-all-detail.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<!-- 世代管理されるファイルの命名パターン -->
+			<!-- File naming pattern for rotation -->
 			<fileNamePattern>${archivefile-path}-all-detail-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>
@@ -55,10 +56,10 @@
 	</appender>
 
 	<appender name="app-detail-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<!--ファイル名 -->
+		<!-- File name -->
 		<file>${logfile-path}-app-detail.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<!-- 世代管理されるファイルの命名パターン -->
+			<!-- File naming pattern for rotation -->
 			<fileNamePattern>${archivefile-path}-app-detail-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>
@@ -69,12 +70,12 @@
 		</encoder>
 	</appender>
 	
-	<!-- error-logのファイル書き出し -->
+	<!-- File output for error-log -->
 	<appender name="error-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<!--ファイル名 -->
+		<!-- File name -->
 		<file>${log-dir}/error.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<!-- 世代管理されるファイルの命名パターン -->
+			<!-- File naming pattern for rotation -->
 			<fileNamePattern>${archive-dir}/error-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>

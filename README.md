@@ -36,21 +36,96 @@ utilities and apps use `Jakarta EE 11` for compatibility.
 
 (See `Documentation` part of the `README` in each module)
 
+## Quick Start
+
+The library provides base classes to extend — you get the boilerplate for free and implement only the application-specific logic.
+Full API details are in the javadoc of each module.
+
+### Web Application (`ecuacion-splib-web`)
+
+**1. Security configuration** — Extend `SplibWebSecurityConfig` to configure the built-in login flow, CSRF protection, and route authorization:
+
+```java
+@Configuration
+@EnableWebSecurity
+public class AppSecurityConfig extends SplibWebSecurityConfig {
+
+    public AppSecurityConfig() {
+        super(null, null, null); // pass OAuth2 beans here if needed
+    }
+
+    @Override protected String getDefaultSuccessUrl() { return "/home/page"; }
+    @Override protected String getLoginNeededPage()   { return "/public/login/page"; }
+    @Override protected String getAccessDeniedPage()  { return "/public/error/accessDenied"; }
+
+    @Override
+    protected List<AuthorizationBean> getRoleInfo() {
+        return List.of(new AuthorizationBean("/admin/**", "ADMIN"));
+    }
+
+    @Override
+    protected List<AuthorizationBean> getAuthorityInfo() { return List.of(); }
+}
+```
+
+**2. Controller** — Extend `SplibGeneral1FormController` to get GET / POST handling, model setup, and redirect recovery for free:
+
+```java
+@Controller
+@RequestMapping("/home")
+public class HomeController extends SplibGeneral1FormController<HomeForm, HomeService> {
+    public HomeController() { super("home"); }
+}
+```
+
+**3. Service** — Implement `SplibGeneral1FormService` to supply the page data and dropdown selections:
+
+```java
+@Service
+public class HomeService extends SplibGeneral1FormService<HomeForm> {
+
+    @Override
+    public void page(HomeForm form, UserDetails loginUser) throws Exception {
+        // load data into form before rendering the page
+    }
+
+    @Override
+    public void prepareForm(HomeForm form, UserDetails loginUser) {
+        // refresh dropdown selections (also called after a validation error)
+    }
+}
+```
+
+### Batch Application (`ecuacion-splib-batch`)
+
+`SplibJobExecutionListener` logs job START / END and tracks the current job name automatically.
+Extend it to add application-specific post-processing:
+
+```java
+@Component
+public class AppJobExecutionListener extends SplibJobExecutionListener {
+
+    @Override
+    public void afterJob(JobExecution jobExecution) {
+        super.afterJob(jobExecution);
+        // application-specific cleanup or notification here
+    }
+}
+```
+
+### REST API (`ecuacion-splib-rest`)
+
+`SplibRestExceptionHandler` is auto-registered via `@RestControllerAdvice` and maps
+`HttpStatusException` to the corresponding HTTP status. Throw it anywhere in your REST layer:
+
+```java
+// Returns HTTP 404 with an empty body
+throw new HttpStatusException(HttpStatus.NOT_FOUND);
+```
+
 ## Installation
 
-1. Add the following `<repositories>` tag to your `pom.xml` (as a child of the `<project>` tag).
-
-    ```xml
-    <repositories>
-        <repository>
-            <id>ecuacion-repo-http</id>
-            <name>ecuacion-repo-http</name>
-            <url>http://maven-repo.ecuacion.jp/public</url>
-        </repository>
-    </repositories>
-    ```
-
-2. Set the following `<parent>` tag to your `pom.xml`.
+1. Set the following `<parent>` tag to your `pom.xml`.
 
     ```xml
     <parent>
@@ -61,7 +136,7 @@ utilities and apps use `Jakarta EE 11` for compatibility.
     </parent>
     ```
 
-3. Add the required `ecuacion` modules to your `pom.xml`.
+2. Add the required `ecuacion` modules to your `pom.xml`.
    (The following is an example for the `ecuacion-splib-core` module. Check the `Installation` section of the `README` in the module you want to add to your project.)
 
     ```xml
@@ -72,7 +147,7 @@ utilities and apps use `Jakarta EE 11` for compatibility.
     </dependency>
     ```
 
-4. Add the required external modules to your `pom.xml`.
+3. Add the required external modules to your `pom.xml`.
    (Check the `Dependent External Libraries > Manual Load Needed Libraries` section of the `README` in the module you want to add to your project.)
 
 ## Contributing
