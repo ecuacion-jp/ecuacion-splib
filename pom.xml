@@ -95,17 +95,22 @@
 				</plugin>
 
 				<!-- maven-compiler-plugin with NullAway / ErrorProne
-				     Defined here rather than inherited from lib-parent for two reasons:
+				     Defined here rather than inherited from lib-parent for three reasons:
 				     1. lib-parent only defines the compile-for-javadoc execution; NullAway config
 				        lives in lib-dependencies' pluginManagement, which is not propagated via
 				        the parent chain.
 				     2. -Xlint:-requires-transitive-automatic is splib-specific: Spring Boot
-				        dependencies expose JPMS automatic modules that trigger this warning. -->
+				        dependencies expose JPMS automatic modules that trigger this warning.
+				     3. -parameters is required by Spring 6+ for @RequestParam / @PathVariable
+				        parameter name resolution. spring-boot-starter-parent sets this via
+				        maven.compiler.parameters, but since we use our own parent it must be
+				        declared explicitly. -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
 						<compilerArgs>
+							<arg>-parameters</arg>
 							<arg>-XDcompilePolicy=simple</arg>
 							<arg>-XDshould-stop.ifError=FLOW</arg>
 							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
