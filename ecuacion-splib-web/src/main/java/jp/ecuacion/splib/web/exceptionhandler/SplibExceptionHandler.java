@@ -438,7 +438,11 @@ public abstract class SplibExceptionHandler {
     }
 
     Violations single = new Violations().messageParameters(params).add(cv);
-    return addViolation(br, errorCode, propertyPaths, single, needsMsgAtTopDefault, locale);
+    // When no property paths are resolved, there is no field to attach the error to
+    // (e.g. class-level constraints whose propertyPath is empty).
+    // Always fall back to a global (top-of-page) error so the message is never silently dropped.
+    boolean needsMsgAtTop = needsMsgAtTopDefault || propertyPaths.length == 0;
+    return addViolation(br, errorCode, propertyPaths, single, needsMsgAtTop, locale);
   }
 
   private boolean isClassValidatorConstraint(ConstraintViolation<?> cv) {
