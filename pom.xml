@@ -57,6 +57,10 @@
 		<ecuacion-splib.version>0.0.2-SNAPSHOT</ecuacion-splib.version>
 		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
 		<ecuacion-util.version>0.0.2-SNAPSHOT</ecuacion-util.version>
+		<!-- Extra args inserted into "-Xplugin:ErrorProne <here> -Xep:NullAway:ERROR ...".
+		     Override in child projects to customize Error Prone behavior.
+		     e.g. set "-XepDisableAllChecks" to run NullAway only. -->
+		<errorprone.extra.args></errorprone.extra.args>
 		<!-- 3rd party module versions -->
 		<spring-boot.version>4.0.5</spring-boot.version>
 		<!-- thymeleaf-layout-dialect 3.4.0 was compiled against Groovy 4.x;
@@ -105,7 +109,7 @@
 							<arg>-XDcompilePolicy=simple</arg>
 							<arg>-XDshould-stop.ifError=FLOW</arg>
 							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
-							<arg>-Xplugin:ErrorProne -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
+							<arg>-Xplugin:ErrorProne ${errorprone.extra.args} -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
 							<arg>-Xlint:-requires-transitive-automatic</arg>
 						</compilerArgs>
 						<annotationProcessorPaths>
