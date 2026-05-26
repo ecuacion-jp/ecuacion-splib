@@ -22,6 +22,7 @@ import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
+import jakarta.validation.constraints.NotNull;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -85,7 +86,7 @@ class SplibExceptionHandlerTest {
    * which produces a {@code ConstraintViolation} with {@code propertyPath = "name"}.</p>
    */
   private static class CvBean {
-    @SuppressWarnings("unused")
+    @NotNull
     @Nullable
     public String name; // null by default → triggers @NotNull violation
   }
@@ -99,7 +100,7 @@ class SplibExceptionHandlerTest {
    * auto-fallback to a global error occurs.</p>
    */
   private static class CvBeanEmail {
-    @SuppressWarnings("unused")
+    @NotNull
     @Nullable
     public String email; // null by default → triggers @NotNull violation
   }
