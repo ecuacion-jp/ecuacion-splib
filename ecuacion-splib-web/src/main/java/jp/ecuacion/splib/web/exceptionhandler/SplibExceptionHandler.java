@@ -185,7 +185,6 @@ public abstract class SplibExceptionHandler {
    * @param exception ViolationException
    * @param loginUser UserDetails
    * @return ModelAndView
-   * @throws Exception Exception
    */
   @ExceptionHandler({ViolationException.class})
   public ModelAndView handleViolationException(ViolationException exception,
@@ -602,7 +601,6 @@ public abstract class SplibExceptionHandler {
    * @param exception ConstraintViolationException
    * @param loginUser UserDetails
    * @return ModelAndView
-   * @throws Exception Exception
    */
   @ExceptionHandler({ConstraintViolationException.class})
   public ModelAndView handleConstraintViolationException(ConstraintViolationException exception,
@@ -690,7 +688,6 @@ public abstract class SplibExceptionHandler {
    * @param exception OverlappingFileLockException
    * @param loginUser UserDetails
    * @return ModelAndView
-   * @throws Exception Exception
    */
   @ExceptionHandler({OverlappingFileLockException.class})
   public ModelAndView handleOptimisticLockingFailureException(
