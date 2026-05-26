@@ -391,9 +391,12 @@ public abstract class SplibExceptionHandler {
       String pathStr = cv.getPropertyPath().toString();
       if (pathStr.isEmpty()) {
         // Class-level constraint (propertyPath is empty): no field to attach the error to.
-        // Fall through with an empty paths array; addViolation will treat this as a
-        // global (top-of-page) error via the needsMsgAtTop fallback.
-        propertyPaths = new String[] {};
+        // ExceptionUtil.getMessageList cannot resolve an item name from an empty path
+        // (it throws RequireNonEmptyException inside Item.<init>), so we use the
+        // CV's already-interpolated message directly and register it as a global error.
+        // The error is always shown at the top regardless of the needsMsgAtTop setting.
+        addGlobalError(br, errorCode, cv.getMessage());
+        return false; // no at-each-item error was added
       } else if (br.getTarget() instanceof SplibGeneralForm form) {
         // For SplibGeneralForm targets, verify the path exists in the form records.
         // If not found, propertyPaths becomes empty and the needsMsgAtTop fallback fires
