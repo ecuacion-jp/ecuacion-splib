@@ -57,6 +57,16 @@
 		</div></th:block>
 	</div>
 
+	<div th:fragment="searchYearMonth(itemPropertyPath, options)" th:remove="tag">
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: searchYearMonthInputInternal}, '', ${options})}"></div>
+
+		<th:block th:if="false"><div th:fragment="searchYearMonthInputInternal" th:remove="tag">
+			<th:block th:with="type='month'">
+				<div th:replace="~{bootstrap/components-input :: internalAllHtmlInputComponent('left')}"></div>
+			</th:block>
+		</div></th:block>
+	</div>
+
 	<!--/* internal common component */-->
 	<div th:fragment="searchComponentSelect(itemPropertyPath, pairs, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlSelectComponent}, '',  ${options})}"></div>
