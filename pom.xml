@@ -83,6 +83,14 @@
 		<pluginManagement>
 			<plugins>
 
+				<!-- spring-boot-maven-plugin: repackages jar into executable fat jar -->
+				<!-- Used only by batch / standalone Spring Boot modules -->
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+				</plugin>
+
 				<!-- failOnMissingWebXml = false -->
 				<!-- Used only by WAR projects -->
 				<plugin>
