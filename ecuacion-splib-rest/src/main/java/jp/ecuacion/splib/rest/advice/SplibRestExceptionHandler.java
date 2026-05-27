@@ -20,7 +20,6 @@ import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.splib.rest.exception.HttpStatusException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -43,8 +42,7 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(HttpStatusException.class)
   public ResponseEntity<?> handleHttpStatusException(HttpStatusException exception,
       WebRequest request) {
-    return new ResponseEntity<>(new LinkedMultiValueMap<String, String>(),
-        exception.getHttpStatus());
+    return ResponseEntity.status(exception.getHttpStatus()).build();
   }
 
   /**
