@@ -228,6 +228,13 @@
 		</th:block>
 	</div>
 
+	<!--/* td readOnly yearMonth */-->
+	<div th:fragment="listReadOnlyYearMonth(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
+			<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
+		</th:block>
+	</div>
+
 	<!--/* td readOnly free text */-->
 	<div th:fragment="listReadOnlyFreeText(value, options)" th:remove="tag">
 		<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
