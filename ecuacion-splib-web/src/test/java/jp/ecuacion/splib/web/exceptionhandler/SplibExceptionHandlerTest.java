@@ -150,6 +150,20 @@ class SplibExceptionHandlerTest {
   }
 
   /**
+   * Test bean for ClassValidator with a propertyPath that does NOT exist in {@code TestForm}.
+   *
+   * <p>{@code TestRecord} only has {@code name}; {@code email} is not present.
+   * When validated against a {@code TestForm}-backed {@code BindingResult},
+   * the path cannot be resolved and the error should fall back to a global error.</p>
+   */
+  @AnyNotNull(propertyPath = {"email"})
+  private static class AnyNotNullBeanWithEmail {
+    @SuppressWarnings("unused")
+    @Nullable
+    public String email; // null by default → AnyNotNull fails (no non-null values)
+  }
+
+  /**
    * Class-level constraint annotation that always fails validation.
    *
    * <p>Applying this annotation to a bean and validating it produces a
@@ -590,7 +604,7 @@ class SplibExceptionHandlerTest {
     void splibFormTarget_atItem_only__qualifiesPath_withSummary() {
       // @AnyNotNull(propertyPath={"name"}) → isClassValidatorConstraint=true
       // beanPath="", annotationPaths=["name"]
-      // target=TestForm → qualifyItemPropertyPaths → qualifyForForm → "testRecord.name"
+      // target=TestForm → qualifyForForm → "testRecord.name"
       // atItem=true → field error at "testRecord.name" + summary
       BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
 
@@ -599,6 +613,22 @@ class SplibExceptionHandlerTest {
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
       assertThat(br.getGlobalErrorCount()).isEqualTo(1); // summary only
+    }
+
+    @Test
+    void splibFormTarget_pathNotFound__globalFallback() {
+      // @AnyNotNull(propertyPath={"email"}) → isClassValidatorConstraint=true
+      // beanPath="", annotationPaths=["email"]
+      // target=TestForm → qualifyForForm("email") = null (TestRecord has no "email" field)
+      // → anyPathNotFound=true → needsMsgAtTop forced true → global error (no silent loss)
+      ViolationException ex =
+          new ViolationException(new Violations().validate(new AnyNotNullBeanWithEmail()));
+      BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(0);
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
     }
   }
 
