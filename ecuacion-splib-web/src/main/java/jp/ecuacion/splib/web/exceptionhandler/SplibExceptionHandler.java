@@ -374,6 +374,8 @@ public abstract class SplibExceptionHandler {
         cv.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
 
     String[] propertyPaths;
+    boolean anyPathNotFound = false;
+
     if (isClassValidatorConstraint(cv)) {
       String beanPath = cv.getPropertyPath().toString();
       String[] annotationPaths =
@@ -381,7 +383,22 @@ public abstract class SplibExceptionHandler {
       // annotationPaths is guaranteed non-empty by MultiplePropertyPathsValidator.initialize(),
       // so no length check is needed here.
       if (beanPath.isEmpty()) {
-        propertyPaths = qualifyItemPropertyPaths(br, annotationPaths);
+        if (br.getTarget() instanceof SplibGeneralForm form) {
+          // For SplibGeneralForm targets, verify each annotation path exists in the form records.
+          // Paths not found fall back to a global error (same behaviour as non-ClassValidator).
+          List<String> foundList = new ArrayList<>();
+          for (String path : annotationPaths) {
+            String qualified = qualifyForForm(form, path);
+            if (qualified != null) {
+              foundList.add(qualified);
+            } else {
+              anyPathNotFound = true;
+            }
+          }
+          propertyPaths = foundList.toArray(new String[0]);
+        } else {
+          propertyPaths = qualifyItemPropertyPaths(br, annotationPaths);
+        }
       } else {
         propertyPaths =
             Arrays.stream(annotationPaths).map(p -> beanPath + "." + p).toArray(String[]::new);
@@ -409,9 +426,9 @@ public abstract class SplibExceptionHandler {
     }
 
     Violations single = new Violations().messageParameters(params).add(cv);
-    // When no property paths are resolved, there is no field to attach the error to.
-    // Always fall back to a global (top-of-page) error so the message is never silently dropped.
-    boolean needsMsgAtTop = needsMsgAtTopDefault || propertyPaths.length == 0;
+    // When no property paths are resolved, or when any path was not found in the form,
+    // fall back to a global (top-of-page) error so the message is never silently dropped.
+    boolean needsMsgAtTop = needsMsgAtTopDefault || propertyPaths.length == 0 || anyPathNotFound;
     return addViolation(br, errorCode, propertyPaths, single, needsMsgAtItemDefault, needsMsgAtTop,
         locale);
   }
