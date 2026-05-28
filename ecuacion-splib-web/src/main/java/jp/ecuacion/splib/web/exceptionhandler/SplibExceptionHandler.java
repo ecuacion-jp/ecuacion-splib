@@ -400,8 +400,21 @@ public abstract class SplibExceptionHandler {
           propertyPaths = qualifyItemPropertyPaths(br, annotationPaths);
         }
       } else {
-        propertyPaths =
-            Arrays.stream(annotationPaths).map(p -> beanPath + "." + p).toArray(String[]::new);
+        if (br.getTarget() instanceof SplibGeneralForm form) {
+          List<String> foundList = new ArrayList<>();
+          for (String path : annotationPaths) {
+            String qualified = qualifyForForm(form, beanPath + "." + path);
+            if (qualified != null) {
+              foundList.add(qualified);
+            } else {
+              anyPathNotFound = true;
+            }
+          }
+          propertyPaths = foundList.toArray(new String[0]);
+        } else {
+          propertyPaths =
+              Arrays.stream(annotationPaths).map(p -> beanPath + "." + p).toArray(String[]::new);
+        }
       }
     } else {
       String pathStr = cv.getPropertyPath().toString();

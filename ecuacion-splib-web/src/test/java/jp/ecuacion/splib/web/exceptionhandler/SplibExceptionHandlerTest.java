@@ -22,11 +22,13 @@ import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.Locale;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.item.Item;
@@ -161,6 +163,64 @@ class SplibExceptionHandlerTest {
     @SuppressWarnings("unused")
     @Nullable
     public String email; // null by default → AnyNotNull fails (no non-null values)
+  }
+
+  /**
+   * Test record that holds a single nested {@code @Valid AnyNotNullBean} field.
+   *
+   * <p>Validating this record cascades into {@code nestedBean}. Because
+   * {@code AnyNotNullBean.name} is {@code null}, the {@code @AnyNotNull} class-level
+   * constraint fails and produces a {@code ConstraintViolation} with
+   * {@code propertyPath = "nestedBean"} (non-empty).</p>
+   */
+  private static class TestRecordWithNested extends SplibRecord implements ItemContainer {
+    @Valid
+    public AnyNotNullBean nestedBean = new AnyNotNullBean();
+
+    @Override
+    public Item[] customizedItems() {
+      return new Item[] {};
+    }
+  }
+
+  /**
+   * Test form whose record contains a nested bean.
+   *
+   * <p>The path {@code "nestedBean.name"} resolves to {@code "testRecord.nestedBean.name"}
+   * via {@code qualifyForForm}, whereas any path that does not correspond to a field in
+   * {@code TestRecordWithNested} cannot be resolved and falls back to a global error.</p>
+   */
+  private static class TestFormWithNested extends SplibGeneralForm {
+    @SuppressWarnings("unused")
+    public TestRecordWithNested testRecord = new TestRecordWithNested();
+  }
+
+  /**
+   * Test record that holds a {@code List} of nested {@code @Valid AnyNotNullBean} elements.
+   *
+   * <p>Validating this record cascades into each list element. Because
+   * {@code AnyNotNullBean.name} is {@code null}, the class-level constraint on
+   * {@code nestedList[0]} fails with {@code propertyPath = "nestedList[0]"}.</p>
+   */
+  private static class TestRecordWithNestedList extends SplibRecord implements ItemContainer {
+    @Valid
+    public List<AnyNotNullBean> nestedList = List.of(new AnyNotNullBean());
+
+    @Override
+    public Item[] customizedItems() {
+      return new Item[] {};
+    }
+  }
+
+  /**
+   * Test form whose record contains a list of nested beans.
+   *
+   * <p>The path {@code "nestedList[0].name"} resolves to
+   * {@code "testRecord.nestedList[0].name"} via {@code qualifyForForm}.</p>
+   */
+  private static class TestFormWithNestedList extends SplibGeneralForm {
+    @SuppressWarnings("unused")
+    public TestRecordWithNestedList testRecord = new TestRecordWithNestedList();
   }
 
   /**
@@ -550,6 +610,21 @@ class SplibExceptionHandlerTest {
     }
 
     @Test
+    void atItem_pathFound__qualifiedFieldError_withSummary() {
+      // @NotNull violation (name=null) → propertyPath="name"
+      // TestRecord has "name" → qualifyForForm(testForm, "name") = "testRecord.name"
+      // → field error stored under the qualified path + summary
+      ViolationException ex = new ViolationException(new Violations().validate(new CvBean()));
+      BindingResult br = brWithTestForm();
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1); // summary only
+    }
+
+    @Test
     void atItem_pathNotFound__globalFallback() {
       // Validate CvBeanEmail ("email") → propertyPath="email"
       // TestRecord only has "name"; "email" does not exist
@@ -683,6 +758,82 @@ class SplibExceptionHandlerTest {
       assertThat(br.getFieldErrors().stream().map(e -> e.getField()).toList())
           .containsExactlyInAnyOrder("name", "email");
       assertThat(br.getGlobalErrorCount()).isEqualTo(3);
+    }
+  }
+
+  // =========================================================================
+  // ConstraintViolation: nested @Valid bean with ClassValidator-based constraint
+  //
+  // When a class-level ClassValidator constraint fires on a nested @Valid bean,
+  // cv.getPropertyPath() is non-empty (e.g., "nestedBean" or "nestedList[0]").
+  // This is the else-branch of the beanPath.isEmpty() check.
+  //
+  // Before the fix, the else branch skipped qualifyForForm entirely:
+  //   - record field prefix was never prepended (wrong path registered)
+  //   - anyPathNotFound was never set (top fallback never fired)
+  //   → result: FieldError registered at a path that no th:errors can bind,
+  //     but the summary "messagesLinkedToItemsExist" was still shown.
+  //
+  // After the fix, the else branch also calls qualifyForForm(form, beanPath+"."+path):
+  //   - path found  → qualified path ("testRecord.nestedBean.name") used for FieldError
+  //   - path not found → anyPathNotFound=true → top fallback fires (no silent loss)
+  // =========================================================================
+
+  @Nested
+  class ConstraintViolation_NestedClassValidatorBased {
+
+    @Test
+    void nestedBean_splibFormTarget_pathFound__qualifiedFieldError_withSummary() {
+      // TestRecordWithNested has @Valid AnyNotNullBean nestedBean (name=null → always fails)
+      // validate(TestRecordWithNested) → CV: propertyPath="nestedBean", annotationPaths=["name"]
+      // beanPath="nestedBean" (non-empty → else branch)
+      // qualifyForForm(TestFormWithNested, "nestedBean.name") → "testRecord.nestedBean.name"
+      ViolationException ex =
+          new ViolationException(new Violations().validate(new TestRecordWithNested()));
+      BindingResult br =
+          new BeanPropertyBindingResult(new TestFormWithNested(), "testFormWithNested");
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.nestedBean.name");
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1); // summary only
+    }
+
+    @Test
+    void nestedBean_splibFormTarget_pathNotFound__globalFallback() {
+      // CV: propertyPath="nestedBean", annotationPaths=["name"]  (from TestRecordWithNested)
+      // Target: TestForm (record=TestRecord, which has only "name", no "nestedBean" field)
+      // qualifyForForm(TestForm, "nestedBean.name") → null (TestRecord has no nestedBean)
+      // → anyPathNotFound=true → needsMsgAtTop forced true → global error (top fallback)
+      ViolationException ex =
+          new ViolationException(new Violations().validate(new TestRecordWithNested()));
+      BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(0);
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+    }
+
+    @Test
+    void nestedList_splibFormTarget_pathFound__qualifiedFieldError_withSummary() {
+      // TestRecordWithNestedList has @Valid List<AnyNotNullBean> nestedList
+      // nestedList[0].name=null → CV: propertyPath="nestedList[0]", annotationPaths=["name"]
+      // beanPath="nestedList[0]" (non-empty → else branch)
+      // qualifyForForm(TestFormWithNestedList, "nestedList[0].name")
+      //   → "testRecord.nestedList[0].name"
+      // This is the exact scenario from the bug report.
+      ViolationException ex =
+          new ViolationException(new Violations().validate(new TestRecordWithNestedList()));
+      BindingResult br =
+          new BeanPropertyBindingResult(new TestFormWithNestedList(), "testFormWithNestedList");
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.nestedList[0].name");
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1); // summary only
     }
   }
 }
