@@ -228,6 +228,13 @@
 		</th:block>
 	</div>
 
+	<!--/* td readOnly yearMonth */-->
+	<div th:fragment="listReadOnlyYearMonth(itemPropertyPath, options)" th:remove="tag">
+		<th:block th:with="value=${rec.getValue(itemPropertyPath)}">
+			<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'center', ${options})}"></div>
+		</th:block>
+	</div>
+
 	<!--/* td readOnly free text */-->
 	<div th:fragment="listReadOnlyFreeText(value, options)" th:remove="tag">
 		<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
@@ -334,11 +341,13 @@
 
 	<!--/* inline delete button */-->
 	<div th:fragment="deleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag"
-			th:with="itemNameKey=*{getItem('__${itemDisplayedOnDelete}__').getItemNameKey()}">
+			th:with="confirmMessage=${@compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}">
 		<div th:replace="~{ :: submitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete',
 				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete}
-				+ ',attr=data-confirm-message|' + ${@compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}
 				+ ',' + ${options})}"></div>
+		<script th:inline="javascript">
+		document.getElementById('delete_' + /*[[*{ids}]]*/ '').dataset.confirmMessage = /*[[${confirmMessage}]]*/ '';
+		</script>
 	</div>
 
 	<!--/* downloadButton */-->

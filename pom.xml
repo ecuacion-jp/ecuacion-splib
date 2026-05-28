@@ -24,24 +24,8 @@
 	<!-- Using 0.0.2-SNAPSHOT instead of 0.0.1-SNAPSHOT to avoid a DuplicationOfParentVersion IDE warning:
 	     0.0.1-SNAPSHOT matches the version of the parent POM (ecuacion-lib-parent:0.0.1-SNAPSHOT). -->
 	<version>0.0.2-SNAPSHOT</version>
-	<name>${project.artifactId}</name>
 	<description>Spring Boot 4 based shared libraries for business application development.</description>
 	<url>https://github.com/ecuacion-jp/ecuacion-splib</url>
-	<organization>
-		<name>ecuacion.jp</name>
-	</organization>
-	<licenses>
-		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
-		</license>
-	</licenses>
-	<developers>
-		<developer>
-			<name>ecuacion.jp</name>
-			<email>info@ecuacion.jp</email>
-		</developer>
-	</developers>
 	<scm>
 		<connection>scm:git:https://github.com/ecuacion-jp/ecuacion-splib.git</connection>
 		<developerConnection>scm:git:https://github.com/ecuacion-jp/ecuacion-splib.git</developerConnection>
