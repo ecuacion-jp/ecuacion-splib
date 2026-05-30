@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          path: splib
 
       - name: Resolve tag
         id: tag
@@ -73,15 +75,18 @@ jobs:
           EOF
 
       - name: Update versions
+        working-directory: splib
         run: |
           mvn versions:set -DnewVersion=${{ steps.tag.outputs.value }} -DgenerateBackupPoms=false
           mvn versions:update-parent -DgenerateBackupPoms=false
           mvn versions:update-properties -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DgenerateBackupPoms=false
 
       - name: Verify
+        working-directory: splib
         run: mvn verify -Dwagon.skip=true
 
       - name: Deploy
+        working-directory: splib
         run: mvn deploy -P maven-central -Dwagon.skip=true -DskipTests
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
