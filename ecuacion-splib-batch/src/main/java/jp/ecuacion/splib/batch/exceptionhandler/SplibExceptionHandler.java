@@ -17,11 +17,11 @@ package jp.ecuacion.splib.batch.exceptionhandler;
 
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
+import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
@@ -85,7 +85,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
     // For ViolationException, list all messages so they are visible in the log.
     if (throwable instanceof ViolationException) {
       List<@NonNull String> msgList = ExceptionUtil.getMessageList(
-          (ViolationException) throwable, Locale.getDefault());
+          (ViolationException) throwable, LocaleUtil.getFallbackLocale());
       detailLog.info("==========");
       detailLog.info("[ViolationException message list]");
       msgList.stream().forEach(msg -> detailLog.info(msg));

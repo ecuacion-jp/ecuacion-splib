@@ -18,6 +18,7 @@ package jp.ecuacion.splib.core.config;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Objects;
+import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.support.AbstractMessageSource;
@@ -66,6 +67,6 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
     } else {
       return null;
     }
-    return new MessageFormat(template, locale != null ? locale : Locale.ROOT);
+    return new MessageFormat(template, locale != null ? locale : LocaleUtil.getFallbackLocale());
   }
 }
