@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import jp.ecuacion.lib.core.util.ItemUtil;
+import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.record.SplibRecord;
@@ -262,7 +263,7 @@ public abstract class SplibGeneralForm {
    */
   public void validateNotEmpty(Object rootBean, Violations violations, String loginState,
       @Nullable RolesAndAuthoritiesBean bean) {
-    validateNotEmpty(rootBean, violations, Locale.getDefault(), loginState, bean);
+    validateNotEmpty(rootBean, violations, LocaleUtil.getFallbackLocale(), loginState, bean);
   }
 
   /**
