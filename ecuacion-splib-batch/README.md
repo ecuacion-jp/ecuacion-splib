@@ -4,10 +4,6 @@
 
 `ecuacion-splib-batch` is a `spring boot` based batch related libraries.
 
-## System Requirements
-
-- JDK 21 or above.
-
 ## Dependent Ecuacion Libraries
 
 ### Automatically Loaded Libraries

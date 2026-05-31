@@ -4,10 +4,6 @@
 
 `ecuacion-splib-core` is a `spring boot` based core libraries.
 
-## System Requirements
-
-- JDK 21 or above.
-
 ## Dependent Ecuacion Libraries
 
 ### Automatically Loaded Libraries

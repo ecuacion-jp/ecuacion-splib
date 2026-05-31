@@ -7,10 +7,6 @@
 It is basically designed to release created war into `tomcat`, but you can release it to the other application server, 
 or you can embed application servers in a war with a little change.
 
-## System Requirements
-
-- JDK 21 or above.
-
 ## Dependent Ecuacion Libraries
 
 ### Automatically Loaded Libraries
