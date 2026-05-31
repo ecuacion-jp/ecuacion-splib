@@ -4,10 +4,6 @@
 
 `ecuacion-splib-jpa` is a `spring boot` based JPA related libraries.
 
-## System Requirements
-
-- JDK 21 or above.
-
 ## Dependent Ecuacion Libraries
 
 ### Automatically Loaded Libraries

@@ -34,7 +34,7 @@ utilities and apps use `Jakarta EE 11` for compatibility.
 
 ## Documentation
 
-(See `Documentation` part of the `README` in each module)
+- javadoc - See the `Documentation` section of the `README` in each module
 
 ## Quick Start
 
