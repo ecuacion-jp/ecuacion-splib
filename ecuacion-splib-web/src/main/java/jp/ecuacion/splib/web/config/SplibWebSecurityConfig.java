@@ -94,7 +94,7 @@ public abstract class SplibWebSecurityConfig {
    *
    * <p>Returns {@code true} by default.
    *     No-login applications should override this via
-   *     {@link SplibWebNoLoginSecurityConfig} which returns {@code false},
+   *     {@link SplibWebSecurityConfigForNoLogin} which returns {@code false},
    *     causing {@code formLogin} and {@code logout} to be disabled in
    *     {@link #filterChain(HttpSecurity)}.</p>
    *
