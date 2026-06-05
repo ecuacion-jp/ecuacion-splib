@@ -47,7 +47,7 @@
 		     e.g. set "-XepDisableAllChecks" to run NullAway only. -->
 		<errorprone.extra.args></errorprone.extra.args>
 		<!-- 3rd party module versions -->
-		<spring-boot.version>4.0.5</spring-boot.version>
+		<spring-boot.version>4.0.6</spring-boot.version>
 		<!-- thymeleaf-layout-dialect 3.4.0 was compiled against Groovy 4.x;
 		     Spring Boot 4 BOM upgrades to 5.x, breaking MetaClassImpl property lookup.
 		     Use 4.0.1+ which was recompiled against Groovy 5.x. -->
@@ -58,9 +58,9 @@
 		     Property alone is not enough to override (groovy-bom resolution issue);
 		     explicit dependencyManagement entry below is required. -->
 		<groovy.version>5.0.6</groovy.version>
-		<org.apache.maven.plugins.maven-war-plugin.version>3.2.2</org.apache.maven.plugins.maven-war-plugin.version>
+		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
 		<!-- nullaway / error prone -->
-		<com.uber.nullaway.version>0.13.4</com.uber.nullaway.version>
+		<com.uber.nullaway.version>0.13.6</com.uber.nullaway.version>
 		<com.google.errorprone.error_prone_core.version>2.49.0</com.google.errorprone.error_prone_core.version>
 	</properties>
 
