@@ -35,12 +35,12 @@ import org.jspecify.annotations.Nullable;
  * <p>Usage: annotate the subclass with {@code @Configuration} and
  *     {@code @EnableWebSecurity}.</p>
  */
-public abstract class SplibWebNoLoginSecurityConfig extends SplibWebSecurityConfig {
+public abstract class SplibWebSecurityConfigForNoLogin extends SplibWebSecurityConfig {
 
   /**
    * Constructs a new instance with no OAuth2 dependencies.
    */
-  protected SplibWebNoLoginSecurityConfig() {
+  protected SplibWebSecurityConfigForNoLogin() {
     super(null, null, null);
   }
 
