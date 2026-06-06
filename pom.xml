@@ -149,6 +149,22 @@
 
 	</build>
 
+	<dependencies>
+
+		<!-- test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.qameta.allure</groupId>
+			<artifactId>allure-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
 	<dependencyManagement>
 		<dependencies>
 
@@ -180,6 +196,13 @@
 				<groupId>jp.ecuacion.util</groupId>
 				<artifactId>ecuacion-util-parent</artifactId>
 				<version>${ecuacion-util.version}</version>
+			</dependency>
+
+			<!-- allure-jupiter (not managed by Spring Boot BOM) -->
+			<dependency>
+				<groupId>io.qameta.allure</groupId>
+				<artifactId>allure-jupiter</artifactId>
+				<version>${io.qameta.allure.allure-jupiter.version}</version>
 			</dependency>
 
 			<!-- ecuacion-splib -->
