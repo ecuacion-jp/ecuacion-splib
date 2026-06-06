@@ -28,11 +28,6 @@
 		<relativePath>..</relativePath>
 	</parent>
 
-	<properties>
-		<!-- spotbugs: temporarily disabled due to an unknown error (was commented out) -->
-		<spotbugs.skip>true</spotbugs.skip>
-	</properties>
-
 	<dependencies>
 
 		<!-- spring boot -->
@@ -51,16 +46,5 @@
 			<artifactId>ecuacion-splib-core</artifactId>
 		</dependency>
 
-		<!-- test -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.qameta.allure</groupId>
-			<artifactId>allure-junit5</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 </project>
