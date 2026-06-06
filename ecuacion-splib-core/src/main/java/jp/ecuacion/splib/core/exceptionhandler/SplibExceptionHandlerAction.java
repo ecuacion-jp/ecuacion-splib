@@ -15,8 +15,6 @@
  */
 package jp.ecuacion.splib.core.exceptionhandler;
 
-import jakarta.annotation.Nonnull;
-
 /**
  * Provide the app-dependent action when an exception occurs.
  */
@@ -27,7 +25,7 @@ public interface SplibExceptionHandlerAction {
    * 
    * @param th throwable
    */
-  public void execute(@Nonnull Throwable th);
+  public void execute(Throwable th);
   
 }
 
