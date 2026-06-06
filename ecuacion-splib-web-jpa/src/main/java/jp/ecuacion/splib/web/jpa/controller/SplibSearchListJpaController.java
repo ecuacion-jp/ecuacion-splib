@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.jpa.controller;
 
-import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.controller.ControllerContext;
 import jp.ecuacion.splib.web.controller.SplibSearchListController;
 import jp.ecuacion.splib.web.form.SplibListForm;
@@ -44,7 +43,7 @@ public abstract class SplibSearchListJpaController
    * 
    * @param function function
    */
-  public SplibSearchListJpaController(@Nonnull String function) {
+  public SplibSearchListJpaController(String function) {
     super(function);
   }
 
@@ -54,7 +53,7 @@ public abstract class SplibSearchListJpaController
    * @param function function
    * @param settings settings
    */
-  public SplibSearchListJpaController(@Nonnull String function, ControllerContext settings) {
+  public SplibSearchListJpaController(String function, ControllerContext settings) {
     super(function, settings);
   }
 
