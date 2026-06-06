@@ -36,11 +36,11 @@ or you can embed application servers in a war with a little change.
 
 (modules depending on `ecuacion-lib-core`)
 - `org.apache.commons:commons-lang3`
+- `jakarta.mail:jakarta.mail-api`
 
 ### Manual Load Needed Libraries
 
-(modules depending on `ecuacion-lib-core`)
-- `jakarta.mail:jakarta.mail-api` (If you want to use the mail related utility: `jp.ecuacion.lib.core.util.MailUtil`. `org.springframework.boot:spring-boot-starter-mail` is also fine.)
+(none)
 
 
 ## Documentation

@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.web.jpa.controller;
 
-import jakarta.annotation.Nonnull;
 import jp.ecuacion.splib.web.controller.ControllerContext;
 import jp.ecuacion.splib.web.controller.SplibEditController;
 import jp.ecuacion.splib.web.form.SplibEditForm;
@@ -39,7 +38,7 @@ public abstract class SplibEditJpaController
    * @param function function
    */
   public SplibEditJpaController(PageTemplatePatternEnum pageTemplatePattern,
-      @Nonnull String function) {
+      String function) {
     super(pageTemplatePattern, function);
   }
 
@@ -50,7 +49,7 @@ public abstract class SplibEditJpaController
    * @param settings settings
    */
   public SplibEditJpaController(PageTemplatePatternEnum pageTemplatePattern,
-      @Nonnull String function, ControllerContext settings) {
+      String function, ControllerContext settings) {
     super(pageTemplatePattern, function, settings);
   }
 }
