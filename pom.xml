@@ -84,6 +84,12 @@
 				</plugin>
 
 				<!-- failOnMissingWebXml = false -->
+				<!-- Also: if the project root has a NOTICE.txt (Apache License 2.0 attribution
+				     notices), bundle it at the WAR root META-INF, alongside the
+				     META-INF/NOTICE.txt placement used for jar / spring-boot executable jar
+				     artifacts (see ecuacion-tool-code-generator-parent's copy-notice-to-meta-inf
+				     execution). Projects without a NOTICE.txt are unaffected: the include
+				     filter simply matches nothing. -->
 				<!-- Used only by WAR projects -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -91,6 +97,15 @@
 					<version>${org.apache.maven.plugins.maven-war-plugin.version}</version>
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
+						<webResources>
+							<resource>
+								<directory>${maven.multiModuleProjectDirectory}</directory>
+								<targetPath>META-INF</targetPath>
+								<includes>
+									<include>NOTICE.txt</include>
+								</includes>
+							</resource>
+						</webResources>
 					</configuration>
 				</plugin>
 
@@ -146,6 +161,44 @@
 
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+
+			<!-- If the multi-module project root has a NOTICE.txt (Apache License 2.0
+			     attribution notices), bundle it into META-INF of the build output so it
+			     travels with the packaged jar / spring-boot executable jar / war (the latter
+			     also gets a copy at the WAR root META-INF via the maven-war-plugin
+			     webResources configuration above), satisfying License section 4(d) when the
+			     artifact is distributed. ${maven.multiModuleProjectDirectory} always points
+			     to the reactor root regardless of how deep a module is nested, and the
+			     include filter matches nothing (i.e. is a no-op) for projects without a
+			     NOTICE.txt, so private projects are unaffected. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-to-meta-inf</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${maven.multiModuleProjectDirectory}</directory>
+									<includes>
+										<include>NOTICE.txt</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
 
 	</build>
 
