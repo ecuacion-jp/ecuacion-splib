@@ -351,8 +351,9 @@ class SplibExceptionHandlerTest {
   class BusinessViolation_WithPath {
 
     @Test
-    void atTop_only__global1_field0() {
-      // atTop=true, atItem=false → no field error is added
+    void atTop_only__global1_field1_noSummary() {
+      // atTop=true, atItem=false → field error IS registered (for is-invalid styling),
+      // but atEachItemAdded=false so the summary is not added.
       ViolationException ex =
           violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = newBindingResult();
@@ -360,7 +361,8 @@ class SplibExceptionHandlerTest {
       handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
-      assertThat(br.getFieldErrorCount()).isEqualTo(0);
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
     }
 
     @Test
@@ -527,14 +529,16 @@ class SplibExceptionHandlerTest {
     }
 
     @Test
-    void atTop_only__global1_field0() {
-      // atTop=true, atItem=false → global error only
+    void atTop_only__global1_field1_noSummary() {
+      // atTop=true, atItem=false → field error IS registered (for is-invalid styling),
+      // but atEachItemAdded=false so the summary is not added.
       BindingResult br = newBindingResult();
 
       handler.addViolationErrorsTo(cvOf(), br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
-      assertThat(br.getFieldErrorCount()).isEqualTo(0);
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
     }
 
     @Test
