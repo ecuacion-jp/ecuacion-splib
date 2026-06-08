@@ -567,12 +567,12 @@ public abstract class SplibExceptionHandler {
   private boolean addViolation(BindingResult br, String errorCode, String[] propertyPaths,
       Violations singleViolation, boolean needsMsgAtItem, boolean needsMsgAtTop, Locale locale) {
     boolean atEachItemAdded = false;
-    if (needsMsgAtItem && propertyPaths.length > 0) {
+    if (propertyPaths.length > 0) {
       String message = ExceptionUtil.getMessageList(singleViolation, locale, false).get(0);
       for (String propertyPath : propertyPaths) {
         addFieldError(br, propertyPath, errorCode, message);
       }
-      atEachItemAdded = true;
+      atEachItemAdded = needsMsgAtItem;
     }
     if (needsMsgAtTop) {
       // When no field paths are available (class-level CV or global fallback),
