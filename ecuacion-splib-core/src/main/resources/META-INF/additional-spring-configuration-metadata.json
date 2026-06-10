@@ -1,0 +1,32 @@
+{
+  "properties": [
+    {
+      "name": "jp.ecuacion.splib.mail.title-prefix",
+      "type": "java.lang.String",
+      "description": "Prefix prepended to the email subject (e.g., environment label).",
+      "defaultValue": ""
+    },
+    {
+      "name": "jp.ecuacion.splib.mail.address-csv-on-system-error",
+      "type": "java.lang.String",
+      "description": "Comma-separated list of addresses to notify on system error."
+    },
+    {
+      "name": "jp.ecuacion.splib.mail.smtp.bounce-address",
+      "type": "java.lang.String",
+      "description": "Address that receives bounce/delivery-failure notifications."
+    },
+    {
+      "name": "jp.ecuacion.splib.mail.smtp.checks-certificate",
+      "type": "java.lang.Boolean",
+      "description": "Whether to verify the TLS certificate of the SMTP server.",
+      "defaultValue": true
+    },
+    {
+      "name": "jp.ecuacion.splib.mail.debug",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable JavaMail debug output.",
+      "defaultValue": false
+    }
+  ]
+}
