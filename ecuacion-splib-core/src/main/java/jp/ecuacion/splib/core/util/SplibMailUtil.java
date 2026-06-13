@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.core.util;
 
 import java.util.Objects;
+import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.MailUtil;
 import jp.ecuacion.lib.core.util.MailUtil.MailUtilConfig;
 import org.jspecify.annotations.Nullable;
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SplibMailUtil {
+
+  DetailLogger detailLog = new DetailLogger(this);
 
   @Value("${spring.mail.host:#{null}}")
   private @Nullable String host;
@@ -73,17 +76,20 @@ public class SplibMailUtil {
   /**
    * Sends an error notification mail.
    *
-   * <p>Does nothing if {@code spring.mail.host}, {@code spring.mail.username},
+   * <p>If {@code spring.mail.host}, {@code spring.mail.username},
    *     {@code spring.mail.password}, or
-   *     {@code jp.ecuacion.splib.mail.address-csv-on-system-error} is not configured.</p>
+   *     {@code jp.ecuacion.splib.mail.address-csv-on-system-error} is not configured,
+   *     logs a message and returns without sending.</p>
    *
    * @param th the throwable that caused the error
    */
   public void sendErrorMail(Throwable th) {
     if (host == null || username == null || password == null || errorAddressCsv == null) {
+      detailLog.info("A system error occured but no mails sent since mail settings not exist.");
       return;
     }
 
+    detailLog.info("Send a mail to notice the occurence of a system error to administrators.");
     MailUtilConfig config = new MailUtilConfig(Objects.requireNonNull(host), port, sslEnable, auth,
         checksCertificate, Objects.requireNonNull(username), Objects.requireNonNull(password),
         bounceAddress, debug, titlePrefix, Objects.requireNonNull(errorAddressCsv));
