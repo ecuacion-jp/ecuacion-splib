@@ -18,6 +18,7 @@ package jp.ecuacion.splib.core.config;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
@@ -26,6 +27,7 @@ import org.springframework.core.env.Environment;
  * Provides configs for core.
  */
 @Configuration
+@ComponentScan(basePackages = "jp.ecuacion.splib.core.util")
 public class SplibCoreConfig {
 
   /**
