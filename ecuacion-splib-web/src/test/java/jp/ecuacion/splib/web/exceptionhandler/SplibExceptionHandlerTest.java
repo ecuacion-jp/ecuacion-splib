@@ -89,7 +89,8 @@ class SplibExceptionHandlerTest {
    */
   private static class CvBean {
     @NotNull
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"UnusedVariable", "MultipleNullnessAnnotations"})
+    @Nullable
     String name; // null by default → triggers @NotNull violation
   }
 
@@ -103,7 +104,8 @@ class SplibExceptionHandlerTest {
    */
   private static class CvBeanEmail {
     @NotNull
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"UnusedVariable", "MultipleNullnessAnnotations"})
+    @Nullable
     String email; // null by default → triggers @NotNull violation
   }
 
@@ -174,7 +176,7 @@ class SplibExceptionHandlerTest {
    * {@code propertyPath = "nestedBean"} (non-empty).</p>
    */
   private static class TestRecordWithNested extends SplibRecord implements ItemContainer {
-    @SuppressWarnings("unused")
+    @SuppressWarnings("UnusedVariable")
     @Valid
     AnyNotNullBean nestedBean = new AnyNotNullBean();
 
@@ -204,9 +206,9 @@ class SplibExceptionHandlerTest {
    * {@code nestedList[0]} fails with {@code propertyPath = "nestedList[0]"}.</p>
    */
   private static class TestRecordWithNestedList extends SplibRecord implements ItemContainer {
-    @SuppressWarnings("unused")
+    @SuppressWarnings("UnusedVariable")
     @Valid
-    List<AnyNotNullBean> nestedList = List.of(new AnyNotNullBean());
+    @Nullable List<@Nullable AnyNotNullBean> nestedList = List.of(new AnyNotNullBean());
 
     @Override
     public Item[] customizedItems() {
