@@ -204,7 +204,9 @@ public abstract class SplibWebSecurityConfig {
           .logoutSuccessUrl("/public/login/page?logoutDone"));
     }
 
-    http.exceptionHandling(handling -> handling.accessDeniedPage(getAccessDeniedPage()));
+    http.exceptionHandling(handling -> handling.accessDeniedPage(getAccessDeniedPage())
+        .authenticationEntryPoint(
+            (request, response, authException) -> response.sendRedirect(getAccessDeniedPage())));
 
     return http.build();
   }
