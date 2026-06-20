@@ -35,6 +35,7 @@
 	<parent>
 		<groupId>jp.ecuacion.lib</groupId>
 		<artifactId>ecuacion-lib-parent</artifactId>
+		<!-- The version number is updated to the latest release in the build script. -->
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	
