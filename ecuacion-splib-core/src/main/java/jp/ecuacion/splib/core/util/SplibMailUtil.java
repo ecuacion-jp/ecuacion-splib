@@ -19,6 +19,7 @@ import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.MailUtil;
 import jp.ecuacion.lib.core.util.MailUtil.MailUtilConfig;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -57,10 +58,6 @@ public class SplibMailUtil {
   @Value("${spring.mail.properties.mail.smtp.ssl.enable:false}")
   private boolean sslEnable;
 
-  @SuppressWarnings("null")
-  @Value("${jp.ecuacion.splib.mail.title-prefix:}")
-  private String titlePrefix;
-
   @Value("${jp.ecuacion.splib.mail.address-csv-on-system-error:#{null}}")
   private @Nullable String errorAddressCsv;
 
@@ -90,6 +87,11 @@ public class SplibMailUtil {
     }
 
     detailLog.info("Send a mail to notice the occurence of a system error to administrators.");
+    // title-prefix may contain non-ASCII (e.g. Japanese) characters. Spring's @Value reads
+    // .properties as ISO-8859-1, which garbles them, so read it via PropertiesFileUtil
+    // (ResourceBundle, UTF-8 since Java 9) instead.
+    String titlePrefix = Objects.requireNonNull(
+        PropertiesFileUtil.getApplicationOrElse("jp.ecuacion.splib.mail.title-prefix", ""));
     MailUtilConfig config = new MailUtilConfig(Objects.requireNonNull(host), port, sslEnable, auth,
         checksCertificate, Objects.requireNonNull(username), Objects.requireNonNull(password),
         bounceAddress, debug, titlePrefix, Objects.requireNonNull(errorAddressCsv));
