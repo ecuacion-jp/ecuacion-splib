@@ -53,11 +53,12 @@
 					itemNameKeyClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}
 			">
 
-		<th:block th:with="id=${@optUtil.getValueOrElse(options, 'id', javaFormName + '.' + recordPropertyPathClass + '.' + propertyPathField)}">
-		
+		<th:block th:with="id=${@optUtil.getValueOrElse(options, 'id', javaFormName + '.' + recordPropertyPathClass + '.' + propertyPathField)},
+				submitOnChangeToRefreshOption=${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? 'event=change|submitOnChangeToRefresh' : ''}">
+
 			<!--/* submitOnChangeToRefresh should be the last event because it submits. */-->
-	 		<div th:replace="~{bootstrap/components :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false, 
-	 				 ${options} + ',' + ${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? 'event=change|submitOnChangeToRefresh' : ''})}"></div>				
+	 		<div th:replace="~{bootstrap/components :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false,
+	 				 ${options} + ',' + ${submitOnChangeToRefreshOption})}"></div>				
 	
 			<th:block th:if="false"><div th:fragment="fragmentAllInputCommonComponent" th:remove="tag">
 				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField},
@@ -323,13 +324,16 @@
 	</div>
 	
 	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, *{__${@strUtil.selectListMethodName(itemPropertyPath)}__()}, ${options})}"></div>
+		<th:block th:with="selectMethodName=${@strUtil.selectListMethodName(itemPropertyPath)}">
+			<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, *{__${selectMethodName}__()}, ${options})}"></div>
+		</th:block>
 	</div>
 	
 	<div th:fragment="inputSelectWithLocale(itemPropertyPath, options)" th:remove="tag"
-			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)}">
+			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)},
+					selectMethodName=${@strUtil.selectListMethodName(itemPropertyPath)}">
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath},
-				*{__${@strUtil.selectListMethodName(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
+				*{__${selectMethodName}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* 
@@ -341,9 +345,10 @@
 		  - firstCharOfCodeGreaterThanOrEqualTo: Shows selections whose first character is greaterl than or equal to the one spefied. Compared by ascii code number.
 	 */-->
 	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag"
-			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)}">
+			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)},
+					selectMethodName=${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}">
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath},
-				*{__${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
+				*{__${selectMethodName}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
 	
 	<!--/* component for file upload */-->
@@ -421,10 +426,11 @@
 
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
- 		<div th:replace="~{bootstrap/components :: internalButtonCommonComponent(${name}, ${label}, true,
- 				${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ?
- 						('attr=data-disabled-on-submit|true,attr=data-original-label|' + (#messages.msgOrNull(label) ?: label) + ',') : ''}
- 				+ ${options})}"></div>
+		<th:block th:with="disabledOnSubmitOption=${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ?
+					('attr=data-disabled-on-submit|true,attr=data-original-label|' + (#messages.msgOrNull(label) ?: label) + ',') : ''}">
+	 		<div th:replace="~{bootstrap/components :: internalButtonCommonComponent(${name}, ${label}, true,
+	 				${disabledOnSubmitOption} + ${options})}"></div>
+		</th:block>
 	</div>
 
 </body>

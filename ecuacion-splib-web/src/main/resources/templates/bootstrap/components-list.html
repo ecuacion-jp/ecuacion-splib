@@ -328,10 +328,12 @@
 
 	<!--/* submitButtonWithIds */-->
 	<div th:fragment="submitButtonWithIds(name, label, options)" th:remove="tag">
-		<div th:replace="~{ :: submitButton(${name}, ${(#messages.msgOrNull(@optUtil.getValueOrElse(options, 'text', label)) ?: @optUtil.getValueOrElse(options, 'text', label))},
-					'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions}
-					 + ',' + ${options} + ',event=click|tdSubmitButtonWithIds')}">
-		</div>
+		<th:block th:with="buttonText=${#messages.msgOrNull(@optUtil.getValueOrElse(options, 'text', label)) ?: @optUtil.getValueOrElse(options, 'text', label)}">
+			<div th:replace="~{ :: submitButton(${name}, ${buttonText},
+						'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions}
+						 + ',' + ${options} + ',event=click|tdSubmitButtonWithIds')}">
+			</div>
+		</th:block>
 	</div>
 
 	<!--/* inline update button */-->

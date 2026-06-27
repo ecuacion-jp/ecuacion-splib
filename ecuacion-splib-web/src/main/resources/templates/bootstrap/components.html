@@ -553,7 +553,9 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavBarMenuItem" th:remove="tag">
 			<li class="nav-item" th:id="${componentId}" style="margin-left: 20px">
-				 <div th:replace="~{ :: internalNavbarItem(false, ${@optUtil.getValueOrElse(options, 'method', 'get')}, ${options})}"></div>
+				<th:block th:with="navMethod=${@optUtil.getValueOrElse(options, 'method', 'get')}">
+					<div th:replace="~{ :: internalNavbarItem(false, ${navMethod}, ${options})}"></div>
+				</th:block>
 			</li>
 		</div></th:block>
 	</div>
@@ -589,7 +591,9 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuItem" th:remove="tag">
 			<li th:id="${componentId}" class="nav-item">
-				 <div th:replace="~{ :: internalNavbarItem(true, ${@optUtil.getValueOrElse(options, 'method', 'get')}, ${options})}"></div>
+				<th:block th:with="navMethod=${@optUtil.getValueOrElse(options, 'method', 'get')}">
+					<div th:replace="~{ :: internalNavbarItem(true, ${navMethod}, ${options})}"></div>
+				</th:block>
 			</li>
 		</div></th:block>
 	</div>
