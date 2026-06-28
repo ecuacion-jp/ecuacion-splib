@@ -198,7 +198,7 @@ public interface HtmlItemContainer extends ItemContainer {
     String commentMessageId =
         StringUtil.getLowerCamelFromSnake(bean.getStringSearchPatternEnum().toString());
 
-    return PropertiesFileUtil.getMessage(locale,
+    return PropertiesFileUtil.getItemName(locale,
         "jp.ecuacion.splib.web.common.label.searchPattern." + commentMessageId + "Match");
   }
 }
