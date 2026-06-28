@@ -247,8 +247,10 @@
 
 	<!--/* td readOnly enum text */-->
 	<div th:fragment="listReadOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
-		<th:block th:with="value=${rec.__${@strUtil.getMethodName(itemPropertyPath)}__Name(#locale)}">
-			<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
+		<th:block th:with="methodName=${@strUtil.getMethodName(itemPropertyPath)}">
+			<th:block th:with="value=${rec.__${methodName}__Name(#locale)}">
+				<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
+			</th:block>
 		</th:block>
 	</div>
 
