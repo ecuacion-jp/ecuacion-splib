@@ -1,4 +1,4 @@
-/* 共通 */
+/* common */
 
 .text-deleted {
 	color: #aaa !important;
@@ -8,13 +8,62 @@
 	background-color: #e3e3e3;
 }
 
-/* footer関連 */
+/* oauth2 login buttons (default values following Apple/Google official brand guidelines.
+   Colors are exposed as CSS variables, so each app can override the design by
+   redefining --btn-google-signin-* / --btn-apple-signin-* in its own app.css) */
+
+:root {
+	--btn-google-signin-bg: #fff;
+	--btn-google-signin-border: #747775;
+	--btn-google-signin-color: #1f1f1f;
+	--btn-google-signin-bg-hover: #f8f9fa;
+
+	--btn-apple-signin-bg: #000;
+	--btn-apple-signin-border: #000;
+	--btn-apple-signin-color: #fff;
+	--btn-apple-signin-bg-hover: #1a1a1a;
+}
+
+.btn-google-signin {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	background-color: var(--btn-google-signin-bg);
+	border: 1px solid var(--btn-google-signin-border);
+	color: var(--btn-google-signin-color);
+	font-family: 'Google Sans', Roboto, arial, sans-serif;
+	font-weight: 500;
+}
+
+.btn-google-signin:hover, .btn-google-signin:focus {
+	background-color: var(--btn-google-signin-bg-hover);
+	color: var(--btn-google-signin-color);
+}
+
+.btn-apple-signin {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	background-color: var(--btn-apple-signin-bg);
+	border: 1px solid var(--btn-apple-signin-border);
+	color: var(--btn-apple-signin-color);
+	font-family: -apple-system, "SF Pro Text", sans-serif;
+}
+
+.btn-apple-signin:hover, .btn-apple-signin:focus {
+	background-color: var(--btn-apple-signin-bg-hover);
+	color: var(--btn-apple-signin-color);
+}
+
+/* footer */
 
 .content-wrapper{
 	min-height: 100vh;
-	position: relative;/*←相対位置*/
-	padding-bottom: 100px;/*←footerの高さ*/
-	box-sizing: border-box;/*←全て含めてmin-height:100vhに*/
+	position: relative;/*←relative position*/
+	padding-bottom: 100px;/*←footer height*/
+	box-sizing: border-box;/*←include everything in min-height:100vh*/
 }
 
 footer{
@@ -22,11 +71,11 @@ footer{
 	text-align: center;
 	padding: 10px 0;
 
- 	position: absolute;/*←絶対位置*/
-	bottom: 0; /*下に固定*/
+ 	position: absolute;/*←absolute position*/
+	bottom: 0; /*fix to bottom*/
 }
 
-/* 画面上部出力の全エラーメッセージ表示欄 */
+/* wrapper for all error messages shown at the top of the screen */
 
 .all-error-messages-list-wrapper {
 	margin-left:  0px;
@@ -74,13 +123,13 @@ footer{
 /* inputDocumentViewer */
 
 .input-document-viewer-design {
-    border: 1px solid #666;  /* 枠線 */
-    border-radius: 0.67em;   /* 角丸 */
-    padding: 0.5em;          /* 内側の余白量 */
-    background-color: snow;  /* 背景色 */
-    width: 20em;             /* 横幅 */
-    font-size: 1em;          /* 文字サイズ */
-    line-height: 1.2;        /* 行の高さ */
+    border: 1px solid #666;  /* border */
+    border-radius: 0.67em;   /* corner radius */
+    padding: 0.5em;          /* inner padding */
+    background-color: snow;  /* background color */
+    width: 20em;             /* width */
+    font-size: 1em;          /* font size */
+    line-height: 1.2;        /* line height */
 }
 
 /* tooltip */
