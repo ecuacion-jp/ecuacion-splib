@@ -222,7 +222,7 @@ public abstract class SplibWebSecurityConfig {
 
     DefaultOAuth2AuthorizationRequestResolver requestResolver =
         new DefaultOAuth2AuthorizationRequestResolver(
-            clientRegistrationRepository, "/oauth2/authorization");
+            Objects.requireNonNull(clientRegistrationRepository), "/oauth2/authorization");
 
     // Add response_mode=form_post for Apple so the user's name is returned on first login.
     requestResolver.setAuthorizationRequestCustomizer(builder -> {
