@@ -66,9 +66,9 @@ public class SplibCoreBl {
           + (checkFromAllGroups ? "InAllGroups" : "");
 
       String str = StringUtil.getSeparatedValuesString(itemNameKeys,
-          "${+messages:jp.ecuacion.lib.core.common.itemName.separator}",
-          "${+messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}${+item_names:",
-          "}${+messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
+          "#{messages:jp.ecuacion.lib.core.common.itemName.separator}",
+          "#{messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}#{item_names:",
+          "}#{messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
       throw new ViolationException(new Violations().add(new BusinessViolation(itemPropertyPaths,
           msgId, ObjectsUtil.requireNonNull(Arg.formattedString(str)))));
     }
