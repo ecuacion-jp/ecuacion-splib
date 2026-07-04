@@ -570,8 +570,8 @@
 							navBgClass=${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
 
 				<a th:if="${imagePath == ''}" class="nav-link dropdown-toggle" href="#" role="button"
-						data-bs-toggle="dropdown" aria-expanded="false" th:text="${labelString}" />
-				<a th:if="${imagePath != ''}" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+						data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" th:text="${labelString}" />
+				<a th:if="${imagePath != ''}" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
 					<img th:src="${imagePath}" th:alt="${labelString}" width="27" height="27" style="filter: brightness(1) invert(1);" />
 				</a>
 
