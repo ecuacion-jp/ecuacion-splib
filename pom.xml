@@ -48,7 +48,7 @@
 		     e.g. set "-XepDisableAllChecks" to run NullAway only. -->
 		<errorprone.extra.args></errorprone.extra.args>
 		<!-- 3rd party module versions -->
-		<spring-boot.version>4.1.0</spring-boot.version>
+		<spring-boot.version>4.0.7</spring-boot.version>
 		<!-- thymeleaf-layout-dialect 3.4.0 was compiled against Groovy 4.x;
 		     Spring Boot 4 BOM upgrades to 5.x, breaking MetaClassImpl property lookup.
 		     Use 4.0.1+ which was recompiled against Groovy 5.x. -->
