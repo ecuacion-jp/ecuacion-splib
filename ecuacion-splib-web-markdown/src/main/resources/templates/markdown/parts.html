@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+</head>
+<body>
+
+	<!--/*
+		langSwitchNavItem: Navbar item that switches the display language and
+		returns to the article the user was viewing. Intended to be placed inside
+		a navbar fragment (e.g. splib-web/parts :: nav-bar-public-right) via
+		th:replace.
+	*/-->
+	<div th:fragment="langSwitchNavItem" th:remove="tag">
+		<th:block th:if="${lang == 'ja'}">
+			<div th:replace="~{bootstrap/components :: navbarMenuItem(
+					@{/public/lang/en(returnId=${currentArticleId ?: 'home'})},
+					'🌐 English', '')}"></div>
+		</th:block>
+		<th:block th:if="${lang == 'en'}">
+			<div th:replace="~{bootstrap/components :: navbarMenuItem(
+					@{/public/lang/ja(returnId=${currentArticleId ?: 'home'})},
+					'🌐 日本語', '')}"></div>
+		</th:block>
+	</div>
+
+</body>
+</html>
