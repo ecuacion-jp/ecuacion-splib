@@ -605,9 +605,9 @@
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownSubMenu" th:remove="tag">
 			<li th:id="${componentId}"
 					th:with="navBgClass=${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
-				<a class="dropdown-item nav-link" href="#">
-					<div style="text-align: left; float: left;" th:text="${labelString}"></div>
-					<div style="text-align: right;" th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
+				<a class="dropdown-item nav-link d-flex justify-content-between align-items-center gap-2" href="#">
+					<div th:text="${labelString}"></div>
+					<div th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
 				</a>
 				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark"
 						th:classappend="${navBgClass} + ' ' + ${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : ''}">
