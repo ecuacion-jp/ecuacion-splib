@@ -70,17 +70,22 @@ function changeCurrencyToNumber(currency){
 }
 
 function doubleClickPreventionLockButtonsOnSubmit(event, form) {
-	
-	const buttons = form.querySelectorAll('button, input[type="submit"]');
-	buttons.forEach(button => {
-		if (button.dataset.disabledOnSubmit) {
-			if (button === event.submitter) {
-				form.querySelector('input[name="action"]').value = event.submitter.name;
-				event.submitter.innerText = form.dataset.submittingMessage;
+
+	// Lock buttons in every form on the page, not only the submitted one,
+	// so that buttons belonging to a sibling form (e.g. a "create new" button
+	// living in a separate list form) also become unclickable while submitting.
+	Array.from(document.forms).forEach(otherForm => {
+		const buttons = otherForm.querySelectorAll('button, input[type="submit"]');
+		buttons.forEach(button => {
+			if (button.dataset.disabledOnSubmit) {
+				if (button === event.submitter) {
+					form.querySelector('input[name="action"]').value = event.submitter.name;
+					event.submitter.innerText = form.dataset.submittingMessage;
+				}
+
+				button.disabled = true;
 			}
-			
-			button.disabled = true;
-		}
+		});
 	});
 }
 
