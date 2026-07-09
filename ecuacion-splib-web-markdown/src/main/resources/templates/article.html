@@ -4,6 +4,9 @@
 		layout:decorate="~{bootstrap/page-base-wide}"
 		data-show-page-login-state="public"
 		th:with="title=''">
+<head>
+	<link th:href="@{/css/splib-web-markdown.css}" rel="stylesheet">
+</head>
 <body>
 	<div layout:fragment="base-content" th:remove="tag">
 		<div class="markdown-body" th:utext="${content}"></div>
