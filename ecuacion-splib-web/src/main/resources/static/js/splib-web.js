@@ -74,16 +74,23 @@ function doubleClickPreventionLockButtonsOnSubmit(event, form) {
 	// Lock buttons in every form on the page, not only the submitted one,
 	// so that buttons belonging to a sibling form (e.g. a "create new" button
 	// living in a separate list form) also become unclickable while submitting.
+	// Elements matched here are not only <button>/<input type="submit"> but also
+	// non-form-control elements (pagination <a> links, sortable <th> headers) that
+	// trigger a submission via requestSubmit() from an onclick handler, since those
+	// have no native 'disabled' state and would otherwise stay clickable.
 	Array.from(document.forms).forEach(otherForm => {
-		const buttons = otherForm.querySelectorAll('button, input[type="submit"]');
-		buttons.forEach(button => {
-			if (button.dataset.disabledOnSubmit) {
-				if (button === event.submitter) {
-					form.querySelector('input[name="action"]').value = event.submitter.name;
-					event.submitter.innerText = form.dataset.submittingMessage;
-				}
+		const elements = otherForm.querySelectorAll('[data-disabled-on-submit]');
+		elements.forEach(element => {
+			if (element === event.submitter) {
+				form.querySelector('input[name="action"]').value = event.submitter.name;
+				event.submitter.innerText = form.dataset.submittingMessage;
+			}
 
-				button.disabled = true;
+			if ('disabled' in element) {
+				element.disabled = true;
+			} else {
+				element.style.pointerEvents = 'none';
+				element.setAttribute('aria-disabled', 'true');
 			}
 		});
 	});
@@ -95,11 +102,14 @@ function doubleClickPreventionUnlockButtonsOnBrowserBack(window) {
 		// Means 'if the page is open by browser back'.
 		if (event.persisted || window.performance && window.performance.navigation.type === 2) {
 			Array.from(document.forms).forEach(form => {
-				const buttons = form.querySelectorAll('button, input[type="submit"]');
-				buttons.forEach(button => {
-					if (button.dataset.disabledOnSubmit) {
-						button.disabled = false;
-						button.innerText = button.dataset.originalLabel;
+				const elements = form.querySelectorAll('[data-disabled-on-submit]');
+				elements.forEach(element => {
+					if ('disabled' in element) {
+						element.disabled = false;
+						element.innerText = element.dataset.originalLabel;
+					} else {
+						element.style.pointerEvents = '';
+						element.removeAttribute('aria-disabled');
 					}
 				});
 			});
