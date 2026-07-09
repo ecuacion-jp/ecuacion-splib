@@ -47,7 +47,7 @@ public class ArticleService {
   }
 
   /**
-   * Returns HTML rendered from {@code classpath:content/{lang}/{id}.md}.
+   * Returns HTML rendered from {@code classpath:content/{id}_{lang}.md}.
    *
    * @param lang the language code ({@code "ja"} or {@code "en"})
    * @param id   the article identifier; only alphanumerics, hyphens, and slashes are allowed
@@ -59,7 +59,7 @@ public class ArticleService {
     if (!id.matches("[a-zA-Z0-9][a-zA-Z0-9\\-]*(/[a-zA-Z0-9][a-zA-Z0-9\\-]*)*")) {
       throw new IllegalArgumentException("Invalid article id: " + id);
     }
-    String resourcePath = "content/" + lang + "/" + id + ".md";
+    String resourcePath = "content/" + id + "_" + lang + ".md";
     try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
       if (is == null) {
         throw new IllegalArgumentException("Article not found: " + lang + "/" + id);
