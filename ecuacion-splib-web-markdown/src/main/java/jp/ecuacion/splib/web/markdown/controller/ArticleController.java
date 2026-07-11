@@ -16,6 +16,7 @@
 
 package jp.ecuacion.splib.web.markdown.controller;
 
+import java.util.Locale;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.markdown.service.ArticleService;
 import org.springframework.stereotype.Controller;
@@ -52,7 +53,7 @@ public class ArticleController {
 
     String content;
     try {
-      content = articleService.renderArticle(lang, id);
+      content = articleService.renderArticle(Locale.forLanguageTag(lang), id);
     } catch (IllegalArgumentException ex) {
       throw new RedirectToHomePageException("ARTICLE_NOT_FOUND_MSG", lang + "/" + id);
     }
