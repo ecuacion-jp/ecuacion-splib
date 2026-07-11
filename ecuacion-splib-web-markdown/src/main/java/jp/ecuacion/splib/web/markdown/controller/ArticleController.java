@@ -19,6 +19,7 @@ package jp.ecuacion.splib.web.markdown.controller;
 import java.util.Locale;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.markdown.service.ArticleService;
+import org.slf4j.event.Level;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,20 +45,23 @@ public class ArticleController {
    *              absent, the locale resolved by the configured {@code LocaleResolver} is used
    * @param model the Spring MVC model
    * @return template name
-   * @throws RedirectToHomePageException if no article is found for {@code id}, not even in the
-   *     default language
+   * @throws RedirectToHomePageException if {@code id} is malformed, or no article is found for
+   *     it, not even in the default language
    */
   @GetMapping("/public/showMarkdown/page")
   public String showArticle(
       @RequestParam String id, @RequestParam(required = false) String lang, Model model) {
-    Locale locale = lang != null ? Locale.forLanguageTag(lang) : LocaleContextHolder.getLocale();
 
-    String content;
-    try {
-      content = articleService.renderArticle(locale, id);
-    } catch (IllegalArgumentException ex) {
-      throw new RedirectToHomePageException("ARTICLE_NOT_FOUND_MSG", locale + "/" + id);
+    // Validate input string to prevent from attacks.
+    if (!ArticleService.ID_PATTERN.matcher(id).matches()) {
+      throw new RedirectToHomePageException(Level.INFO, "ARTICLE_NOT_FOUND_MSG",
+          new String[] {id});
     }
+
+    Locale locale = lang != null ? Locale.forLanguageTag(lang) : LocaleContextHolder.getLocale();
+    String content = articleService.renderArticle(locale, id)
+        .orElseThrow(() -> new RedirectToHomePageException(Level.INFO, "ARTICLE_NOT_FOUND_MSG",
+            new String[] {locale + "/" + id}));
 
     model.addAttribute("content", content);
     model.addAttribute("currentArticleId", id);

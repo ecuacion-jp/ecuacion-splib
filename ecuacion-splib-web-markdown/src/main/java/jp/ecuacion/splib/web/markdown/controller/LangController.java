@@ -19,6 +19,7 @@ package jp.ecuacion.splib.web.markdown.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Locale;
+import jp.ecuacion.splib.web.markdown.service.ArticleService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,8 +59,7 @@ public class LangController {
     String safeLang = "ja".equals(lang) ? "ja" : "en";
     Locale locale = "ja".equals(safeLang) ? Locale.JAPANESE : Locale.ENGLISH;
     localeResolver.setLocale(request, response, locale);
-    String safeId = returnId.matches("[a-zA-Z0-9][a-zA-Z0-9\\-]*(/[a-zA-Z0-9][a-zA-Z0-9\\-]*)*")
-        ? returnId : "home";
+    String safeId = ArticleService.ID_PATTERN.matcher(returnId).matches() ? returnId : "home";
     return "redirect:/public/showMarkdown/page?id=" + safeId + "&lang=" + safeLang;
   }
 }
