@@ -18,14 +18,25 @@ package jp.ecuacion.splib.web.markdown.config;
 
 import java.time.Duration;
 import java.util.Locale;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
-/** Spring configuration for tutorial-app language resolution. */
+/** Provides configs for splib-web-markdown. */
 @Configuration
-public class LocaleConfig {
+@ComponentScan(basePackages = "jp.ecuacion.splib.web.markdown.controller"
+    + ",jp.ecuacion.splib.web.markdown.service" + ",jp.ecuacion.splib.web.config")
+public class SplibWebMarkdownConfig {
+
+  static {
+    // messages_markdown[_xx].properties (no postfix is reserved for the consuming app's own
+    // file; a library module bundling its own messages must use a dedicated postfix so its
+    // keys are not shadowed by (or don't shadow) the app's file of the same bare name).
+    PropertiesFileUtil.addResourceBundlePostfix("markdown");
+  }
 
   /**
    * Cookie-based locale resolver using the {@code lang} cookie.
