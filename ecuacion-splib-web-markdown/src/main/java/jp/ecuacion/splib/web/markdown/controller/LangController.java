@@ -55,10 +55,11 @@ public class LangController {
       @RequestParam(defaultValue = "home") String returnId,
       HttpServletRequest request,
       HttpServletResponse response) {
-    Locale locale = "ja".equals(lang) ? Locale.JAPANESE : Locale.ENGLISH;
+    String safeLang = "ja".equals(lang) ? "ja" : "en";
+    Locale locale = "ja".equals(safeLang) ? Locale.JAPANESE : Locale.ENGLISH;
     localeResolver.setLocale(request, response, locale);
     String safeId = returnId.matches("[a-zA-Z0-9][a-zA-Z0-9\\-]*(/[a-zA-Z0-9][a-zA-Z0-9\\-]*)*")
         ? returnId : "home";
-    return "redirect:/public/" + ("ja".equals(lang) ? "ja" : "en") + "/article?id=" + safeId;
+    return "redirect:/public/markdownArticle/page?id=" + safeId + "&lang=" + safeLang;
   }
 }
