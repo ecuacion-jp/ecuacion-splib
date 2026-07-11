@@ -1,0 +1,7 @@
+{"properties": [
+  {
+    "name": "jp.ecuacion.splib.web.markdown.lang-switch.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Optional. It specifies whether the language switch item (navbarMenuItem) is shown in the navbar. Used to hide it for apps whose articles are provided in only one language. default value is true."
+  }
+]}
