@@ -20,15 +20,20 @@ import jp.ecuacion.splib.web.controller.LoginController.LoginForm;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.record.LoginRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Provides controller for login.
+ *
+ * <p>Not every app needs a login screen, so this controller can be disabled
+ *     by setting {@code jp.ecuacion.splib.web.login.enabled} to {@code false}.</p>
  */
 @Controller
 @Scope("prototype")
+@ConditionalOnProperty(name = "jp.ecuacion.splib.web.login.enabled", matchIfMissing = true)
 @RequestMapping("/public/login")
 public class LoginController
     extends SplibGeneral1FormController<LoginForm, SplibGeneral1FormDoNothingService<LoginForm>> {
