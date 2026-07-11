@@ -19,10 +19,10 @@ package jp.ecuacion.splib.web.markdown.controller;
 import java.util.Locale;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.markdown.service.ArticleService;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /** Controller for Markdown-based article pages. */
@@ -37,25 +37,26 @@ public class ArticleController {
   }
 
   /**
-   * Shows the article page for the given language and article ID.
+   * Shows the article page for the given article ID, in the requested language.
    *
-   * @param lang  the language code ({@code "ja"} or {@code "en"})
    * @param id    the article identifier
+   * @param lang  optional language tag (e.g. {@code "ja"}) overriding the resolved locale; when
+   *              absent, the locale resolved by the configured {@code LocaleResolver} is used
    * @param model the Spring MVC model
-   * @return template name, or redirect to English home when {@code lang} is invalid
-   * @throws RedirectToHomePageException if the article does not exist
+   * @return template name
+   * @throws RedirectToHomePageException if no article is found for {@code id}, not even in the
+   *     default language
    */
-  @GetMapping("/public/{lang}/article")
-  public String showArticle(@PathVariable String lang, @RequestParam String id, Model model) {
-    if (!"ja".equals(lang) && !"en".equals(lang)) {
-      return "redirect:/public/en/article?id=home";
-    }
+  @GetMapping("/public/markdownArticle/page")
+  public String showArticle(
+      @RequestParam String id, @RequestParam(required = false) String lang, Model model) {
+    Locale locale = lang != null ? Locale.forLanguageTag(lang) : LocaleContextHolder.getLocale();
 
     String content;
     try {
-      content = articleService.renderArticle(Locale.forLanguageTag(lang), id);
+      content = articleService.renderArticle(locale, id);
     } catch (IllegalArgumentException ex) {
-      throw new RedirectToHomePageException("ARTICLE_NOT_FOUND_MSG", lang + "/" + id);
+      throw new RedirectToHomePageException("ARTICLE_NOT_FOUND_MSG", locale + "/" + id);
     }
 
     model.addAttribute("content", content);
