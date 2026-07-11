@@ -25,7 +25,10 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 
 /** Reads Markdown files from classpath and renders them as HTML. */
@@ -47,28 +50,61 @@ public class ArticleService {
   }
 
   /**
-   * Returns HTML rendered from {@code classpath:content/{id}_{lang}.md}.
+   * Returns HTML rendered from the Markdown file resolved for {@code locale}, falling back
+   * through less specific variants the same way {@link java.util.ResourceBundle} resolves
+   * property files: {@code content/{id}_{language}_{country}_{variant}.md} →
+   * {@code content/{id}_{language}_{country}.md} → {@code content/{id}_{language}.md} →
+   * {@code content/{id}.md} (the root/default article, with no suffix).
    *
-   * @param lang the language code ({@code "ja"} or {@code "en"})
-   * @param id   the article identifier; only alphanumerics, hyphens, and slashes are allowed
+   * @param locale the requested locale
+   * @param id     the article identifier; only alphanumerics, hyphens, and slashes are allowed
    * @return rendered HTML string
-   * @throws IllegalArgumentException if {@code id} contains invalid characters or the file is
-   *     not found
+   * @throws IllegalArgumentException if {@code id} contains invalid characters or no file is
+   *     found for {@code id}, not even the root article
    */
-  public String renderArticle(String lang, String id) {
+  public String renderArticle(Locale locale, String id) {
     if (!id.matches("[a-zA-Z0-9][a-zA-Z0-9\\-]*(/[a-zA-Z0-9][a-zA-Z0-9\\-]*)*")) {
       throw new IllegalArgumentException("Invalid article id: " + id);
     }
-    String resourcePath = "content/" + id + "_" + lang + ".md";
-    try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-      if (is == null) {
-        throw new IllegalArgumentException("Article not found: " + lang + "/" + id);
+
+    for (String suffix : candidateSuffixes(locale)) {
+      String resourcePath = "content/" + id + suffix + ".md";
+      try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+        if (is == null) {
+          continue;
+        }
+        String markdown = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        Node document = parser.parse(markdown);
+        return renderer.render(document);
+      } catch (IOException ex) {
+        throw new IllegalStateException("Failed to read article: " + resourcePath, ex);
       }
-      String markdown = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-      Node document = parser.parse(markdown);
-      return renderer.render(document);
-    } catch (IOException ex) {
-      throw new IllegalStateException("Failed to read article: " + lang + "/" + id, ex);
     }
+
+    throw new IllegalArgumentException("Article not found: " + locale + "/" + id);
+  }
+
+  /**
+   * Builds the candidate filename suffixes for {@code locale}, most specific first and ending
+   * with {@code ""} for the root/default article, mirroring
+   * {@code ResourceBundle.Control#getCandidateLocales}.
+   */
+  private List<String> candidateSuffixes(Locale locale) {
+    List<String> suffixes = new ArrayList<>();
+    String language = locale.getLanguage();
+    String country = locale.getCountry();
+    String variant = locale.getVariant();
+
+    if (!variant.isEmpty() && !country.isEmpty() && !language.isEmpty()) {
+      suffixes.add("_" + language + "_" + country + "_" + variant);
+    }
+    if (!country.isEmpty() && !language.isEmpty()) {
+      suffixes.add("_" + language + "_" + country);
+    }
+    if (!language.isEmpty()) {
+      suffixes.add("_" + language);
+    }
+    suffixes.add("");
+    return suffixes;
   }
 }
