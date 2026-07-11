@@ -60,6 +60,6 @@ public class LangController {
     localeResolver.setLocale(request, response, locale);
     String safeId = returnId.matches("[a-zA-Z0-9][a-zA-Z0-9\\-]*(/[a-zA-Z0-9][a-zA-Z0-9\\-]*)*")
         ? returnId : "home";
-    return "redirect:/public/markdownArticle/page?id=" + safeId + "&lang=" + safeLang;
+    return "redirect:/public/showMarkdown/page?id=" + safeId + "&lang=" + safeLang;
   }
 }
