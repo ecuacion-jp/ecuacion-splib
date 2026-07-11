@@ -53,6 +53,6 @@ public class HomeRedirectController {
       redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, globalErrors);
     }
 
-    return "redirect:/public/markdownArticle/page?id=home&lang=" + lang;
+    return "redirect:/public/showMarkdown/page?id=home&lang=" + lang;
   }
 }

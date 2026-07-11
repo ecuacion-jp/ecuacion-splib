@@ -47,7 +47,7 @@ public class ArticleController {
    * @throws RedirectToHomePageException if no article is found for {@code id}, not even in the
    *     default language
    */
-  @GetMapping("/public/markdownArticle/page")
+  @GetMapping("/public/showMarkdown/page")
   public String showArticle(
       @RequestParam String id, @RequestParam(required = false) String lang, Model model) {
     Locale locale = lang != null ? Locale.forLanguageTag(lang) : LocaleContextHolder.getLocale();
