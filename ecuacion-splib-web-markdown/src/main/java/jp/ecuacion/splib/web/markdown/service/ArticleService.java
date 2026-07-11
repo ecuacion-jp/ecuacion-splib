@@ -62,9 +62,9 @@ public class ArticleService {
   /**
    * Returns HTML rendered from the Markdown file resolved for {@code locale}, falling back
    * through less specific variants the same way {@link java.util.ResourceBundle} resolves
-   * property files: {@code content/{id}_{language}_{country}_{variant}.md} →
-   * {@code content/{id}_{language}_{country}.md} → {@code content/{id}_{language}.md} →
-   * {@code content/{id}.md} (the root/default article, with no suffix).
+   * property files: {@code markdown/{id}_{language}_{country}_{variant}.md} →
+   * {@code markdown/{id}_{language}_{country}.md} → {@code markdown/{id}_{language}.md} →
+   * {@code markdown/{id}.md} (the root/default article, with no suffix).
    *
    * <p>Assumes {@code id} has already been validated by the caller; it is trusted here and
    * used as-is to build the classpath lookup.</p>
@@ -78,7 +78,7 @@ public class ArticleService {
   public Optional<String> renderArticle(Locale locale, String id) {
     List<String> suffixes = candidateSuffixes(locale);
     for (int i = 0; i < suffixes.size(); i++) {
-      String resourcePath = "content/" + id + suffixes.get(i) + ".md";
+      String resourcePath = "markdown/" + id + suffixes.get(i) + ".md";
       try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
         if (is == null) {
           continue;
