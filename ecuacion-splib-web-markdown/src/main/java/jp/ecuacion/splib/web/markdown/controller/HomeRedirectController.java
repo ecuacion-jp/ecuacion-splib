@@ -31,11 +31,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class HomeRedirectController {
 
   /**
-   * Resolves the current language from the locale context and redirects to the home article.
+   * Resolves the current language from the locale context and redirects to the home page.
    *
    * <p>Flash attributes (e.g. {@code globalErrors} set by a preceding
    * {@code RedirectToHomePageException}) only survive a single redirect hop, and this
-   * controller itself issues a second redirect (to the language-specific home article), so
+   * controller itself issues a second redirect (to the language-specific home page), so
    * any such message must be re-flashed here or it is silently dropped.</p>
    *
    * @param model model, already populated with flash attributes carried over from the

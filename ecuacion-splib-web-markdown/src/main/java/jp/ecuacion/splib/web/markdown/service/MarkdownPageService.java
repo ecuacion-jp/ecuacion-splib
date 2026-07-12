@@ -37,9 +37,9 @@ import org.springframework.stereotype.Service;
 
 /** Reads Markdown files from classpath and renders them as HTML. */
 @Service
-public class ArticleService {
+public class MarkdownPageService {
 
-  /** Only alphanumerics, hyphens, and slashes are allowed in an article id. */
+  /** Only alphanumerics, hyphens, and slashes are allowed in a Markdown page id. */
   public static final Pattern ID_PATTERN =
       Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9\\-]*(/[a-zA-Z0-9][a-zA-Z0-9\\-]*)*");
 
@@ -49,7 +49,7 @@ public class ArticleService {
   private final HtmlRenderer renderer;
 
   /** Initializes the Markdown parser with GFM-compatible extensions. */
-  public ArticleService() {
+  public MarkdownPageService() {
     MutableDataSet options = new MutableDataSet();
     options.set(Parser.EXTENSIONS, Arrays.asList(
         TablesExtension.create(),
@@ -64,18 +64,18 @@ public class ArticleService {
    * through less specific variants the same way {@link java.util.ResourceBundle} resolves
    * property files: {@code markdown/{id}_{language}_{country}_{variant}.md} →
    * {@code markdown/{id}_{language}_{country}.md} → {@code markdown/{id}_{language}.md} →
-   * {@code markdown/{id}.md} (the root/default article, with no suffix).
+   * {@code markdown/{id}.md} (the root/default page, with no suffix).
    *
    * <p>Assumes {@code id} has already been validated by the caller; it is trusted here and
    * used as-is to build the classpath lookup.</p>
    *
    * @param locale the requested locale
-   * @param id     the article identifier
+   * @param id     the Markdown page identifier
    * @return the rendered HTML, or {@link Optional#empty()} if no file is found for {@code id},
-   *     not even the root article
+   *     not even the root page
    * @throws UncheckedIOException if a matching Markdown file exists but cannot be read
    */
-  public Optional<String> renderArticle(Locale locale, String id) {
+  public Optional<String> renderMarkdownPage(Locale locale, String id) {
     List<String> suffixes = candidateSuffixes(locale);
     for (int i = 0; i < suffixes.size(); i++) {
       String resourcePath = "markdown/" + id + suffixes.get(i) + ".md";
@@ -84,7 +84,7 @@ public class ArticleService {
           continue;
         }
         if (i > 0) {
-          detailLog.debug("Article locale fallback: requested locale '" + locale
+          detailLog.debug("Markdown page locale fallback: requested locale '" + locale
               + "' has no '" + suffixes.get(0) + "' variant for id '" + id
               + "'; using '" + resourcePath + "' instead.");
         }
@@ -92,7 +92,7 @@ public class ArticleService {
         Node document = parser.parse(markdown);
         return Optional.of(renderer.render(document));
       } catch (IOException ex) {
-        throw new UncheckedIOException("Failed to read article: " + resourcePath, ex);
+        throw new UncheckedIOException("Failed to read Markdown page: " + resourcePath, ex);
       }
     }
 
@@ -101,7 +101,7 @@ public class ArticleService {
 
   /**
    * Builds the candidate filename suffixes for {@code locale}, most specific first and ending
-   * with {@code ""} for the root/default article, mirroring
+   * with {@code ""} for the root/default page, mirroring
    * {@code ResourceBundle.Control#getCandidateLocales}.
    */
   private List<String> candidateSuffixes(Locale locale) {
