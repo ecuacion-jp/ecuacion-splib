@@ -7,21 +7,21 @@
 
 	<!--/*
 		langSwitchNavItem: Navbar item that switches the display language and
-		returns to the article the user was viewing. Intended to be placed inside
+		returns to the Markdown page the user was viewing. Intended to be placed inside
 		a navbar fragment (e.g. splib-web/parts :: nav-bar-public-right) via
-		th:replace. Can be hidden for apps with only one article language via
+		th:replace. Can be hidden for apps with only one Markdown page language via
 		jp.ecuacion.splib.web.markdown.lang-switch.enabled (default: true).
 	*/-->
 	<div th:fragment="langSwitchNavItem" th:remove="tag"
 			th:with="langSwitchEnabled=${@environment.getProperty('jp.ecuacion.splib.web.markdown.lang-switch.enabled') ?: true}">
 		<th:block th:if="${langSwitchEnabled} and ${lang == 'ja'}">
 			<div th:replace="~{bootstrap/components :: navbarMenuItem(
-					@{/public/lang/en(returnId=${currentArticleId ?: 'home'})},
+					@{/public/lang/en(returnId=${currentMarkdownPageId ?: 'home'})},
 					'🌐 English', '')}"></div>
 		</th:block>
 		<th:block th:if="${langSwitchEnabled} and ${lang == 'en'}">
 			<div th:replace="~{bootstrap/components :: navbarMenuItem(
-					@{/public/lang/ja(returnId=${currentArticleId ?: 'home'})},
+					@{/public/lang/ja(returnId=${currentMarkdownPageId ?: 'home'})},
 					'🌐 日本語', '')}"></div>
 		</th:block>
 	</div>
