@@ -48,7 +48,9 @@ public class SplibComponentUtil {
       return null;
     }
 
-    return saveUploadedFileCommon(file.getBytes(), file.getName());
+    String originalFilename = file.getOriginalFilename();
+    return saveUploadedFileCommon(file.getBytes(),
+        originalFilename == null ? "" : originalFilename);
   }
 
   /**
@@ -84,11 +86,16 @@ public class SplibComponentUtil {
     String workDirPath = PropertiesFileUtil.getApplication("jp.ecuacion.work-dir");
     new File(workDirPath).mkdirs();
 
+    // The filename is client-controlled. Use only the last path segment
+    // to prevent path traversal outside the work directory.
+    int separatorIndex = Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\'));
+    String sanitizedFilename =
+        separatorIndex >= 0 ? filename.substring(separatorIndex + 1) : filename;
 
     // Timestamp-threadId-filenameInMultipartFile
     String tmpFilename =
         DateTimeApiUtil.getTimestampStringForFilename(LocalDateTime.now(ZoneId.systemDefault()))
-        + "-" + Thread.currentThread().threadId() + "-" + filename;
+        + "-" + Thread.currentThread().threadId() + "-" + sanitizedFilename;
 
     String tmpFilePath = workDirPath + "/" + tmpFilename;
 

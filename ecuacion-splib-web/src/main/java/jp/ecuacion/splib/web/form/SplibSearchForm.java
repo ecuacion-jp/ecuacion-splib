@@ -287,9 +287,9 @@ public abstract class SplibSearchForm extends SplibGeneralForm {
    */
   public List<PagerInfo> getPagerInfoList(Locale locale) {
     final String labelPrev =
-        PropertiesFileUtil.getMessage(locale, "jp.ecuacion.splib.web.common.label.prev");
+        PropertiesFileUtil.getItemName(locale, "jp.ecuacion.splib.web.common.label.prev");
     final String labelNext =
-        PropertiesFileUtil.getMessage(locale, "jp.ecuacion.splib.web.common.label.next");
+        PropertiesFileUtil.getItemName(locale, "jp.ecuacion.splib.web.common.label.next");
 
     List<PagerInfo> rtnList = new ArrayList<>();
     PageRequest pageRequest = getPageRequest();

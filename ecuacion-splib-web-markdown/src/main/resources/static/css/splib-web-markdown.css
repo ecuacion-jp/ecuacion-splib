@@ -1,0 +1,83 @@
+/*
+ * Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * `.markdown-body` is wrapped in :where(), which always contributes zero
+ * specificity. That keeps each selector's specificity down at the level of
+ * its plain element selector (e.g. `h1`), so:
+ *   - it still beats Bootstrap's bare `h1`/`.h1` rules on source order
+ *     (this file loads after bootstrap.min.css), and
+ *   - a downstream app.css can override any rule here just by writing a
+ *     normal `.markdown-body h1 { ... }` rule, since that has strictly
+ *     higher specificity and wins regardless of load order.
+ */
+
+:where(.markdown-body) h1 { font-size: 1.8rem; margin-top: 0; margin-bottom: 1rem; }
+:where(.markdown-body) h2 { font-size: 1.4rem; margin-top: 2rem; margin-bottom: 0.75rem;
+    padding-bottom: 0.3rem; border-bottom: 1px solid #d0d7de; }
+:where(.markdown-body) h3 { font-size: 1.2rem; margin-top: 2.5rem; margin-bottom: 0.5rem; }
+:where(.markdown-body) h4 { font-size: 1.05rem; margin-top: 2rem; margin-bottom: 0.5rem; }
+:where(.markdown-body) h5 { font-size: 0.95rem; margin-top: 1.75rem; margin-bottom: 0.4rem; }
+:where(.markdown-body) h6 { font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0.4rem; }
+
+:where(.markdown-body) pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 0.875rem;
+}
+:where(.markdown-body) code {
+    background-color: #f6f8fa;
+    border-radius: 3px;
+    font-size: 85%;
+    padding: 0.2em 0.4em;
+}
+:where(.markdown-body) pre code {
+    background-color: transparent;
+    padding: 0;
+    font-size: 100%;
+}
+
+:where(.markdown-body) table {
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+:where(.markdown-body) table th,
+:where(.markdown-body) table td {
+    border: 1px solid #d0d7de;
+    padding: 6px 13px;
+}
+:where(.markdown-body) table tr:nth-child(even) {
+    background-color: #f6f8fa;
+}
+
+:where(.markdown-body) blockquote {
+    border-left: 4px solid #d0d7de;
+    color: #57606a;
+    padding: 0 1em;
+    margin: 0 0 1rem 0;
+}
+
+:where(.markdown-body) ul, :where(.markdown-body) ol {
+    padding-left: 2em;
+    margin-bottom: 1rem;
+}
+
+/* Prevent navbar links from wrapping mid-text */
+.navbar-nav .nav-item .nav-link {
+    white-space: nowrap;
+}

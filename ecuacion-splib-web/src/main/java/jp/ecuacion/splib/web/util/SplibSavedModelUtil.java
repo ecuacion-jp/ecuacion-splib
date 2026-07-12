@@ -38,6 +38,16 @@ public class SplibSavedModelUtil {
    *     {@code BindingResult}-prefixed entries are stripped from the snapshot so the
    *     redirected page starts with a clean error / warning state.</p>
    *
+   * <p>{@link SplibWebConstants#KEY_GLOBAL_ERRORS} is always stripped, regardless of
+   *     {@code takeOverMessages}: it is a value {@code SplibControllerAdvice} recomputes
+   *     from scratch on every request (aggregated from the current {@code BindingResult}s,
+   *     plus anything a caller flashes directly under this same key). The value captured
+   *     here is whatever this request computed <em>before</em> the redirect decision was
+   *     made, so restoring it verbatim on the target page would overwrite a
+   *     directly-flashed message (e.g. from
+   *     {@code SplibExceptionHandler#handleRedirectNeededExceptions}) with that stale,
+   *     usually-empty copy.</p>
+   *
    * @param model model
    * @param redirectAttributes redirectAttributes
    * @param takeOverMessages whether to carry over warning / error / success messages
@@ -46,6 +56,7 @@ public class SplibSavedModelUtil {
       boolean takeOverMessages) {
 
     Map<String, Object> modelSnapshot = new HashMap<>(model.asMap());
+    modelSnapshot.remove(SplibWebConstants.KEY_GLOBAL_ERRORS);
 
     if (!takeOverMessages) {
       modelSnapshot.remove(SplibWebConstants.KEY_WARN_MESSAGE);

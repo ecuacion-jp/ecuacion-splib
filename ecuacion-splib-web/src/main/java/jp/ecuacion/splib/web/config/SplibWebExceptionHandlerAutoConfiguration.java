@@ -17,12 +17,15 @@ package jp.ecuacion.splib.web.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import jp.ecuacion.lib.core.exception.ViolationException;
+import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
+import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
@@ -76,6 +79,8 @@ public class SplibWebExceptionHandlerAutoConfiguration {
    */
   @ControllerAdvice
   static class SplibValidationExceptionHandler {
+
+    private final DetailLogger detailLog = new DetailLogger(this);
 
     private final HttpServletRequest request;
 
@@ -181,8 +186,23 @@ public class SplibWebExceptionHandlerAutoConfiguration {
         errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
       }
       redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
+
+      // The Referer header is client-controlled. Use only its path and query
+      // to prevent open redirect to external sites.
+      String redirectTarget = "/";
       String referer = request.getHeader("Referer");
-      return new ModelAndView("redirect:" + (referer != null ? referer : "/"));
+      if (referer != null) {
+        try {
+          URI uri = URI.create(referer);
+          redirectTarget = uri.getRawPath() != null ? uri.getRawPath() : "/";
+          if (uri.getRawQuery() != null) {
+            redirectTarget += "?" + uri.getRawQuery();
+          }
+        } catch (IllegalArgumentException ex) {
+          LogUtil.logSystemError(detailLog, ex);
+        }
+      }
+      return new ModelAndView("redirect:" + redirectTarget);
     }
   }
 

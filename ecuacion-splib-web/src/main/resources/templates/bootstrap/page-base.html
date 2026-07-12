@@ -140,14 +140,18 @@
 	<!--/* fragment: page-base-title-part */-->
 	<th:block th:if="false"><div th:fragment="page-base-title-part" th:remove="tag">
 		<!--/* title */-->
-		<div th:if="${title != null && title != ''}" th:replace="~{bootstrap/components :: title(${title}, '')}"></div>
+		<th:block th:if="${title != null && title != ''}">
+			<div th:replace="~{bootstrap/components :: title(${title}, '')}"></div>
+		</th:block>
 		<div layout:fragment="title-space"></div>
 
 		<!--/* messages */-->
 		<div th:replace="~{ :: messages('')}"></div>
-		
+
 		<!--/* titleDesc */-->
-		<div th:if="${titleDesc != null && titleDesc != ''}" th:replace="~{bootstrap/components :: paragraph(${titleDesc}, '')}"></div>
+		<th:block th:if="${titleDesc != null && titleDesc != ''}">
+			<div th:replace="~{bootstrap/components :: paragraph(${titleDesc}, '')}"></div>
+		</th:block>
 	</div></th:block>
 		
 	<!--/* fragment: messages */-->
