@@ -69,6 +69,11 @@ public class MarkdownPageService {
    * <p>Assumes {@code id} has already been validated by the caller; it is trusted here and
    * used as-is to build the classpath lookup.</p>
    *
+   * <p>The Markdown files themselves are also trusted content, bundled into the classpath by
+   * the application developer: raw HTML blocks and {@code javascript:} links in them are
+   * rendered into the page as-is, without sanitizing. Never feed user-supplied Markdown
+   * through this service.</p>
+   *
    * @param locale the requested locale
    * @param id     the Markdown page identifier
    * @return the rendered HTML, or {@link Optional#empty()} if no file is found for {@code id},
