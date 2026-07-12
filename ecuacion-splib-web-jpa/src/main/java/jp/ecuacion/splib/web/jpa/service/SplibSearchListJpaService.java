@@ -19,6 +19,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.jpa.entity.SplibEntity;
@@ -73,6 +74,14 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
   protected @Nullable LocalDate localDate(String date) {
     return (date == null || date.isEmpty()) ? null
         : LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+  }
+
+  /**
+   * Gets a yearMonth field (String) inside a record as a YearMonth.
+   */
+  protected @Nullable YearMonth yearMonth(String yearMonth) {
+    return (yearMonth == null || yearMonth.isEmpty()) ? null
+        : YearMonth.parse(yearMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
   }
 
   /**

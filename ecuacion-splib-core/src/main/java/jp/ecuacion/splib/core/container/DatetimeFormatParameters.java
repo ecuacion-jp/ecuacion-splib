@@ -25,9 +25,10 @@ public class DatetimeFormatParameters {
   private ZoneOffset zoneOffset;
 
   private String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
-  private String timestampFormat = "yyyy-MM-dd HH:mm:ss.SSSSSS XXX"; 
+  private String timestampFormat = "yyyy-MM-dd HH:mm:ss.SSSSSS XXX";
   private String dateFormat = "yyyy-MM-dd";
   private String timeFormat = "HH:mm:ss";
+  private String yearMonthFormat = "yyyy-MM";
 
   /**
    * Constructs a new default instance.
@@ -97,5 +98,13 @@ public class DatetimeFormatParameters {
 
   public void setTimeFormat(String timeFormat) {
     this.timeFormat = timeFormat;
+  }
+
+  public String getYearMonthFormat() {
+    return yearMonthFormat;
+  }
+
+  public void setYearMonthFormat(String yearMonthFormat) {
+    this.yearMonthFormat = yearMonthFormat;
   }
 }

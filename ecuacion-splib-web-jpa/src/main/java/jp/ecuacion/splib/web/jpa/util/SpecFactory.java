@@ -19,6 +19,7 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -288,6 +289,67 @@ public class SpecFactory<T extends SplibEntity> {
           entity == null ? root.get(field) : root.get(entity).get(field);
       return cb.or(cb.equal(criteriaField.as(LocalDate.class), date),
           cb.greaterThan(criteriaField.as(LocalDate.class), date));
+    };
+  }
+
+  /**
+   * Returns Specification for yearMonthEqualToOrLessThan.
+   *
+   * @param field field
+   * @param yearMonth yearMonth
+   * @return {@code Specification<T>}
+   */
+  public @Nullable Specification<T> yearMonthEqualToOrLessThan(String field,
+      YearMonth yearMonth) {
+    return yearMonthEqualToOrLessThan(null, field, yearMonth);
+  }
+
+  /**
+   * Returns Specification for yearMonthEqualToOrLessThan.
+   *
+   * @param field field
+   * @param yearMonth yearMonth
+   * @return {@code Specification<T>}
+   */
+  public @Nullable Specification<T> yearMonthEqualToOrLessThan(@Nullable String entity,
+      String field, YearMonth yearMonth) {
+    return yearMonth == null ? null : (root, query, cb) -> {
+      Expression<YearMonth> criteriaField =
+          entity == null ? root.get(field) : root.get(entity).get(field);
+      return cb.or(cb.equal(criteriaField.as(YearMonth.class), yearMonth),
+          cb.lessThan(criteriaField.as(YearMonth.class), yearMonth));
+    };
+  }
+
+  /**
+   * Returns Specification for yearMonthEqualToOrGreaterThan.
+   *
+   * @param field field
+   * @param yearMonth yearMonth
+   * @return {@code Specification<T>}
+   */
+  public @Nullable Specification<T> yearMonthEqualToOrGreaterThan(String field,
+      YearMonth yearMonth) {
+    return yearMonth == null ? null : (root, query, cb) -> {
+      return cb.or(cb.equal(root.get(field).as(YearMonth.class), yearMonth),
+          cb.greaterThan(root.get(field).as(YearMonth.class), yearMonth));
+    };
+  }
+
+  /**
+   * Returns Specification for yearMonthEqualToOrGreaterThan.
+   *
+   * @param field field
+   * @param yearMonth yearMonth
+   * @return {@code Specification<T>}
+   */
+  public @Nullable Specification<T> yearMonthEqualToOrGreaterThan(@Nullable String entity,
+      String field, YearMonth yearMonth) {
+    return yearMonth == null ? null : (root, query, cb) -> {
+      Expression<YearMonth> criteriaField =
+          entity == null ? root.get(field) : root.get(entity).get(field);
+      return cb.or(cb.equal(criteriaField.as(YearMonth.class), yearMonth),
+          cb.greaterThan(criteriaField.as(YearMonth.class), yearMonth));
     };
   }
 
