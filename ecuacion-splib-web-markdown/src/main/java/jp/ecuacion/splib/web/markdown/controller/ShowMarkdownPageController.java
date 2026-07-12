@@ -55,8 +55,14 @@ public class ShowMarkdownPageController {
 
     // Validate input string to prevent from attacks.
     if (!MarkdownPageService.ID_PATTERN.matcher(id).matches()) {
+      // The raw id is attacker-controlled and ends up in the log; strip control characters
+      // (CR/LF etc.) and cap the length to prevent log injection / log flooding.
+      String idForMessage = id.replaceAll("\\p{Cntrl}", "_");
+      if (idForMessage.length() > 100) {
+        idForMessage = idForMessage.substring(0, 100) + "...";
+      }
       throw new RedirectToHomePageException(Level.INFO, "MARKDOWN_PAGE_NOT_FOUND_MSG",
-          new String[] {id});
+          new String[] {idForMessage});
     }
 
     Locale locale = lang != null ? Locale.forLanguageTag(lang) : LocaleContextHolder.getLocale();
