@@ -16,14 +16,12 @@
 
 package jp.ecuacion.splib.web.markdown.config;
 
-import java.time.Duration;
-import java.util.Locale;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 /** Provides configs for splib-web-markdown. */
 @Configuration
@@ -39,14 +37,12 @@ public class SplibWebMarkdownConfig {
   }
 
   /**
-   * Cookie-based locale resolver using the {@code lang} cookie.
-   * Falls back to English for unrecognised locales.
+   * Session-based locale resolver.
+   * Falls back to the browser's {@code Accept-Language} header when no locale is
+   * set in the session yet.
    */
   @Bean
   LocaleResolver localeResolver() {
-    CookieLocaleResolver resolver = new CookieLocaleResolver("lang");
-    resolver.setDefaultLocale(Locale.ENGLISH);
-    resolver.setCookieMaxAge(Duration.ofDays(365));
-    return resolver;
+    return new SessionLocaleResolver();
   }
 }

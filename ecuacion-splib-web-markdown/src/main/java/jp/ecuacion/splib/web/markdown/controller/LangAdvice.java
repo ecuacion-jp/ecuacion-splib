@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  * Adds the resolved language code ({@code ja} or {@code en}) to every model
  * so Thymeleaf templates can build language-aware URLs.
  *
- * <p>The locale is resolved by the configured {@code CookieLocaleResolver}:
- * Cookie {@code lang} → Accept-Language header → English fallback.</p>
+ * <p>The locale is resolved by the configured {@code SessionLocaleResolver}:
+ * session attribute → Accept-Language header → English fallback.</p>
  */
 @ControllerAdvice
 public class LangAdvice {
