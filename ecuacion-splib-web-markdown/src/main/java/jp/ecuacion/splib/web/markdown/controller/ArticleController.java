@@ -17,6 +17,7 @@
 package jp.ecuacion.splib.web.markdown.controller;
 
 import java.util.Locale;
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.markdown.service.ArticleService;
 import org.slf4j.event.Level;
@@ -65,6 +66,14 @@ public class ArticleController {
 
     model.addAttribute("content", content);
     model.addAttribute("currentArticleId", id);
+
+    // "article.{id}.title" drives the page-base title area; when absent, the title area
+    // stays empty and the Markdown's own heading (if any) is the only title shown.
+    String titleKey = "article." + id + ".title";
+    if (PropertiesFileUtil.hasMessage(titleKey)) {
+      model.addAttribute("title", titleKey);
+    }
+
     return "article";
   }
 }
