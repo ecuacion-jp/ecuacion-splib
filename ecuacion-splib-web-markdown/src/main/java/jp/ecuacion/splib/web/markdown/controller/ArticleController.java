@@ -67,11 +67,15 @@ public class ArticleController {
     model.addAttribute("content", content);
     model.addAttribute("currentArticleId", id);
 
-    // "article.{id}.title" drives the page-base title area; when absent, the title area
+    // "markdownPage.{id}.title" drives the page-base title area; when absent, the title area
     // stays empty and the Markdown's own heading (if any) is the only title shown.
-    String titleKey = "article." + id + ".title";
+    // Resolved eagerly with the same locale as the article content itself (rather than left
+    // as a key for Thymeleaf to resolve against the ambient session locale), so the title
+    // stays in sync with the content even when it is requested in a locale other than the
+    // one currently active in the session (e.g. via an explicit lang= override).
+    String titleKey = "markdownPage." + id + ".title";
     if (PropertiesFileUtil.hasMessage(titleKey)) {
-      model.addAttribute("title", titleKey);
+      model.addAttribute("title", PropertiesFileUtil.getMessage(locale, titleKey));
     }
 
     return "article";
