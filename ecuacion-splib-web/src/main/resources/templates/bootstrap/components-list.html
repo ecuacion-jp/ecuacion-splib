@@ -386,7 +386,7 @@
 
 	<!--/* javaScript for inline switch user. Use with tdSwitchUserButton. Put it at "bottom-space" part in a page template.  */-->
 	<div th:fragment="scriptForSwitchUserButton(options)" th:remove="tag">
-		<form id="switchUserForm" method="GET" th:action="@{/admin/switchUser}">
+		<form id="switchUserForm" method="post" th:action="@{/admin/switchUser}">
 			<input type="hidden" id="switchUser.username" name="switchUser.username">
 		</form>
 		<script>

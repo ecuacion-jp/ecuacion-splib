@@ -86,12 +86,14 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     // /admin/impersonateLogin/action
     filter.setUserDetailsService(userDetailsService);
     filter.setUsernameParameter("switchUser.username");
+    // POST (not GET) so that switching / exiting users is CSRF-protected
+    // and the target username does not appear in URLs, access logs or Referer headers.
     // filter.setSwitchUserUrl("/admin/switchUser");
     filter.setSwitchUserMatcher(
-        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/admin/switchUser"));
+        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/admin/switchUser"));
     // filter.setExitUserUrl("/account/exitUser");
     filter.setExitUserMatcher(
-        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/account/exitUser"));
+        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/account/exitUser"));
     // filter.setTargetUrl("/account/cloudService/searchList/page");
     filter.setSuccessHandler(new CustomLoginSuccessHandler(getSwitchingUserDonePagePath(),
         getExitingUserDonePagePath()));
