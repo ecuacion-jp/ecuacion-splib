@@ -74,13 +74,21 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
     /**
      * Returns the value for the given property name from {@link PropertiesFileUtil}.
      *
+     * <p>Uses {@link PropertiesFileUtil#getApplicationWithoutExternalPlaceholderResolution}
+     * rather than {@link PropertiesFileUtil#getApplication(String)}: this {@code PropertySource}
+     * is itself consulted from within Spring's own {@code ${...}} placeholder resolution
+     * (which ecuacion-lib's external placeholder resolver hook delegates to), so re-applying
+     * that hook here would recurse back into this same {@code Environment} instead of letting
+     * Spring's single resolution pass continue and detect any cycles itself.</p>
+     *
      * @param name the property name
      * @return the property value, or {@code null} if not found
      */
     @Override
     public @Nullable Object getProperty(@Nullable String name) {
       Objects.requireNonNull(name);
-      return PropertiesFileUtil.hasApplication(name) ? PropertiesFileUtil.getApplication(name)
+      return PropertiesFileUtil.hasApplication(name)
+          ? PropertiesFileUtil.getApplicationWithoutExternalPlaceholderResolution(name)
           : null;
     }
   }
