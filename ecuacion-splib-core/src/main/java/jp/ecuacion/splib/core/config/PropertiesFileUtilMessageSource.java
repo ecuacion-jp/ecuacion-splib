@@ -17,7 +17,6 @@ package jp.ecuacion.splib.core.config;
 
 import java.text.MessageFormat;
 import java.util.Locale;
-import java.util.Objects;
 import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.jspecify.annotations.Nullable;
@@ -55,15 +54,14 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
    * @return a {@link MessageFormat} for the resolved message, or {@code null} if not found
    */
   @Override
-  protected @Nullable MessageFormat resolveCode(@Nullable String code, @Nullable Locale locale) {
-    String key = Objects.requireNonNull(code);
+  protected @Nullable MessageFormat resolveCode(String code, @Nullable Locale locale) {
     String template;
-    if (PropertiesFileUtil.hasMessage(key)) {
-      template = PropertiesFileUtil.getMessage(locale, key);
-    } else if (PropertiesFileUtil.hasConstant(key)) {
-      template = PropertiesFileUtil.getConstant(key);
-    } else if (PropertiesFileUtil.hasItemName(key)) {
-      template = PropertiesFileUtil.getItemName(locale, key);
+    if (PropertiesFileUtil.hasMessage(code)) {
+      template = PropertiesFileUtil.getMessage(locale, code);
+    } else if (PropertiesFileUtil.hasConstant(code)) {
+      template = PropertiesFileUtil.getConstant(code);
+    } else if (PropertiesFileUtil.hasItemName(code)) {
+      template = PropertiesFileUtil.getItemName(locale, code);
     } else {
       return null;
     }
