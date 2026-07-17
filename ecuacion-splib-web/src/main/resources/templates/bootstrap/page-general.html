@@ -58,7 +58,9 @@
 		<div layout:fragment="scripts"></div>
 
 		<script type="text/javascript">
-			doubleClickPreventionUnlockButtonsOnBrowserBack(window);
+			document.addEventListener('DOMContentLoaded', function() {
+				doubleClickPreventionUnlockButtonsOnBrowserBack(window);
+			});
 		</script>
 
 	</div>
