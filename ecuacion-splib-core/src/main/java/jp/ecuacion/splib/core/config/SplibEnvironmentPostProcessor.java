@@ -15,7 +15,6 @@
  */
 package jp.ecuacion.splib.core.config;
 
-import java.util.Objects;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.EnvironmentPostProcessor;
@@ -47,10 +46,9 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
    * @param application the application to post-process
    */
   @Override
-  public void postProcessEnvironment(@Nullable ConfigurableEnvironment environment,
-      @Nullable SpringApplication application) {
-    Objects.requireNonNull(environment).getPropertySources()
-        .addLast(new ApplicationPropertySource());
+  public void postProcessEnvironment(ConfigurableEnvironment environment,
+      SpringApplication application) {
+    environment.getPropertySources().addLast(new ApplicationPropertySource());
   }
 
   /**
@@ -85,8 +83,7 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
      * @return the property value, or {@code null} if not found
      */
     @Override
-    public @Nullable Object getProperty(@Nullable String name) {
-      Objects.requireNonNull(name);
+    public @Nullable Object getProperty(String name) {
       return PropertiesFileUtil.hasApplication(name)
           ? PropertiesFileUtil.getApplicationWithoutExternalPlaceholderResolution(name)
           : null;
