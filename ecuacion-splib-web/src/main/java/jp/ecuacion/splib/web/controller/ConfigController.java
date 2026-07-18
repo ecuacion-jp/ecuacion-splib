@@ -43,6 +43,24 @@ public class ConfigController
   }
 
   /**
+   * Clears the cache of properties files read via {@code PropertiesFileUtil},
+   * so that changes to application.properties can be picked up without restarting the app.
+   *
+   * <p>Rejected unless {@code jp.ecuacion.splib.web.ecuacion-config-buttons.enabled}
+   *     is set to {@code true} in application.properties.</p>
+   *
+   * @return URL
+   */
+  @PostMapping(value = "action", params = "action=clearPropertiesCache")
+  public String clearPropertiesCache() {
+    checkConfigButtonsEnabled();
+
+    PropertiesFileUtil.clearCache();
+
+    return getRedirectUrlOnSuccess();
+  }
+
+  /**
    * Deliberately throws a system error so that the system error behavior
    * (error page, logging, and so on) can be tested without requiring an actual bug.
    *
@@ -53,12 +71,16 @@ public class ConfigController
    */
   @PostMapping(value = "action", params = "action=systemError")
   public String systemError() {
+    checkConfigButtonsEnabled();
+
+    throw new RuntimeException("A system error was intentionally caused for testing purposes.");
+  }
+
+  private void checkConfigButtonsEnabled() {
     if (!Boolean.parseBoolean(PropertiesFileUtil
         .getApplicationOrElse("jp.ecuacion.splib.web.ecuacion-config-buttons.enabled", "false"))) {
       throw new RedirectToHomePageException("jp.ecuacion.splib.web.common.message.urlNotProper");
     }
-
-    throw new RuntimeException("A system error was intentionally caused for testing purposes.");
   }
 
   /**
