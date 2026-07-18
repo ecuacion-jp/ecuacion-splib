@@ -64,9 +64,6 @@ public class SplibMailUtil {
   @Value("${jp.ecuacion.splib.mail.smtp.bounce-address:#{null}}")
   private @Nullable String bounceAddress;
 
-  @Value("${jp.ecuacion.splib.mail.smtp.checks-certificate:true}")
-  private boolean checksCertificate;
-
   @Value("${jp.ecuacion.splib.mail.debug:false}")
   private boolean debug;
 
@@ -93,7 +90,7 @@ public class SplibMailUtil {
     String titlePrefix = Objects.requireNonNull(
         PropertiesFileUtil.getApplicationOrElse("jp.ecuacion.splib.mail.title-prefix", ""));
     MailUtilConfig config = new MailUtilConfig(Objects.requireNonNull(host), port, sslEnable, auth,
-        checksCertificate, Objects.requireNonNull(username), Objects.requireNonNull(password),
+        Objects.requireNonNull(username), Objects.requireNonNull(password),
         bounceAddress, debug, titlePrefix, Objects.requireNonNull(errorAddressCsv));
     MailUtil.sendErrorMail(th, config);
   }

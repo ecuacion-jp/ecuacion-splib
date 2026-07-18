@@ -15,9 +15,12 @@
  */
 package jp.ecuacion.splib.rest.advice;
 
+import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.LogUtil;
+import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.rest.exception.HttpStatusException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
@@ -31,6 +34,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  */
 @RestControllerAdvice
 public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
+
+  @Nullable
+  private final SplibExceptionHandlerAction actionOnThrowable;
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param actionOnThrowable actionOnThrowable, may be {@code null}
+   */
+  public SplibRestExceptionHandler(@Nullable SplibExceptionHandlerAction actionOnThrowable) {
+    this.actionOnThrowable = actionOnThrowable;
+  }
 
   /**
    * Handles HttpStatusException.
@@ -55,6 +70,11 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   public ErrorResponse handleThrowable(Throwable exception) {
 
     LogUtil.logSystemError(new DetailLogger(this), exception);
+
+    // app dependent procedures, like sending mail.
+    if (actionOnThrowable != null) {
+      Objects.requireNonNull(actionOnThrowable).execute(exception);
+    }
 
     return ErrorResponse.create(exception, HttpStatusCode.valueOf(501), "Internal Server Error...");
   }
