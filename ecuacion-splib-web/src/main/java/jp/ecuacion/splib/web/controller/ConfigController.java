@@ -31,9 +31,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @Scope("prototype")
-@RequestMapping("/ecuacion/public/config")
+@RequestMapping(ConfigController.BASE_PATH)
 public class ConfigController
     extends SplibGeneral1FormController<ConfigForm, SplibGeneral1FormDoNothingService<ConfigForm>> {
+
+  /**
+   * Note: this controller's URL doesn't follow the {@code /{loginState}/{function}} convention
+   * that {@code ReturnUrlBuilder} assumes (it would turn this into {@code /ecuacion-public/...},
+   * which doesn't match this mapping), so redirects here are built from this constant directly
+   * instead of via {@code getRedirectUrlOnSuccess()}.
+   */
+  static final String BASE_PATH = "/ecuacion/public/config";
 
   /**
    * Constructs a new instance.
@@ -57,7 +65,7 @@ public class ConfigController
 
     PropertiesFileUtil.clearCache();
 
-    return getRedirectUrlOnSuccess();
+    return "redirect:" + BASE_PATH + "/page?success";
   }
 
   /**
