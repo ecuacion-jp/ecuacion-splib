@@ -19,6 +19,8 @@ package jp.ecuacion.splib.rest.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
@@ -28,8 +30,24 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 public abstract class SplibRestSecurityConfig {
 
   /**
+   * Provides an empty {@code UserDetailsService} bean.
+   *
+   * <p>Rest endpoints defined here never rely on {@code UserDetailsService}-based
+   *     authentication ({@code permitAll} or {@code denyAll} only), but without a bean of
+   *     this type Spring Boot's {@code UserDetailsServiceAutoConfiguration} kicks in
+   *     and logs a "Using generated security password" warning on every startup.
+   *     Defining an empty one here suppresses that autoconfiguration.</p>
+   *
+   * @return UserDetailsService
+   */
+  @Bean
+  UserDetailsService userDetailsService() {
+    return new InMemoryUserDetailsManager();
+  }
+
+  /**
    * Provides SecurityFilterChain.
-   * 
+   *
    * @param http http
    * @return SecurityFilterChain
    * @throws Exception Exception
