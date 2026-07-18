@@ -28,6 +28,19 @@
 			<th th:replace="~{bootstrap/components-input :: inputText('excelTemplateVersion', 'width=full,readonly')}"></th>
 			<th th:replace="~{bootstrap/components-input :: inputText('codeGeneratorVersion', 'width=full,readonly')}"></th>
 		</div>
+		<div class="row mt-3" th:with="ecuacionConfigButtonsEnabled=${@environment.getProperty('jp.ecuacion.splib.web.ecuacion-config-buttons.enabled') ?: false}">
+			<div class="col-md-12 mb-4">
+				<div th:replace="~{bootstrap/components :: freeSpace(~{ :: ecuacionSplibConfigMessageForButtons}, '')}"></div>
+				<br>
+				<div th:replace="~{bootstrap/components-input :: submitButton('systemError', 'Cause a system error (for testing)',
+						${'classappend=w-100' + (ecuacionConfigButtonsEnabled ? '' : ',disabled')})}"></div>
+			</div>
+		</div>
 	</div>
+	
+		<div th:fragment="ecuacionSplibConfigMessageForButtons" th:remove="tag">
+			The following setting is needed in application.properties to enable buttons.
+			<code>jp.ecuacion.splib.web.ecuacion-config-buttons.enabled=true</code>
+		</div>
 </body>
 </html>

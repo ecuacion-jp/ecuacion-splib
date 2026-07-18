@@ -15,12 +15,15 @@
  */
 package jp.ecuacion.splib.web.controller;
 
+import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.web.controller.ConfigController.ConfigForm;
+import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.record.ConfigRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -37,6 +40,25 @@ public class ConfigController
    */
   public ConfigController() {
     super("config");
+  }
+
+  /**
+   * Deliberately throws a system error so that the system error behavior
+   * (error page, logging, and so on) can be tested without requiring an actual bug.
+   *
+   * <p>Rejected unless {@code jp.ecuacion.splib.web.ecuacion-config-buttons.enabled}
+   *     is set to {@code true} in application.properties.</p>
+   *
+   * @return never returns
+   */
+  @PostMapping(value = "action", params = "action=systemError")
+  public String systemError() {
+    if (!Boolean.parseBoolean(PropertiesFileUtil
+        .getApplicationOrElse("jp.ecuacion.splib.web.ecuacion-config-buttons.enabled", "false"))) {
+      throw new RedirectToHomePageException("jp.ecuacion.splib.web.common.message.urlNotProper");
+    }
+
+    throw new RuntimeException("A system error was intentionally caused for testing purposes.");
   }
 
   /**
