@@ -113,5 +113,10 @@
     "name": "jp.ecuacion.splib.web.admin-login.enabled",
     "type": "java.lang.String",
     "description": "A description for 'jp.ecuacion.splib.web.admin-login.enabled'"
+  }	,
+  {
+    "name": "jp.ecuacion.splib.web.ecuacion-config-buttons.enabled",
+    "type": "java.lang.String",
+    "description": "Optional. When 'true', shows and allows the testing-purpose buttons (such as the system error trigger) on the ecuacion config page. Defaults to false (hidden and rejected)."
   }
 ]}

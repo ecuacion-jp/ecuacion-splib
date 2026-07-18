@@ -20,8 +20,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Objects;
-import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
@@ -115,13 +113,11 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     }
 
     @Override
-    public void onAuthenticationSuccess(final @Nullable HttpServletRequest request,
-        final @Nullable HttpServletResponse response, final @Nullable Authentication authentication)
+    public void onAuthenticationSuccess(final HttpServletRequest request,
+        final HttpServletResponse response, final Authentication authentication)
         throws IOException, ServletException {
 
-      Objects.requireNonNull(response);
-
-      if (Objects.requireNonNull(request).getRequestURI().endsWith("/admin/switchUser")) {
+      if (request.getRequestURI().endsWith("/admin/switchUser")) {
         response.sendRedirect(request.getContextPath() + switchingUserDonePagePath);
 
       } else {
@@ -139,12 +135,9 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     }
 
     @Override
-    public void onAuthenticationFailure(@Nullable HttpServletRequest request,
-        @Nullable HttpServletResponse response, @Nullable AuthenticationException exception)
+    public void onAuthenticationFailure(HttpServletRequest request,
+        HttpServletResponse response, AuthenticationException exception)
         throws IOException, ServletException {
-      
-      Objects.requireNonNull(request);
-      Objects.requireNonNull(response);
 
       response.sendRedirect(request.getContextPath() + exitingUserDonePagePath);
     }

@@ -60,7 +60,6 @@
 		     explicit dependencyManagement entry below is required. -->
 		<groovy.version>5.0.6</groovy.version>
 		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
-		<org.apache.maven.plugins.maven-resources-plugin.version>3.5.0</org.apache.maven.plugins.maven-resources-plugin.version>
 		<!-- nullaway / error prone -->
 		<com.uber.nullaway.version>0.13.7</com.uber.nullaway.version>
 		<com.google.errorprone.error_prone_core.version>2.50.0</com.google.errorprone.error_prone_core.version>
@@ -178,7 +177,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>${org.apache.maven.plugins.maven-resources-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>copy-notice-to-meta-inf</id>
