@@ -32,6 +32,10 @@
 			<div class="col-md-12 mb-4">
 				<div th:replace="~{bootstrap/components :: freeSpace(~{ :: ecuacionSplibConfigMessageForButtons}, '')}"></div>
 				<br>
+				<div th:replace="~{bootstrap/components-input :: submitButton('clearPropertiesCache', 'Clear properties file cache',
+						${'classappend=w-100' + (ecuacionConfigButtonsEnabled ? '' : ',disabled')})}"></div>
+				<br>
+				<br>
 				<div th:replace="~{bootstrap/components-input :: submitButton('systemError', 'Cause a system error (for testing)',
 						${'classappend=w-100' + (ecuacionConfigButtonsEnabled ? '' : ',disabled')})}"></div>
 			</div>
