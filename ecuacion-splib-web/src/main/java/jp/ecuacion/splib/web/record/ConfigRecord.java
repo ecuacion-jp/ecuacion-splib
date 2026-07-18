@@ -15,10 +15,8 @@
  */
 package jp.ecuacion.splib.web.record;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import jp.ecuacion.lib.core.annotation.ItemNameKeyClass;
-import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import jp.ecuacion.lib.core.util.VersionUtil;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.item.HtmlItem;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
@@ -28,7 +26,6 @@ import jp.ecuacion.splib.web.item.HtmlItemContainer;
  */
 @ItemNameKeyClass("config")
 public class ConfigRecord extends SplibRecord implements HtmlItemContainer {
-  private static final String codeGeneratorNotUsedMesssage = "(code-generator not used)";
 
   @Override
   public HtmlItem[] customizedItems() {
@@ -41,26 +38,32 @@ public class ConfigRecord extends SplibRecord implements HtmlItemContainer {
    * @return String
    */
   public String getAppVersion() {
-    try {
-      ResourceBundle bundle = ResourceBundle.getBundle("version");
-      return bundle.getString("project.version");
-
-    } catch (MissingResourceException ex) {
-      return "(none)";
-    }
+    return getProductVersion("");
   }
 
-  public String getExcelTemplateVersion() {
-    return getCodeGeneratorRelatedValue("EXCEL_TEMPLATE_VERSION");
+  public String getCodeGeneratorExcelTemplateVersion() {
+    return getProductVersion("ecuacion-tool-code-generator-excel-format");
   }
 
   public String getCodeGeneratorVersion() {
-    return getCodeGeneratorRelatedValue("CODE_GENERATOR_VERSION");
+    return getProductVersion("ecuacion-tool-code-generator");
   }
 
-  private String getCodeGeneratorRelatedValue(String key) {
-    boolean hasValue = PropertiesFileUtil.hasApplication(key);
-    return hasValue ? PropertiesFileUtil.getApplication(key) : codeGeneratorNotUsedMesssage;
+  public String getSplibVersion() {
+    return getProductVersion("ecuacion-splib");
+  }
+
+  public String getLibVersion() {
+    return getProductVersion("ecuacion-lib");
+  }
+
+  public String getUtilsVersion() {
+    return getProductVersion("ecuacion-utils");
+  }
+
+  private String getProductVersion(String productName) {
+    String version = VersionUtil.getVersion(productName);
+    return version == null ? "(none)" : version;
   }
 
 }
