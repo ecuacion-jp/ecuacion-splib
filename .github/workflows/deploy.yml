@@ -13,6 +13,9 @@ on:
 env:
   MAVEN_OPTS: -Xmx2g
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,11 +26,15 @@ jobs:
 
       - name: Resolve tag
         id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "value=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "value=$INPUT_TAG" >> "$GITHUB_OUTPUT"
           else
-            echo "value=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "value=$REF_NAME" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/checkout@v5
@@ -76,8 +83,10 @@ jobs:
 
       - name: Update versions
         working-directory: splib
+        env:
+          NEW_VERSION: ${{ steps.tag.outputs.value }}
         run: |
-          mvn versions:set -DnewVersion=${{ steps.tag.outputs.value }} -DgenerateBackupPoms=false
+          mvn versions:set -DnewVersion="$NEW_VERSION" -DgenerateBackupPoms=false
           mvn versions:update-parent -DgenerateBackupPoms=false
           mvn versions:update-properties -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DgenerateBackupPoms=false
 
