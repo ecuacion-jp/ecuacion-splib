@@ -58,6 +58,17 @@ public class SplibMailUtil {
   @Value("${spring.mail.properties.mail.smtp.ssl.enable:false}")
   private boolean sslEnable;
 
+  /**
+   * When {@code sslEnable} is {@code false} (STARTTLS on port 587), {@code true} fails the
+   * connection rather than falling back to plaintext when the server doesn't support
+   * STARTTLS. Setting this to {@code false} is a security risk: it lets SMTP authentication
+   * (including the password) happen over an unencrypted connection whenever the server
+   * lacks STARTTLS support. Only set it to {@code false} for a server known not to support
+   * STARTTLS (e.g. a local test relay), never in production.
+   */
+  @Value("${jp.ecuacion.splib.mail.smtp.starttls-required:true}")
+  private boolean starttlsRequired;
+
   @Value("${jp.ecuacion.splib.mail.address-csv-on-system-error:#{null}}")
   private @Nullable String errorAddressCsv;
 
@@ -90,7 +101,7 @@ public class SplibMailUtil {
     String titlePrefix = Objects.requireNonNull(
         PropertiesFileUtil.getApplicationOrElse("jp.ecuacion.splib.mail.title-prefix", ""));
     MailUtilConfig config = new MailUtilConfig(Objects.requireNonNull(host), port, sslEnable, auth,
-        Objects.requireNonNull(username), Objects.requireNonNull(password),
+        starttlsRequired, Objects.requireNonNull(username), Objects.requireNonNull(password),
         bounceAddress, debug, titlePrefix, Objects.requireNonNull(errorAddressCsv));
     MailUtil.sendErrorMail(th, config);
   }

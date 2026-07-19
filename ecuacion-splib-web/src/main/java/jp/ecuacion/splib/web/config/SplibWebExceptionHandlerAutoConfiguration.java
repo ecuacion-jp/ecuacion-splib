@@ -17,7 +17,6 @@ package jp.ecuacion.splib.web.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +32,7 @@ import jp.ecuacion.lib.core.violation.Violations.MessageParameters;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
 import jp.ecuacion.splib.web.util.SplibValidationHelper;
+import jp.ecuacion.splib.web.util.internal.RefererRedirectUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -187,17 +187,13 @@ public class SplibWebExceptionHandlerAutoConfiguration {
       }
       redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
 
-      // The Referer header is client-controlled. Use only its path and query
-      // to prevent open redirect to external sites.
+      // The Referer header is client-controlled; see RefererRedirectUtil's javadoc for why a
+      // same-origin check is needed even after taking only the path and query.
       String redirectTarget = "/";
       String referer = request.getHeader("Referer");
       if (referer != null) {
         try {
-          URI uri = URI.create(referer);
-          redirectTarget = uri.getRawPath() != null ? uri.getRawPath() : "/";
-          if (uri.getRawQuery() != null) {
-            redirectTarget += "?" + uri.getRawQuery();
-          }
+          redirectTarget = RefererRedirectUtil.toSameOriginRedirectTarget(referer);
         } catch (IllegalArgumentException ex) {
           LogUtil.logSystemError(detailLog, ex);
         }
