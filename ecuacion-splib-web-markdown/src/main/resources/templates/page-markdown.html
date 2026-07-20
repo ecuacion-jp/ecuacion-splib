@@ -8,6 +8,9 @@
 </head>
 <body>
 	<div layout:fragment="base-content" th:remove="tag">
+		<!--/* th:utext: "content" is rendered as raw, unescaped HTML. Safe only because
+			MarkdownPageService restricts it to Markdown files bundled on the classpath by the
+			application developer, never user-supplied input — see that class's javadoc. */-->
 		<div class="markdown-body" th:utext="${content}"></div>
 	</div>
 </body>

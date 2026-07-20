@@ -299,6 +299,14 @@
 		- textColor			string	Specifies the color attribute.
 		- backgroundColor	string	Specifies the background-color attribute.
 		- utext				(none)	Specifies the string is unescaped. No value need to be specified.
+								WARNING: with this option the cell is rendered via th:utext, so
+								"string" (or, for the 2-attribute array form, cellElement[0]) is
+								written into the page as raw HTML with no escaping. Never pass
+								user-controlled or otherwise untrusted data (form input, uploaded
+								content, values sourced from it, ...) as "string" when this option
+								is set — doing so is a stored/reflected XSS hole. Only use it for
+								strings the application developer fully controls (e.g. a literal
+								or a message-properties value written by the developer).
  	 */-->
 	<div th:fragment="internalStaticTableCell(cellElement, isHeader, cascadedOptions)" th:remove="tag">
 		<th:block th:with="
