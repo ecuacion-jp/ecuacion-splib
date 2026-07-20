@@ -108,15 +108,39 @@ public class SplibComponentUtil {
 
   /**
    * Obtains picture data in BASE64 format.
-   * 
-   * @param path path
+   *
+   * <p>{@code path} is typically a value an application persisted earlier — e.g. the return
+   *     value of {@link #saveUploadedFile}, read back to redisplay a previously uploaded
+   *     picture. Since callers may build it from data that ultimately traces back to end-user
+   *     input, {@code path} is required to resolve to a file inside the work directory
+   *     ({@code jp.ecuacion.work-dir}, the same directory {@link #saveUploadedFile} writes to);
+   *     without this check, a path such as {@code ../../etc/passwd} or an absolute path outside
+   *     the work directory would let the caller read arbitrary files on the server and return
+   *     their contents (path traversal / local file disclosure), rather than only pictures
+   *     the application itself saved there.</p>
+   *
+   * @param path path to the picture file; must resolve to a file inside the work directory
    * @param pictureFormat jpeg, ...
    * @return picture data in BASE64 format
+   * @throws IllegalArgumentException if {@code path} does not resolve to a file inside the work
+   *     directory
    * @throws Exception Exception
    */
   public static String getPictureDataBase64(String path, String pictureFormat) throws Exception {
+    String workDirPath = PropertiesFileUtil.getApplication("jp.ecuacion.work-dir");
+    Path realWorkDir = Path.of(workDirPath).toRealPath();
+    Path realPath = Path.of(path).toRealPath();
+
+    // realPath.startsWith() compares path *segments*, not raw characters, so a sibling
+    // directory that merely shares the work directory's name as a string prefix
+    // (e.g. work-dir-evil) is correctly rejected too.
+    if (!realPath.startsWith(realWorkDir)) {
+      throw new IllegalArgumentException(
+          "path must resolve to a file inside the work directory: " + path);
+    }
+
     Base64.Encoder encoder = Base64.getEncoder();
     return "data:image/" + pictureFormat + ";base64,"
-        + encoder.encodeToString(Files.readAllBytes(Path.of(path)));
+        + encoder.encodeToString(Files.readAllBytes(realPath));
   }
 }

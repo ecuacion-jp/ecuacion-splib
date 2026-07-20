@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.web.config;
 
+import jp.ecuacion.lib.core.logging.DetailLogger;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Auto-configures a permissive {@link SecurityFilterChain} fallback
+ * Auto-configures a lockdown {@link SecurityFilterChain} fallback
  * when no {@link SplibWebSecurityConfig} subclass bean is present in the application context.
  *
  * <p><strong>Intended use.</strong> This auto-configuration exists so that applications
@@ -40,6 +41,21 @@ import org.springframework.security.web.SecurityFilterChain;
  *     When a subclass of {@link SplibWebSecurityConfig} is registered as a bean,
  *     this auto-configuration is skipped.</p>
  *
+ * <p><strong>Fails closed, not open.</strong> Since {@code ecuacion-splib-web} depends on
+ *     {@code spring-boot-starter-security} unconditionally, any application that pulls it in
+ *     — even one that only wants, say, the Jakarta Validation utilities and never intended to
+ *     add real pages — has Spring Security on its classpath and needs some
+ *     {@link SecurityFilterChain}. But whether a missing {@link SplibWebSecurityConfig} bean
+ *     means "this app deliberately has no pages yet" or "a real page was just added and its
+ *     author forgot to wire up security" cannot be told apart from here, and Spring gives no
+ *     other signal either way: the application starts up exactly the same in both cases. Denying
+ *     every request is the fallback that stays safe under the second reading; the first case
+ *     costs nothing extra since there is nothing being served for it to block. Since that first
+ *     case is legitimate and this fallback fires on every one of its startups forever, the
+ *     accompanying log line ({@link #logFallbackActive}) is written at INFO rather than WARN —
+ *     it identifies which situation is happening for whoever goes looking, without implying
+ *     something needs fixing on every normal run of a validation-only app.</p>
+ *
  * <p><strong>Condition uses {@link SplibWebSecurityConfig} rather than
  *     {@link SecurityFilterChain}.</strong>
  *     Using {@code @ConditionalOnMissingBean(SecurityFilterChain.class)} was unreliable
@@ -51,25 +67,45 @@ import org.springframework.security.web.SecurityFilterChain;
 @AutoConfiguration
 public class SplibWebSecurityAutoConfiguration {
 
+  private final DetailLogger detailLog = new DetailLogger(this);
+
   /**
-   * Provides a permissive {@link SecurityFilterChain} that allows all requests.
+   * Provides a lockdown {@link SecurityFilterChain} that denies every request.
    *
    * <p>Applied only when no {@link SplibWebSecurityConfig} subclass bean is present.
    *     Checking for {@link SplibWebSecurityConfig} rather than {@link SecurityFilterChain}
-   *     avoids a Spring Boot limitation 
+   *     avoids a Spring Boot limitation
    *     where {@code @ConditionalOnMissingBean(SecurityFilterChain.class)}
    *     fails to detect the filter chain bean when the declaring {@code @Configuration} class
    *     uses {@code proxyBeanMethods = false} and the {@code @Bean} method is inherited
    *     from a non-{@code @Configuration} parent class.</p>
    *
    * @param http the {@link HttpSecurity} to configure
-   * @return a {@link SecurityFilterChain} that permits all requests
+   * @return a {@link SecurityFilterChain} that denies all requests
    * @throws Exception if an error occurs during configuration
    */
   @Bean
   @ConditionalOnMissingBean(SplibWebSecurityConfig.class)
-  SecurityFilterChain splibDefaultPermitAllFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+  SecurityFilterChain splibDefaultDenyAllFilterChain(HttpSecurity http) throws Exception {
+    logFallbackActive();
+    http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
     return http.build();
+  }
+
+  /**
+   * Logs that this fallback is active, since it otherwise looks identical to a normal,
+   * intentionally configured application — nothing fails, nothing throws, so without this the
+   * only symptom of a forgotten {@link SplibWebSecurityConfig} subclass is every page returning
+   * access-denied, which is easy to mistake for a to-be-implemented page still being worked on
+   * rather than a missing security configuration. Logged at INFO, not WARN: a validation-only
+   * application with no {@link SplibWebSecurityConfig} subclass by design hits this on every
+   * startup, and that is not a problem to flag.
+   */
+  private void logFallbackActive() {
+    detailLog.info("No SplibWebSecurityConfig subclass bean was found, so "
+        + "SplibWebSecurityAutoConfiguration is denying all requests by default. If this "
+        + "application serves real pages, define a @Configuration class extending "
+        + "SplibWebSecurityConfig (or SplibWebSecurityConfigForNoLogin) to configure real "
+        + "authorization instead.");
   }
 }
