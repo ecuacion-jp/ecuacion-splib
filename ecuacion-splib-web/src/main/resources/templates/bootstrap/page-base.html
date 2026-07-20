@@ -33,6 +33,13 @@
 	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 	<link th:href="@{/css/splib-web.css}" rel="stylesheet">
 	<link th:href="@{/css/app.css}" rel="stylesheet">
+	<!--/* Overrides bootstrap theme color css variables (navbar/footer/etc.) with
+			application[...].properties values, without rebuilding bootstrap from sass.
+			Outputs nothing when none of the "jp.ecuacion.splib.web.theme.color-*" keys are set,
+			so apps that don't use this feature are not affected. */-->
+	<th:block th:if="${@themeColorUtil.hasAnyThemeColor()}">
+		<style th:utext="${@themeColorUtil.buildThemeColorCssOrEmpty()}"></style>
+	</th:block>
 	<title th:text="${#strings.isEmpty(headTitle) ? (#strings.isEmpty(title) ? '' : (#messages.msgOrNull(title) ?: title)) : (#messages.msgOrNull(headTitle) ?: headTitle)}"></title>
 </head>
 <body th:style="${bodyBgColor} != '' ? 'background-color: ' + ${bodyBgColor} : 
