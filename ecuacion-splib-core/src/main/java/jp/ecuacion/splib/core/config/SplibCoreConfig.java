@@ -42,7 +42,7 @@ public class SplibCoreConfig {
    * @return the placeholder configurer
    */
   @Bean
-  PropertySourcesPlaceholderConfigurer propertyConfigInDev(Environment env) {
+  static PropertySourcesPlaceholderConfigurer propertyConfigInDev(Environment env) {
     PropertiesFileUtil.setExternalPlaceholderResolver(env::resolvePlaceholders);
     return new PropertySourcesPlaceholderConfigurer();
   }
