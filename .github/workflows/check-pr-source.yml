@@ -13,10 +13,10 @@ jobs:
     steps:
       - name: Verify source is a release branch
         env:
-          ACTOR: ${{ github.actor }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [[ "$ACTOR" == "dependabot[bot]" ]]; then
+          if [[ "$PR_AUTHOR" == "dependabot[bot]" ]]; then
             exit 0
           fi
           if [[ "$HEAD_REF" != "develop" ]]; then
