@@ -28,6 +28,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerMapping;
 
 /**
  * Provides common procedure that are supposed to be done before controllers are called.
@@ -61,6 +64,14 @@ public class SplibControllerAdvice {
   @ModelAttribute
   public void modelAttribute(Model model) {
 
+    // @RestController endpoints render no Thymeleaf template, so none of what follows
+    // (loginState, transaction token, redirect-carried model, aggregated form errors) applies
+    // to them. Skipping also avoids getLoginState() rejecting URLs that don't follow the
+    // {loginState}/... convention, such as ecuacion-splib-rest's /api/** endpoints.
+    if (isRestControllerRequest()) {
+      return;
+    }
+
     // Add model to request attribute. This is needed because when model is obtained via DI
     // in the ExceptionHandler, an empty model is returned instead of the populated one.
     request.setAttribute(SplibWebConstants.KEY_MODEL, model);
@@ -79,6 +90,12 @@ public class SplibControllerAdvice {
     // Add url path. Direct use of request in Thymeleaf is no longer allowed,
     // and it is recommended to set url etc. to model in the controller.
     model.addAttribute("loginState", loginStateUtil.getLoginState());
+  }
+
+  private boolean isRestControllerRequest() {
+    Object handler = request.getAttribute(HandlerMapping.BEST_MATCHING_HANDLER_ATTRIBUTE);
+    return handler instanceof HandlerMethod handlerMethod
+        && handlerMethod.getBeanType().isAnnotationPresent(RestController.class);
   }
 
   @SuppressWarnings("unchecked")

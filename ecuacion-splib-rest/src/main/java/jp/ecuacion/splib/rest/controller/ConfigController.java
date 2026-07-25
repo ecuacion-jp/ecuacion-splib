@@ -20,8 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Provides config controller.
+ *
+ * <p>Named explicitly because {@code ecuacion-splib-web} has its own unrelated
+ *     {@code ConfigController} (serving {@code /ecuacion/public/config}); without an explicit
+ *     name, Spring's default bean-naming would collide on {@code configController} for any app
+ *     that uses both modules.</p>
  */
-@RestController
+@RestController("restConfigController")
 public class ConfigController {
 
   /**
