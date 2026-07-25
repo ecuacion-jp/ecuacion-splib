@@ -128,13 +128,59 @@ public abstract class SplibRecord {
     return rtnList;
   }
 
-  /** default method. */
+  /**
+   * Holds a snapshot of this record's own and related records' IDs, joined with ",".
+   *
+   * <p>This is used to identify which DB record(s) this record corresponds to across a
+   *     screen-transition round trip (e.g. list screen to edit screen), not to hold the live,
+   *     currently-selected value of a relation. It is populated once when the record is built
+   *     from a DB entity (see the entity-arg constructor), and carried through hidden form
+   *     fields as-is. It is intentionally independent of the entity's own id fields
+   *     ({@code getId()}/{@code setId()} and relation equivalents) so that it never conflicts
+   *     with a directly-bound, user-editable field for the same relation.</p>
+   */
+  private String ids = "";
+
+  /**
+   * Holds a snapshot of this record's own and related records' optimistic lock versions, joined
+   * with ",", in the same order as {@link #ids}.
+   *
+   * <p>Used together with {@link #ids} for {@code findAndOptimisticLockingCheck()}. See
+   *     {@link #ids} for why this is independent of the entity's own version fields.</p>
+   */
+  private String optimisticLockVersions = "";
+
   public String getIds() {
-    return "";
+    return ids;
   }
 
-  /** default method. */
+  public void setIds(String ids) {
+    this.ids = ids;
+  }
+
   public String getOptimisticLockVersions() {
-    return "";
+    return optimisticLockVersions;
+  }
+
+  public void setOptimisticLockVersions(String optimisticLockVersions) {
+    this.optimisticLockVersions = optimisticLockVersions;
+  }
+
+  /**
+   * Extracts one ","-separated segment from an {@code ids}/{@code optimisticLockVersions}
+   * snapshot string.
+   *
+   * <p>"," is used rather than "-" because manually-created records (e.g. seed data) are often
+   *     given a negative id/version on purpose to avoid colliding with the DB sequence, and "-"
+   *     as a separator would then collide with the leading minus sign.</p>
+   *
+   * @param csv the snapshot string ({@link #getIds()} or {@link #getOptimisticLockVersions()})
+   * @param index 0 for this record's own value, 1 and above for related records' values in the
+   *     order they were joined
+   * @return the segment value, or {@code ""} if the snapshot doesn't have that many segments
+   */
+  protected static String getSnapshotSegment(String csv, int index) {
+    String[] segments = csv.split(",", -1);
+    return index < segments.length ? segments[index] : "";
   }
 }
