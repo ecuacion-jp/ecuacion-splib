@@ -19,6 +19,7 @@ import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
+import jp.ecuacion.splib.rest.dto.StatusResponse;
 import jp.ecuacion.splib.rest.exception.HttpStatusException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
@@ -57,7 +58,8 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(HttpStatusException.class)
   public ResponseEntity<?> handleHttpStatusException(HttpStatusException exception,
       WebRequest request) {
-    return ResponseEntity.status(exception.getHttpStatus()).build();
+    return ResponseEntity.status(exception.getHttpStatus())
+        .body(new StatusResponse(exception.getHttpStatus().name()));
   }
 
   /**

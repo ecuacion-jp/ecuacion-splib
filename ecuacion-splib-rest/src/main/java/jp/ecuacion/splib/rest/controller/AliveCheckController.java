@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.rest.controller;
 
+import jp.ecuacion.splib.rest.dto.StatusResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,8 +31,11 @@ public class AliveCheckController {
 
   /**
    * Provides an alive-check response.
+   *
+   * @return a {@code StatusResponse} with {@code "OK"}
    */
   @GetMapping("/api/ecuacion/public/aliveCheck")
-  public void aliveCheck() {
+  public StatusResponse aliveCheck() {
+    return new StatusResponse("OK");
   }
 }
