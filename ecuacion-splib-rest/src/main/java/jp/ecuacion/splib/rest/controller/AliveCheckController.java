@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Provides an alive-check controller.
  *
- * <p>Mapped under {@code /api/ecuacion/public/**}, not {@code /api/public/**} — the latter is
+ * <p>Mapped under {@code /api/ecuacion-splib/public/**}, not {@code /api/public/**} — the latter is
  *     reserved for the application's own endpoints; see
  *     {@code SplibRestSecurityConfig#filterChainForApiPublic}.</p>
  */
@@ -35,7 +35,7 @@ public class AliveCheckController {
    *
    * @return a {@code StatusResponse} with {@code "OK"}
    */
-  @RequestMapping(value = "/api/ecuacion/public/aliveCheck",
+  @RequestMapping(value = "/api/ecuacion-splib/public/aliveCheck",
       method = {RequestMethod.GET, RequestMethod.POST})
   public StatusResponse aliveCheck() {
     return new StatusResponse("OK");

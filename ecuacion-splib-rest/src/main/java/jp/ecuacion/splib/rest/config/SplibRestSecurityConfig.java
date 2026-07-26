@@ -81,7 +81,8 @@ public abstract class SplibRestSecurityConfig {
    *     stops a {@code @PostMapping} from being added under {@code /api/public/**}; it is a
    *     convention this class assumes but cannot itself enforce.</p>
    *
-   * <p>{@code /api/ecuacion/public/**} carries the same {@code permitAll} policy but is reserved
+   * <p>{@code /api/ecuacion-splib/public/**} carries 
+   *     the same {@code permitAll} policy but is reserved
    *     for {@code ecuacion-splib}'s own built-in endpoints (e.g. {@code AliveCheckController}), so
    *     that {@code /api/public/**} stays exclusively the application's own namespace.</p>
    *
@@ -99,15 +100,14 @@ public abstract class SplibRestSecurityConfig {
   SecurityFilterChain filterChainForApiPublic(HttpSecurity http) throws Exception {
     // MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
 
-    http.securityMatcher("/api/public/**", "/api/ecuacion/public/**");
+    http.securityMatcher("/api/public/**", "/api/ecuacion-splib/public/**");
 
     http.httpBasic(basic -> basic.disable());
     http.csrf(csrf -> csrf.disable());
 
     http.authorizeHttpRequests(requests -> requests
-        .requestMatchers(
-            PathPatternRequestMatcher.withDefaults().matcher("/api/public/**"),
-            PathPatternRequestMatcher.withDefaults().matcher("/api/ecuacion/public/**"))
+        .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher("/api/public/**"),
+            PathPatternRequestMatcher.withDefaults().matcher("/api/ecuacion-splib/public/**"))
         .permitAll());
 
     return http.build();
