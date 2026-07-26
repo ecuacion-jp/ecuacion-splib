@@ -18,7 +18,7 @@ package jp.ecuacion.splib.rest.advice;
 import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.LogUtil;
-import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
+import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.exception.HttpStatusException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
@@ -36,14 +36,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
 
   @Nullable
-  private final SplibExceptionHandlerAction actionOnThrowable;
+  private final SplibRestExceptionHandlerAction actionOnThrowable;
 
   /**
    * Constructs a new instance.
    *
    * @param actionOnThrowable actionOnThrowable, may be {@code null}
    */
-  public SplibRestExceptionHandler(@Nullable SplibExceptionHandlerAction actionOnThrowable) {
+  public SplibRestExceptionHandler(@Nullable SplibRestExceptionHandlerAction actionOnThrowable) {
     this.actionOnThrowable = actionOnThrowable;
   }
 
