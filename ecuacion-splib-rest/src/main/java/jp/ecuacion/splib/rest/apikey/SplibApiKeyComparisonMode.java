@@ -17,7 +17,7 @@ package jp.ecuacion.splib.rest.apikey;
 
 /**
  * Selects how the value returned by
- * {@link SplibApiKeyExpectedValueProvider#getExpectedValue} is compared against the
+ * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} is compared against the
  * client-presented {@code X-Api-Key} header value.
  *
  * <p>Selected application-wide via {@code jp.ecuacion.splib.rest.api-key.mode} (default
@@ -27,16 +27,16 @@ package jp.ecuacion.splib.rest.apikey;
 public enum SplibApiKeyComparisonMode {
 
   /**
-   * {@link SplibApiKeyExpectedValueProvider#getExpectedValue} returns the key itself, compared
-   * directly (in constant time, to avoid a timing attack) against the presented value.
+   * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} returns the keys themselves,
+   * compared directly (in constant time, to avoid a timing attack) against the presented value.
    */
   PLAIN,
 
   /**
-   * {@link SplibApiKeyExpectedValueProvider#getExpectedValue} returns the lowercase-hex SHA-256
-   * digest of the key, rather than the key itself, so the raw key is never at rest anywhere the
-   * application can read it back. The presented header value is hashed the same way before the
-   * (constant-time) comparison.
+   * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} returns the lowercase-hex SHA-256
+   * digest of each key, rather than the key itself, so the raw keys are never at rest anywhere
+   * the application can read them back. The presented header value is hashed the same way before
+   * the (constant-time) comparison.
    *
    * <p>To compute the value to store, hash the raw key on the command line, e.g.:</p>
    * <pre>{@code

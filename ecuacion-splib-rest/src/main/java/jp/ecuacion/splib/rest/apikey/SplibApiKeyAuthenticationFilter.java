@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
@@ -48,7 +49,7 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
   /**
    * Request header carrying an optional key identifier, passed through to
-   * {@link SplibApiKeyExpectedValueProvider#getExpectedValue} as-is. See that method's javadoc.
+   * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} as-is. See that method's javadoc.
    */
   public static final String HEADER_API_KEY_ID = "X-Api-Key-Id";
 
@@ -97,9 +98,10 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
 
-    String expectedValue =
-        Objects.requireNonNull(expectedValueProvider).getExpectedValue(apiKeyId, presentedApiKey);
-    if (expectedValue == null || !matches(presentedApiKey, expectedValue)) {
+    Collection<String> expectedValues = Objects.requireNonNull(expectedValueProvider)
+        .getExpectedValues(apiKeyId, presentedApiKey);
+    if (expectedValues == null || expectedValues.isEmpty()
+        || !matchesAny(presentedApiKey, expectedValues)) {
       detailLog.warn("apiKey mismatch on request to " + request.getRequestURI() + ".");
       reject(response);
       return;
@@ -113,14 +115,26 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  private boolean matches(String presentedApiKey, String expectedValue) {
+  /**
+   * Checks {@code presentedApiKey} against every value in {@code expectedValues}, always
+   * comparing against all of them (never short-circuiting on the first match) so that the total
+   * comparison time does not itself hint at which entry — or how many entries — matched.
+   */
+  private boolean matchesAny(String presentedApiKey, Collection<String> expectedValues) {
     String comparisonValue =
         comparisonMode == SplibApiKeyComparisonMode.HASH ? sha256Hex(presentedApiKey)
             : presentedApiKey;
+    byte[] comparisonBytes = comparisonValue.getBytes(StandardCharsets.UTF_8);
 
     // MessageDigest.isEqual() is used instead of String.equals() to avoid a timing attack.
-    return MessageDigest.isEqual(comparisonValue.getBytes(StandardCharsets.UTF_8),
-        expectedValue.getBytes(StandardCharsets.UTF_8));
+    boolean matched = false;
+    for (String expectedValue : expectedValues) {
+      if (MessageDigest.isEqual(comparisonBytes, expectedValue.getBytes(StandardCharsets.UTF_8))) {
+        matched = true;
+      }
+    }
+
+    return matched;
   }
 
   private String sha256Hex(String value) {

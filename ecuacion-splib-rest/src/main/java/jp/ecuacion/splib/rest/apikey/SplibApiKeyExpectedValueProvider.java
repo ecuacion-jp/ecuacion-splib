@@ -15,10 +15,11 @@
  */
 package jp.ecuacion.splib.rest.apikey;
 
+import java.util.Collection;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Supplies the expected value to compare a client-presented {@code X-Api-Key} header against,
+ * Supplies the expected values to compare a client-presented {@code X-Api-Key} header against,
  * for endpoints mapped under {@code /api/key/**}.
  *
  * <p>Implement this interface as a Spring bean in your application to require API-key
@@ -26,32 +27,35 @@ import org.jspecify.annotations.Nullable;
  * to {@code /api/key/**} is rejected — there is no default "no key required" behavior for this
  * prefix, unlike {@code /api/public/**}.</p>
  *
- * <p>Where the expected value comes from (a fixed value in {@code application.properties}, a
- *     database row, ...) is entirely up to the implementation; splib only calls
- *     {@link #getExpectedValue} and compares the result against what the client sent.</p>
+ * <p>More than one valid value can be returned — e.g. one per issued token — so that a single
+ *     leaked or retired key can be dropped without invalidating the others. Where the values come
+ *     from (fixed values in {@code application.properties}, rows in a database, ...) is entirely
+ *     up to the implementation; splib only calls {@link #getExpectedValues} and accepts the
+ *     request if {@code presentedApiKey} matches any of the returned values.</p>
  */
 public interface SplibApiKeyExpectedValueProvider {
 
   /**
-   * Returns the value to compare {@code presentedApiKey} against, or {@code null} if no match
-   * can be determined — the request is then rejected the same way a mismatched value would be,
-   * so a caller cannot distinguish "no such key" from "wrong key".
+   * Returns the values to compare {@code presentedApiKey} against; the request is authenticated
+   * if it matches any of them. Return {@code null} or an empty collection if no match can be
+   * determined — the request is then rejected the same way a mismatched value would be, so a
+   * caller cannot distinguish "no such key" from "wrong key".
    *
-   * <p>Whether the returned value (and the comparison itself) is treated as plain text or as a
+   * <p>Whether the returned values (and the comparison itself) are treated as plain text or as a
    *     SHA-256 hash is controlled application-wide by
    *     {@code jp.ecuacion.splib.rest.api-key.mode}; see {@link SplibApiKeyComparisonMode}.</p>
    *
    * @param apiKeyId the {@code X-Api-Key-Id} header value, or {@code null} if the client did not
    *     send one. Present so a per-client key scheme can be implemented — an identifier used to
-   *     look up which record's expected value to check, analogous to an AWS access key ID or an
-   *     HTTP Basic username, sent alongside the secret rather than derived from it. A
-   *     single-shared-key implementation that has only one expected value regardless of who is
-   *     calling can simply ignore this parameter.
+   *     look up which record's expected value(s) to check, analogous to an AWS access key ID or
+   *     an HTTP Basic username, sent alongside the secret rather than derived from it. An
+   *     implementation that accepts any of a shared pool of keys regardless of who is calling can
+   *     simply ignore this parameter.
    * @param presentedApiKey the {@code X-Api-Key} header value the client sent; never {@code null}
    *     or empty (already checked before this method is called)
-   * @return the expected value to compare {@code presentedApiKey} against, or {@code null} to
-   *     reject the request
+   * @return the values to compare {@code presentedApiKey} against, or {@code null} to reject the
+   *     request
    */
   @Nullable
-  String getExpectedValue(@Nullable String apiKeyId, String presentedApiKey);
+  Collection<String> getExpectedValues(@Nullable String apiKeyId, String presentedApiKey);
 }
