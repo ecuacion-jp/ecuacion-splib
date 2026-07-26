@@ -73,16 +73,22 @@ public abstract class SplibRestSecurityConfig {
   /**
    * Provides SecurityFilterChain.
    *
-   * <p><strong>{@code /api/public/**} must be read-only.</strong> CSRF is disabled here because
-   *     CSRF only matters when a forged cross-site request could change state on the victim's
-   *     behalf; a request that only reads data has nothing for CSRF to protect. That argument
-   *     depends entirely on every endpoint under this path being side-effect-free — it is
-   *     {@code permitAll}, not exempt from authentication, so a logged-in user can reach these
-   *     endpoints too, and if one of them wrote data (e.g. tied to the caller's session), a
-   *     malicious site could trigger that write through a victim's browser with no CSRF token
-   *     required. Spring Security enforces none of this: nothing here stops a
-   *     {@code @PostMapping} from being added under {@code /api/public/**}. Keeping this path
-   *     read-only (GET/HEAD only) is a convention this class assumes but cannot itself enforce.</p>
+   * <p><strong>Keep {@code /api/public/**} to what's safe to make public.</strong> This path is
+   *     {@code permitAll} — reachable without authentication, by anyone, from anywhere — so only
+   *     endpoints whose data or actions are safe to expose publicly belong here. An endpoint with
+   *     side effects is almost never safe to make public, so in practice this prefix ends up
+   *     being read-only (GET/HEAD only). Spring Security enforces none of this: nothing here
+   *     stops a {@code @PostMapping} from being added under {@code /api/public/**}; it is a
+   *     convention this class assumes but cannot itself enforce.</p>
+   *
+   * <p>{@code /api/ecuacion/public/**} carries the same {@code permitAll} policy but is reserved
+   *     for {@code ecuacion-splib}'s own built-in endpoints (e.g. {@code ConfigController}), so
+   *     that {@code /api/public/**} stays exclusively the application's own namespace.</p>
+   *
+   * <p>CSRF is disabled here because it only matters when a forged cross-site request can ride
+   *     on a credential the browser attaches automatically (e.g. a session cookie) to act on an
+   *     authenticated victim's behalf. This path requires no authentication at all, so there is
+   *     no such credential for a forged request to exploit.</p>
    *
    * @param http http
    * @return SecurityFilterChain
@@ -93,13 +99,15 @@ public abstract class SplibRestSecurityConfig {
   SecurityFilterChain filterChainForApiPublic(HttpSecurity http) throws Exception {
     // MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
 
-    http.securityMatcher("/api/public/**");
+    http.securityMatcher("/api/public/**", "/api/ecuacion/public/**");
 
     http.httpBasic(basic -> basic.disable());
     http.csrf(csrf -> csrf.disable());
 
     http.authorizeHttpRequests(requests -> requests
-        .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher("/api/public/**"))
+        .requestMatchers(
+            PathPatternRequestMatcher.withDefaults().matcher("/api/public/**"),
+            PathPatternRequestMatcher.withDefaults().matcher("/api/ecuacion/public/**"))
         .permitAll());
 
     return http.build();
@@ -118,8 +126,9 @@ public abstract class SplibRestSecurityConfig {
    *     not ambient: a cross-site page cannot set it without already knowing the key, and by
    *     then it could simply call the API directly without needing the victim's browser at all.
    *     So there is nothing for CSRF protection to add here, regardless of whether the endpoint
-   *     underneath is read-only or not (contrast {@link #filterChainForApiPublic}, where CSRF is
-   *     safe to disable only because the path is assumed read-only).</p>
+   *     underneath is read-only or not (contrast {@link #filterChainForApiPublic}, which is safe
+   *     to disable CSRF on because it requires no authentication at all, not because it's
+   *     read-only).</p>
    *
    * @param http http
    * @return SecurityFilterChain
