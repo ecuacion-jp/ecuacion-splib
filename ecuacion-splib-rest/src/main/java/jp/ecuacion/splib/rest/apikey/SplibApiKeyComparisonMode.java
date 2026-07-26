@@ -17,7 +17,7 @@ package jp.ecuacion.splib.rest.apikey;
 
 /**
  * Selects how the value returned by
- * {@link SplibApiKeyExpectedValueProvider#getExpectedValue} is compared against the
+ * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} is compared against the
  * client-presented {@code X-Api-Key} header value.
  *
  * <p>Selected application-wide via {@code jp.ecuacion.splib.rest.api-key.mode} (default
