@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Provides a controller that deliberately causes a system error.
  *
- * <p>Mapped under {@code /api/ecuacion/public/**}; see {@code AliveCheckController}.</p>
+ * <p>Mapped under {@code /api/ecuacion-splib/public/**}; see {@code AliveCheckController}.</p>
  */
 @RestController
 public class SystemErrorController {
@@ -38,7 +38,7 @@ public class SystemErrorController {
    *
    * @throws HttpStatusException if the endpoint is not enabled
    */
-  @PostMapping("/api/ecuacion/public/systemError")
+  @PostMapping("/api/ecuacion-splib/public/systemError")
   public void systemError() throws HttpStatusException {
     checkConfigEndpointsEnabled();
 

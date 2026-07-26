@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Provides a controller that clears the {@code PropertiesFileUtil} cache.
  *
- * <p>Mapped under {@code /api/ecuacion/public/**}; see {@code AliveCheckController}.</p>
+ * <p>Mapped under {@code /api/ecuacion-splib/public/**}; see {@code AliveCheckController}.</p>
  */
 @RestController
 public class ClearPropertiesCacheController {
@@ -38,7 +38,7 @@ public class ClearPropertiesCacheController {
    *
    * @throws HttpStatusException if the endpoint is not enabled
    */
-  @PostMapping("/api/ecuacion/public/clearPropertiesCache")
+  @PostMapping("/api/ecuacion-splib/public/clearPropertiesCache")
   public void clearPropertiesCache() throws HttpStatusException {
     checkConfigEndpointsEnabled();
 
