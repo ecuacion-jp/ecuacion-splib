@@ -25,6 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
  *     {@code ConfigController} (serving {@code /ecuacion/public/config}); without an explicit
  *     name, Spring's default bean-naming would collide on {@code configController} for any app
  *     that uses both modules.</p>
+ *
+ * <p>Mapped under {@code /api/ecuacion/public/**}, not {@code /api/public/**} — the latter is
+ *     reserved for the application's own endpoints; see
+ *     {@code SplibRestSecurityConfig#filterChainForApiPublic}.</p>
  */
 @RestController("restConfigController")
 public class ConfigController {
@@ -32,7 +36,7 @@ public class ConfigController {
   /**
    * Provides config response.
    */
-  @GetMapping("/api/public/ecuacion/config")
+  @GetMapping("/api/ecuacion/public/config")
   public void config() {
   }
 }
