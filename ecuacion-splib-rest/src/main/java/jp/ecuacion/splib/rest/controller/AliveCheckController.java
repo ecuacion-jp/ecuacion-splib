@@ -19,24 +19,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Provides config controller.
- *
- * <p>Named explicitly because {@code ecuacion-splib-web} has its own unrelated
- *     {@code ConfigController} (serving {@code /ecuacion/public/config}); without an explicit
- *     name, Spring's default bean-naming would collide on {@code configController} for any app
- *     that uses both modules.</p>
+ * Provides an alive-check controller.
  *
  * <p>Mapped under {@code /api/ecuacion/public/**}, not {@code /api/public/**} — the latter is
  *     reserved for the application's own endpoints; see
  *     {@code SplibRestSecurityConfig#filterChainForApiPublic}.</p>
  */
-@RestController("restConfigController")
-public class ConfigController {
+@RestController
+public class AliveCheckController {
 
   /**
-   * Provides config response.
+   * Provides an alive-check response.
    */
-  @GetMapping("/api/ecuacion/public/config")
-  public void config() {
+  @GetMapping("/api/ecuacion/public/aliveCheck")
+  public void aliveCheck() {
   }
 }

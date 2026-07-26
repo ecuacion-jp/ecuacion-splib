@@ -82,7 +82,7 @@ public abstract class SplibRestSecurityConfig {
    *     convention this class assumes but cannot itself enforce.</p>
    *
    * <p>{@code /api/ecuacion/public/**} carries the same {@code permitAll} policy but is reserved
-   *     for {@code ecuacion-splib}'s own built-in endpoints (e.g. {@code ConfigController}), so
+   *     for {@code ecuacion-splib}'s own built-in endpoints (e.g. {@code AliveCheckController}), so
    *     that {@code /api/public/**} stays exclusively the application's own namespace.</p>
    *
    * <p>CSRF is disabled here because it only matters when a forged cross-site request can ride
