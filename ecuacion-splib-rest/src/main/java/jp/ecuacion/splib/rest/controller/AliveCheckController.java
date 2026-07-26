@@ -16,7 +16,8 @@
 package jp.ecuacion.splib.rest.controller;
 
 import jp.ecuacion.splib.rest.dto.StatusResponse;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -34,7 +35,8 @@ public class AliveCheckController {
    *
    * @return a {@code StatusResponse} with {@code "OK"}
    */
-  @GetMapping("/api/ecuacion/public/aliveCheck")
+  @RequestMapping(value = "/api/ecuacion/public/aliveCheck",
+      method = {RequestMethod.GET, RequestMethod.POST})
   public StatusResponse aliveCheck() {
     return new StatusResponse("OK");
   }
