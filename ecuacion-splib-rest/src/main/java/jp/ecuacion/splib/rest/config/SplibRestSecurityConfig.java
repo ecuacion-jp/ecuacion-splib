@@ -19,6 +19,8 @@ package jp.ecuacion.splib.rest.config;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyAuthenticationFilter;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyComparisonMode;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyExpectedValueProvider;
+import jp.ecuacion.splib.rest.apikey.SplibBuiltinApiKeyAuthenticationFilter;
+import jp.ecuacion.splib.rest.apikey.SplibBuiltinApiKeyExpectedValueProvider;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,8 +40,14 @@ public abstract class SplibRestSecurityConfig {
   @Nullable
   private final SplibApiKeyExpectedValueProvider apiKeyExpectedValueProvider;
 
+  @Nullable
+  private final SplibBuiltinApiKeyExpectedValueProvider builtinApiKeyExpectedValueProvider;
+
   @Value("${jp.ecuacion.splib.rest.api-key.mode:PLAIN}")
   private SplibApiKeyComparisonMode apiKeyComparisonMode = SplibApiKeyComparisonMode.PLAIN;
+
+  @Value("${jp.ecuacion.splib.rest.builtin-api-key.mode:PLAIN}")
+  private SplibApiKeyComparisonMode builtinApiKeyComparisonMode = SplibApiKeyComparisonMode.PLAIN;
 
   /**
    * Constructs a new instance.
@@ -48,10 +56,16 @@ public abstract class SplibRestSecurityConfig {
    *     {@code /api/key/**} authentication, or {@code null} if the application does not use
    *     that prefix — every request to it is then rejected; see
    *     {@link SplibApiKeyExpectedValueProvider}
+   * @param builtinApiKeyExpectedValueProvider the application-supplied provider backing
+   *     {@code /api/ecuacion-splib/key/**} authentication, or {@code null} if the application
+   *     does not use that prefix — every request to it is then rejected; see
+   *     {@link SplibBuiltinApiKeyExpectedValueProvider}
    */
   protected SplibRestSecurityConfig(
-      @Nullable SplibApiKeyExpectedValueProvider apiKeyExpectedValueProvider) {
+      @Nullable SplibApiKeyExpectedValueProvider apiKeyExpectedValueProvider,
+      @Nullable SplibBuiltinApiKeyExpectedValueProvider builtinApiKeyExpectedValueProvider) {
     this.apiKeyExpectedValueProvider = apiKeyExpectedValueProvider;
+    this.builtinApiKeyExpectedValueProvider = builtinApiKeyExpectedValueProvider;
   }
 
   /**
@@ -81,10 +95,13 @@ public abstract class SplibRestSecurityConfig {
    *     stops a {@code @PostMapping} from being added under {@code /api/public/**}; it is a
    *     convention this class assumes but cannot itself enforce.</p>
    *
-   * <p>{@code /api/ecuacion-splib/public/**} carries 
+   * <p>{@code /api/ecuacion-splib/public/**} carries
    *     the same {@code permitAll} policy but is reserved
-   *     for {@code ecuacion-splib}'s own built-in endpoints (e.g. {@code AliveCheckController}), so
-   *     that {@code /api/public/**} stays exclusively the application's own namespace.</p>
+   *     for {@code ecuacion-splib}'s own built-in endpoints that are safe to expose without
+   *     authentication (e.g. {@code AliveCheckController}), so that {@code /api/public/**} stays
+   *     exclusively the application's own namespace. Built-in endpoints with side effects (e.g.
+   *     {@code SystemErrorController}) instead live under {@code /api/ecuacion-splib/key/**}; see
+   *     {@link #filterChainForApiEcuacionSplibKey}.</p>
    *
    * <p>CSRF is disabled here because it only matters when a forged cross-site request can ride
    *     on a credential the browser attaches automatically (e.g. a session cookie) to act on an
@@ -156,13 +173,55 @@ public abstract class SplibRestSecurityConfig {
   }
 
   /**
-   * Provides SecurityFilterChain.
+   * Provides SecurityFilterChain requiring {@code X-Api-Key} authentication for
+   * {@code ecuacion-splib}'s own built-in endpoints (e.g. {@code SystemErrorController},
+   * {@code ClearPropertiesCacheController}).
+   *
+   * <p>See {@link SplibBuiltinApiKeyExpectedValueProvider} for how the expected value is
+   *     supplied, and {@link SplibApiKeyComparisonMode} for the
+   *     {@code jp.ecuacion.splib.rest.builtin-api-key.mode} property selecting plain-text vs.
+   *     hashed comparison. This key set is independent of {@link #filterChainForApiKey}'s
+   *     {@code /api/key/**} keys — the two are registered and rotated separately.</p>
+   *
+   * <p>CSRF is disabled here for the same reason as {@link #filterChainForApiKey}: {@code
+   *     X-Api-Key} is not a credential the browser attaches automatically, so there is nothing
+   *     for CSRF protection to add.</p>
    *
    * @param http http
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
   @Order(10)
+  @Bean
+  SecurityFilterChain filterChainForApiEcuacionSplibKey(HttpSecurity http) throws Exception {
+    http.securityMatcher("/api/ecuacion-splib/key/**");
+
+    http.httpBasic(basic -> basic.disable());
+    http.csrf(csrf -> csrf.disable());
+
+    http.addFilterBefore(
+        new SplibBuiltinApiKeyAuthenticationFilter(
+            builtinApiKeyExpectedValueProvider, builtinApiKeyComparisonMode),
+        UsernamePasswordAuthenticationFilter.class);
+
+    // The filter above already rejects (401) any request that fails API-key authentication, so
+    // authorization here only needs to admit requests that got past it.
+    http.authorizeHttpRequests(requests -> requests
+        .requestMatchers(
+            PathPatternRequestMatcher.withDefaults().matcher("/api/ecuacion-splib/key/**"))
+        .permitAll());
+
+    return http.build();
+  }
+
+  /**
+   * Provides SecurityFilterChain.
+   *
+   * @param http http
+   * @return SecurityFilterChain
+   * @throws Exception Exception
+   */
+  @Order(11)
   @Bean
   SecurityFilterChain filterChainForApi(HttpSecurity http) throws Exception {
     // MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
