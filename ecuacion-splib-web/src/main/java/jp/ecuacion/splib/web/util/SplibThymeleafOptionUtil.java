@@ -72,7 +72,7 @@ public class SplibThymeleafOptionUtil {
     @SuppressWarnings("unused")
     String key = null;
     String value = null;
-    String[] options = optionCsv.split(",", -1);
+    List<String> options = splitOptionCsv(optionCsv);
     for (String option : options) {
       if (option.contains("=")) {
         key = StringUtils.trim(option.substring(0, option.indexOf("=")));
@@ -115,6 +115,53 @@ public class SplibThymeleafOptionUtil {
    */
   private Map<String, List<String>> optionMap(String optionCsv) {
     return optionMap(optionCsv, null);
+  }
+
+  /**
+   * Splits an option csv string on unescaped ",", unescaping each segment as it goes.
+   *
+   * <p>A "\" preceding any character (not just ",") is treated as escaping that character, i.e.
+   *     it's dropped and the following character is kept as-is. This only protects a value
+   *     against the "," split done here; it says nothing about the later "|" split done by
+   *     {@link #getElementFromPsvNullable(String, int)} to read a single option's pipe-separated
+   *     value; an escaped value must not itself need to survive a "|" split too.</p>
+   *
+   * <p>To embed a value that might contain "," (e.g. the "," joined {@code ids}/{@code
+   *     optimisticLockVersions} snapshot on {@code SplibRecord}) as part of an option's value,
+   *     escape it in the template with {@code ${#strings.replace(#strings.replace(rawValue, '\',
+   *     '\\'), ',', '\,')}} rather than a Java-side helper method: templates that assemble an
+   *     option csv are often themselves rendered as fragment parameters (e.g. inside a {@code
+   *     th:replace="~{ :: someFragment(...)}"}), which Spring/Thymeleaf evaluates in a
+   *     "restricted" SpEL mode that rejects {@code @bean.method(...)} references outright -
+   *     Thymeleaf's own {@code #}-prefixed expression utility objects (like {@code #strings}) are
+   *     exempted from that restriction, so only those are safe to use here.</p>
+   */
+  private List<String> splitOptionCsv(String optionCsv) {
+    List<String> result = new ArrayList<>();
+    StringBuilder current = new StringBuilder();
+    boolean escaping = false;
+
+    for (int i = 0; i < optionCsv.length(); i++) {
+      char c = optionCsv.charAt(i);
+
+      if (escaping) {
+        current.append(c);
+        escaping = false;
+
+      } else if (c == '\\') {
+        escaping = true;
+
+      } else if (c == ',') {
+        result.add(current.toString());
+        current.setLength(0);
+
+      } else {
+        current.append(c);
+      }
+    }
+    result.add(current.toString());
+
+    return result;
   }
 
   /**
