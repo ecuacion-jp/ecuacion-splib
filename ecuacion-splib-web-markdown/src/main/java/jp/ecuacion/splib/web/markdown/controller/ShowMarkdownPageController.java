@@ -68,7 +68,7 @@ public class ShowMarkdownPageController {
     Locale locale = lang != null ? Locale.forLanguageTag(lang) : LocaleContextHolder.getLocale();
     String content = markdownPageService.renderMarkdownPage(locale, id)
         .orElseThrow(() -> new RedirectToHomePageException(Level.INFO,
-            "MARKDOWN_PAGE_NOT_FOUND_MSG", new String[] {locale + "/" + id}));
+            "MARKDOWN_PAGE_NOT_FOUND_MSG", new String[] {id}));
 
     model.addAttribute("content", content);
     model.addAttribute("currentMarkdownPageId", id);
