@@ -15,16 +15,14 @@
  */
 package jp.ecuacion.splib.rest.controller;
 
-import jp.ecuacion.lib.core.util.PropertiesFileUtil;
-import jp.ecuacion.splib.rest.exception.HttpStatusException;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Provides a controller that deliberately causes a system error.
  *
- * <p>Mapped under {@code /api/ecuacion-splib/public/**}; see {@code AliveCheckController}.</p>
+ * <p>Mapped under {@code /api/ecuacion-splib/key/**}, so it requires {@code X-Api-Key}
+ *     authentication; see {@code SplibBuiltinApiKeyExpectedValueProvider}.</p>
  */
 @RestController
 public class SystemErrorController {
@@ -32,23 +30,9 @@ public class SystemErrorController {
   /**
    * Deliberately throws a system error so that the system error behavior
    * (exception handling, logging, and so on) can be tested without requiring an actual bug.
-   *
-   * <p>Rejected unless {@code jp.ecuacion.splib.rest.ecuacion-config-endpoints.enabled}
-   *     is set to {@code true} in application.properties.</p>
-   *
-   * @throws HttpStatusException if the endpoint is not enabled
    */
-  @PostMapping("/api/ecuacion-splib/public/systemError")
-  public void systemError() throws HttpStatusException {
-    checkConfigEndpointsEnabled();
-
+  @PostMapping("/api/ecuacion-splib/key/systemError")
+  public void systemError() {
     throw new RuntimeException("A system error was intentionally caused for testing purposes.");
-  }
-
-  private void checkConfigEndpointsEnabled() throws HttpStatusException {
-    if (!Boolean.parseBoolean(PropertiesFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.rest.ecuacion-config-endpoints.enabled", "false"))) {
-      throw new HttpStatusException(HttpStatus.FORBIDDEN);
-    }
   }
 }
