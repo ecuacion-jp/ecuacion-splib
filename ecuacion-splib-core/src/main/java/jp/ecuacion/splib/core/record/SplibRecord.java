@@ -143,10 +143,15 @@ public abstract class SplibRecord {
 
   /**
    * Holds a snapshot of this record's own and related records' optimistic lock versions, joined
-   * with ",", in the same order as {@link #ids}.
+   * with ",", in the same order as {@link #ids}, carried through hidden form fields as-is (see
+   * the entity-arg constructor).
    *
-   * <p>Used together with {@link #ids} for {@code findAndOptimisticLockingCheck()}. See
-   *     {@link #ids} for why this is independent of the entity's own version fields.</p>
+   * <p>Unlike {@link #ids}, a version has no legitimate use as a directly-bound, user-editable
+   *     value - optimistic-lock versions are a purely internal mechanism the user never sets. So
+   *     generated {@code Record} subclasses override {@code setOptimisticLockVersions()} to
+   *     cascade each "," segment straight into this record's own and every related record's live
+   *     {@code version} field on bind, rather than keeping it as an independent value read back
+   *     out through a separate per-relation snapshot accessor the way {@link #ids} does.</p>
    */
   private String optimisticLockVersions = "";
 

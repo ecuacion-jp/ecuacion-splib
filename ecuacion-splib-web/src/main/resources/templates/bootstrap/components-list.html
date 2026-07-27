@@ -329,10 +329,23 @@
 	</div>
 
 	<!--/* submitButtonWithIds */-->
+	<!--/* ids/optimisticLockVersions are "," joined CSVs (see SplibRecord#getIds()), but the
+			options string below is itself a "," delimited mini-language (see
+			SplibThymeleafOptionUtil#optionMap()) - embedding a CSV in it verbatim would have its
+			own "," misread as extra option boundaries and get silently truncated to its first
+			segment, so it's escaped first (see SplibThymeleafOptionUtil#splitOptionCsv() javadoc for
+			why this uses #strings.replace(...) rather than a Java-side helper method). rawIds/
+			rawVersions bind the "*{...}" selection expressions to plain variables first, because
+			"*{...}" can't be nested directly inside another expression's method-call arguments (it
+			fails to parse as SpEL) - it must be resolved to a plain value on its own first. */-->
 	<div th:fragment="submitButtonWithIds(name, label, options)" th:remove="tag">
-		<th:block th:with="buttonText=${#messages.msgOrNull(@optUtil.getValueOrElse(options, 'text', label)) ?: @optUtil.getValueOrElse(options, 'text', label)}">
+		<th:block th:with="buttonText=${#messages.msgOrNull(@optUtil.getValueOrElse(options, 'text', label)) ?: @optUtil.getValueOrElse(options, 'text', label)},
+					rawIds=*{ids},
+					rawVersions=*{optimisticLockVersions},
+					idsForAttr=${#strings.replace(#strings.replace(rawIds, '\', '\\'), ',', '\,')},
+					versionsForAttr=${#strings.replace(#strings.replace(rawVersions, '\', '\\'), ',', '\,')}">
 			<div th:replace="~{ :: submitButton(${name}, ${buttonText},
-						'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + *{ids} + ',attr=data-versions|' + *{optimisticLockVersions}
+						'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + ${idsForAttr} + ',attr=data-versions|' + ${versionsForAttr}
 						 + ',' + ${options} + ',event=click|tdSubmitButtonWithIds')}">
 			</div>
 		</th:block>
@@ -347,7 +360,7 @@
 	<div th:fragment="deleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag"
 			th:with="confirmMessage=${@compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}">
 		<div th:replace="~{ :: submitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete',
-				'classappend=btn-color-btn-danger,attr=data-item|' + ${recordValueDisplayedOnDelete}
+				'classappend=btn-color-btn-danger,attr=data-item|' + ${#strings.replace(#strings.replace(recordValueDisplayedOnDelete, '\', '\\'), ',', '\,')}
 				+ ',' + ${options})}"></div>
 		<script th:inline="javascript">
 		document.getElementById('delete_' + /*[[*{ids}]]*/ '').dataset.confirmMessage = /*[[${confirmMessage}]]*/ '';
@@ -363,7 +376,7 @@
 	<!--/* inline switch user button */-->
 	<div th:fragment="switchUserButton(username, options)" th:remove="tag">
 		<div th:replace="~{ :: scriptButton('switchUser', 'jp.ecuacion.splib.web.switchUser.switchButton',
-				'attr=data-username|' + ${username} + ',' + ${options} + ',event=click|switchUser')}"></div>
+				'attr=data-username|' + ${#strings.replace(#strings.replace(username, '\', '\\'), ',', '\,')} + ',' + ${options} + ',event=click|switchUser')}"></div>
 	</div>
 
 	<!--/* javaScript for inline update button. Use with tdUpdateButton. Put it at "bottom-space" part in a page template.  */-->
