@@ -53,46 +53,56 @@
 					itemNameKeyClass=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : rootRecordName}
 			">
 
-		<th:block th:with="id=${@optUtil.getValueOrElse(options, 'id', javaFormName + '.' + recordPropertyPathClass + '.' + propertyPathField)},
-				submitOnChangeToRefreshOption=${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? 'event=change|submitOnChangeToRefresh' : ''}">
+		<!--/* inputValue/itemNameKey resolve the "*{...}" selection expressions (needed for the
+				"__${itemPropertyPath}__" preprocessing) to plain variables here, before
+				fragmentAllInputCommonComponent below is captured as a "~{...}" fragment expression and
+				passed as a parameter to internalAllCommonComponent. Thymeleaf evaluates a fragment
+				captured that way in a "restricted" SpEL mode wherever it's later inserted, which
+				forbids "*{...}" there - it fails with "Instantiation of new objects and access to
+				static classes or parameters is forbidden in this context". Referencing the plain
+				${inputValue}/${itemNameKey} variables inside the fragment body is safe. */-->
+		<th:block th:with="id=${#optUtil.getValueOrElse(options, 'id', javaFormName + '.' + recordPropertyPathClass + '.' + propertyPathField)},
+				submitOnChangeToRefreshOption=${#optUtil.hasKey(options, 'submitOnChangeToRefresh') ? 'event=change|submitOnChangeToRefresh' : ''},
+				inputValue=*{__${itemPropertyPath}__},
+				itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey()}">
 
 			<!--/* submitOnChangeToRefresh should be the last event because it submits. */-->
 	 		<div th:replace="~{bootstrap/components :: internalAllCommonComponent(~{ :: fragmentAllInputCommonComponent}, false,
-	 				 ${options} + ',' + ${submitOnChangeToRefreshOption})}"></div>				
-	
+	 				 ${options} + ',' + ${submitOnChangeToRefreshOption})}"></div>
+
 			<th:block th:if="false"><div th:fragment="fragmentAllInputCommonComponent" th:remove="tag">
 				<th:block th:with="recordPropertyPath=${recordPropertyPathClass + '.' + propertyPathField},
-						isDisabled=${@optUtil.hasKey(options, 'disabled')},
-						isReadOnly=${@optUtil.hasKey(options, 'readonly') || isDisabled}">
-					<th:block th:with="inputValue=*{__${itemPropertyPath}__}, 
-							inputName=${isDisabled ? null : recordPropertyPath},
+						isDisabled=${#optUtil.hasKey(options, 'disabled')},
+						isReadOnly=${#optUtil.hasKey(options, 'readonly') || isDisabled}">
+					<th:block th:with="inputName=${isDisabled ? null : recordPropertyPath},
 							inputId=${id},
-							widthValue=${@optUtil.getValueOrElse(options, 'width', '')}, 
-							widthNumber=${@optUtil.hasKey(options, 'width') ? (widthValue == 'full' ? '12' : (widthValue == 'half' ? '6' : widthValue)) : ''}">
-		
+							widthValue=${#optUtil.getValueOrElse(options, 'width', '')},
+							widthNumber=${#optUtil.hasKey(options, 'width') ? (widthValue == 'full' ? '12' : (widthValue == 'half' ? '6' : widthValue)) : ''}">
+
 						<div th:id="${componentId}" class="" th:classappend="${widthNumber == '' ? 'col-xl-3 col-lg-4 col-md-6' : 'col-md-' + widthNumber} + ' '
 								+ ${mtClass} + ' ' + ${mbClass == '' ? 'mb-4' : mbClass}
 						">
 
 							<!--/* label */-->
-							<th:block th:if="${needsLabel}"
-									th:with="itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey()}">								
+							<th:block th:if="${needsLabel}">
 								<label th:for="${inputId}" class="form-label text-dark mb-0">
 									[[#{__${itemNameKey}__}]][[${labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
-									[[${@optUtil.hasKey(options, 'submitOnChangeToRefresh') ? ' ' + #messages.msg('jp.ecuacion.splib.web.common.label.submitOnChangeToRefresh') : ''}]]
-									<span th:if="${@optUtil.hasKey(options, 'tooltip')}"
-											th:with="tooltipKey=${@optUtil.getValueOrElse(options, 'tooltip', '')}"
-											th:data-bs-toggle="${@optUtil.hasKey(options, 'tooltip') ? 'tooltip' : ' '}"
-											th:data-bs-title="${#strings.isEmpty(tooltipKey) ? '' : (#messages.msgOrNull(tooltipKey) ?: tooltipKey)}"
-											th:data-tooltip-sanitize="${@optUtil.getValueOrElse(options, 'tooltipSanitize', true)}"
-											data-bs-custom-class="bs-tooltip">
-										<svg width="20" height="20">
-											<circle cx="8" cy="8" r="8" class="tooltip-icon" />
-											<text x="8" y="9" font-family="Rokkitt" font-weight="bold" font-size="15" fill="white"
-													text-anchor="middle" dominant-baseline="middle">i</text>
-										</svg>
-									</span>
+									[[${#optUtil.hasKey(options, 'submitOnChangeToRefresh') ? ' ' + #messages.msg('jp.ecuacion.splib.web.common.label.submitOnChangeToRefresh') : ''}]]
+									<th:block th:if="${#optUtil.hasKey(options, 'tooltip')}">
+										<th:block th:with="tooltipKey=${#optUtil.getValueOrElse(options, 'tooltip', '')}">
+											<span th:data-bs-toggle="'tooltip'"
+													th:data-bs-title="${#strings.isEmpty(tooltipKey) ? '' : (#messages.msgOrNull(tooltipKey) ?: tooltipKey)}"
+													th:data-tooltip-sanitize="${#optUtil.getValueOrElse(options, 'tooltipSanitize', 'true')}"
+													data-bs-custom-class="bs-tooltip">
+												<svg width="20" height="20">
+													<circle cx="8" cy="8" r="8" class="tooltip-icon" />
+													<text x="8" y="9" font-family="Rokkitt" font-weight="bold" font-size="15" fill="white"
+															text-anchor="middle" dominant-baseline="middle">i</text>
+												</svg>
+											</span>
+										</th:block>
+									</th:block>
 								</label>
 							</th:block>
 
@@ -102,7 +112,7 @@
 							<!--/* field messages */-->
 							<th:block th:if="${@environment.getProperty('jp.ecuacion.splib.web.process-result-message.shown-at-each-item') ?: true} and ${needsFieldEmssages}">
 								<div class="text-danger" th:if="${#fields.hasErrors('__${itemPropertyPath}__')}"
-									th:classappend="${@optUtil.hasKey(options, 'componentType') and @optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
+									th:classappend="${#optUtil.hasKey(options, 'componentType') and #optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
 									th:each="message : ${#fields.errors('__${itemPropertyPath}__')}">[[${message}]]</div>
 							</th:block>
 							
@@ -125,7 +135,7 @@
 	*/-->
 	<div th:fragment="internalAllHtmlInputComponent(position)" th:remove="tag">
 		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" 
-				th:value="${@optUtil.hasKey(options, 'value') ? (#messages.msgOrNull(@optUtil.getValue(options, 'value')) ?: @optUtil.getValue(options, 'value')) : inputValue}"
+				th:value="${#optUtil.hasKey(options, 'value') ? (#messages.msgOrNull(#optUtil.getValue(options, 'value')) ?: #optUtil.getValue(options, 'value')) : inputValue}"
 				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{getStringLength('__${propertyPathField}__')}"
 				class="form-control text-dark"
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
@@ -152,7 +162,7 @@
 	<div th:fragment="internalAllHtmlSelectComponent" th:remove="tag">
 		<!--/* disabled is used because select component does not have readonly readOnly attribute */-->
 		<th:block th:if="${isReadOnly}">
-			<input type="hidden" th:id="${@optUtil.hasKey(options, 'id') ? recordPropertyPath : null}" th:name="${recordPropertyPath}" th:value="${inputValue}">
+			<input type="hidden" th:id="${#optUtil.hasKey(options, 'id') ? recordPropertyPath : null}" th:name="${recordPropertyPath}" th:value="${inputValue}">
 		</th:block>
 
 		<select th:id="${inputId}" th:name="${inputName}"
@@ -161,7 +171,7 @@
 				 + ' ' + ${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
 				th:disabled="${isReadOnly}">
 				
-			<option th:if="${!@optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
+			<option th:if="${!#optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
 			<th:block th:each="pair : ${pairs}">
 				<!--/* in case of select from boolean, inputValue (received from form) is boolean.
 				       since 'true' == true is false in thymeleaf, data type of inputValue is changed to string
@@ -192,14 +202,18 @@
 	<!--/* internalInputCommonComponent. */-->
 	<div th:fragment="internalInputCommonComponent(itemPropertyPath, editInputContents, editInputContentsPostfix, options)" th:remove="tag">
 		<!--/* #authentication.principal is a bean which stores multiple values when logged in, but is a String when not logged in. That's why the check whether its dataType is string is needed. */-->
- 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentEditInputCommonComponent}, ${editInputContentsPostfix}, 
- 				*{isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')},
- 				 true, true, '',  ${options})}"></div>
+		<!--/* required resolves the "*{...}" selection expression to a plain variable here, before
+				it's used as a fragment-call parameter below - Thymeleaf evaluates fragment-call
+				parameters in the same "restricted" SpEL mode described in
+				internalAllInputCommonComponent above, which forbids "*{...}" there. */-->
+		<th:block th:with="required=*{isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')}">
+	 		<div th:replace="~{ :: internalAllInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentEditInputCommonComponent}, ${editInputContentsPostfix},
+	 				${required}, true, true, '',  ${options})}"></div>
 
-		<th:block th:if="false"><div th:fragment="fragmentEditInputCommonComponent" th:remove="tag">
-			<th:block th:replace="${editInputContents}" />
-		</div></th:block>
-		
+			<th:block th:if="false"><div th:fragment="fragmentEditInputCommonComponent" th:remove="tag">
+				<th:block th:replace="${editInputContents}" />
+			</div></th:block>
+		</th:block>
 	</div>
 	
 	<!--/* internalEditInputTextComponent. */-->
@@ -324,14 +338,14 @@
 	</div>
 	
 	<div th:fragment="inputSelect(itemPropertyPath, options)" th:remove="tag">
-		<th:block th:with="selectMethodName=${@strUtil.selectListMethodName(itemPropertyPath)}">
+		<th:block th:with="selectMethodName=${#strUtil.selectListMethodName(itemPropertyPath)}">
 			<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath}, *{__${selectMethodName}__()}, ${options})}"></div>
 		</th:block>
 	</div>
 	
 	<div th:fragment="inputSelectWithLocale(itemPropertyPath, options)" th:remove="tag"
-			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)},
-					selectMethodName=${@strUtil.selectListMethodName(itemPropertyPath)}">
+			th:with="spelSafeOptions=${#optUtil.escapeForSpel(options)},
+					selectMethodName=${#strUtil.selectListMethodName(itemPropertyPath)}">
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath},
 				*{__${selectMethodName}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
@@ -345,8 +359,8 @@
 		  - firstCharOfCodeGreaterThanOrEqualTo: Shows selections whose first character is greaterl than or equal to the one spefied. Compared by ascii code number.
 	 */-->
 	<div th:fragment="inputSelectFromEnum(itemPropertyPath, options)" th:remove="tag"
-			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)},
-					selectMethodName=${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}">
+			th:with="spelSafeOptions=${#optUtil.escapeForSpel(options)},
+					selectMethodName=${#strUtil.selectListMethodNameForEnum(itemPropertyPath)}">
 		<div th:replace="~{ :: internalSelectComponent(${itemPropertyPath},
 				*{__${selectMethodName}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
@@ -426,7 +440,7 @@
 
 	<!--/* submitButton */-->
 	<div th:fragment="submitButton(name, label, options)" th:remove="tag">
-		<th:block th:with="disabledOnSubmitOption=${@optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ?
+		<th:block th:with="disabledOnSubmitOption=${#optUtil.getValueOrElse(options, 'disabledOnSubmit', 'true') == 'true' ?
 					('attr=data-disabled-on-submit|true,attr=data-original-label|' + (#messages.msgOrNull(label) ?: label) + ',') : ''}">
 	 		<div th:replace="~{bootstrap/components :: internalButtonCommonComponent(${name}, ${label}, true,
 	 				${disabledOnSubmitOption} + ${options})}"></div>

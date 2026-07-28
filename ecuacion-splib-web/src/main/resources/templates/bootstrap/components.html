@@ -62,25 +62,25 @@
  	 */-->
 	<div th:fragment="internalAllCommonComponent(contentsOfAllCommon, createsComponentIdDiv, options)" th:remove="tag">
 		<th:block th:with="
-				componentId=${@optUtil.getValueOrElse(options, 'componentId', null)}
-				,mtClass=${@optUtil.hasKey(options, 'mt') ? 'mt-' + @optUtil.getValue(options, 'mt') : ''}
-				,mbClass=${@optUtil.hasKey(options, 'mb') ? 'mb-' + @optUtil.getValue(options, 'mb') : ''}
-				,classappend=' ' + ${@optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}
-				,attr1Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 0, 0, 'attr1')}, attr1Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 0, 1)}
-				,attr2Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 1, 0, 'attr2')}, attr2Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 1, 1)}
-				,attr3Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 2, 0, 'attr3')}, attr3Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 2, 1)}
-				,attr4Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 3, 0, 'attr4')}, attr4Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 3, 1)}
-				,attr5Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 4, 0, 'attr5')}, attr5Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 4, 1)}
-				,attr6Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 5, 0, 'attr6')}, attr6Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 5, 1)}
-				,attr7Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 6, 0, 'attr7')}, attr7Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 6, 1)}
-				,attr8Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 7, 0, 'attr8')}, attr8Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 7, 1)}
-				,attr9Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 8, 0, 'attr9')}, attr9Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 8, 1)}
-				,attr10Key=${@optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 9, 0, 'attr10')}, attr10Value=${@optUtil.getElementFromValuesOfPsv(options, 'attr', 9, 1)}
+				componentId=${#optUtil.getValueOrElse(options, 'componentId', null)}
+				,mtClass=${#optUtil.hasKey(options, 'mt') ? 'mt-' + #optUtil.getValue(options, 'mt') : ''}
+				,mbClass=${#optUtil.hasKey(options, 'mb') ? 'mb-' + #optUtil.getValue(options, 'mb') : ''}
+				,classappend=' ' + ${#optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}
+				,attr1Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 0, 0, 'attr1')}, attr1Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 0, 1)}
+				,attr2Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 1, 0, 'attr2')}, attr2Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 1, 1)}
+				,attr3Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 2, 0, 'attr3')}, attr3Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 2, 1)}
+				,attr4Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 3, 0, 'attr4')}, attr4Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 3, 1)}
+				,attr5Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 4, 0, 'attr5')}, attr5Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 4, 1)}
+				,attr6Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 5, 0, 'attr6')}, attr6Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 5, 1)}
+				,attr7Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 6, 0, 'attr7')}, attr7Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 6, 1)}
+				,attr8Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 7, 0, 'attr8')}, attr8Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 7, 1)}
+				,attr9Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 8, 0, 'attr9')}, attr9Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 8, 1)}
+				,attr10Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 9, 0, 'attr10')}, attr10Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 9, 1)}
 				">
 
 			<!--/* maximux number of attr check */-->				
-			<th:block th:if="${@optUtil.getValues(options, 'attr').length > 10}">
-				[[${@exUtil.systemError('Maximum number of option: attr is 10.')}]]
+			<th:block th:if="${#optUtil.getValues(options, 'attr').length > 10}">
+				[[${#exUtil.systemError('Maximum number of option: attr is 10.')}]]
 			</th:block>
 			
 			<div th:if="${createsComponentIdDiv}" th:id="${componentId}" th:classappend="${mtClass} + ' ' + ${mbClass}">
@@ -90,7 +90,7 @@
 				<th:block th:replace="${contentsOfAllCommon}" />
 			</th:block>
 			
-			<th:block th:if="${@optUtil.hasKey(options, 'event')}" th:each="event : ${@optUtil.getValues(options, 'event')}">
+			<th:block th:if="${#optUtil.hasKey(options, 'event')}" th:each="event : ${#optUtil.getValues(options, 'event')}">
 				<script th:inline="javascript" th:with="eventKind=${#strings.arraySplit(event, '|')[0]}, func=${#strings.arraySplit(event, '|')[1]}">
 					document.getElementById('[(${id})]').addEventListener(/*[[${eventKind}]]*/ 'click',  
 							(e) => window[ /*[[${func}]]*/ 'func'](e, document.getElementById('[(${id})]')));
@@ -130,7 +130,7 @@
 			<div class="text-dark"
 					th:with="titleString=${#strings.isEmpty(title) ? '' : (#messages.msgOrNull(title) ?: title)},
 					messageString=${#strings.isEmpty(message) ? '' : (#messages.msgOrNull(message) ?: message)},
-					isSelectable=${@optUtil.hasKey(options, 'selectable')}">
+					isSelectable=${#optUtil.hasKey(options, 'selectable')}">
 
 				<th:block th:replace="${contents}" />
 
@@ -313,17 +313,17 @@
 				string=${cellElement.class.name == 'java.lang.String' ? cellElement : cellElement[0]},
 				options=${cascadedOptions + ',' + ((cellElement.class.name == 'java.lang.String' || #lists.size(cellElement)== 1) ? '' : cellElement[1])}">
 			<th:block th:with="
-					textColor=${@optUtil.getValueOrElse(options, 'textColor', '')},
+					textColor=${#optUtil.getValueOrElse(options, 'textColor', '')},
 					textColorStyle=${textColor == '' ? '' : 'color: ' + textColor + '; '},
-					bgColor=${@optUtil.getValueOrElse(options, 'backgroundColor', '')},
+					bgColor=${#optUtil.getValueOrElse(options, 'backgroundColor', '')},
 					bgColorStyle=${bgColor == '' ? '' : 'background-color: ' + bgColor + '; '},
 					class=${'align-middle fs-6'},
 					text=${#strings.isEmpty(string) ? '' : (#messages.msgOrNull(string) ?: string)},
-					isUtext=${@optUtil.hasKey(options, 'utext') ? true : false},
-					textAlignment=${'text-' + @optUtil.getValueOrElse(options, 'textAlignment', isHeader ? 'center' : 'left')},
+					isUtext=${#optUtil.hasKey(options, 'utext') ? true : false},
+					textAlignment=${'text-' + #optUtil.getValueOrElse(options, 'textAlignment', isHeader ? 'center' : 'left')},
 					style=${'white-space: pre-wrap; ' + textColorStyle + bgColorStyle},
-					rowspan=${@optUtil.getValueOrElse(options, 'rowspan', 1)},
-					colspan=${@optUtil.getValueOrElse(options, 'colspan', 1)},
+					rowspan=${#optUtil.getValueOrElse(options, 'rowspan', 1)},
+					colspan=${#optUtil.getValueOrElse(options, 'colspan', 1)},
 					">
 
 				<th:block th:if="${isHeader}" th:with="thClass=${class + ' text-white bg-color-tbl-header' + ' ' + (bsBgGradient ? 'bg-gradient' : '') + ' ' + textAlignment}">
@@ -507,8 +507,8 @@
 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentNavBarRoot}, false, ${options})}"></div>
 		<th:block th:if="false"><div th:fragment="fragmentNavBarRoot" th:remove="tag">
 			<th:block th:with="
-					navbarBgColor=${@optUtil.getValueOrElse(options, 'backgroundColorClass', '')}
-					, bsBgGradientOption=${@optUtil.getValueOrElse(options, 'isBackgroundGradient', null)},
+					navbarBgColor=${#optUtil.getValueOrElse(options, 'backgroundColorClass', '')}
+					, bsBgGradientOption=${#optUtil.getValueOrElse(options, 'isBackgroundGradient', null)},
 					bsBgGradient=${bsBgGradientOption} != null ? ${bsBgGradientOption} : ${bsBgGradient}
 					">
 				<nav class="navbar navbar-expand-md navbar-dark"
@@ -523,7 +523,7 @@
 								<span th:text="${title}"></span>
 							</th:block>
 						</a>
-						<th:block th:if="${@optUtil.getValueOrElse(options, 'showsNavbarMenuItems', 'true')}">
+						<th:block th:if="${#optUtil.getValueOrElse(options, 'showsNavbarMenuItems', 'true')}">
 							<div class="container">
 								<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
 									<span class="navbar-toggler-icon"></span>
@@ -561,7 +561,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavBarMenuItem" th:remove="tag">
 			<li class="nav-item" th:id="${componentId}" style="margin-left: 20px">
-				<th:block th:with="navMethod=${@optUtil.getValueOrElse(options, 'method', 'get')}">
+				<th:block th:with="navMethod=${#optUtil.getValueOrElse(options, 'method', 'get')}">
 					<div th:replace="~{ :: internalNavbarItem(false, ${navMethod}, ${options})}"></div>
 				</th:block>
 			</li>
@@ -574,7 +574,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarSubMenu" th:remove="tag">
 			<li class="nav-item dropdown" th:id="${componentId}" style="margin-left: 20px"
-					th:with="imagePath=${@optUtil.getValueOrElse(options, 'imagePath', '')},
+					th:with="imagePath=${#optUtil.getValueOrElse(options, 'imagePath', '')},
 							navBgClass=${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
 
 				<a th:if="${imagePath == ''}" class="nav-link dropdown-toggle" href="#" role="button"
@@ -599,7 +599,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentNavbarDropDownMenuItem" th:remove="tag">
 			<li th:id="${componentId}" class="nav-item">
-				<th:block th:with="navMethod=${@optUtil.getValueOrElse(options, 'method', 'get')}">
+				<th:block th:with="navMethod=${#optUtil.getValueOrElse(options, 'method', 'get')}">
 					<div th:replace="~{ :: internalNavbarItem(true, ${navMethod}, ${options})}"></div>
 				</th:block>
 			</li>
@@ -615,10 +615,10 @@
 					th:with="navBgClass=${(bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient') + ' ' + (navbarBgColor == '' ? 'bg-color-navbar' : navbarBgColor)}">
 				<a class="dropdown-item nav-link d-flex justify-content-between align-items-center gap-2" href="#">
 					<div th:text="${labelString}"></div>
-					<div th:text="${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
+					<div th:text="${#optUtil.getValueOrElse(options, 'direction', '') == 'left' ? '&ltrif;' : '&rtrif;'}">︎</div>
 				</a>
 				<ul class="dropdown-menu dropdown-submenu dropdown-menu-dark"
-						th:classappend="${navBgClass} + ' ' + ${@optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : ''}">
+						th:classappend="${navBgClass} + ' ' + ${#optUtil.getValueOrElse(options, 'direction', '') == 'left' ? 'dropdown-submenu-left' : ''}">
 					<th:block th:replace="${menuItems}" />
 				</ul>
 			</li>
@@ -660,7 +660,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonLookComponent" th:remove="tag"
 				th:with="buttonLookClasses=|btn text-white ${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'} 
-						${@optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} ${classappend}|">
+						${#optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} ${classappend}|">
 			
 			<th:block th:replace="${buttonLookContents}" />
 			
@@ -705,16 +705,16 @@
 		- backgroundColorClass	Specifies the color of the background of the component
  	 */-->
 	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag"
-			th:with="id=${@optUtil.getValueOrElse(options, 'id', name)}">
+			th:with="id=${#optUtil.getValueOrElse(options, 'id', name)}">
  		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentButtonCommonComponent}, 'id=' + ${id} + ',' + ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag"
-				th:with="id=${@optUtil.getValueOrElse(options, 'id', name)}">
+				th:with="id=${#optUtil.getValueOrElse(options, 'id', name)}">
 
 			<button th:attr="${attr1Key}=${attr1Value}, ${attr2Key}=${attr2Value}, ${attr3Key}=${attr3Value}, ${attr4Key}=${attr4Value}, ${attr5Key}=${attr5Value},
 							 ${attr6Key}=${attr6Value}, ${attr7Key}=${attr7Value}, ${attr8Key}=${attr8Value}, ${attr9Key}=${attr9Value}, ${attr10Key}=${attr10Value}"
 					th:type="${submits ? 'submit' : 'button'}" th:name="${name}" th:id="${id}" th:classappend="${buttonLookClasses}"
-					th:text="${#messages.msgOrNull(label) ?: label}" th:disabled="${@optUtil.hasKey(options, 'disabled')}">
+					th:text="${#messages.msgOrNull(label) ?: label}" th:disabled="${#optUtil.hasKey(options, 'disabled')}">
 			</button>
 
 		</div></th:block>
