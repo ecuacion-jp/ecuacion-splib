@@ -168,6 +168,41 @@ class SplibExceptionHandlerTest {
   }
 
   /**
+   * {@code SplibRecord} carrying a {@code ClassValidator}-based constraint directly on itself
+   * (rather than on a further-nested plain bean), analogous to the real
+   * {@code @NotEmptyWhen(propertyPath = {"awsAccessKeyId", "awsSecretAccessKey"}, ...)} on
+   * {@code CloudServiceEditRecord}.
+   */
+  @AnyNotNull(propertyPath = {"name"})
+  private static class AnyNotNullRecord extends SplibRecord implements ItemContainer {
+    @SuppressWarnings({"UnusedVariable", "unused"})
+    @Nullable
+    String name; // null by default → AnyNotNull fails (no non-null values)
+
+    @Override
+    public Item[] customizedItems() {
+      return new Item[] {};
+    }
+  }
+
+  /**
+   * Test form whose {@code @Valid}-cascaded record field is directly (non-generically) typed,
+   * matching how a real {@code CloudServiceEditForm.cloudService} field is declared.
+   *
+   * <p>Validating this form directly cascades into {@code rec}, whose class-level
+   * {@code @AnyNotNull} constraint then fails. The resulting {@code ConstraintViolation}'s
+   * {@code propertyPath} ({@code beanPath} in {@code addConstraintViolation}) is already fully
+   * qualified as {@code "rec"} - combined with the annotation's {@code propertyPath} attribute
+   * ({@code "name"}), the target path is {@code "rec.name"}, already fully qualified - unlike
+   * {@link AnyNotNullBean}, which is validated standalone and yields an empty {@code beanPath}.</p>
+   */
+  private static class TestFormWithDirectClassValidatorRecord extends SplibGeneralForm {
+    @SuppressWarnings("UnusedVariable")
+    @Valid
+    AnyNotNullRecord rec = new AnyNotNullRecord();
+  }
+
+  /**
    * Test record that holds a single nested {@code @Valid AnyNotNullBean} field.
    *
    * <p>Validating this record cascades into {@code nestedBean}. Because
@@ -208,7 +243,8 @@ class SplibExceptionHandlerTest {
   private static class TestRecordWithNestedList extends SplibRecord implements ItemContainer {
     @SuppressWarnings("UnusedVariable")
     @Valid
-    @Nullable List<@Nullable AnyNotNullBean> nestedList = List.of(new AnyNotNullBean());
+    @Nullable
+    List<@Nullable AnyNotNullBean> nestedList = List.of(new AnyNotNullBean());
 
     @Override
     public Item[] customizedItems() {
@@ -228,6 +264,68 @@ class SplibExceptionHandlerTest {
   }
 
   /**
+   * Plain (non-ClassValidator) nested bean, analogous to {@code Acc} nested under
+   * {@code AccGeneralRecord} in a real application.
+   *
+   * <p>Leaving {@code mailAddress} {@code null} triggers a plain {@code @NotNull} failure.</p>
+   */
+  private static class NestedPlainBean {
+    @NotNull
+    @SuppressWarnings({"UnusedVariable", "MultipleNullnessAnnotations"})
+    @Nullable
+    String mailAddress; // null by default → triggers @NotNull violation
+  }
+
+  /**
+   * Test record holding a {@code @Valid}-cascaded plain nested bean.
+   */
+  private static class TestRecordWithValidNested extends SplibRecord implements ItemContainer {
+    @SuppressWarnings("UnusedVariable")
+    @Valid
+    NestedPlainBean acc = new NestedPlainBean();
+
+    @Override
+    public Item[] customizedItems() {
+      return new Item[] {};
+    }
+  }
+
+  /**
+   * Generic base form, mirroring the real {@code SplibEditRecForm<R extends SplibRecord>}.
+   *
+   * <p>Declaring {@code rec} with a generic type parameter (rather than a concrete record
+   *     type directly) matters: due to type erasure, {@code rec}'s <em>declared</em> type as
+   *     seen via reflection on the {@code Field} object is the erased bound ({@code
+   *     SplibRecord}), not the concrete runtime subtype. A path-resolution approach that walks
+   *     declared field types from {@code form.getClass()} (like {@link PropertyPathUtil#getClass})
+   *     cannot see past {@code rec} into record-specific fields such as {@code acc}; only
+   *     walking the actual runtime object graph (like {@link PropertyPathUtil#getValue}) can.</p>
+   */
+  private abstract static class GenericRecForm<R extends SplibRecord> extends SplibGeneralForm {
+    @SuppressWarnings("UnusedVariable")
+    @Valid
+    @Nullable
+    R rec;
+  }
+
+  /**
+   * Test form whose record field is itself {@code @Valid}-cascaded, matching how a real
+   * {@code SplibEditRecForm.rec} field is annotated - including the generic declaration
+   * (see {@link GenericRecForm}).
+   *
+   * <p>Validating this form directly (as {@code SplibControllerPrepareHelper#validateForm}
+   * and {@code SplibGeneralForm#validate} always do in production) cascades through
+   * {@code rec} and then {@code acc}, so the resulting {@code ConstraintViolation}'s
+   * {@code propertyPath} arrives already fully qualified as {@code "rec.acc.mailAddress"} -
+   * unlike {@link CvBean}, which is validated standalone and yields a record-relative path.</p>
+   */
+  private static class TestFormWithValidNested extends GenericRecForm<TestRecordWithValidNested> {
+    TestFormWithValidNested() {
+      rec = new TestRecordWithValidNested();
+    }
+  }
+
+  /**
    * Class-level constraint annotation that always fails validation.
    *
    * <p>Applying this annotation to a bean and validating it produces a
@@ -239,7 +337,9 @@ class SplibExceptionHandlerTest {
   @Constraint(validatedBy = AlwaysFailClassLevelValidator.class)
   @interface AlwaysFailClassLevel {
     String message() default "jp.ecuacion.splib.web.test.violation1";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
   }
 
@@ -259,7 +359,8 @@ class SplibExceptionHandlerTest {
    * with {@code propertyPath = ""}.</p>
    */
   @AlwaysFailClassLevel
-  private static class ClassLevelBean {}
+  private static class ClassLevelBean {
+  }
 
   // =========================================================================
   // Setup
@@ -298,8 +399,7 @@ class SplibExceptionHandlerTest {
     BindingResult br = newBindingResult();
 
     assertThatThrownBy(() -> handler.addViolationErrorsTo(ex, br, false, false, Locale.ROOT))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining("shown-at-each-item");
+        .isInstanceOf(RuntimeException.class).hasMessageContaining("shown-at-each-item");
   }
 
   // =========================================================================
@@ -358,8 +458,7 @@ class SplibExceptionHandlerTest {
     void atTop_only__global1_field1_noSummary() {
       // atTop=true, atItem=false → field error IS registered (for is-invalid styling),
       // but atEachItemAdded=false so the summary is not added.
-      ViolationException ex =
-          violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
+      ViolationException ex = violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = newBindingResult();
 
       handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
@@ -374,8 +473,7 @@ class SplibExceptionHandlerTest {
       // atItem=true, atTop=false → field error + summary
       // The summary is added whenever at least one field error exists,
       // regardless of the atTop setting.
-      ViolationException ex =
-          violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
+      ViolationException ex = violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = newBindingResult();
 
       handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
@@ -389,8 +487,7 @@ class SplibExceptionHandlerTest {
     void atBoth__field1_global2_includingSummary() {
       // atItem=true, atTop=true → field error + at-top error + summary
       // globalErrorCount = at-top(1) + summary(1) = 2
-      ViolationException ex =
-          violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
+      ViolationException ex = violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = newBindingResult();
 
       handler.addViolationErrorsTo(ex, br, true, true, Locale.ROOT);
@@ -408,7 +505,7 @@ class SplibExceptionHandlerTest {
   // is checked against the form's records.
   // - If found, the error is stored under the qualified path ("testRecord.name").
   // - If not found, the error automatically falls back to a global error
-  //   to prevent it from being silently lost.
+  // to prevent it from being silently lost.
   // =========================================================================
 
   @Nested
@@ -479,8 +576,7 @@ class SplibExceptionHandlerTest {
 
     @Test
     void atTop_only__global2_field0() {
-      ViolationException ex =
-          violationOf(new BusinessViolation(MSG1), new BusinessViolation(MSG2));
+      ViolationException ex = violationOf(new BusinessViolation(MSG1), new BusinessViolation(MSG2));
       BindingResult br = newBindingResult();
 
       handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
@@ -492,8 +588,8 @@ class SplibExceptionHandlerTest {
     @Test
     void atItem_only__mixed_paths__global2_field1() {
       // One violation has no path (top fallback), the other has a path (field error)
-      ViolationException ex =
-          violationOf(new BusinessViolation(MSG1), new BusinessViolation(new String[] {"name"}, MSG2));
+      ViolationException ex = violationOf(new BusinessViolation(MSG1),
+          new BusinessViolation(new String[] {"name"}, MSG2));
       BindingResult br = newBindingResult();
 
       handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
@@ -637,14 +733,88 @@ class SplibExceptionHandlerTest {
       // Validate CvBeanEmail ("email") → propertyPath="email"
       // TestRecord only has "name"; "email" does not exist
       // → qualifyForForm(testForm, "email") = null → auto-fallback: global error
-      ViolationException ex =
-          new ViolationException(new Violations().validate(new CvBeanEmail()));
+      ViolationException ex = new ViolationException(new Violations().validate(new CvBeanEmail()));
       BindingResult br = brWithTestForm();
 
       handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+    }
+  }
+
+  // =========================================================================
+  // ConstraintViolation: SplibGeneralForm target, propertyPath already fully qualified
+  //
+  // Reproduces the real production shape: the whole form is validated directly
+  // (matching SplibControllerPrepareHelper#validateForm / SplibGeneralForm#validate),
+  // so a plain constraint failing deep inside a @Valid-cascaded nested bean produces a
+  // ConstraintViolation whose propertyPath is already fully qualified from the form root
+  // (e.g. "rec.acc.mailAddress"). This must be used as-is (verifyFormPath), not re-resolved
+  // as a record-relative path via qualifyForForm (which would fail to find a "rec" field on
+  // the record class itself and silently drop the error - the bug this test guards against).
+  // =========================================================================
+
+  @Nested
+  class ConstraintViolation_SplibFormTarget_FullyQualifiedPath {
+
+    @Test
+    void atItem__fieldErrorOnFullyQualifiedPath_withSummary() {
+      TestFormWithValidNested form = new TestFormWithValidNested();
+      ViolationException ex = new ViolationException(new Violations().validate(form));
+      BindingResult br = new BeanPropertyBindingResult(form, "testFormWithValidNested");
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("rec.acc.mailAddress");
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1); // summary only
+    }
+
+    @Test
+    void atTop_only__globalMessageIncludesItemName() {
+      // atItem=false, atTop=true: field error is still registered (for is-invalid styling),
+      // and since propertyPaths is non-empty, the top message is built withItemName=true -
+      // covering the "message lacks item name" half of the original bug report.
+      TestFormWithValidNested form = new TestFormWithValidNested();
+      ViolationException ex = new ViolationException(new Violations().validate(form));
+      BindingResult br = new BeanPropertyBindingResult(form, "testFormWithValidNested");
+
+      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("rec.acc.mailAddress");
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+    }
+  }
+
+  // =========================================================================
+  // ConstraintViolation: ClassValidator-based, SplibGeneralForm target,
+  // beanPath already fully qualified
+  //
+  // Reproduces the real production shape for a ClassValidator (e.g. @NotEmptyWhen) declared
+  // directly on a @Valid-cascaded, directly (non-generically) typed record field - matching
+  // CloudServiceEditForm.cloudService / CloudServiceEditRecord's @NotEmptyWhen. The whole form
+  // is validated directly, so beanPath (cv.getPropertyPath()) is already fully qualified from
+  // the form root (e.g. "rec"), and beanPath + "." + annotationPath (e.g. "rec.name") must be
+  // used as-is (resolveFormPath), not re-resolved as record-relative via qualifyForForm alone.
+  // =========================================================================
+
+  @Nested
+  class ConstraintViolation_ClassValidatorBased_SplibFormTarget_FullyQualifiedBeanPath {
+
+    @Test
+    void atItem__fieldErrorOnFullyQualifiedPath_withSummary() {
+      TestFormWithDirectClassValidatorRecord form = new TestFormWithDirectClassValidatorRecord();
+      ViolationException ex = new ViolationException(new Violations().validate(form));
+      BindingResult br =
+          new BeanPropertyBindingResult(form, "testFormWithDirectClassValidatorRecord");
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("rec.name");
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1); // summary only
     }
   }
 
@@ -732,9 +902,8 @@ class SplibExceptionHandlerTest {
      * <p>CV has {@code propertyPath = "name"}; BV has {@code itemPropertyPath = "email"}.</p>
      */
     private ViolationException mixedEx() {
-      Violations violations = new Violations()
-          .validate(new CvBean())                                     // CV: "name"
-          .add(new BusinessViolation(new String[] {"email"}, MSG1));  // BV: "email"
+      Violations violations = new Violations().validate(new CvBean()) // CV: "name"
+          .add(new BusinessViolation(new String[] {"email"}, MSG1)); // BV: "email"
       return new ViolationException(violations);
     }
 
@@ -754,7 +923,7 @@ class SplibExceptionHandlerTest {
     @Test
     void atBoth__field2_global3_includingSummary() {
       // CV("name") + BV("email") processed with atBoth
-      // field:  CV(1) + BV(1)                        = 2
+      // field: CV(1) + BV(1) = 2
       // global: CV at-top(1) + BV at-top(1) + summary(1) = 3
       // Even though both CV and BV contribute to atEachItemErrorAdded,
       // the summary is added only once.
@@ -777,14 +946,14 @@ class SplibExceptionHandlerTest {
   // This is the else-branch of the beanPath.isEmpty() check.
   //
   // Before the fix, the else branch skipped qualifyForForm entirely:
-  //   - record field prefix was never prepended (wrong path registered)
-  //   - anyPathNotFound was never set (top fallback never fired)
-  //   → result: FieldError registered at a path that no th:errors can bind,
-  //     but the summary "messagesLinkedToItemsExist" was still shown.
+  // - record field prefix was never prepended (wrong path registered)
+  // - anyPathNotFound was never set (top fallback never fired)
+  // → result: FieldError registered at a path that no th:errors can bind,
+  // but the summary "messagesLinkedToItemsExist" was still shown.
   //
   // After the fix, the else branch also calls qualifyForForm(form, beanPath+"."+path):
-  //   - path found  → qualified path ("testRecord.nestedBean.name") used for FieldError
-  //   - path not found → anyPathNotFound=true → top fallback fires (no silent loss)
+  // - path found → qualified path ("testRecord.nestedBean.name") used for FieldError
+  // - path not found → anyPathNotFound=true → top fallback fires (no silent loss)
   // =========================================================================
 
   @Nested
@@ -810,7 +979,7 @@ class SplibExceptionHandlerTest {
 
     @Test
     void nestedBean_splibFormTarget_pathNotFound__globalFallback() {
-      // CV: propertyPath="nestedBean", annotationPaths=["name"]  (from TestRecordWithNested)
+      // CV: propertyPath="nestedBean", annotationPaths=["name"] (from TestRecordWithNested)
       // Target: TestForm (record=TestRecord, which has only "name", no "nestedBean" field)
       // qualifyForForm(TestForm, "nestedBean.name") → null (TestRecord has no nestedBean)
       // → anyPathNotFound=true → needsMsgAtTop forced true → global error (top fallback)
@@ -830,7 +999,7 @@ class SplibExceptionHandlerTest {
       // nestedList[0].name=null → CV: propertyPath="nestedList[0]", annotationPaths=["name"]
       // beanPath="nestedList[0]" (non-empty → else branch)
       // qualifyForForm(TestFormWithNestedList, "nestedList[0].name")
-      //   → "testRecord.nestedList[0].name"
+      // → "testRecord.nestedList[0].name"
       // This is the exact scenario from the bug report.
       ViolationException ex =
           new ViolationException(new Violations().validate(new TestRecordWithNestedList()));
