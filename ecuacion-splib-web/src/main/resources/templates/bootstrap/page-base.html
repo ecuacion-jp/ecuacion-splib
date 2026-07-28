@@ -37,8 +37,8 @@
 			application[...].properties values, without rebuilding bootstrap from sass.
 			Outputs nothing when none of the "jp.ecuacion.splib.web.theme.color-*" keys are set,
 			so apps that don't use this feature are not affected. */-->
-	<th:block th:if="${@themeColorUtil.hasAnyThemeColor()}">
-		<style th:utext="${@themeColorUtil.buildThemeColorCssOrEmpty()}"></style>
+	<th:block th:if="${#themeColorUtil.hasAnyThemeColor()}">
+		<style th:utext="${#themeColorUtil.buildThemeColorCssOrEmpty()}"></style>
 	</th:block>
 	<title th:text="${#strings.isEmpty(headTitle) ? (#strings.isEmpty(title) ? '' : (#messages.msgOrNull(title) ?: title)) : (#messages.msgOrNull(headTitle) ?: headTitle)}"></title>
 </head>
@@ -57,10 +57,10 @@
 				titleAdminApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title-admin') ?: ''},
 				titleAdmin=${titleAdminApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title-admin') ?: titleDefault)} : ${titleAdminApp},
 				title=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)},
-				imagePathValue=${@propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.image-path', '')},
+				imagePathValue=${#propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.image-path', '')},
 				imagePathTmp=@{${imagePathValue}},
 				imagePath=${(!#strings.isEmpty(imagePathTmp) && !#strings.startsWith(imagePathTmp, '/') ? '/' : '') + imagePathTmp},
-				defaultPagePathValue=${@propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.default-page-path', '')},
+				defaultPagePathValue=${#propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.default-page-path', '')},
 				defaultPagePathTmp=@{${defaultPagePathValue}},
 				defaultPagePath=${(!#strings.isEmpty(defaultPagePathTmp) && !#strings.startsWith(defaultPagePathTmp, '/') ? '/' : '') + defaultPagePathTmp},
 				optionBgColor=${@environment.getProperty('jp.ecuacion.splib.web.navbar.background-color-class') ?: ''},

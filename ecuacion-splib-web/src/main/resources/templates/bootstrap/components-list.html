@@ -137,9 +137,9 @@
 		<th:block th:with="recordName=${itemPropertyPath.contains('.') ? rootRecordName + '.' + itemPropertyPath.substring(0, itemPropertyPath.lastIndexOf('.')) : rootRecordName},
 				fieldName=${itemPropertyPath.contains('.') ? itemPropertyPath.substring(itemPropertyPath.lastIndexOf('.') + 1) : itemPropertyPath}">
 			<th:block th:with="id=${recordName + '.' + fieldName},
-					itemNameKey=${@optUtil.hasKey(options, 'itemNameKey') ? @optUtil.getValue(options, 'itemNameKey') : listForm.__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey()}">
+					itemNameKey=${#optUtil.hasKey(options, 'itemNameKey') ? #optUtil.getValue(options, 'itemNameKey') : listForm.__${rootRecordName}__.getItem('__${itemPropertyPath}__').getItemNameKey()}">
 				<th:block th:with="itemName=#{__${itemNameKey}__}">
-					<th:block th:if="${@optUtil.hasKey(options, 'thSortable')}">
+					<th:block th:if="${#optUtil.hasKey(options, 'thSortable')}">
 						<th scope="col" style="cursor: pointer" th:text="${itemName}" data-disabled-on-submit="true"
 								th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
@@ -147,7 +147,7 @@
 								th:data-search-form-id="${function + 'SearchForm'}"
 								onClick="list(document.getElementById(this.dataset.searchFormId), this.dataset.item, this.dataset.direction);"></th>
 			 		</th:block>
-			 		<th:block th:if="${!@optUtil.hasKey(options, 'thSortable')}">
+			 		<th:block th:if="${!#optUtil.hasKey(options, 'thSortable')}">
 						<th scope="col" th:class="'text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)} + ' text-white bg-color-tbl-header'"
 								th:classappend="${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'}"
 								th:text="${itemName}"></th>
@@ -194,12 +194,12 @@
 	*/-->
 	<div th:fragment="listReadOnlyCustomizable(value, position, options)" th:remove="tag">
 		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
-				th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}"
-				th:classappend="${(deleted != null && deleted) || @optUtil.hasKey(options, 'deleted')} ? 'text-deleted' : 'text-dark'">
-			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl')}">
-				<a th:href="${@optUtil.getValue(options, 'linkUrl')}" target="_blank">[[${value}]]</a>
+				th:rowspan="${#optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${#optUtil.getValueOrElse(options, 'cols', '1')}"
+				th:classappend="${(deleted != null && deleted) || #optUtil.hasKey(options, 'deleted')} ? 'text-deleted' : 'text-dark'">
+			<th:block th:if="${#optUtil.hasKey(options, 'linkUrl')}">
+				<a th:href="${#optUtil.getValue(options, 'linkUrl')}" target="_blank">[[${value}]]</a>
 			</th:block>
-			<th:block th:if="${@optUtil.hasKey(options, 'linkUrl') == false}">
+			<th:block th:if="${#optUtil.hasKey(options, 'linkUrl') == false}">
 				[[${value}]]
 			</th:block>
 		</td>
@@ -247,7 +247,7 @@
 
 	<!--/* td readOnly enum text */-->
 	<div th:fragment="listReadOnlyEnumText(itemPropertyPath, options)" th:remove="tag">
-		<th:block th:with="methodName=${@strUtil.getMethodName(itemPropertyPath)}">
+		<th:block th:with="methodName=${#strUtil.getMethodName(itemPropertyPath)}">
 			<th:block th:with="value=${rec.__${methodName}__Name(#locale)}">
 				<div th:replace="~{ :: listReadOnlyCustomizable(${value}, 'left', ${options})}"></div>
 			</th:block>
@@ -256,14 +256,14 @@
 
 	<!--/* td readOnly checkbox */-->
 	<div th:fragment="listReadOnlyCheckbox(itemPropertyPath, options)" th:remove="tag">
-		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+		<td class="align-middle text-center" th:rowspan="${#optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${#optUtil.getValueOrElse(options, 'cols', '1')}">
 			<input class="form-check-input align-bottom mb-1 " type="checkbox" th:checked="*{__${itemPropertyPath}__}" disabled>
 		</td>
 	</div>
 
 	<!--/* internalInsideCommon */-->
 	<div th:fragment="internalInsideCommon(itemPropertyPath, allInputContents, options)" th:remove="tag">
-		<th:block th:with="index=${recStat.index},isReadOnly=${@optUtil.hasKey(options, 'readOnly')}">
+		<th:block th:with="index=${recStat.index},isReadOnly=${#optUtil.hasKey(options, 'readOnly')}">
 			<th:block th:with="inputId='recList' + ${index} + '.' + ${itemPropertyPath},
 					inputName='recList[' + ${index} + '].' + ${itemPropertyPath},
 					inputValue=${recList[__${index}__].__${itemPropertyPath}__},
@@ -277,7 +277,7 @@
 
 	<!--/* internalCommon */-->
 	<div th:fragment="internalCommon(itemPropertyPath, allInputContents, options)" th:remove="tag">
-		<td class="align-middle text-center" th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+		<td class="align-middle text-center" th:rowspan="${#optUtil.getValueOrElse(options, 'rows', '1')}" th:colspan="${#optUtil.getValueOrElse(options, 'cols', '1')}">
 			<div th:replace="~{ :: internalInsideCommon(${itemPropertyPath}, ${allInputContents}, ${options})}"></div>
 		</td>
 	</div>
@@ -312,8 +312,8 @@
 	<!--/* internalTdButtonWrapper */-->
 	<div th:fragment="internalTdButtonWrapper(content, options)" th:remove="tag">
 		<td class="text-center p-1 align-middle" height="10px"
-				th:rowspan="${@optUtil.getValueOrElse(options, 'rows', '1')}"
-				th:colspan="${@optUtil.getValueOrElse(options, 'cols', '1')}">
+				th:rowspan="${#optUtil.getValueOrElse(options, 'rows', '1')}"
+				th:colspan="${#optUtil.getValueOrElse(options, 'cols', '1')}">
 			<div th:replace="${content}"></div>
 		</td>
 	</div>
@@ -339,7 +339,7 @@
 			"*{...}" can't be nested directly inside another expression's method-call arguments (it
 			fails to parse as SpEL) - it must be resolved to a plain value on its own first. */-->
 	<div th:fragment="submitButtonWithIds(name, label, options)" th:remove="tag">
-		<th:block th:with="buttonText=${#messages.msgOrNull(@optUtil.getValueOrElse(options, 'text', label)) ?: @optUtil.getValueOrElse(options, 'text', label)},
+		<th:block th:with="buttonText=${#messages.msgOrNull(#optUtil.getValueOrElse(options, 'text', label)) ?: #optUtil.getValueOrElse(options, 'text', label)},
 					rawIds=*{ids},
 					rawVersions=*{optimisticLockVersions},
 					idsForAttr=${#strings.replace(#strings.replace(rawIds, '\', '\\'), ',', '\,')},
@@ -358,7 +358,7 @@
 
 	<!--/* inline delete button */-->
 	<div th:fragment="deleteButton(recordValueDisplayedOnDelete, options)" th:remove="tag"
-			th:with="confirmMessage=${@compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}">
+			th:with="confirmMessage=${#compUtil.getDeleteConfirmMessage(__${javaFormName + '.' + rootRecordName}__, itemDisplayedOnDelete) + ' ' + recordValueDisplayedOnDelete}">
 		<div th:replace="~{ :: submitButtonWithIds('delete', 'jp.ecuacion.splib.web.common.button.delete',
 				'classappend=btn-color-btn-danger,attr=data-item|' + ${#strings.replace(#strings.replace(recordValueDisplayedOnDelete, '\', '\\'), ',', '\,')}
 				+ ',' + ${options})}"></div>

@@ -73,7 +73,7 @@
 	</div>
 
 	<div th:fragment="searchSelect(itemPropertyPath, options)" th:remove="tag">
-		<th:block th:with="selectMethodName=${@strUtil.selectListMethodName(itemPropertyPath)}">
+		<th:block th:with="selectMethodName=${#strUtil.selectListMethodName(itemPropertyPath)}">
 			<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
 					*{__${selectMethodName}__()}, ${options})}"></div>
 		</th:block>
@@ -88,8 +88,8 @@
 		  - firstCharOfCodeGreaterThanOrEqualTo: Compares the first character of the code by ASCII value (greater than or equal).
 	 */-->
 	<div th:fragment="searchSelectFromEnum(itemPropertyPath, options)" th:remove="tag"
-			th:with="spelSafeOptions=${@optUtil.escapeForSpel(options)},
-					selectMethodName=${@strUtil.selectListMethodNameForEnum(itemPropertyPath)}">
+			th:with="spelSafeOptions=${#optUtil.escapeForSpel(options)},
+					selectMethodName=${#strUtil.selectListMethodNameForEnum(itemPropertyPath)}">
 		<div th:replace="~{ :: searchComponentSelect(${itemPropertyPath},
 				*{__${selectMethodName}__(#locale, '__${spelSafeOptions}__')}, ${options})}"></div>
 	</div>
