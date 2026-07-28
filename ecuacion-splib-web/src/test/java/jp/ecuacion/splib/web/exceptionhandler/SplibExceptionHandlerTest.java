@@ -197,6 +197,7 @@ class SplibExceptionHandlerTest {
    * {@link AnyNotNullBean}, which is validated standalone and yields an empty {@code beanPath}.</p>
    */
   private static class TestFormWithDirectClassValidatorRecord extends SplibGeneralForm {
+    @SuppressWarnings("UnusedVariable")
     @Valid
     AnyNotNullRecord rec = new AnyNotNullRecord();
   }
@@ -301,8 +302,10 @@ class SplibExceptionHandlerTest {
    *     walking the actual runtime object graph (like {@link PropertyPathUtil#getValue}) can.</p>
    */
   private abstract static class GenericRecForm<R extends SplibRecord> extends SplibGeneralForm {
+    @SuppressWarnings("UnusedVariable")
     @Valid
-    protected R rec;
+    @Nullable
+    R rec;
   }
 
   /**
