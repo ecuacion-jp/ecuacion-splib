@@ -384,7 +384,7 @@ public abstract class SplibExceptionHandler {
           // Paths not found fall back to a global error (same behaviour as non-ClassValidator).
           List<String> foundList = new ArrayList<>();
           for (String path : annotationPaths) {
-            String qualified = qualifyForForm(form, path);
+            String qualified = resolveFormPath(form, path);
             if (qualified != null) {
               foundList.add(qualified);
             } else {
@@ -397,9 +397,15 @@ public abstract class SplibExceptionHandler {
         }
       } else {
         if (br.getTarget() instanceof SplibGeneralForm form) {
+          // beanPath is the path (already fully qualified from the form root, e.g.
+          // "cloudService" for a ClassValidator on a @Valid-cascaded nested record) at which
+          // the ClassValidator's target object was found; beanPath + "." + path is therefore
+          // usually already fully qualified too (e.g. "cloudService.awsAccessKeyId") and must
+          // be tried as-is first (resolveFormPath), not immediately re-resolved as a
+          // record-relative path via qualifyForForm.
           List<String> foundList = new ArrayList<>();
           for (String path : annotationPaths) {
-            String qualified = qualifyForForm(form, beanPath + "." + path);
+            String qualified = resolveFormPath(form, beanPath + "." + path);
             if (qualified != null) {
               foundList.add(qualified);
             } else {
@@ -423,11 +429,14 @@ public abstract class SplibExceptionHandler {
         addGlobalError(br, errorCode, cv.getMessage());
         return false; // no at-each-item error was added
       } else if (br.getTarget() instanceof SplibGeneralForm form) {
-        // For SplibGeneralForm targets, verify the path exists in the form records.
-        // If not found, propertyPaths becomes empty and the needsMsgAtTop fallback fires
-        // automatically,
-        // preventing the error from being silently lost when no matching th:errors binding exists.
-        String qualified = qualifyForForm(form, pathStr);
+        // A plain ConstraintViolation's propertyPath is usually already fully qualified from
+        // the form root (e.g. "rec.acc.mailAddress"), because the framework's real validation
+        // entry points (SplibControllerPrepareHelper#validateForm, SplibGeneralForm#validate,
+        // SplibValidationHelper) all call Validation.validate() on the form itself, and @Valid
+        // cascades down through it. resolveFormPath tries that first, falling back to
+        // qualifyForForm's record-relative resolution for the rarer case of a path relative to
+        // a single record, so both shapes are handled.
+        String qualified = resolveFormPath(form, pathStr);
         propertyPaths = qualified != null ? new String[] {qualified} : new String[] {};
       } else {
         propertyPaths = new String[] {pathStr};
@@ -552,6 +561,52 @@ public abstract class SplibExceptionHandler {
       }
     }
     return null; // path not found in any record
+  }
+
+  /**
+   * Verifies that {@code propertyPath} (already fully qualified from the form root, e.g.
+   * {@code "rec.acc.mailAddress"}) resolves to an actual field on {@code form}.
+   *
+   * <p>Unlike {@link #qualifyForForm}, this does not search for, or prepend, a record field
+   *     name - the path is assumed to already include it. Returns {@code propertyPath} unchanged
+   *     when it resolves, or {@code null} when it does not.</p>
+   *
+   * <p>Deliberately uses {@link PropertyPathUtil#getValue} (which walks the actual object
+   *     graph via each intermediate value's runtime {@code getClass()}) rather than {@link
+   *     PropertyPathUtil#getClass} (which walks declared field types starting from {@code
+   *     form.getClass()}). The root record field (e.g. {@code SplibEditRecForm.rec}) is
+   *     declared with a generic type ({@code R extends SplibRecord}), so its declared type is
+   *     erased to the bound {@code SplibRecord} - {@code getClass}-based resolution would fail
+   *     to find record-specific fields like {@code acc} beyond it. Since this is only called
+   *     for a path that a real {@code ConstraintViolation} was just raised against, the
+   *     intermediate objects (e.g. {@code rec}, {@code rec.acc}) are guaranteed non-null here
+   *     (Bean Validation cannot cascade {@code @Valid} into a null reference), so reading
+   *     through real values is safe.</p>
+   */
+  @Nullable
+  private String verifyFormPath(SplibGeneralForm form, String propertyPath) {
+    try {
+      PropertyPathUtil.getValue(form, propertyPath);
+      return propertyPath;
+    } catch (RuntimeException ignored) {
+      return null;
+    }
+  }
+
+  /**
+   * Resolves {@code propertyPath} against {@code form}, trying the already-fully-qualified
+   * interpretation first ({@link #verifyFormPath}) and falling back to the record-relative
+   * interpretation ({@link #qualifyForForm}) when that fails.
+   *
+   * <p>Used for every path reaching a {@code SplibGeneralForm}-target {@code BindingResult} -
+   * whether from a plain {@code ConstraintViolation}'s own propertyPath, or from a
+   * {@code ClassValidator}'s {@code beanPath + "." + annotationPath}) - since both shapes can
+   * occur depending on where in the object graph the failing constraint sits.</p>
+   */
+  @Nullable
+  private String resolveFormPath(SplibGeneralForm form, String propertyPath) {
+    String qualified = verifyFormPath(form, propertyPath);
+    return qualified != null ? qualified : qualifyForForm(form, propertyPath);
   }
 
   /**
