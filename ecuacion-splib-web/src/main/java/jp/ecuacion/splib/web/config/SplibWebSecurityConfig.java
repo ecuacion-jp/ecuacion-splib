@@ -171,7 +171,7 @@ public abstract class SplibWebSecurityConfig {
     http.authorizeHttpRequests(
         requests -> requests.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
             .permitAll().requestMatchers("/public/**").permitAll()
-            .requestMatchers("/ecuacion/public/**").permitAll()
+            .requestMatchers("/ecuacion-splib/public/**").permitAll()
             // Used when impersonated users exit
             .requestMatchers("/account/exitUser").permitAll());
 

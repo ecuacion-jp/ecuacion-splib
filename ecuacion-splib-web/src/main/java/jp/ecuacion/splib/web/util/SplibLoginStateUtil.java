@@ -75,11 +75,11 @@ public class SplibLoginStateUtil {
     String tmp = urlPath.substring(1);
     String loginState = tmp.substring(0, tmp.indexOf("/"));
 
-    // If loginState is "ecuacion", also append the next path segment to loginState.
-    // e.g. /ecuacion/public/... -> "ecuacion-public"
-    if (loginState.equals("ecuacion")) {
-      // At this point tmp is in the state "ecuacion/public/..." with the leading "/" removed.
-      // Extract "public" from it.
+    // If loginState is "ecuacion-splib", also append the next path segment to loginState.
+    // e.g. /ecuacion-splib/public/... -> "ecuacion-splib-public"
+    if (loginState.equals("ecuacion-splib")) {
+      // At this point tmp is in the state "ecuacion-splib/public/..." with the leading "/"
+      // removed. Extract "public" from it.
       tmp = tmp.substring(tmp.indexOf("/") + 1);
       tmp = tmp.substring(0, tmp.indexOf("/"));
       loginState = loginState + "-" + tmp;
