@@ -41,7 +41,7 @@ import org.springframework.security.web.SecurityFilterChain;
  *     itself registers for its own login.</p>
  *
  * <p><strong>Fails closed, not open.</strong> If
- *     {@code jp.ecuacion.splib.web.builtin-admin-login.password-hash} is not set, no user is
+ *     {@code jp.ecuacion.splib.web.builtin-admin-login.hashed-password} is not set, no user is
  *     registered and login is therefore impossible — the safe default for an app that doesn't
  *     use this feature, mirroring how a {@code null}
  *     {@code SplibBuiltinApiKeyExpectedValueProvider} makes REST's equivalent
@@ -56,8 +56,8 @@ public class SplibBuiltinAdminSecurityConfig {
   public static final String BUILTIN_ADMIN_USERNAME = "ecuacion-splib";
 
   @Nullable
-  @Value("${jp.ecuacion.splib.web.builtin-admin-login.password-hash:#{null}}")
-  private String passwordHash;
+  @Value("${jp.ecuacion.splib.web.builtin-admin-login.hashed-password:#{null}}")
+  private String hashedPassword;
 
   /**
    * Provides SecurityFilterChain for {@code ecuacion-splib}'s own built-in admin pages.
@@ -82,12 +82,14 @@ public class SplibBuiltinAdminSecurityConfig {
 
     http.formLogin(login -> login.loginPage("/ecuacion-splib/public/adminLogin/page")
         .loginProcessingUrl("/ecuacion-splib/public/adminLogin/action")
+        .usernameParameter("builtinAdminLogin.username")
+        .passwordParameter("builtinAdminLogin.password")
         .defaultSuccessUrl("/ecuacion-splib/admin/config/page", true)
         .failureUrl("/ecuacion-splib/public/adminLogin/page?error"));
 
-    http.authorizeHttpRequests(requests -> requests
-        .requestMatchers("/ecuacion-splib/public/adminLogin/**").permitAll()
-        .anyRequest().authenticated());
+    http.authorizeHttpRequests(
+        requests -> requests.requestMatchers("/ecuacion-splib/public/adminLogin/**").permitAll()
+            .anyRequest().authenticated());
 
     http.logout(logout -> logout.logoutUrl("/ecuacion-splib/adminLogout")
         .logoutSuccessUrl("/ecuacion-splib/public/adminLogin/page?logoutDone"));
@@ -97,17 +99,17 @@ public class SplibBuiltinAdminSecurityConfig {
 
   /**
    * Builds the single fixed builtin admin user from
-   * {@code jp.ecuacion.splib.web.builtin-admin-login.password-hash}.
+   * {@code jp.ecuacion.splib.web.builtin-admin-login.hashed-password}.
    *
    * <p>Returns a {@code UserDetailsService} backed by no user at all when the property is
    *     unset, so login always fails rather than falling back to some default credential.</p>
    */
   private InMemoryUserDetailsManager builtinAdminUserDetailsService() {
-    if (passwordHash == null) {
+    if (hashedPassword == null) {
       return new InMemoryUserDetailsManager();
     }
 
-    UserDetails user = User.withUsername(BUILTIN_ADMIN_USERNAME).password(passwordHash)
+    UserDetails user = User.withUsername(BUILTIN_ADMIN_USERNAME).password(hashedPassword)
         .roles("BUILTIN_ADMIN").build();
     return new InMemoryUserDetailsManager(user);
   }

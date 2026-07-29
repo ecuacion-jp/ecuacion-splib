@@ -82,7 +82,7 @@
 				<th:block th:if="${loginState == 'admin'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-admin}"></span>
 				</th:block>
-				<th:block th:if="${#strings.startsWith(loginState, 'ecuacion-splib')}">
+				<th:block th:if="${loginState == 'ecuacion-splib-public'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
 				</th:block>
 				<h1 style="color: red"
@@ -102,8 +102,19 @@
 				<th:block th:if="${loginState == 'admin'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-admin-right}"></span>
 				</th:block>
-				<th:block th:if="${#strings.startsWith(loginState, 'ecuacion-splib')}">
+				<th:block th:if="${loginState == 'ecuacion-splib-public'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-public-right}"></span>
+				</th:block>
+				<!--/* ecuacion-splib's own built-in admin pages (e.g. ConfigController) are not
+						app-defined, so their navbar-right (unlike the branches above) is not
+						sourced from the app's own splib-web/parts.html — it's hard-coded here so the
+						logout menu works with zero app-side setup. */-->
+				<th:block th:if="${#strings.startsWith(loginState, 'ecuacion-splib') and loginState != 'ecuacion-splib-public'}"
+						th:with="ecuacionSplibPersonIconPath=@{/images/ecuacion-splib-person-fill.svg}">
+					<div th:replace="~{bootstrap/components :: navbarSubMenu('', ~{ :: fragmentEcuacionSplibAdminNavbarMenu}, 'position=right,imagePath=' + ${ecuacionSplibPersonIconPath})}"></div>
+					<th:block th:if="false"><div th:fragment="fragmentEcuacionSplibAdminNavbarMenu" th:remove="tag">
+						<div th:replace="~{bootstrap/components :: navbarDropDownMenuItem(@{/ecuacion-splib/adminLogout}, #{jp.ecuacion.splib.web.builtinAdminLogin.logout}, 'method=post')}"></div>
+					</div></th:block>
 				</th:block>
 			</div></th:block>
 

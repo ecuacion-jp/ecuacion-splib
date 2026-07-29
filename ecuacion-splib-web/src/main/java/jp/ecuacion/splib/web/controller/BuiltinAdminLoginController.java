@@ -15,8 +15,13 @@
  */
 package jp.ecuacion.splib.web.controller;
 
+import jp.ecuacion.splib.web.controller.BuiltinAdminLoginController.BuiltinAdminLoginForm;
+import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import jp.ecuacion.splib.web.record.BuiltinAdminLoginRecord;
+import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Shows the login page for {@code ecuacion-splib}'s own built-in admin pages
@@ -26,19 +31,49 @@ import org.springframework.web.bind.annotation.GetMapping;
  *     supply their own template for, this login page is bundled entirely inside
  *     {@code ecuacion-splib-web} (template included), since it exists solely to protect the
  *     library's own built-in pages. The POST that submits this form is handled directly by
- *     Spring Security's {@code loginProcessingUrl}; see
+ *     Spring Security's {@code loginProcessingUrl}, not by a controller method here; see
  *     {@code SplibBuiltinAdminSecurityConfig}.</p>
+ *
+ * <p>The function name is {@code builtinAdminLogin}, not {@code adminLogin} — function names
+ *     must be unique across the app (see {@code ControllerContext#function()}), and
+ *     {@code adminLogin} is already taken by the app-facing {@link AdminLoginController}, which
+ *     is registered by default alongside this one. {@link #getDefaultHtmlPageName()} is
+ *     overridden so the template file itself can still be named
+ *     {@code ecuacion-splib-admin-login.html} rather than following from the function name.</p>
  */
 @Controller
-public class BuiltinAdminLoginController {
+@Scope("prototype")
+@RequestMapping("/ecuacion-splib/public/adminLogin")
+public class BuiltinAdminLoginController extends SplibGeneral1FormController<BuiltinAdminLoginForm,
+    SplibGeneral1FormDoNothingService<BuiltinAdminLoginForm>> {
 
   /**
-   * Shows the built-in admin login page.
-   *
-   * @return view name
+   * Constructs a new instance.
    */
-  @GetMapping("/ecuacion-splib/public/adminLogin/page")
-  public String page() {
+  public BuiltinAdminLoginController() {
+    super("builtinAdminLogin");
+  }
+
+  @Override
+  public String getDefaultHtmlPageName() {
     return "ecuacion-splib-admin-login";
+  }
+
+  /**
+   * Stores data for the built-in admin login.
+   */
+  public static class BuiltinAdminLoginForm extends SplibGeneralForm {
+
+    private BuiltinAdminLoginRecord builtinAdminLogin = new BuiltinAdminLoginRecord();
+
+    /** Returns builtinAdminLogin. */
+    public BuiltinAdminLoginRecord getBuiltinAdminLogin() {
+      return builtinAdminLogin;
+    }
+
+    /** Sets builtinAdminLogin. */
+    public void setBuiltinAdminLogin(BuiltinAdminLoginRecord builtinAdminLogin) {
+      this.builtinAdminLogin = builtinAdminLogin;
+    }
   }
 }
