@@ -17,7 +17,7 @@
 -->
 <!--/*
 	Login page for ecuacion-splib's own built-in admin pages (e.g. ConfigController).
-	Posts to /ecuacion-splib/adminLogin/action, handled directly by Spring Security's
+	Posts to /ecuacion-splib/public/adminLogin/action, handled directly by Spring Security's
 	loginProcessingUrl (see SplibBuiltinAdminSecurityConfig) — there is no matching controller
 	method for the POST.
 */-->
@@ -30,7 +30,7 @@
 <body>
 	<div layout:fragment="base-content">
 
-		<form th:action="@{/ecuacion-splib/adminLogin/action}" method="post">
+		<form th:action="@{/ecuacion-splib/public/adminLogin/action}" method="post">
 
 			<div class="mb-3">
 				<label class="form-label" th:text="#{jp.ecuacion.splib.web.builtinAdminLogin.username}"></label>

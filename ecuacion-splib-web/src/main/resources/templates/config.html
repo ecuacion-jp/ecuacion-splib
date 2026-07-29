@@ -44,10 +44,21 @@
 			</div>
 		</div>
 	</div>
-	
+
 		<div th:fragment="ecuacionSplibConfigMessageForButtons" th:remove="tag">
 			The following setting is needed in application.properties to enable buttons.
 			<code>jp.ecuacion.splib.web.ecuacion-config-buttons.enabled=true</code>
 		</div>
+
+	<!--/*
+		Logout for ecuacion-splib's built-in admin login. Kept as its own <form> here (outside
+		the page's main <form>, via the bottom-space layout fragment) since nesting a second
+		<form> inside the generalForm-generated one is invalid HTML.
+	*/-->
+	<div layout:fragment="bottom-space">
+		<form th:action="@{/ecuacion-splib/adminLogout}" method="post" class="mt-3">
+			<button type="submit" class="btn btn-secondary" th:text="#{jp.ecuacion.splib.web.builtinAdminLogin.logout}"></button>
+		</form>
+	</div>
 </body>
 </html>

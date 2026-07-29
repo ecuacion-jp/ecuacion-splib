@@ -34,9 +34,11 @@ import org.springframework.security.web.SecurityFilterChain;
  *
  * <p>Unlike {@link SplibWebSecurityConfigForAdmin}, this class is concrete and registered
  *     automatically — apps do not need to subclass it. It protects
- *     {@code /ecuacion-splib/admin/**} (and serves its own login page at
- *     {@code /ecuacion-splib/adminLogin/**}) with a single fixed built-in user, independent of
- *     whatever {@code UserDetailsService} the app itself registers for its own login.</p>
+ *     {@code /ecuacion-splib/admin/**} (login required) and serves its own login page at
+ *     {@code /ecuacion-splib/public/adminLogin/**} (no login required, consistent with the
+ *     {@code public}/{@code admin} split used elsewhere under {@code /ecuacion-splib/**}), with
+ *     a single fixed built-in user independent of whatever {@code UserDetailsService} the app
+ *     itself registers for its own login.</p>
  *
  * <p><strong>Fails closed, not open.</strong> If
  *     {@code jp.ecuacion.splib.web.builtin-admin-login.password-hash} is not set, no user is
@@ -68,7 +70,8 @@ public class SplibBuiltinAdminSecurityConfig {
   @Bean
   SecurityFilterChain filterChainForBuiltinAdmin(HttpSecurity http) throws Exception {
 
-    http.securityMatcher("/ecuacion-splib/adminLogin/**", "/ecuacion-splib/admin/**");
+    http.securityMatcher("/ecuacion-splib/public/adminLogin/**", "/ecuacion-splib/admin/**",
+        "/ecuacion-splib/adminLogout");
 
     http.httpBasic(basic -> basic.disable());
 
@@ -77,17 +80,17 @@ public class SplibBuiltinAdminSecurityConfig {
     provider.setPasswordEncoder(new BCryptPasswordEncoder());
     http.authenticationProvider(provider);
 
-    http.formLogin(login -> login.loginPage("/ecuacion-splib/adminLogin/page")
-        .loginProcessingUrl("/ecuacion-splib/adminLogin/action")
+    http.formLogin(login -> login.loginPage("/ecuacion-splib/public/adminLogin/page")
+        .loginProcessingUrl("/ecuacion-splib/public/adminLogin/action")
         .defaultSuccessUrl("/ecuacion-splib/admin/config/page", true)
-        .failureUrl("/ecuacion-splib/adminLogin/page?error"));
+        .failureUrl("/ecuacion-splib/public/adminLogin/page?error"));
 
     http.authorizeHttpRequests(requests -> requests
-        .requestMatchers("/ecuacion-splib/adminLogin/**").permitAll()
+        .requestMatchers("/ecuacion-splib/public/adminLogin/**").permitAll()
         .anyRequest().authenticated());
 
     http.logout(logout -> logout.logoutUrl("/ecuacion-splib/adminLogout")
-        .logoutSuccessUrl("/ecuacion-splib/adminLogin/page?logoutDone"));
+        .logoutSuccessUrl("/ecuacion-splib/public/adminLogin/page?logoutDone"));
 
     return http.build();
   }

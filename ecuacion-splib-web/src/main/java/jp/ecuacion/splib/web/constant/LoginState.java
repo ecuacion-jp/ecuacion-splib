@@ -52,14 +52,7 @@ public enum LoginState {
    *
    * <p>As url it becomes {@code ecuacion-splib/admin}.
    */
-  ECUACION_SPLIB_ADMIN("ecuacion-splib-admin"),
-
-  /**
-   * It's the path for {@code ecuacion-splib}'s own built-in admin login page itself.
-   *
-   * <p>As url it becomes {@code ecuacion-splib/adminLogin}.
-   */
-  ECUACION_SPLIB_ADMIN_LOGIN("ecuacion-splib-adminLogin");
+  ECUACION_SPLIB_ADMIN("ecuacion-splib-admin");
 
   private final String code;
 

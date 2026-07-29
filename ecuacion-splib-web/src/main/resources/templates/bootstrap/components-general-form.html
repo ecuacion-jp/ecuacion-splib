@@ -53,7 +53,7 @@
 					<form th:name="${javaFormName}" th:id="${javaFormName}"
 							th:method="${formMethod == null || formMethod == '' ? 'post' : formMethod}"
 							th:enctype="${multipart == null || multipart == false ? 'application/x-www-form-urlencoded' : 'multipart/form-data'}"
-							th:action="@{/} + ${#strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
+							th:action="@{/} + ${loginState.startsWith('ecuacion-splib-') ? 'ecuacion-splib/' + loginState.substring('ecuacion-splib-'.length()) : #strings.replace(loginState, '-', '/')} + '/' + ${functionKindsPathString} + ${function} + ${(ctrlSubFunction == null ? (subFunction == null || subFunction == '' ? '' : '/' + subFunction) : (ctrlSubFunction == '' ? '' : '/' + ctrlSubFunction)) + '/action'}"
 							th:object="${__${javaFormName + '.' + rootRecordName}__}"
 							onsubmit="doubleClickPreventionLockButtonsOnSubmit(event, this)"
 							th:data-submitting-message="#{jp.ecuacion.splib.web.common.label.submitting}">
