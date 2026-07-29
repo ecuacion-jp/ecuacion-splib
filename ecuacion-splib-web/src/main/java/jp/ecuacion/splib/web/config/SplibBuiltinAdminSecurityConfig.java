@@ -15,18 +15,24 @@
  */
 package jp.ecuacion.splib.web.config;
 
-import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
+import java.util.List;
+import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver;
+import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Outcome;
+import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Result;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 /**
  * Provides security config for {@code ecuacion-splib}'s own built-in admin pages
@@ -40,12 +46,23 @@ import org.springframework.security.web.SecurityFilterChain;
  *     a single fixed built-in user independent of whatever {@code UserDetailsService} the app
  *     itself registers for its own login.</p>
  *
- * <p><strong>Fails closed, not open.</strong> If
- *     {@code jp.ecuacion.splib.web.builtin-admin-login.hashed-password} is not set, no user is
- *     registered and login is therefore impossible — the safe default for an app that doesn't
- *     use this feature, mirroring how a {@code null}
- *     {@code SplibBuiltinApiKeyExpectedValueProvider} makes REST's equivalent
- *     {@code /api/ecuacion-splib/key/**} tier reject every request.</p>
+ * <p><strong>Credential property.</strong> Exactly one of the following must be set:</p>
+ * <ul>
+ * <li>{@code jp.ecuacion.splib.web.builtin-admin-login.password-plain} — the password itself.</li>
+ * <li>{@code jp.ecuacion.splib.web.builtin-admin-login.password-bcrypt} — a bcrypt hash of it.</li>
+ * </ul>
+ * 
+ * <p>See {@link SplibHashedPropertyResolver} for the shared convention this follows (also used by
+ *     {@code ecuacion-splib-rest}'s built-in API key).</p>
+ *
+ * <p><strong>Fails closed, not open.</strong> If neither property is set, no login is possible —
+ *     the safe default for an app that doesn't use this feature — and this is indistinguishable
+ *     from a wrong password, mirroring how REST's equivalent {@code /api/ecuacion-splib/key/**}
+ *     tier rejects every request when neither of its own credential properties is set (see
+ *     {@code SplibBuiltinApiKeyAuthenticationFilter}). If <em>both</em> are set, that is instead
+ *     a misconfiguration only whoever controls {@code application.properties} could cause, so it
+ *     is surfaced distinctly, via a dedicated login-page error message rather than the generic
+ *     "wrong credentials" one.</p>
  */
 @Configuration
 public class SplibBuiltinAdminSecurityConfig {
@@ -55,9 +72,9 @@ public class SplibBuiltinAdminSecurityConfig {
    */
   public static final String BUILTIN_ADMIN_USERNAME = "ecuacion-splib";
 
-  @Nullable
-  @Value("${jp.ecuacion.splib.web.builtin-admin-login.hashed-password:#{null}}")
-  private String hashedPassword;
+  private static final String PROPERTY_PREFIX = "jp.ecuacion.splib.web.builtin-admin-login";
+
+  private static final String LOGIN_PAGE = "/ecuacion-splib/public/adminLogin/page";
 
   /**
    * Provides SecurityFilterChain for {@code ecuacion-splib}'s own built-in admin pages.
@@ -75,42 +92,91 @@ public class SplibBuiltinAdminSecurityConfig {
 
     http.httpBasic(basic -> basic.disable());
 
-    DaoAuthenticationProvider provider =
-        new DaoAuthenticationProvider(builtinAdminUserDetailsService());
-    provider.setPasswordEncoder(new BCryptPasswordEncoder());
-    http.authenticationProvider(provider);
+    http.authenticationProvider(builtinAdminAuthenticationProvider());
 
-    http.formLogin(login -> login.loginPage("/ecuacion-splib/public/adminLogin/page")
+    http.formLogin(login -> login.loginPage(LOGIN_PAGE)
         .loginProcessingUrl("/ecuacion-splib/public/adminLogin/action")
         .usernameParameter("builtinAdminLogin.username")
         .passwordParameter("builtinAdminLogin.password")
         .defaultSuccessUrl("/ecuacion-splib/admin/config/page", true)
-        .failureUrl("/ecuacion-splib/public/adminLogin/page?error"));
+        .failureHandler(builtinAdminFailureHandler()));
 
     http.authorizeHttpRequests(
         requests -> requests.requestMatchers("/ecuacion-splib/public/adminLogin/**").permitAll()
             .anyRequest().authenticated());
 
     http.logout(logout -> logout.logoutUrl("/ecuacion-splib/adminLogout")
-        .logoutSuccessUrl("/ecuacion-splib/public/adminLogin/page?logoutDone"));
+        .logoutSuccessUrl(LOGIN_PAGE + "?logoutDone"));
 
     return http.build();
   }
 
   /**
-   * Builds the single fixed builtin admin user from
-   * {@code jp.ecuacion.splib.web.builtin-admin-login.hashed-password}.
-   *
-   * <p>Returns a {@code UserDetailsService} backed by no user at all when the property is
-   *     unset, so login always fails rather than falling back to some default credential.</p>
+   * Authenticates against the fixed {@link #BUILTIN_ADMIN_USERNAME} and whichever single
+   * {@code password-plain} / {@code password-bcrypt} property is configured, resolved fresh on
+   * every attempt (so a property change via {@code PropertiesFileUtil}'s cache-clearing takes
+   * effect without a restart).
    */
-  private InMemoryUserDetailsManager builtinAdminUserDetailsService() {
-    if (hashedPassword == null) {
-      return new InMemoryUserDetailsManager();
-    }
+  private AuthenticationProvider builtinAdminAuthenticationProvider() {
+    return new AuthenticationProvider() {
 
-    UserDetails user = User.withUsername(BUILTIN_ADMIN_USERNAME).password(hashedPassword)
-        .roles("BUILTIN_ADMIN").build();
-    return new InMemoryUserDetailsManager(user);
+      @Override
+      public Authentication authenticate(Authentication authentication)
+          throws AuthenticationException {
+        String presentedUsername = String.valueOf(authentication.getPrincipal());
+        String presentedPassword = String.valueOf(authentication.getCredentials());
+
+        Result result =
+            SplibHashedPropertyResolver.authenticate(PROPERTY_PREFIX, presentedPassword);
+
+        if (result.getOutcome() == Outcome.MISCONFIGURED) {
+          throw new BuiltinCredentialMisconfiguredException("More than one of "
+              + result.getConfiguredKeys() + " is set; exactly one is expected.");
+        }
+
+        if (!BUILTIN_ADMIN_USERNAME.equals(presentedUsername)
+            || result.getOutcome() != Outcome.MATCHED) {
+          throw new BadCredentialsException("Bad credentials");
+        }
+
+        return UsernamePasswordAuthenticationToken.authenticated(presentedUsername, null,
+            List.of(new SimpleGrantedAuthority("ROLE_BUILTIN_ADMIN")));
+      }
+
+      @Override
+      public boolean supports(Class<?> authentication) {
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+      }
+    };
+  }
+
+  /**
+   * Redirects to the login page with {@code ?credentialMisconfigured} for a
+   * {@link BuiltinCredentialMisconfiguredException}, or {@code ?error} for anything else (wrong
+   * username/password), so the two cases show distinct messages.
+   */
+  private AuthenticationFailureHandler builtinAdminFailureHandler() {
+    RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+    return (request, response, exception) -> {
+      String query =
+          exception instanceof BuiltinCredentialMisconfiguredException ? "?credentialMisconfigured"
+              : "?error";
+      redirectStrategy.sendRedirect(request, response, LOGIN_PAGE + query);
+    };
+  }
+
+  /**
+   * Signals that more than one credential property is configured for the same login — a
+   * misconfiguration only whoever controls {@code application.properties} could cause, not
+   * something an external caller can trigger by guessing.
+   */
+  private static final class BuiltinCredentialMisconfiguredException
+      extends AuthenticationException {
+
+    private static final long serialVersionUID = 1L;
+
+    BuiltinCredentialMisconfiguredException(String message) {
+      super(message);
+    }
   }
 }
