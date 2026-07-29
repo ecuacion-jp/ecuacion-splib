@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Provides a controller that clears the {@code PropertiesFileUtil} cache.
  *
  * <p>Mapped under {@code /api/ecuacion-splib/key/**}, so it requires {@code X-Api-Key}
- *     authentication; see {@code SplibBuiltinApiKeyExpectedValueProvider}.</p>
+ *     authentication; see {@code SplibBuiltinApiKeyAuthenticationFilter}.</p>
  */
 @RestController
 public class ClearPropertiesCacheController {

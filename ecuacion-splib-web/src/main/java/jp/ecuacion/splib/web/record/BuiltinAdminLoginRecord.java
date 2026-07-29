@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.record;
 
 import jp.ecuacion.lib.core.annotation.ItemNameKeyClass;
 import jp.ecuacion.splib.core.record.SplibRecord;
+import jp.ecuacion.splib.web.config.SplibBuiltinAdminSecurityConfig;
 import jp.ecuacion.splib.web.item.HtmlItem;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import org.jspecify.annotations.Nullable;
@@ -38,7 +39,7 @@ public class BuiltinAdminLoginRecord extends SplibRecord implements HtmlItemCont
     return new HtmlItem[] {};
   }
 
-  private String username = "ecuacion-splib";
+  private String username = SplibBuiltinAdminSecurityConfig.BUILTIN_ADMIN_USERNAME;
 
   @Nullable
   private String password;

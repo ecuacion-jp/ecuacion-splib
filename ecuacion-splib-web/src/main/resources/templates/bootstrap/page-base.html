@@ -182,7 +182,8 @@
 				<!--/* error */-->
 				<div class="all-error-messages-list-wrapper text-danger"
 						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
-								or param.switchUserFailure != null or param.logoutDoneBecauseMailAddressChanged != null}">
+								or param.switchUserFailure != null or param.logoutDoneBecauseMailAddressChanged != null
+								or param.credentialMisconfigured != null}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
 						<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.error}"></div>
 						<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.logoutDone}"></div>
@@ -192,6 +193,8 @@
 						<div th:if="${param.switchUserFailure}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.switchUser.failure}"></div>
 						<!--/* mailAddress changed */-->
 						<div th:if="${param.logoutDoneBecauseMailAddressChanged}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.logoutDoneBecauseMailAddressChanged}"></div>
+						<!--/* both a plain-text and a hashed credential property configured at once */-->
+						<div th:if="${param.credentialMisconfigured}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.credentialMisconfigured}"></div>
 					</div>
 				</div>
 				<!--/* success */-->

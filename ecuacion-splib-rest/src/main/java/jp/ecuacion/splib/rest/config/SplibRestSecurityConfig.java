@@ -20,7 +20,6 @@ import jp.ecuacion.splib.rest.apikey.SplibApiKeyAuthenticationFilter;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyComparisonMode;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyExpectedValueProvider;
 import jp.ecuacion.splib.rest.apikey.SplibBuiltinApiKeyAuthenticationFilter;
-import jp.ecuacion.splib.rest.apikey.SplibBuiltinApiKeyExpectedValueProvider;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,14 +39,8 @@ public abstract class SplibRestSecurityConfig {
   @Nullable
   private final SplibApiKeyExpectedValueProvider apiKeyExpectedValueProvider;
 
-  @Nullable
-  private final SplibBuiltinApiKeyExpectedValueProvider builtinApiKeyExpectedValueProvider;
-
   @Value("${jp.ecuacion.splib.rest.api-key.mode:PLAIN}")
   private SplibApiKeyComparisonMode apiKeyComparisonMode = SplibApiKeyComparisonMode.PLAIN;
-
-  @Value("${jp.ecuacion.splib.rest.builtin-api-key.mode:PLAIN}")
-  private SplibApiKeyComparisonMode builtinApiKeyComparisonMode = SplibApiKeyComparisonMode.PLAIN;
 
   /**
    * Constructs a new instance.
@@ -56,16 +49,10 @@ public abstract class SplibRestSecurityConfig {
    *     {@code /api/key/**} authentication, or {@code null} if the application does not use
    *     that prefix — every request to it is then rejected; see
    *     {@link SplibApiKeyExpectedValueProvider}
-   * @param builtinApiKeyExpectedValueProvider the application-supplied provider backing
-   *     {@code /api/ecuacion-splib/key/**} authentication, or {@code null} if the application
-   *     does not use that prefix — every request to it is then rejected; see
-   *     {@link SplibBuiltinApiKeyExpectedValueProvider}
    */
   protected SplibRestSecurityConfig(
-      @Nullable SplibApiKeyExpectedValueProvider apiKeyExpectedValueProvider,
-      @Nullable SplibBuiltinApiKeyExpectedValueProvider builtinApiKeyExpectedValueProvider) {
+      @Nullable SplibApiKeyExpectedValueProvider apiKeyExpectedValueProvider) {
     this.apiKeyExpectedValueProvider = apiKeyExpectedValueProvider;
-    this.builtinApiKeyExpectedValueProvider = builtinApiKeyExpectedValueProvider;
   }
 
   /**
@@ -177,11 +164,12 @@ public abstract class SplibRestSecurityConfig {
    * {@code ecuacion-splib}'s own built-in endpoints (e.g. {@code SystemErrorController},
    * {@code ClearPropertiesCacheController}).
    *
-   * <p>See {@link SplibBuiltinApiKeyExpectedValueProvider} for how the expected value is
-   *     supplied, and {@link SplibApiKeyComparisonMode} for the
-   *     {@code jp.ecuacion.splib.rest.builtin-api-key.mode} property selecting plain-text vs.
-   *     hashed comparison. This key set is independent of {@link #filterChainForApiKey}'s
-   *     {@code /api/key/**} keys — the two are registered and rotated separately.</p>
+   * <p>Unlike {@link #filterChainForApiKey}, the expected value here is not application-supplied
+   *     — it's read directly from {@code jp.ecuacion.splib.rest.builtin-api-key.password-plain}
+   *     or {@code jp.ecuacion.splib.rest.builtin-api-key.password-sha256} (exactly one expected
+   *     to be set); see {@link SplibBuiltinApiKeyAuthenticationFilter}. This key is independent
+   *     of {@link #filterChainForApiKey}'s {@code /api/key/**} keys — the two are registered and
+   *     rotated separately.</p>
    *
    * <p>CSRF is disabled here for the same reason as {@link #filterChainForApiKey}: {@code
    *     X-Api-Key} is not a credential the browser attaches automatically, so there is nothing
@@ -199,9 +187,7 @@ public abstract class SplibRestSecurityConfig {
     http.httpBasic(basic -> basic.disable());
     http.csrf(csrf -> csrf.disable());
 
-    http.addFilterBefore(
-        new SplibBuiltinApiKeyAuthenticationFilter(
-            builtinApiKeyExpectedValueProvider, builtinApiKeyComparisonMode),
+    http.addFilterBefore(new SplibBuiltinApiKeyAuthenticationFilter(),
         UsernamePasswordAuthenticationFilter.class);
 
     // The filter above already rejects (401) any request that fails API-key authentication, so
