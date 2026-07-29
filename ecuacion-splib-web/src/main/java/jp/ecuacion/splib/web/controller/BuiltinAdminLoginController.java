@@ -30,15 +30,15 @@ import org.springframework.web.bind.annotation.GetMapping;
  *     {@code SplibBuiltinAdminSecurityConfig}.</p>
  */
 @Controller
-public class SplibBuiltinAdminLoginController {
+public class BuiltinAdminLoginController {
 
   /**
    * Shows the built-in admin login page.
    *
    * @return view name
    */
-  @GetMapping("/ecuacion-splib/adminLogin/page")
+  @GetMapping("/ecuacion-splib/public/adminLogin/page")
   public String page() {
-    return "splib-web/ecuacion-splib-admin-login";
+    return "ecuacion-splib-admin-login";
   }
 }
