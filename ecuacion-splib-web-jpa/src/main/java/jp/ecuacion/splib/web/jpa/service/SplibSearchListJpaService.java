@@ -27,6 +27,7 @@ import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.service.SplibSearchListService;
 import jp.ecuacion.splib.web.util.SplibDatetimeFormatUtil;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -90,7 +91,7 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
    * @param searchForm searchForm
    * @return {@code Specification<E>}
    */
-  protected abstract Specification<E> getSpecs(FST searchForm);
+  protected abstract Specification<E> getSpecs(@NonNull FST searchForm);
 
   /**
    * Gets Page.
@@ -99,7 +100,7 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
    * @param repository repository
    * @return {@code Page<E>}
    */
-  protected Page<E> getListFormCommon(FST searchForm,
+  protected Page<E> getListFormCommon(@NonNull FST searchForm,
       JpaSpecificationExecutor<E> repository) {
     Specification<E> specs = getSpecs(searchForm);
 

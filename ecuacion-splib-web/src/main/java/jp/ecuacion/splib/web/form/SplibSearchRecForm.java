@@ -32,7 +32,7 @@ public abstract class SplibSearchRecForm<R extends SplibRecord> extends SplibSea
     return rec;
   }
 
-  public void setRec(R rec) {
+  public void setRec(@Nullable R rec) {
     this.rec = rec;
   }
 }

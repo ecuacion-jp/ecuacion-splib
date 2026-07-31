@@ -23,7 +23,6 @@ import jp.ecuacion.splib.batch.tasklet.SystemErrorTasklet;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,13 +31,9 @@ import org.springframework.transaction.PlatformTransactionManager;
  * Provides a built-in {@code ecuacionSystemErrorJob}, for testing the system error
  * behavior (exception handling, logging, and so on) without requiring an actual bug.
  *
- * <p>Registered only when {@code jp.ecuacion.splib.batch.ecuacion-system-error-job.enabled}
- *     is set to {@code true} in application.properties — leave it unset (or {@code false})
- *     in production. Run it with {@code --spring.batch.job.name=ecuacionSystemErrorJob}.</p>
+ * <p>Run it with {@code --spring.batch.job.name=ecuacionSystemErrorJob}.</p>
  */
 @Configuration
-@ConditionalOnProperty(prefix = "jp.ecuacion.splib.batch.ecuacion-system-error-job",
-    name = "enabled", havingValue = "true")
 public class SplibSystemErrorJobConfig extends SplibAppParentBatchConfig {
 
   /**

@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.jpa.repository;
 
 import java.util.Optional;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -36,7 +37,7 @@ public interface SplibRepository<T, I> extends JpaRepository<T, I> {
    * @param entity entity
    * @return Optional of the entity.
    */
-  Optional<T> findByIdAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") T entity);
+  Optional<T> findByIdAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") @NonNull T entity);
 
   /**
    * Is used to physical-delete soft-deleted records.
@@ -44,7 +45,8 @@ public interface SplibRepository<T, I> extends JpaRepository<T, I> {
    * @param entity entity
    * @return Optional of the entity.
    */
-  Optional<T> findByNaturalKeyAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") T entity);
+  Optional<T> findByNaturalKeyAndSoftDeleteFieldTrueFromAllGroups(
+      @Param("entity") @NonNull T entity);
 
   /**
    * Is used to physical-delete soft-deleted records.
@@ -52,6 +54,6 @@ public interface SplibRepository<T, I> extends JpaRepository<T, I> {
    * @param entity entity
    */
   @Modifying
-  void deleteByIdAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") T entity);
+  void deleteByIdAndSoftDeleteFieldTrueFromAllGroups(@Param("entity") @NonNull T entity);
 
 }

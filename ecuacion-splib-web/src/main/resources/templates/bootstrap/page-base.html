@@ -82,11 +82,11 @@
 				<th:block th:if="${loginState == 'admin'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-admin}"></span>
 				</th:block>
-				<th:block th:if="${loginState == 'ecuacion-public'}">
+				<th:block th:if="${loginState == 'ecuacion-splib-public'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-public}"></span>
 				</th:block>
 				<h1 style="color: red"
-						th:if="${loginState != 'public' && loginState != 'account' && loginState != 'admin' && loginState != 'ecuacion-public'}">
+						th:if="${loginState != 'public' && loginState != 'account' && loginState != 'admin' && !#strings.startsWith(loginState, 'ecuacion-splib')}">
 					parameter: ${loginState} is not properly designated.
 				</h1>
 			</div></th:block>
@@ -102,8 +102,19 @@
 				<th:block th:if="${loginState == 'admin'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-admin-right}"></span>
 				</th:block>
-				<th:block th:if="${loginState == 'ecuacion-public'}">
+				<th:block th:if="${loginState == 'ecuacion-splib-public'}">
 					<span th:replace="~{splib-web/parts :: nav-bar-public-right}"></span>
+				</th:block>
+				<!--/* ecuacion-splib's own built-in admin pages (e.g. ConfigController) are not
+						app-defined, so their navbar-right (unlike the branches above) is not
+						sourced from the app's own splib-web/parts.html — it's hard-coded here so the
+						logout menu works with zero app-side setup. */-->
+				<th:block th:if="${#strings.startsWith(loginState, 'ecuacion-splib') and loginState != 'ecuacion-splib-public'}"
+						th:with="ecuacionSplibPersonIconPath=@{/images/ecuacion-splib-person-fill.svg}">
+					<div th:replace="~{bootstrap/components :: navbarSubMenu('', ~{ :: fragmentEcuacionSplibAdminNavbarMenu}, 'position=right,imagePath=' + ${ecuacionSplibPersonIconPath})}"></div>
+					<th:block th:if="false"><div th:fragment="fragmentEcuacionSplibAdminNavbarMenu" th:remove="tag">
+						<div th:replace="~{bootstrap/components :: navbarDropDownMenuItem(@{/ecuacion-splib/adminLogout}, #{jp.ecuacion.splib.web.builtinAdminLogin.logout}, 'method=post')}"></div>
+					</div></th:block>
 				</th:block>
 			</div></th:block>
 
@@ -171,7 +182,8 @@
 				<!--/* error */-->
 				<div class="all-error-messages-list-wrapper text-danger"
 						th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
-								or param.switchUserFailure != null or param.logoutDoneBecauseMailAddressChanged != null}">
+								or param.switchUserFailure != null or param.logoutDoneBecauseMailAddressChanged != null
+								or param.credentialMisconfigured != null}">
 					<div class="bg-color-msg-error-bg p-2 rounded-1">
 						<div th:if="${param.error}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.error}"></div>
 						<div th:if="${param.logoutDone}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.logoutDone}"></div>
@@ -181,6 +193,8 @@
 						<div th:if="${param.switchUserFailure}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.switchUser.failure}"></div>
 						<!--/* mailAddress changed */-->
 						<div th:if="${param.logoutDoneBecauseMailAddressChanged}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.logoutDoneBecauseMailAddressChanged}"></div>
+						<!--/* both a plain-text and a hashed credential property configured at once */-->
+						<div th:if="${param.credentialMisconfigured}" style="white-space: pre-wrap;" th:text="#{jp.ecuacion.splib.web.login.message.credentialMisconfigured}"></div>
 					</div>
 				</div>
 				<!--/* success */-->

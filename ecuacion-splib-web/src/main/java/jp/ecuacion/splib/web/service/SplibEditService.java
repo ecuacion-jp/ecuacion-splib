@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.service;
 
 import jp.ecuacion.splib.web.form.SplibEditForm;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -29,7 +30,7 @@ public abstract class SplibEditService<F extends SplibEditForm>
 
   @SuppressWarnings("null")
   @Override
-  public void page(F form, @Nullable UserDetails loginUser) throws Exception {
+  public void page(@NonNull F form, @Nullable UserDetails loginUser) throws Exception {
     
     if (form.isInsert() == null) {
       throw new RuntimeException("splibEditForm.isInsert() must not be null.");
@@ -51,7 +52,7 @@ public abstract class SplibEditService<F extends SplibEditForm>
    * @param form form
    * @param loginUser loginUser
    */
-  public abstract void getInsertPage(F form, @Nullable UserDetails loginUser);
+  public abstract void getInsertPage(@NonNull F form, @Nullable UserDetails loginUser);
 
   /**
    * Shows update page.
@@ -62,7 +63,7 @@ public abstract class SplibEditService<F extends SplibEditForm>
    * @param form form
    * @param loginUser loginUser
    */
-  public abstract void getUpdatePage(F form, @Nullable UserDetails loginUser)
+  public abstract void getUpdatePage(@NonNull F form, @Nullable UserDetails loginUser)
       throws Exception;
 
   /**
@@ -72,7 +73,7 @@ public abstract class SplibEditService<F extends SplibEditForm>
    * @param loginUser loginUser
    * @throws Exception Exception
    */
-  public abstract void edit(F form, @Nullable UserDetails loginUser) throws Exception;
+  public abstract void edit(@NonNull F form, @Nullable UserDetails loginUser) throws Exception;
 
   /**
    * Determines if the page is insert or update.

@@ -20,6 +20,7 @@ import jp.ecuacion.splib.web.controller.SplibSearchListController;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
 import jp.ecuacion.splib.web.jpa.service.SplibSearchListJpaService;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
@@ -58,7 +59,7 @@ public abstract class SplibSearchListJpaController
   }
 
   @Override
-  public String page(Model model, FST searchForm, FLT listForm,
+  public String page(Model model, @NonNull FST searchForm, @NonNull FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
 
     return super.page(model, searchForm, listForm, loginUser);

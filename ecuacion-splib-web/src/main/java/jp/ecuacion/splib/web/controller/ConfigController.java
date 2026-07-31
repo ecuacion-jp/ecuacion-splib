@@ -17,7 +17,6 @@ package jp.ecuacion.splib.web.controller;
 
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.web.controller.ConfigController.ConfigForm;
-import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.record.ConfigRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
@@ -37,11 +36,18 @@ public class ConfigController
 
   /**
    * Note: this controller's URL doesn't follow the {@code /{loginState}/{function}} convention
-   * that {@code ReturnUrlBuilder} assumes (it would turn this into {@code /ecuacion-public/...},
-   * which doesn't match this mapping), so redirects here are built from this constant directly
-   * instead of via {@code getRedirectUrlOnSuccess()}.
+   * that {@code ReturnUrlBuilder} assumes (it would turn this into
+   * {@code /ecuacion-splib-admin/...}, which doesn't match this mapping), so redirects here
+   * are built from this constant directly instead of via {@code getRedirectUrlOnSuccess()}.
+   *
+   * <p>Mapped under {@code /ecuacion-splib/admin/**}, so it requires login via
+   * {@code ecuacion-splib}'s own built-in admin login; see
+   * {@code SplibBuiltinAdminSecurityConfig}. This controller exposes side-effecting actions
+   * ({@link #clearPropertiesCache()}, {@link #systemError()}), so — unlike
+   * {@code /ecuacion-splib/public/**}, which is {@code permitAll} — it must not be reachable
+   * without authentication.</p>
    */
-  static final String BASE_PATH = "/ecuacion/public/config";
+  static final String BASE_PATH = "/ecuacion-splib/admin/config";
 
   /**
    * Constructs a new instance.
@@ -54,15 +60,10 @@ public class ConfigController
    * Clears the cache of properties files read via {@code PropertiesFileUtil},
    * so that changes to application.properties can be picked up without restarting the app.
    *
-   * <p>Rejected unless {@code jp.ecuacion.splib.web.ecuacion-config-buttons.enabled}
-   *     is set to {@code true} in application.properties.</p>
-   *
    * @return URL
    */
   @PostMapping(value = "action", params = "action=clearPropertiesCache")
   public String clearPropertiesCache() {
-    checkConfigButtonsEnabled();
-
     PropertiesFileUtil.clearCache();
 
     return "redirect:" + BASE_PATH + "/page?success";
@@ -72,23 +73,11 @@ public class ConfigController
    * Deliberately throws a system error so that the system error behavior
    * (error page, logging, and so on) can be tested without requiring an actual bug.
    *
-   * <p>Rejected unless {@code jp.ecuacion.splib.web.ecuacion-config-buttons.enabled}
-   *     is set to {@code true} in application.properties.</p>
-   *
    * @return never returns
    */
   @PostMapping(value = "action", params = "action=systemError")
   public String systemError() {
-    checkConfigButtonsEnabled();
-
     throw new RuntimeException("A system error was intentionally caused for testing purposes.");
-  }
-
-  private void checkConfigButtonsEnabled() {
-    if (!Boolean.parseBoolean(PropertiesFileUtil
-        .getApplicationOrElse("jp.ecuacion.splib.web.ecuacion-config-buttons.enabled", "false"))) {
-      throw new RedirectToHomePageException("jp.ecuacion.splib.web.common.message.urlNotProper");
-    }
   }
 
   /**

@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.service;
 
 import java.util.List;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -54,7 +55,7 @@ public abstract class SplibGeneral1FormService<F extends SplibGeneralForm>
    * @param form form
    * @param loginUser loginUser
    */
-  public abstract void prepareForm(F form, @Nullable UserDetails loginUser);
+  public abstract void prepareForm(@NonNull F form, @Nullable UserDetails loginUser);
 
   /**
    * Prepares form for showing page.
@@ -62,5 +63,5 @@ public abstract class SplibGeneral1FormService<F extends SplibGeneralForm>
    * @param form form
    * @param loginUser loginUser
    */
-  public abstract void page(F form, @Nullable UserDetails loginUser) throws Exception;
+  public abstract void page(@NonNull F form, @Nullable UserDetails loginUser) throws Exception;
 }

@@ -38,11 +38,21 @@ public enum LoginState {
   ADMIN("admin"),
 
   /**
-   * It's the path for common for ecuacion libraries like config.
+   * It's the path for {@code ecuacion-splib}'s own built-in pages that are safe to expose
+   * without login.
    *
-   * <p>As url it becumes {@code ecuacion/public}.
+   * <p>As url it becomes {@code ecuacion-splib/public}.
    */
-  ECUACION_PUBLIC("ecuacion-public");
+  ECUACION_SPLIB_PUBLIC("ecuacion-splib-public"),
+
+  /**
+   * It's the path for {@code ecuacion-splib}'s own built-in pages protected by its
+   * built-in admin login (see {@code SplibBuiltinAdminSecurityConfig}), such as
+   * {@code ConfigController}.
+   *
+   * <p>As url it becomes {@code ecuacion-splib/admin}.
+   */
+  ECUACION_SPLIB_ADMIN("ecuacion-splib-admin");
 
   private final String code;
 
