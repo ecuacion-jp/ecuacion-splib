@@ -21,6 +21,7 @@ import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.service.SplibEditService;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +65,8 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Spl
    *     but "insertOrUpdate" method is created for simplicity.
    * </p>
    */
-  protected <T extends SplibEntity> T insertOrUpdate(SplibRepository<T, ?> repo, T e) {
+  protected @NonNull <T extends SplibEntity> T insertOrUpdate(SplibRepository<T, ?> repo,
+      @NonNull T e) {
 
     return repo.save(e);
   }

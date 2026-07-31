@@ -22,6 +22,7 @@ import java.util.Objects;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.form.SplibListForm;
 import jp.ecuacion.splib.web.form.SplibSearchForm;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
@@ -58,7 +59,7 @@ public abstract class SplibSearchListService
    * @param loginUser loginUser
    * @throws Exception Exception
    */
-  public abstract void delete(FLT listForm, UserDetails loginUser) throws Exception;
+  public abstract void delete(@NonNull FLT listForm, UserDetails loginUser) throws Exception;
 
   /**
    * Sorts the list.

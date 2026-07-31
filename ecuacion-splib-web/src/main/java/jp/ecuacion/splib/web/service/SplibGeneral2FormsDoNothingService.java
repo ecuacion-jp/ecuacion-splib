@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.service;
 
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -34,12 +35,13 @@ public class SplibGeneral2FormsDoNothingService
 
 
   @Override
-  public void page(F1 form1, F2 form2, @Nullable UserDetails loginUser) throws Exception {
+  public void page(@NonNull F1 form1, @NonNull F2 form2, @Nullable UserDetails loginUser)
+      throws Exception {
 
   }
 
   @Override
-  public void prepareForm(F1 form1, F2 form2, @Nullable UserDetails loginUser) {
+  public void prepareForm(@NonNull F1 form1, @NonNull F2 form2, @Nullable UserDetails loginUser) {
 
   }
 }

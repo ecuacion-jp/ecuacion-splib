@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.service;
 
 import java.util.List;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -34,8 +35,7 @@ public abstract class SplibGeneral2FormsService
 
   @Override
   @SuppressWarnings("unchecked")
-  public void prepareForm(List<SplibGeneralForm> allFormList,
-      @Nullable UserDetails loginUser) {
+  public void prepareForm(List<SplibGeneralForm> allFormList, @Nullable UserDetails loginUser) {
     if (allFormList == null || allFormList.size() != 2) {
       throw new RuntimeException("The number of forms not match.");
     }
@@ -60,7 +60,8 @@ public abstract class SplibGeneral2FormsService
    * @param form2 form
    * @param loginUser loginUser
    */
-  public abstract void prepareForm(F1 form1, F2 form2, @Nullable UserDetails loginUser);
+  public abstract void prepareForm(@NonNull F1 form1, @NonNull F2 form2,
+      @Nullable UserDetails loginUser);
 
   /**
    * Prepares form for showing page.
@@ -69,5 +70,6 @@ public abstract class SplibGeneral2FormsService
    * @param form2 form
    * @param loginUser loginUser
    */
-  public abstract void page(F1 form1, F2 form2, @Nullable UserDetails loginUser) throws Exception;
+  public abstract void page(@NonNull F1 form1, @NonNull F2 form2, @Nullable UserDetails loginUser)
+      throws Exception;
 }
