@@ -32,7 +32,7 @@ public abstract class SplibEditRecForm<R extends SplibRecord> extends SplibEditF
     return rec;
   }
 
-  public void setRec(R rec) {
+  public void setRec(@Nullable R rec) {
     this.rec = rec;
   }
 }

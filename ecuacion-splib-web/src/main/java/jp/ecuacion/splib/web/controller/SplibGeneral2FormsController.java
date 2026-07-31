@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.controller;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral2FormsService;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
@@ -74,7 +75,7 @@ public abstract class SplibGeneral2FormsController
    * @throws Exception Exception
    */
   @RequestMapping(value = "page", method = {RequestMethod.GET, RequestMethod.POST})
-  public String page(Model model, F1 form1, F2 form2,
+  public String page(Model model, @NonNull F1 form1, @NonNull F2 form2,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     prepare(model, loginUser, form1, form2);
     getService().page(form1, form2, loginUser);
@@ -107,7 +108,7 @@ public abstract class SplibGeneral2FormsController
    */
   @RequestMapping(value = "action", params = "submitOnChangeToRefresh=true",
       method = {RequestMethod.GET, RequestMethod.POST})
-  public String submitOnChangeToRefresh(Model model, F1 form1, F2 form2,
+  public String submitOnChangeToRefresh(Model model, @NonNull F1 form1, @NonNull F2 form2,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     prepare(model, loginUser, form1, form2);
     getService().prepareForm(form1, form2, loginUser);

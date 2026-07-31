@@ -33,6 +33,7 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import jp.ecuacion.splib.web.util.internal.SplibControllerPrepareHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -121,7 +122,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * 
    * @return service
    */
-  public S getService() {
+  public @NonNull S getService() {
 
     Class<?> cls = null;
     if (this instanceof SplibGeneral1FormController) {

@@ -22,6 +22,7 @@ import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.bl.SplibCoreBl;
 import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
+import org.jspecify.annotations.NonNull;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 /**
@@ -49,7 +50,7 @@ public abstract class SplibJpaBl<E extends SplibEntity, I, V> extends SplibCoreB
    * <p>It obtains the versions for optimistic exclusive control.
    *     See {@link #findAndOptimisticLockingCheck(I, V)}.</p>
    */
-  public abstract V getVersionForOptimisticLocking(E e);
+  public abstract @NonNull V getVersionForOptimisticLocking(@NonNull E e);
 
   /**
    * Performs an optimistic exclusive control check when transitioning from a list screen
@@ -85,7 +86,7 @@ public abstract class SplibJpaBl<E extends SplibEntity, I, V> extends SplibCoreB
    * Note that the additionally retrieved entities must also be used in subsequent processing.
    * </p>
    */
-  public E findAndOptimisticLockingCheck(I id, V version) {
+  public @NonNull E findAndOptimisticLockingCheck(@NonNull I id, @NonNull V version) {
     Optional<E> optional = getRepositoryForOptimisticLocking().findById(id);
 
     // Another user may have deleted the record, setting the soft-delete flag
@@ -106,13 +107,8 @@ public abstract class SplibJpaBl<E extends SplibEntity, I, V> extends SplibCoreB
     return e;
   }
 
-  private boolean isVersionsTheSame(V vers1, V vers2) {
+  private boolean isVersionsTheSame(@NonNull V vers1, @NonNull V vers2) {
     // null is not allowed. If the value is gone (e.g. after deletion), use a zero-length array.
-    if (vers1 == null || vers2 == null) {
-      throw new RuntimeException(
-          "Optimistic Locking check cannot be done because version array is null.");
-    }
-
     return vers1.equals(vers2);
   }
 }
