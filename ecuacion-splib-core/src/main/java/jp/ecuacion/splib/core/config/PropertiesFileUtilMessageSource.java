@@ -79,8 +79,8 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
    * {@code messages}/{@code constants}/{@code item_names} files were never meant to translate —
    * the raw, unresolved code was echoed back as if it were a real message, silently discarding
    * whatever specific reason/message the throwing code had set on the
-   * {@link org.springframework.web.server.ResponseStatusException} (or other
-   * {@link org.springframework.web.ErrorResponse}). Returning {@code null} here instead lets
+   * {@code org.springframework.web.server.ResponseStatusException} (or other
+   * {@code org.springframework.web.ErrorResponse}). Returning {@code null} here instead lets
    * Spring fall back to that original reason/message.</p>
    */
   @Override
