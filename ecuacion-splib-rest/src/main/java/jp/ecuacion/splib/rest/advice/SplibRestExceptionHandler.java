@@ -22,6 +22,7 @@ import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.dto.StatusResponse;
 import jp.ecuacion.splib.rest.exception.HttpStatusException;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
@@ -36,6 +37,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
 
+  private final DetailLogger dtlLogger = new DetailLogger(this);
+
   @Nullable
   private final SplibRestExceptionHandlerAction actionOnThrowable;
 
@@ -46,6 +49,42 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
    */
   public SplibRestExceptionHandler(@Nullable SplibRestExceptionHandlerAction actionOnThrowable) {
     this.actionOnThrowable = actionOnThrowable;
+  }
+
+  /**
+   * Logs every exception {@link ResponseEntityExceptionHandler}'s built-in handling deals with
+   * (this includes {@link org.springframework.web.server.ResponseStatusException} and
+   * {@link org.springframework.web.ErrorResponseException}, plus e.g.
+   * {@code MethodArgumentNotValidException}, {@code HttpMessageNotReadableException} — anything
+   * reaching {@code handleException(Exception, WebRequest)}) before producing the response.
+   *
+   * <p>Without this override, none of those exceptions were logged anywhere: they're handled by
+   * the superclass's own {@code @ExceptionHandler} method — which is {@code final}, so an
+   * application (or this class) cannot add its own competing handler for the same types — and
+   * that bypasses {@link #handleThrowable}, the only place in this class that logs (and fires
+   * {@link #actionOnThrowable}). A {@code ResponseStatusException(INTERNAL_SERVER_ERROR, "...")}
+   * thrown deliberately by application code to report a config/environment problem (e.g. a
+   * script file that doesn't exist) would reach the client's response body just fine, but never
+   * appear in the server's own logs.</p>
+   *
+   * <p>{@link #actionOnThrowable} (e.g. sending an error mail) is deliberately NOT fired here —
+   * only {@link #handleThrowable} does that, for exceptions the application never anticipated at
+   * all. Every exception handled here was, by definition, already turned into a well-formed
+   * HTTP response by the throwing code (or by Spring itself for a request-shape problem like a
+   * missing parameter) — routine enough that alerting on every one would be noise, not signal.</p>
+   */
+  @Override
+  protected @Nullable ResponseEntity<Object> handleExceptionInternal(Exception ex,
+      @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode,
+      WebRequest request) {
+
+    if (statusCode.is4xxClientError()) {
+      dtlLogger.warn(ex.getMessage());
+    } else {
+      dtlLogger.error(ex);
+    }
+
+    return super.handleExceptionInternal(ex, body, headers, statusCode, request);
   }
 
   /**
@@ -71,7 +110,7 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(Throwable.class)
   public ErrorResponse handleThrowable(Throwable exception) {
 
-    LogUtil.logSystemError(new DetailLogger(this), exception);
+    LogUtil.logSystemError(dtlLogger, exception);
 
     // app dependent procedures, like sending mail.
     if (actionOnThrowable != null) {
