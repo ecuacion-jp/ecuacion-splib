@@ -55,6 +55,13 @@ public class MarkdownPageService {
         TablesExtension.create(),
         StrikethroughExtension.create()
     ));
+    // Headings get an id so other pages can deep-link into a section (e.g. "#アクセス制御").
+    // "." is added to the default dash-conversion chars so a heading like
+    // "ecuacion-tool-command-api.properties" renders as "ecuacion-tool-command-api-properties"
+    // instead of dropping the dot and squishing the words together.
+    options.set(HtmlRenderer.RENDER_HEADER_ID, true);
+    options.set(HtmlRenderer.GENERATE_HEADER_ID, true);
+    options.set(HtmlRenderer.HEADER_ID_GENERATOR_TO_DASH_CHARS, " -_.");
     parser = Parser.builder(options).build();
     renderer = HtmlRenderer.builder(options).build();
   }
