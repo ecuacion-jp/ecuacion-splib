@@ -22,6 +22,7 @@ import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.rest.dto.ViolationsResponse;
+import jp.ecuacion.splib.rest.exceptionhandler.SplibRestExceptionHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;

@@ -18,6 +18,6 @@
  * Provides REST-specific exception handler advice.
  */
 @NullMarked
-package jp.ecuacion.splib.rest.advice;
+package jp.ecuacion.splib.rest.exceptionhandler;
 
 import org.jspecify.annotations.NullMarked;
