@@ -18,9 +18,6 @@ package jp.ecuacion.splib.rest.apikey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -29,6 +26,7 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * Verifies {@link SplibApiKeyAuthenticationFilter} accepts a request whose {@code X-Api-Key}
@@ -124,10 +122,11 @@ class SplibApiKeyAuthenticationFilterTest {
   }
 
   @Test
-  void matchesAgainstHashedExpectedValuesInHashMode() throws Exception {
-    SplibApiKeyAuthenticationFilter filter =
-        new SplibApiKeyAuthenticationFilter(new FixedValuesProvider(
-            List.of(sha256Hex(FIRST_KEY), sha256Hex(SECOND_KEY))), SplibApiKeyComparisonMode.HASH);
+  void matchesAgainstBcryptHashedExpectedValuesInBcryptMode() throws Exception {
+    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(encoder.encode(FIRST_KEY), encoder.encode(SECOND_KEY))),
+        SplibApiKeyComparisonMode.BCRYPT);
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, SECOND_KEY, response);
@@ -145,15 +144,5 @@ class SplibApiKeyAuthenticationFilterTest {
 
     assertEquals(401, response.getStatus());
     assertNull(SecurityContextHolder.getContext().getAuthentication());
-  }
-
-  private static String sha256Hex(String value) throws NoSuchAlgorithmException {
-    byte[] hash =
-        MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
-    StringBuilder hex = new StringBuilder(hash.length * 2);
-    for (byte b : hash) {
-      hex.append(String.format("%02x", b));
-    }
-    return hex.toString();
   }
 }

@@ -122,7 +122,7 @@ public abstract class SplibRestSecurityConfig {
    *
    * <p>See {@link SplibApiKeyExpectedValueProvider} for how the expected value is supplied, and
    *     {@link SplibApiKeyComparisonMode} for the {@code jp.ecuacion.splib.rest.api-key.mode}
-   *     property selecting plain-text vs. hashed comparison.</p>
+   *     property selecting plain-text vs. bcrypt-hashed comparison.</p>
    *
    * <p><strong>Why CSRF is disabled here, unlike a typical authenticated endpoint.</strong> CSRF
    *     exploits <em>ambient</em> credentials — ones the browser attaches automatically
@@ -166,7 +166,7 @@ public abstract class SplibRestSecurityConfig {
    *
    * <p>Unlike {@link #filterChainForApiKey}, the expected value here is not application-supplied
    *     — it's read directly from {@code jp.ecuacion.splib.rest.builtin-api-key.password-plain}
-   *     or {@code jp.ecuacion.splib.rest.builtin-api-key.password-sha256} (exactly one expected
+   *     or {@code jp.ecuacion.splib.rest.builtin-api-key.password-bcrypt} (exactly one expected
    *     to be set); see {@link SplibBuiltinApiKeyAuthenticationFilter}. This key is independent
    *     of {@link #filterChainForApiKey}'s {@code /api/key/**} keys — the two are registered and
    *     rotated separately.</p>

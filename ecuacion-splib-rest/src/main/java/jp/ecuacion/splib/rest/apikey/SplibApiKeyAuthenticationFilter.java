@@ -22,7 +22,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
@@ -60,6 +60,7 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
   private final @Nullable SplibApiKeyExpectedValueProvider expectedValueProvider;
   private final SplibApiKeyComparisonMode comparisonMode;
+  private final BCryptPasswordEncoder bcryptPasswordEncoder = new BCryptPasswordEncoder();
 
   /**
    * Constructs a new instance.
@@ -121,37 +122,18 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
    * comparison time does not itself hint at which entry — or how many entries — matched.
    */
   private boolean matchesAny(String presentedApiKey, Collection<String> expectedValues) {
-    String comparisonValue =
-        comparisonMode == SplibApiKeyComparisonMode.HASH ? sha256Hex(presentedApiKey)
-            : presentedApiKey;
-    byte[] comparisonBytes = comparisonValue.getBytes(StandardCharsets.UTF_8);
+    byte[] presentedBytes = presentedApiKey.getBytes(StandardCharsets.UTF_8);
 
-    // MessageDigest.isEqual() is used instead of String.equals() to avoid a timing attack.
     boolean matched = false;
     for (String expectedValue : expectedValues) {
-      if (MessageDigest.isEqual(comparisonBytes, expectedValue.getBytes(StandardCharsets.UTF_8))) {
-        matched = true;
-      }
+      boolean thisValueMatched = comparisonMode == SplibApiKeyComparisonMode.BCRYPT
+          ? bcryptPasswordEncoder.matches(presentedApiKey, expectedValue)
+          // MessageDigest.isEqual() is used instead of String.equals() to avoid a timing attack.
+          : MessageDigest.isEqual(presentedBytes, expectedValue.getBytes(StandardCharsets.UTF_8));
+      matched = matched || thisValueMatched;
     }
 
     return matched;
-  }
-
-  private String sha256Hex(String value) {
-    MessageDigest digest;
-    try {
-      digest = MessageDigest.getInstance("SHA-256");
-    } catch (NoSuchAlgorithmException ex) {
-      // SHA-256 is guaranteed to be available on every conforming JDK.
-      throw new AssertionError(ex);
-    }
-
-    byte[] hash = digest.digest(value.getBytes(StandardCharsets.UTF_8));
-    StringBuilder hex = new StringBuilder(hash.length * 2);
-    for (byte b : hash) {
-      hex.append(String.format("%02x", b));
-    }
-    return hex.toString();
   }
 
   private void reject(HttpServletResponse response) throws IOException {
