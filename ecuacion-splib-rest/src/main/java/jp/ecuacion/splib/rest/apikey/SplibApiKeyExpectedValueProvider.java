@@ -42,7 +42,7 @@ public interface SplibApiKeyExpectedValueProvider {
    * caller cannot distinguish "no such key" from "wrong key".
    *
    * <p>Whether the returned values (and the comparison itself) are treated as plain text or as a
-   *     SHA-256 hash is controlled application-wide by
+   *     bcrypt hash is controlled application-wide by
    *     {@code jp.ecuacion.splib.rest.api-key.mode}; see {@link SplibApiKeyComparisonMode}.</p>
    *
    * @param apiKeyId the {@code X-Api-Key-Id} header value, or {@code null} if the client did not
