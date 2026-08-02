@@ -36,9 +36,9 @@ import org.springframework.core.env.PropertySource;
  *       (e.g., {@code application_splib_web.properties}) into the {@link
  *       ConfigurableEnvironment}. See {@link #postProcessEnvironment} and {@link
  *       ApplicationPropertySource}.</li>
- *   <li>Falls back to {@code config/logback-spring.xml} for logging configuration when
- *       nothing has set {@code logging.config} already. See {@link
- *       #addLogbackConfigFallback}.</li>
+ *   <li>Falls back to {@code config/logback-spring.xml}, or else {@code logback-spring.xml}
+ *       directly in the current working directory, for logging configuration when nothing
+ *       has set {@code logging.config} already. See {@link #addLogbackConfigFallback}.</li>
  * </ol>
  *
  * <p>Registered via the {@code org.springframework.boot.EnvironmentPostProcessor} key in
@@ -58,8 +58,9 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
   /**
    * Adds a {@link PropertySource} backed by {@link PropertiesFileUtil} to the environment,
-   * and (see {@link #addLogbackConfigFallback}) makes {@code config/logback-spring.xml}
-   * work without needing {@code -Dlogging.config} on the command line.
+   * and (see {@link #addLogbackConfigFallback}) makes {@code config/logback-spring.xml} (or a
+   * root-level {@code logback-spring.xml}) work without needing {@code -Dlogging.config} on
+   * the command line.
    *
    * @param environment the environment to post-process
    * @param application the application to post-process
@@ -72,10 +73,10 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
   }
 
   /**
-   * Makes {@code config/logback-spring.xml} (relative to the current working directory —
-   * in practice, the directory the executable jar/war is launched from) work as a drop-in
-   * logging configuration, without requiring {@code -Dlogging.config=...} on the command
-   * line.
+   * Makes {@code config/logback-spring.xml}, or (if that is absent) {@code logback-spring.xml}
+   * directly in the current working directory — in practice, the directory the executable
+   * jar/war is launched from — work as a drop-in logging configuration, without requiring
+   * {@code -Dlogging.config=...} on the command line.
    *
    * <p><b>Why this method exists:</b> Spring Boot auto-discovers {@code
    * config/application.properties} next to the running jar/war on its own (that discovery
@@ -104,9 +105,10 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
    * and it is guaranteed to be after every other {@code logging.config} source and before
    * Logback itself reads it.</p>
    *
-   * <p>If no explicit {@code logging.config} was found and {@code config/logback-spring.xml}
-   * does not exist either, this method does nothing and Boot's normal (classpath-only)
-   * logging configuration lookup proceeds unchanged.</p>
+   * <p>If no explicit {@code logging.config} was found and neither {@code
+   * config/logback-spring.xml} nor a root-level {@code logback-spring.xml} exists, this method
+   * does nothing and Boot's normal (classpath-only) logging configuration lookup proceeds
+   * unchanged.</p>
    *
    * @param environment the environment to post-process
    */
@@ -117,9 +119,8 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
       return;
     }
 
-    File logbackConfigFile =
-        new File(System.getProperty("user.dir"), "config/logback-spring.xml");
-    if (!logbackConfigFile.isFile()) {
+    File logbackConfigFile = findLogbackConfigFile();
+    if (logbackConfigFile == null) {
       return;
     }
 
@@ -128,6 +129,25 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
         "file:" + logbackConfigFile.getAbsolutePath());
     environment.getPropertySources()
         .addLast(new MapPropertySource("splibLogbackConfigFallback", fallbackProperty));
+  }
+
+  /**
+   * Looks for a {@code logback-spring.xml} to fall back to, preferring {@code config/}
+   * (matching where {@code application.properties} is conventionally overridden) over the
+   * working directory root.
+   *
+   * @return the file found, or {@code null} if neither location has one
+   */
+  private @Nullable File findLogbackConfigFile() {
+    File userDir = new File(System.getProperty("user.dir"));
+
+    File configDirFile = new File(userDir, "config/logback-spring.xml");
+    if (configDirFile.isFile()) {
+      return configDirFile;
+    }
+
+    File rootFile = new File(userDir, "logback-spring.xml");
+    return rootFile.isFile() ? rootFile : null;
   }
 
   /**
