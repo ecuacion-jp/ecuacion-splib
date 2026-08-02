@@ -49,19 +49,9 @@
 		<errorprone.extra.args></errorprone.extra.args>
 		<!-- 3rd party module versions -->
 		<spring-boot.version>4.0.7</spring-boot.version>
-		<!-- thymeleaf-layout-dialect 3.4.0 was compiled against Groovy 4.x;
-		     Spring Boot 4 BOM upgrades to 5.x, breaking MetaClassImpl property lookup.
-		     Use 4.0.1+ which was recompiled against Groovy 5.x. -->
-		<thymeleaf-layout-dialect.version>4.0.1</thymeleaf-layout-dialect.version>
-		<!-- Groovy 5.0.4 (Spring Boot 4.0.5 BOM default) has a NPE bug in
-		     MetaClassImpl.getMetaProperty (ConcurrentHashMap.get with null key),
-		     triggered by thymeleaf-layout-dialect. Fixed in 5.0.6.
-		     Property alone is not enough to override (groovy-bom resolution issue);
-		     explicit dependencyManagement entry below is required. -->
-		<groovy.version>5.0.6</groovy.version>
 		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
 		<!-- nullaway / error prone -->
-		<com.uber.nullaway.version>0.13.7</com.uber.nullaway.version>
+		<com.uber.nullaway.version>0.13.8</com.uber.nullaway.version>
 		<com.google.errorprone.error_prone_core.version>2.50.0</com.google.errorprone.error_prone_core.version>
 	</properties>
 
@@ -111,17 +101,32 @@
 					</configuration>
 				</plugin>
 
-				<!-- maven-compiler-plugin with NullAway / ErrorProne
-				     Defined here rather than inherited from lib-parent for three reasons:
-				     1. lib-parent only defines the compile-for-javadoc execution; NullAway config
-				        lives in lib-dependencies' pluginManagement, which is not propagated via
-				        the parent chain.
-				     2. -Xlint:-requires-transitive-automatic is splib-specific: Spring Boot
-				        dependencies expose JPMS automatic modules that trigger this warning.
-				     3. -parameters is required by Spring 6+ for @RequestParam / @PathVariable
-				        parameter name resolution. spring-boot-starter-parent sets this via
-				        maven.compiler.parameters, but since we use our own parent it must be
-				        declared explicitly. -->
+				<!-- maven-compiler-plugin: full compilerArgs / annotationProcessorPaths redefined here
+				     Note: NullAway/ErrorProne activation itself is NOT the reason for this
+				     redefinition. lib-parent's own pluginManagement (not lib-dependencies') already
+				     configures maven-compiler-plugin with the "-Xplugin:ErrorProne -Xep:NullAway:ERROR
+				     ..." arg, and that top-level <configuration> is inherited automatically by any
+				     child (splib included) even without redeclaring the plugin — see
+				     ecuacion-lib-core, which redeclares nothing and still gets NullAway for free.
+				     The actual reason splib must redeclare this plugin is two splib-specific
+				     compilerArgs entries:
+				       - -Xlint:-requires-transitive-automatic: Spring Boot dependencies expose JPMS
+				         automatic modules that trigger this warning.
+				       - -parameters: required by Spring 6+ for @RequestParam / @PathVariable parameter
+				         name resolution. spring-boot-starter-parent sets this via
+				         maven.compiler.parameters, but since we use our own parent it must be
+				         declared explicitly.
+				     Maven's default plugin-management merge replaces a List-typed element
+				     (compilerArgs) wholesale rather than merging entry-by-entry, so once we need to
+				     add those two args we have to copy the whole compilerArgs / annotationProcessorPaths
+				     block here, including the NullAway/ErrorProne lines — otherwise they'd be silently
+				     dropped for splib.
+				     => When dependabot bumps com.uber.nullaway.version / error_prone_core.version in
+				        lib and splib separately, that's expected: keep both in sync manually, since
+				        splib's copy isn't actually inherited from lib-dependencies (which has no
+				        pluginManagement at all — it only pins the same versions in dependencyManagement
+				        for use elsewhere). This is a duplication we accept as the cost of overriding
+				        compilerArgs, not a sign something is broken. -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -239,18 +244,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
 				<version>${spring-boot.version}</version>
-			</dependency>
-
-			<!-- Explicitly override Groovy version.
-			     groovy.version property alone is not enough: the groovy-bom import in
-			     spring-boot-dependencies resolves the BOM artifact first, and if that
-			     specific groovy-bom version is not in the local repo the override silently
-			     falls back to the BOM default (5.0.4).  A direct managed dependency here
-			     always wins via Maven nearest-definition rule. -->
-			<dependency>
-				<groupId>org.apache.groovy</groupId>
-				<artifactId>groovy</artifactId>
-				<version>${groovy.version}</version>
 			</dependency>
 
 			<!-- ecuacion-util-import -->
