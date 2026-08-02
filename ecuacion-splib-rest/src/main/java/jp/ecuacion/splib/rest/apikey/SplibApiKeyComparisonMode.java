@@ -16,13 +16,12 @@
 package jp.ecuacion.splib.rest.apikey;
 
 /**
- * Selects how the value returned by
+ * Selects how one value returned by
  * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} is compared against the
  * client-presented {@code X-Api-Key} header value.
  *
- * <p>Selected application-wide via {@code jp.ecuacion.splib.rest.api-key.mode} (default
- *     {@code PLAIN}). A single application is assumed to use one mode consistently, so this is
- *     not configurable per endpoint or per key.</p>
+ * <p>Carried per value by {@link SplibApiKeyExpectedValue#mode}, not chosen application-wide, so
+ *     a provider can return a mix of modes — see {@link SplibApiKeyExpectedValue}.</p>
  */
 public enum SplibApiKeyComparisonMode {
 
