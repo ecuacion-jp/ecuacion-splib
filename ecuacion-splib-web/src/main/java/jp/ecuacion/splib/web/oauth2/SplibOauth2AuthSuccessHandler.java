@@ -81,7 +81,7 @@ public class SplibOauth2AuthSuccessHandler
     String registrationId = oauth2Token.getAuthorizedClientRegistrationId();
 
     String email = Objects.requireNonNull(oidcUser.getEmail());
-    String name = resolveName(oidcUser, registrationId, request);
+    String name = resolveName(oidcUser, registrationId, email, request);
     String provider = registrationId.toUpperCase(Locale.ROOT);
 
     UserDetails userDetails = userHandler.findOrCreateUser(email, name, provider);
@@ -101,8 +101,7 @@ public class SplibOauth2AuthSuccessHandler
    * Resolves the user's display name from the OIDC claims or, for Apple's
    * first-login-only {@code user} POST parameter, from the request body.
    */
-  @SuppressWarnings("null")
-  private String resolveName(OidcUser oidcUser, String registrationId,
+  private String resolveName(OidcUser oidcUser, String registrationId, String email,
       HttpServletRequest request) {
     // Google provides name in claims
     if (oidcUser.getFullName() != null && !oidcUser.getFullName().isBlank()) {
@@ -131,7 +130,6 @@ public class SplibOauth2AuthSuccessHandler
     }
 
     // Fallback: use the local part of the email address
-    String email = oidcUser.getEmail();
-    return email != null && email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+    return email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
   }
 }
