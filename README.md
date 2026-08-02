@@ -115,12 +115,13 @@ public class AppJobExecutionListener extends SplibJobExecutionListener {
 
 ### REST API (`ecuacion-splib-rest`)
 
-`SplibRestExceptionHandler` is auto-registered via `@RestControllerAdvice` and maps
-`HttpStatusException` to the corresponding HTTP status. Throw it anywhere in your REST layer:
+`SplibRestExceptionHandler` is auto-registered via `@RestControllerAdvice` and translates uncaught
+exceptions into HTTP responses. Throw Spring's own `ResponseStatusException` anywhere in your REST
+layer for a failure meant for the calling developer/system:
 
 ```java
-// Returns HTTP 404 with an empty body
-throw new HttpStatusException(HttpStatus.NOT_FOUND);
+// Returns HTTP 404 with the given message
+throw new ResponseStatusException(HttpStatus.NOT_FOUND, "...");
 ```
 
 ## Installation
