@@ -13,29 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.rest.exception;
+package jp.ecuacion.splib.rest.dto;
 
-import org.springframework.http.HttpStatus;
+import java.util.List;
+import org.jspecify.annotations.NonNull;
 
 /**
- * Provides HttpStatusException.
+ * Response body for a {@code jp.ecuacion.lib.core.exception.ViolationException}, carrying every
+ * violation's message — already resolved and localized to the request's locale — for direct
+ * display to a human end user.
+ *
+ * @param messages the localized violation messages, in the same order as
+ *     {@code Violations.getConstraintViolations()} followed by
+ *     {@code Violations.getBusinessViolations()}
  */
-public class HttpStatusException extends Exception {
-
-  private static final long serialVersionUID = 1L;
-  
-  private HttpStatus httpStatus;
-  
-  /**
-   * Constructs a new instance.
-   * 
-   * @param httpStatus httpStatus
-   */
-  public HttpStatusException(HttpStatus httpStatus) { 
-    this.httpStatus = httpStatus;
-  }
-
-  public HttpStatus getHttpStatus() {
-    return httpStatus;
-  }
+public record ViolationsResponse(List<@NonNull String> messages) {
 }

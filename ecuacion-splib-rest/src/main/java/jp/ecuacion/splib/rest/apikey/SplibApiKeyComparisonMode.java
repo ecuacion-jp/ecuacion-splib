@@ -16,13 +16,12 @@
 package jp.ecuacion.splib.rest.apikey;
 
 /**
- * Selects how the value returned by
+ * Selects how one value returned by
  * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} is compared against the
  * client-presented {@code X-Api-Key} header value.
  *
- * <p>Selected application-wide via {@code jp.ecuacion.splib.rest.api-key.mode} (default
- *     {@code PLAIN}). A single application is assumed to use one mode consistently, so this is
- *     not configurable per endpoint or per key.</p>
+ * <p>Carried per value by {@link SplibApiKeyExpectedValue#mode}, not chosen application-wide, so
+ *     a provider can return a mix of modes — see {@link SplibApiKeyExpectedValue}.</p>
  */
 public enum SplibApiKeyComparisonMode {
 
@@ -33,25 +32,16 @@ public enum SplibApiKeyComparisonMode {
   PLAIN,
 
   /**
-   * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} returns the lowercase-hex SHA-256
-   * digest of each key, rather than the key itself, so the raw keys are never at rest anywhere
-   * the application can read them back. The presented header value is hashed the same way before
-   * the (constant-time) comparison.
+   * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} returns the bcrypt hash of each
+   * key, rather than the key itself, so the raw keys are never at rest anywhere the application
+   * can read them back. Each presented header value is checked against every returned hash via
+   * {@link org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder#matches}, never
+   * short-circuiting on the first match.
    *
-   * <p>To compute the value to store, hash the raw key on the command line, e.g.:</p>
-   * <pre>{@code
-   * # macOS
-   * echo -n "your-api-key-here" | shasum -a 256
-   *
-   * # Linux
-   * echo -n "your-api-key-here" | sha256sum
-   *
-   * # Cross-platform (OpenSSL)
-   * echo -n "your-api-key-here" | openssl dgst -sha256
-   * }</pre>
-   *
-   * <p>{@code -n} is required in all three: without it, echo appends a trailing newline that
-   *     would be hashed too, producing a digest that never matches the presented key.</p>
+   * <p>Because bcrypt is intentionally slow, a request is checked once per value returned by
+   *     {@link SplibApiKeyExpectedValueProvider#getExpectedValues} — keep that collection small
+   *     (e.g. narrow it down using the {@code X-Api-Key-Id} header) rather than returning every
+   *     issued key on every request.</p>
    */
-  HASH
+  BCRYPT
 }

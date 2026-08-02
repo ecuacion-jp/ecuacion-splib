@@ -18,9 +18,8 @@ package jp.ecuacion.splib.rest.apikey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +27,7 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * Verifies {@link SplibApiKeyAuthenticationFilter} accepts a request whose {@code X-Api-Key}
@@ -39,16 +39,27 @@ class SplibApiKeyAuthenticationFilterTest {
   private static final String FIRST_KEY = "first-s3cr3t-key";
   private static final String SECOND_KEY = "second-s3cr3t-key";
 
+  private static final BCryptPasswordEncoder BCRYPT = new BCryptPasswordEncoder();
+
+  private static SplibApiKeyExpectedValue plain(String value) {
+    return new SplibApiKeyExpectedValue(value, SplibApiKeyComparisonMode.PLAIN);
+  }
+
+  private static SplibApiKeyExpectedValue bcrypt(String value) {
+    return new SplibApiKeyExpectedValue(Objects.requireNonNull(BCRYPT.encode(value)),
+        SplibApiKeyComparisonMode.BCRYPT);
+  }
+
   private static class FixedValuesProvider implements SplibApiKeyExpectedValueProvider {
 
-    private final @Nullable List<String> values;
+    private final @Nullable List<SplibApiKeyExpectedValue> values;
 
-    FixedValuesProvider(@Nullable List<String> values) {
+    FixedValuesProvider(@Nullable List<SplibApiKeyExpectedValue> values) {
       this.values = values;
     }
 
     @Override
-    public @Nullable List<String> getExpectedValues(@Nullable String apiKeyId,
+    public @Nullable List<SplibApiKeyExpectedValue> getExpectedValues(@Nullable String apiKeyId,
         String presentedApiKey) {
       return values;
     }
@@ -70,7 +81,7 @@ class SplibApiKeyAuthenticationFilterTest {
   @Test
   void matchesFirstOfMultipleExpectedValues() throws Exception {
     SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
-        new FixedValuesProvider(List.of(FIRST_KEY, SECOND_KEY)), SplibApiKeyComparisonMode.PLAIN);
+        new FixedValuesProvider(List.of(plain(FIRST_KEY), plain(SECOND_KEY))));
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, FIRST_KEY, response);
@@ -81,7 +92,7 @@ class SplibApiKeyAuthenticationFilterTest {
   @Test
   void matchesSecondOfMultipleExpectedValues() throws Exception {
     SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
-        new FixedValuesProvider(List.of(FIRST_KEY, SECOND_KEY)), SplibApiKeyComparisonMode.PLAIN);
+        new FixedValuesProvider(List.of(plain(FIRST_KEY), plain(SECOND_KEY))));
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, SECOND_KEY, response);
@@ -92,7 +103,7 @@ class SplibApiKeyAuthenticationFilterTest {
   @Test
   void rejectsAValueNotAmongTheExpectedValues() throws Exception {
     SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
-        new FixedValuesProvider(List.of(FIRST_KEY, SECOND_KEY)), SplibApiKeyComparisonMode.PLAIN);
+        new FixedValuesProvider(List.of(plain(FIRST_KEY), plain(SECOND_KEY))));
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, "wrong-key", response);
@@ -102,8 +113,8 @@ class SplibApiKeyAuthenticationFilterTest {
 
   @Test
   void rejectsWhenProviderReturnsNull() throws Exception {
-    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
-        new FixedValuesProvider(null), SplibApiKeyComparisonMode.PLAIN);
+    SplibApiKeyAuthenticationFilter filter =
+        new SplibApiKeyAuthenticationFilter(new FixedValuesProvider(null));
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, FIRST_KEY, response);
@@ -113,8 +124,8 @@ class SplibApiKeyAuthenticationFilterTest {
 
   @Test
   void rejectsWhenProviderReturnsAnEmptyCollection() throws Exception {
-    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
-        new FixedValuesProvider(List.of()), SplibApiKeyComparisonMode.PLAIN);
+    SplibApiKeyAuthenticationFilter filter =
+        new SplibApiKeyAuthenticationFilter(new FixedValuesProvider(List.of()));
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, FIRST_KEY, response);
@@ -123,10 +134,22 @@ class SplibApiKeyAuthenticationFilterTest {
   }
 
   @Test
-  void matchesAgainstHashedExpectedValuesInHashMode() throws Exception {
-    SplibApiKeyAuthenticationFilter filter =
-        new SplibApiKeyAuthenticationFilter(new FixedValuesProvider(
-            List.of(sha256Hex(FIRST_KEY), sha256Hex(SECOND_KEY))), SplibApiKeyComparisonMode.HASH);
+  void matchesAgainstABcryptHashedExpectedValue() throws Exception {
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(bcrypt(FIRST_KEY), bcrypt(SECOND_KEY))));
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    doFilter(filter, SECOND_KEY, response);
+
+    assertEquals(200, response.getStatus());
+  }
+
+  @Test
+  void matchesAPlainValueWhenAMixOfPlainAndBcryptValuesIsReturned() throws Exception {
+    // A single provider call mixing modes is what makes migrating stored keys from plain text to
+    // bcrypt one at a time possible: some rows are already bcrypt, others aren't converted yet.
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(bcrypt(FIRST_KEY), plain(SECOND_KEY))));
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, SECOND_KEY, response);
@@ -136,22 +159,12 @@ class SplibApiKeyAuthenticationFilterTest {
 
   @Test
   void rejectsWhenExpectedValueProviderBeanIsAbsent() throws Exception {
-    SplibApiKeyAuthenticationFilter filter =
-        new SplibApiKeyAuthenticationFilter(null, SplibApiKeyComparisonMode.PLAIN);
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(null);
 
     MockHttpServletResponse response = new MockHttpServletResponse();
     doFilter(filter, FIRST_KEY, response);
 
     assertEquals(401, response.getStatus());
     assertNull(SecurityContextHolder.getContext().getAuthentication());
-  }
-
-  private static String sha256Hex(String value) throws NoSuchAlgorithmException {
-    byte[] hash = MessageDigest.getInstance("SHA-256").digest(value.getBytes());
-    StringBuilder hex = new StringBuilder(hash.length * 2);
-    for (byte b : hash) {
-      hex.append(String.format("%02x", b));
-    }
-    return hex.toString();
   }
 }

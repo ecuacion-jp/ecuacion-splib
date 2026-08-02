@@ -67,4 +67,28 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
     }
     return new MessageFormat(template, locale != null ? locale : LocaleUtil.getFallbackLocale());
   }
+
+  /**
+   * Disables {@code useCodeAsDefaultMessage} for Spring's own {@code "problemDetail."}-prefixed
+   * codes (e.g. {@code problemDetail.org.springframework.web.server.ResponseStatusException}).
+   *
+   * <p>Spring's {@code ErrorResponse.updateAndGetBody} resolves these codes to fill in a
+   * {@code ProblemDetail}'s {@code detail}/{@code title}, but only overwrites them when the
+   * {@link org.springframework.context.MessageSource} actually returns a value. With
+   * {@code useCodeAsDefaultMessage} left on for these codes — which this application's
+   * {@code messages}/{@code constants}/{@code item_names} files were never meant to translate —
+   * the raw, unresolved code was echoed back as if it were a real message, silently discarding
+   * whatever specific reason/message the throwing code had set on the
+   * {@code org.springframework.web.server.ResponseStatusException} (or other
+   * {@code org.springframework.web.ErrorResponse}). Returning {@code null} here instead lets
+   * Spring fall back to that original reason/message.</p>
+   */
+  @Override
+  protected @Nullable String getDefaultMessage(String code) {
+    if (code.startsWith("problemDetail.")) {
+      return null;
+    }
+
+    return super.getDefaultMessage(code);
+  }
 }
