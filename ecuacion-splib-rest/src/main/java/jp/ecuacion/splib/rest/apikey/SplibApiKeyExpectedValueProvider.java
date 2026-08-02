@@ -41,9 +41,9 @@ public interface SplibApiKeyExpectedValueProvider {
    * determined — the request is then rejected the same way a mismatched value would be, so a
    * caller cannot distinguish "no such key" from "wrong key".
    *
-   * <p>Whether the returned values (and the comparison itself) are treated as plain text or as a
-   *     bcrypt hash is controlled application-wide by
-   *     {@code jp.ecuacion.splib.rest.api-key.mode}; see {@link SplibApiKeyComparisonMode}.</p>
+   * <p>Each returned {@link SplibApiKeyExpectedValue} carries its own
+   *     {@link SplibApiKeyComparisonMode}, so a single call can mix plain-text and bcrypt-hashed
+   *     values — e.g. while migrating stored keys from plain text to bcrypt one at a time.</p>
    *
    * @param apiKeyId the {@code X-Api-Key-Id} header value, or {@code null} if the client did not
    *     send one. Present so a per-client key scheme can be implemented — an identifier used to
@@ -57,5 +57,6 @@ public interface SplibApiKeyExpectedValueProvider {
    *     request
    */
   @Nullable
-  Collection<String> getExpectedValues(@Nullable String apiKeyId, String presentedApiKey);
+  Collection<SplibApiKeyExpectedValue> getExpectedValues(@Nullable String apiKeyId,
+      String presentedApiKey);
 }

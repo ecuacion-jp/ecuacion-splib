@@ -59,7 +59,6 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
   private final DetailLogger detailLog = new DetailLogger(this);
 
   private final @Nullable SplibApiKeyExpectedValueProvider expectedValueProvider;
-  private final SplibApiKeyComparisonMode comparisonMode;
   private final BCryptPasswordEncoder bcryptPasswordEncoder = new BCryptPasswordEncoder();
 
   /**
@@ -67,13 +66,10 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
    *
    * @param expectedValueProvider the application-supplied provider, or {@code null} if the
    *     application never registered one — every request is then rejected
-   * @param comparisonMode how to compare the presented key against the provider's return value
    */
   public SplibApiKeyAuthenticationFilter(
-      @Nullable SplibApiKeyExpectedValueProvider expectedValueProvider,
-      SplibApiKeyComparisonMode comparisonMode) {
+      @Nullable SplibApiKeyExpectedValueProvider expectedValueProvider) {
     this.expectedValueProvider = expectedValueProvider;
-    this.comparisonMode = comparisonMode;
   }
 
   @Override
@@ -99,8 +95,8 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
 
-    Collection<String> expectedValues = Objects.requireNonNull(expectedValueProvider)
-        .getExpectedValues(apiKeyId, presentedApiKey);
+    Collection<SplibApiKeyExpectedValue> expectedValues = Objects
+        .requireNonNull(expectedValueProvider).getExpectedValues(apiKeyId, presentedApiKey);
     if (expectedValues == null || expectedValues.isEmpty()
         || !matchesAny(presentedApiKey, expectedValues)) {
       detailLog.warn("apiKey mismatch on request to " + request.getRequestURI() + ".");
@@ -121,15 +117,17 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
    * comparing against all of them (never short-circuiting on the first match) so that the total
    * comparison time does not itself hint at which entry — or how many entries — matched.
    */
-  private boolean matchesAny(String presentedApiKey, Collection<String> expectedValues) {
+  private boolean matchesAny(String presentedApiKey,
+      Collection<SplibApiKeyExpectedValue> expectedValues) {
     byte[] presentedBytes = presentedApiKey.getBytes(StandardCharsets.UTF_8);
 
     boolean matched = false;
-    for (String expectedValue : expectedValues) {
-      boolean thisValueMatched = comparisonMode == SplibApiKeyComparisonMode.BCRYPT
-          ? bcryptPasswordEncoder.matches(presentedApiKey, expectedValue)
+    for (SplibApiKeyExpectedValue expectedValue : expectedValues) {
+      boolean thisValueMatched = expectedValue.mode() == SplibApiKeyComparisonMode.BCRYPT
+          ? bcryptPasswordEncoder.matches(presentedApiKey, expectedValue.value())
           // MessageDigest.isEqual() is used instead of String.equals() to avoid a timing attack.
-          : MessageDigest.isEqual(presentedBytes, expectedValue.getBytes(StandardCharsets.UTF_8));
+          : MessageDigest.isEqual(presentedBytes,
+              expectedValue.value().getBytes(StandardCharsets.UTF_8));
       matched = matched || thisValueMatched;
     }
 
