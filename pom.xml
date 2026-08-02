@@ -48,7 +48,7 @@
 		     e.g. set "-XepDisableAllChecks" to run NullAway only. -->
 		<errorprone.extra.args></errorprone.extra.args>
 		<!-- 3rd party module versions -->
-		<spring-boot.version>4.0.7</spring-boot.version>
+		<spring-boot.version>4.1.0</spring-boot.version>
 		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
 		<!-- nullaway / error prone -->
 		<com.uber.nullaway.version>0.13.8</com.uber.nullaway.version>
