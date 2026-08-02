@@ -18,6 +18,7 @@ package jp.ecuacion.splib.rest.apikey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -147,7 +148,8 @@ class SplibApiKeyAuthenticationFilterTest {
   }
 
   private static String sha256Hex(String value) throws NoSuchAlgorithmException {
-    byte[] hash = MessageDigest.getInstance("SHA-256").digest(value.getBytes());
+    byte[] hash =
+        MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
     StringBuilder hex = new StringBuilder(hash.length * 2);
     for (byte b : hash) {
       hex.append(String.format("%02x", b));
