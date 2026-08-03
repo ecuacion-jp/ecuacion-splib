@@ -4,6 +4,15 @@
 
 `ecuacion-splib-batch` is a `spring boot` based batch related libraries.
 
+**What it provides:**
+
+- Standard Job/Step builders — pre-wired `JobBuilder` / `TaskletStepBuilder` via `SplibAppParentBatchConfig`
+- Execution logging — job/step start/end logging to a dedicated logger
+- Common exception handling — a shared `ExceptionHandler` across tasklets
+- Current execution context tracking — AspectJ-based tracking of the currently running job/step/tasklet
+
+See [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=batch/overview) for details.
+
 ## Dependent Ecuacion Libraries
 
 ### Automatically Loaded Libraries
@@ -38,6 +47,7 @@
 
 ## Documentation
 
+- [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=batch/overview) — Official reference documentation
 - [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-batch/)
 
 ## Installation
