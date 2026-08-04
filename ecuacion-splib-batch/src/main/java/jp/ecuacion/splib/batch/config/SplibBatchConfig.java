@@ -15,8 +15,12 @@
  */
 package jp.ecuacion.splib.batch.config;
 
+import org.springframework.batch.infrastructure.support.transaction.ResourcelessTransactionManager;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Provides {@code @ComponentScan}s.
@@ -29,4 +33,19 @@ import org.springframework.context.annotation.Configuration;
     )
 public class SplibBatchConfig {
 
+  /**
+   * Provides a no-op {@code PlatformTransactionManager} for the Spring Batch step machinery
+   * so a real database connection (e.g. {@code spring-boot-starter-jdbc}) is not required.
+   *
+   * <p>Backs off via {@code @ConditionalOnMissingBean} when an app declares
+   * {@code spring-boot-starter-jdbc} and configures a real datasource: Boot's
+   * {@code DataSourceTransactionManagerAutoConfiguration} then supplies the real
+   * transaction manager instead, which is needed if the tasklet itself performs
+   * Spring-managed JDBC/JPA transactions against a real database.</p>
+   */
+  @Bean
+  @ConditionalOnMissingBean(PlatformTransactionManager.class)
+  PlatformTransactionManager transactionManager() {
+    return new ResourcelessTransactionManager();
+  }
 }
