@@ -39,6 +39,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aspectj</artifactId>
 		</dependency>
+		<!-- Autoconfigure-only module (DataSourceAutoConfiguration etc.), not spring-boot-starter-jdbc:
+		     it must be on the compile classpath to reference DataSourceAutoConfiguration.class in
+		     SplibBatchTransactionManagerAutoConfiguration, but on its own it does not pull in
+		     HikariCP or force a DataSource to be created. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-jdbc</artifactId>
+		</dependency>
 
 		<!-- ecuacion-splib -->
 		<dependency>

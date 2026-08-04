@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.batch.config;
 
+import jp.ecuacion.splib.batch.autoconfigure.SplibBatchTransactionManagerAutoConfiguration;
 import jp.ecuacion.splib.batch.exceptionhandler.SplibExceptionHandler;
 import jp.ecuacion.splib.batch.listener.SplibJobExecutionListener;
 import jp.ecuacion.splib.batch.listener.SplibStepExecutionListener;
@@ -25,11 +26,13 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.builder.TaskletStepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Provides {@code ecuacion-splib} standard {@code JobBuilder} and {@code stepBuilder}.
  */
+@ImportAutoConfiguration(SplibBatchTransactionManagerAutoConfiguration.class)
 public abstract class SplibAppParentBatchConfig {
 
   private SplibJobExecutionListener jobExecutionListener;
