@@ -43,21 +43,62 @@
 		<ecuacion-splib.version>0.0.2-SNAPSHOT</ecuacion-splib.version>
 		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
 		<ecuacion-util.version>0.0.2-SNAPSHOT</ecuacion-util.version>
-		<!-- Extra args inserted into "-Xplugin:ErrorProne <here> -Xep:NullAway:ERROR ...".
-		     Override in child projects to customize Error Prone behavior.
-		     e.g. set "-XepDisableAllChecks" to run NullAway only. -->
-		<errorprone.extra.args></errorprone.extra.args>
 		<!-- 3rd party module versions -->
 		<spring-boot.version>4.0.7</spring-boot.version>
-		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
-		<!-- nullaway / error prone -->
-		<com.uber.nullaway.version>0.13.8</com.uber.nullaway.version>
-		<com.google.errorprone.error_prone_core.version>2.50.0</com.google.errorprone.error_prone_core.version>
+		<!-- Delimiter used for build-time property filtering of application*.{yml,yaml,properties}
+		     below (e.g. "@project.version@"). Using "@" instead of Maven's default "${...}" avoids
+		     colliding with Spring's own runtime "${...}" placeholders (env var substitution etc.)
+		     in those same files. Matches spring-boot-starter-parent's own convention/property name. -->
+		<resource.delimiter>@</resource.delimiter>
 	</properties>
 
 	<build>
+
+		<!-- Filters application*.{yml,yaml,properties} at build time using "@..@" delimiters
+		     (see maven-resources-plugin pluginManagement below), while every other resource is
+		     copied through unfiltered. Mirrors spring-boot-starter-parent's own <resources>
+		     split exactly, so apps built on splib get the same "@project.version@"-in-
+		     application.properties convenience they'd get from using Spring Boot's own parent
+		     POM, something dependencyManagement/BOM import can never provide, since only an
+		     actual Maven <parent> propagates <build><resources>. -->
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/application*.yml</include>
+					<include>**/application*.yaml</include>
+					<include>**/application*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<excludes>
+					<exclude>**/application*.yml</exclude>
+					<exclude>**/application*.yaml</exclude>
+					<exclude>**/application*.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
+
 		<pluginManagement>
 			<plugins>
+
+				<!-- maven-resources-plugin: switch the filtering delimiter from Maven's default
+				     "${...}" to "@..@" (see resource.delimiter property above), so the <resources>
+				     filtering declared above doesn't misinterpret Spring's own "${...}" runtime
+				     placeholders inside application.yml/properties. -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<configuration>
+						<propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
+						<delimiters>
+							<delimiter>${resource.delimiter}</delimiter>
+						</delimiters>
+						<useDefaultDelimiters>false</useDefaultDelimiters>
+					</configuration>
+				</plugin>
 
 				<!-- spring-boot-maven-plugin: repackages jar into executable fat jar -->
 				<!-- Used only by batch / standalone Spring Boot modules -->
@@ -74,83 +115,21 @@
 					</executions>
 				</plugin>
 
-				<!-- failOnMissingWebXml = false -->
-				<!-- Also: if the project root has a NOTICE.txt / LICENSE.txt (Apache License 2.0
-				     attribution notices and license text), bundle them at the WAR root META-INF,
-				     alongside the META-INF placement used for jar / spring-boot executable jar
-				     artifacts (see ecuacion-tool-code-generator-parent's copy-notice-to-meta-inf
-				     execution). Projects without these files are unaffected: the include
-				     filter simply matches nothing. -->
-				<!-- Used only by WAR projects -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-war-plugin</artifactId>
-					<version>${org.apache.maven.plugins.maven-war-plugin.version}</version>
-					<configuration>
-						<failOnMissingWebXml>false</failOnMissingWebXml>
-						<webResources>
-							<resource>
-								<directory>${maven.multiModuleProjectDirectory}</directory>
-								<targetPath>META-INF</targetPath>
-								<includes>
-									<include>NOTICE.txt</include>
-									<include>LICENSE.txt</include>
-								</includes>
-							</resource>
-						</webResources>
-					</configuration>
-				</plugin>
-
-				<!-- maven-compiler-plugin: full compilerArgs / annotationProcessorPaths redefined here
-				     Note: NullAway/ErrorProne activation itself is NOT the reason for this
-				     redefinition. lib-parent's own pluginManagement (not lib-dependencies') already
-				     configures maven-compiler-plugin with the "-Xplugin:ErrorProne -Xep:NullAway:ERROR
-				     ..." arg, and that top-level <configuration> is inherited automatically by any
-				     child (splib included) even without redeclaring the plugin — see
-				     ecuacion-lib-core, which redeclares nothing and still gets NullAway for free.
-				     The actual reason splib must redeclare this plugin is two splib-specific
-				     compilerArgs entries:
-				       - -Xlint:-requires-transitive-automatic: Spring Boot dependencies expose JPMS
-				         automatic modules that trigger this warning.
-				       - -parameters: required by Spring 6+ for @RequestParam / @PathVariable parameter
-				         name resolution. spring-boot-starter-parent sets this via
-				         maven.compiler.parameters, but since we use our own parent it must be
-				         declared explicitly.
-				     Maven's default plugin-management merge replaces a List-typed element
-				     (compilerArgs) wholesale rather than merging entry-by-entry, so once we need to
-				     add those two args we have to copy the whole compilerArgs / annotationProcessorPaths
-				     block here, including the NullAway/ErrorProne lines — otherwise they'd be silently
-				     dropped for splib.
-				     => When dependabot bumps com.uber.nullaway.version / error_prone_core.version in
-				        lib and splib separately, that's expected: keep both in sync manually, since
-				        splib's copy isn't actually inherited from lib-dependencies (which has no
-				        pluginManagement at all — it only pins the same versions in dependencyManagement
-				        for use elsewhere). This is a duplication we accept as the cost of overriding
-				        compilerArgs, not a sign something is broken. -->
+				<!-- maven-compiler-plugin: -parameters / -Xlint.
+				       - -parameters: required by Spring 6+ for @RequestParam / @PathVariable
+				         parameter name resolution. This affects bytecode your own controller
+				         classes need, not just splib's.
+				       - -Xlint:-requires-transitive-automatic: silences a compiler warning
+				         triggered by JPMS automatic modules that Spring Boot dependencies
+				         expose transitively. -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
 						<compilerArgs>
 							<arg>-parameters</arg>
-							<arg>-XDcompilePolicy=simple</arg>
-							<arg>-XDshould-stop.ifError=FLOW</arg>
-							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
-							<arg>-Xplugin:ErrorProne ${errorprone.extra.args} -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
 							<arg>-Xlint:-requires-transitive-automatic</arg>
 						</compilerArgs>
-						<annotationProcessorPaths>
-							<path>
-								<groupId>com.google.errorprone</groupId>
-								<artifactId>error_prone_core</artifactId>
-								<version>${com.google.errorprone.error_prone_core.version}</version>
-							</path>
-							<path>
-								<groupId>com.uber.nullaway</groupId>
-								<artifactId>nullaway</artifactId>
-								<version>${com.uber.nullaway.version}</version>
-							</path>
-						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
 
@@ -158,6 +137,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
 					<configuration>
 						<!-- Disable module path: module-info.java in main sources causes surefire
 						     to run in module mode, but Spring Boot dependencies do not fully
@@ -169,70 +149,10 @@
 			</plugins>
 		</pluginManagement>
 
-		<plugins>
-
-			<!-- If the multi-module project root has a NOTICE.txt / LICENSE.txt (Apache License
-			     2.0 attribution notices and license text), bundle them into META-INF of the
-			     build output so they travel with the packaged jar / spring-boot executable jar /
-			     war (the latter also gets a copy at the WAR root META-INF via the
-			     maven-war-plugin webResources configuration above), satisfying License section
-			     4(a) and 4(d) when the artifact is distributed.
-			     ${maven.multiModuleProjectDirectory} always points to the reactor root
-			     regardless of how deep a module is nested, and the include filter matches
-			     nothing (i.e. is a no-op) for projects without these files, so private projects
-			     are unaffected. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-notice-to-meta-inf</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${maven.multiModuleProjectDirectory}</directory>
-									<includes>
-										<include>NOTICE.txt</include>
-										<include>LICENSE.txt</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-		</plugins>
-
 	</build>
 
-	<dependencies>
-
-		<!-- dev -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- test -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.qameta.allure</groupId>
-			<artifactId>allure-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
+	<!-- No <dependencies> block here on purpose: using this as your parent POM must not add
+	     spring-boot-devtools / spring-boot-starter-test / allure-jupiter to your project. -->
 
 	<dependencyManagement>
 		<dependencies>
@@ -253,13 +173,6 @@
 				<groupId>jp.ecuacion.util</groupId>
 				<artifactId>ecuacion-util-parent</artifactId>
 				<version>${ecuacion-util.version}</version>
-			</dependency>
-
-			<!-- allure-jupiter (not managed by Spring Boot BOM) -->
-			<dependency>
-				<groupId>io.qameta.allure</groupId>
-				<artifactId>allure-jupiter</artifactId>
-				<version>${io.qameta.allure.allure-jupiter.version}</version>
 			</dependency>
 
 			<!-- ecuacion-splib -->
@@ -321,6 +234,7 @@
 	</profiles>
 
 	<modules>
+		<module>ecuacion-splib-dependencies</module>
 		<module>ecuacion-splib-core</module>
 		<module>ecuacion-splib-jpa</module>
 		<module>ecuacion-splib-batch</module>
