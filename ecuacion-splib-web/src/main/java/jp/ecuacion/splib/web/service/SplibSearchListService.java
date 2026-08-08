@@ -81,6 +81,7 @@ public abstract class SplibSearchListService
    * @param needsNumberSortItems needsNumberSortItems
    * @return List
    */
+  @SuppressWarnings("null")
   protected List<? extends SplibRecord> getSortedList(List<? extends SplibRecord> listToSort,
       SplibSearchForm searchForm, String[] needsNumberSortItems) {
 

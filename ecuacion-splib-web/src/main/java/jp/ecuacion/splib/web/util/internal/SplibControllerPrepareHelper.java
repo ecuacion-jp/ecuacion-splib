@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Validation;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
@@ -115,7 +116,7 @@ public class SplibControllerPrepareHelper {
     if (!rootRecordFields.isEmpty()) {
       Field field = rootRecordFields.get(0);
       try {
-        Object itemContainer = field.get(form);
+        Object itemContainer = Objects.requireNonNull(field.get(form));
         form.validateNotEmpty(itemContainer, violations, request.getLocale(),
             loginStateUtil.getLoginState(), bean);
 
