@@ -49,6 +49,7 @@ public class SplibSecurityUtil {
   /**
    * Returns bean from #authentication.principal.authorities in thymeleaf.
    */
+  @SuppressWarnings("null")
   public RolesAndAuthoritiesBean getRolesAndAuthoritiesBean(String rolesOrAuthoritiesString) {
     rolesOrAuthoritiesString =
         rolesOrAuthoritiesString.replace("[", "").replace("]", "").replace(" ", "");

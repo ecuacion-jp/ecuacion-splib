@@ -80,8 +80,7 @@ public abstract class SplibWebSecurityConfig {
    * @param appleClientSecretService appleClientSecretService, may be {@code null}
    * @param clientRegistrationRepository clientRegistrationRepository, may be {@code null}
    */
-  protected SplibWebSecurityConfig(
-      @Nullable SplibOauth2AuthSuccessHandler oauth2SuccessHandler,
+  protected SplibWebSecurityConfig(@Nullable SplibOauth2AuthSuccessHandler oauth2SuccessHandler,
       @Nullable SplibAppleClientSecretService appleClientSecretService,
       @Nullable ClientRegistrationRepository clientRegistrationRepository) {
     this.oauth2SuccessHandler = oauth2SuccessHandler;
@@ -177,8 +176,9 @@ public abstract class SplibWebSecurityConfig {
 
     // Reserved role: ACCOUNT_FULL_ACCESS can be used if you want an account to have the open
     // permission to all page for like group administrator.
-    List<AuthorizationBean> roleList =
-        getRoleInfo() == null ? new ArrayList<>() : new ArrayList<>(getRoleInfo());
+    List<AuthorizationBean> roleList = getRoleInfo() == null ? new ArrayList<>()
+        : new ArrayList<>(
+            getRoleInfo() == null ? new ArrayList<>() : Objects.requireNonNull(getRoleInfo()));
     roleList.add(new AuthorizationBean("/account/**", ACCOUNT_FULL_ACCESS));
     for (AuthorizationBean bean : roleList) {
 
@@ -204,8 +204,8 @@ public abstract class SplibWebSecurityConfig {
           .logoutSuccessUrl("/public/login/page?logoutDone"));
     }
 
-    http.exceptionHandling(handling -> handling.accessDeniedPage(getAccessDeniedPage())
-        .authenticationEntryPoint(
+    http.exceptionHandling(
+        handling -> handling.accessDeniedPage(getAccessDeniedPage()).authenticationEntryPoint(
             (request, response, authException) -> response.sendRedirect(getAccessDeniedPage())));
 
     return http.build();
@@ -227,8 +227,8 @@ public abstract class SplibWebSecurityConfig {
     // Add response_mode=form_post for Apple so the user's name is returned on first login.
     requestResolver.setAuthorizationRequestCustomizer(builder -> {
       String[] registrationIdHolder = {null};
-      builder.attributes(attrs ->
-          registrationIdHolder[0] = (String) attrs.get(REGISTRATION_ID_ATTR));
+      builder
+          .attributes(attrs -> registrationIdHolder[0] = (String) attrs.get(REGISTRATION_ID_ATTR));
       if ("apple".equals(registrationIdHolder[0])) {
         builder.additionalParameters(params -> params.put("response_mode", "form_post"));
       }
@@ -237,8 +237,7 @@ public abstract class SplibWebSecurityConfig {
     SplibOauth2AuthSuccessHandler handler = ObjectsUtil.requireNonNull(oauth2SuccessHandler);
     handler.setDefaultTargetUrl(getDefaultSuccessUrl());
 
-    http.oauth2Login(oauth2 -> oauth2
-        .loginPage(getLoginNeededPage())
+    http.oauth2Login(oauth2 -> oauth2.loginPage(getLoginNeededPage())
         .authorizationEndpoint(ep -> ep.authorizationRequestResolver(requestResolver))
         .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient()))
         .successHandler(handler));

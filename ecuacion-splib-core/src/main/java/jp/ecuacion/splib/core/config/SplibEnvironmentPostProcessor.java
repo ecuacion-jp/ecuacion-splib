@@ -18,6 +18,7 @@ package jp.ecuacion.splib.core.config;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.EnvironmentPostProcessor;
@@ -178,7 +179,7 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
    * @return the file found, or {@code null} if neither location has one
    */
   private @Nullable File findLogbackConfigFile() {
-    File userDir = new File(System.getProperty("user.dir"));
+    File userDir = new File(Objects.requireNonNull(System.getProperty("user.dir")));
 
     File configDirFile = new File(userDir, "config/logback-spring.xml");
     if (configDirFile.isFile()) {

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +60,7 @@ public class SplibThymeleafOptionUtil {
    *     then the value for key1 is {@code {'a', 'b', 'a')}}</li>
    * </ul>
    */
+  @SuppressWarnings("null")
   private Map<String, List<String>> optionMap(String optionCsv,
       @Nullable String duplicationCheckKey) {
 
@@ -182,7 +184,8 @@ public class SplibThymeleafOptionUtil {
     String lowerCaseKey = key.toLowerCase(Locale.ROOT);
     Map<String, List<String>> map = optionMap(options, key);
 
-    return map.containsKey(lowerCaseKey) ? map.get(lowerCaseKey).get(0) : null;
+    return map.containsKey(lowerCaseKey) ? Objects.requireNonNull(map.get(lowerCaseKey)).get(0)
+        : null;
   }
 
   /**
@@ -220,7 +223,7 @@ public class SplibThymeleafOptionUtil {
     Map<String, List<String>> map = optionMap(options);
 
     if (map.containsKey(lowerCaseKey)) {
-      List<String> list = map.get(lowerCaseKey);
+      List<String> list = Objects.requireNonNull(map.get(lowerCaseKey));
       return list.toArray(new String[list.size()]);
 
     } else {
@@ -279,7 +282,8 @@ public class SplibThymeleafOptionUtil {
    *      (like 'classappend=mt-3,classappend=mb-3'))</p>
    */
   public @Nullable String getElementFromPsv(String options, String key, int psvIndex) {
-    @Nullable String option = getValue(options, key);
+    @Nullable
+    String option = getValue(options, key);
     return getElementFromPsvNullable(option, psvIndex);
   }
 

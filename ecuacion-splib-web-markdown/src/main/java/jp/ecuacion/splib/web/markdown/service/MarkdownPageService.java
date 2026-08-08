@@ -51,10 +51,8 @@ public class MarkdownPageService {
   /** Initializes the Markdown parser with GFM-compatible extensions. */
   public MarkdownPageService() {
     MutableDataSet options = new MutableDataSet();
-    options.set(Parser.EXTENSIONS, Arrays.asList(
-        TablesExtension.create(),
-        StrikethroughExtension.create()
-    ));
+    options.set(Parser.EXTENSIONS,
+        Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
     // Headings get an id so other pages can deep-link into a section (e.g. "#アクセス制御").
     // "." is added to the default dash-conversion chars so a heading like
     // "ecuacion-tool-command-api.properties" renders as "ecuacion-tool-command-api-properties"
@@ -87,6 +85,7 @@ public class MarkdownPageService {
    *     not even the root page
    * @throws UncheckedIOException if a matching Markdown file exists but cannot be read
    */
+  @SuppressWarnings("null")
   public Optional<String> renderMarkdownPage(Locale locale, String id) {
     List<String> suffixes = candidateSuffixes(locale);
     for (int i = 0; i < suffixes.size(); i++) {
@@ -97,8 +96,8 @@ public class MarkdownPageService {
         }
         if (i > 0) {
           detailLog.debug("Markdown page locale fallback: requested locale '" + locale
-              + "' has no '" + suffixes.get(0) + "' variant for id '" + id
-              + "'; using '" + resourcePath + "' instead.");
+              + "' has no '" + suffixes.get(0) + "' variant for id '" + id + "'; using '"
+              + resourcePath + "' instead.");
         }
         String markdown = new String(is.readAllBytes(), StandardCharsets.UTF_8);
         Node document = parser.parse(markdown);

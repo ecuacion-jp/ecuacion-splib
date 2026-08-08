@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.util;
 
 import java.util.Set;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.IExpressionContext;
@@ -47,8 +48,8 @@ public class SplibThymeleafExpressionObjectFactory implements IExpressionObjectF
   private static final String THEME_COLOR_UTIL = "themeColorUtil";
 
   @SuppressWarnings("null")
-  private static final Set<String> ALL_EXPRESSION_OBJECT_NAMES =
-      Set.of(COMP_UTIL, EX_UTIL, OPT_UTIL, PROP_UTIL, STR_UTIL, THEME_COLOR_UTIL);
+  private static final Set<String> ALL_EXPRESSION_OBJECT_NAMES = (@NonNull Set<@NonNull String>) Set
+      .of(COMP_UTIL, EX_UTIL, OPT_UTIL, PROP_UTIL, STR_UTIL, THEME_COLOR_UTIL);
 
   private final SplibThymeleafComponentUtil compUtil;
   private final SplibThymeleafExceptionUtil exUtil;

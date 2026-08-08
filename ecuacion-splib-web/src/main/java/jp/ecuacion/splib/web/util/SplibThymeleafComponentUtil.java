@@ -47,6 +47,7 @@ public class SplibThymeleafComponentUtil {
    */
   public String getDeleteConfirmMessage(ItemContainer rootRecord,
       String itemDisplayedOnDelete) {
+    @SuppressWarnings("null")
     List<String> fieldNameList = Arrays.asList(itemDisplayedOnDelete.split(","));
 
     boolean multiple = fieldNameList.size() > 1;

@@ -116,6 +116,7 @@ public class ShowPageController extends SplibBaseController {
     htmlTag = htmlTag.substring(0, htmlTag.indexOf(">") + 1);
 
     // Split by newlines and spaces, and extract the "data-show-page-login-state" attribute.
+    @SuppressWarnings("null")
     List<String> list = Arrays.asList(htmlTag.replaceAll("\n", " ").split(" ")).stream()
         .filter(str -> str.contains(SplibWebConstants.KEY_BASE_PAGE_LOGIN_STATE)).toList();
 
