@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>jp.ecuacion.splib</groupId>
+	<artifactId>ecuacion-splib-dependencies</artifactId>
+	<!-- Must match ecuacion-splib-parent's version explicitly: since <parent> below is
+	     ecuacion-lib-dependencies (a different groupId/reactor), this POM does not inherit
+	     a version from splib's own version line, and every splib module's <parent> as well
+	     as the BOM import of ecuacion-splib-parent further down assume 0.0.2-SNAPSHOT. -->
+	<version>0.0.2-SNAPSHOT</version>
+	<name>${project.artifactId}</name>
+	<packaging>pom</packaging>
+	<!--
+		Parent is ecuacion-lib-dependencies, not ecuacion-splib-parent, so that this POM
+		inherits ecuacion-lib's own "strict" build tooling (checkstyle / spotbugs / license
+		header / NullAway-ErrorProne / jspecify), which is what a project wanting the
+		"pattern 3" enforcement (splib-core, splib-web, ..., and external tooling-heavy
+		projects like ecuacion-tool-code-generator) is opting into by using this POM as
+		<parent>. Maven only allows a single <parent>, so ecuacion-splib-parent's own
+		dependencyManagement (spring-boot-dependencies BOM, ecuacion-util-parent BOM,
+		splib module versions) is pulled in below via BOM import instead, the same
+		technique ecuacion-splib-parent itself already uses to bring in
+		ecuacion-util-parent without making it a <parent>.
+	-->
+	<parent>
+		<groupId>jp.ecuacion.lib</groupId>
+		<artifactId>ecuacion-lib-dependencies</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath/>
+	</parent>
+
+	<properties>
+		<ecuacion-splib.version>0.0.2-SNAPSHOT</ecuacion-splib.version>
+		<!-- Extra args inserted into "-Xplugin:ErrorProne <here> -Xep:NullAway:ERROR ...".
+		     Override in child projects to customize Error Prone behavior.
+		     e.g. set "-XepDisableAllChecks" to run NullAway only. -->
+		<errorprone.extra.args></errorprone.extra.args>
+		<!-- Not inherited from ecuacion-splib-parent (pluginManagement doesn't propagate via the
+		     BOM import below), so redeclared here. See ecuacion-splib-parent's own
+		     maven-resources-plugin comment for the filtering rationale. -->
+		<resource.delimiter>@</resource.delimiter>
+		<!-- maven-war-plugin: not standard Spring Boot behavior, so kept out of
+		     ecuacion-splib-parent to avoid surprising general consumers; used only by
+		     splib's own modules and other projects that opt into this POM. -->
+		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
+	</properties>
+
+	<build>
+
+		<!-- Not inherited from ecuacion-splib-parent (<build><resources> doesn't propagate via
+		     the BOM import below), so redeclared here. Keeps "pattern 4 is a superset of pattern
+		     3" true: see ecuacion-splib-parent's own <resources> comment for the filtering
+		     rationale. -->
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/application*.yml</include>
+					<include>**/application*.yaml</include>
+					<include>**/application*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<excludes>
+					<exclude>**/application*.yml</exclude>
+					<exclude>**/application*.yaml</exclude>
+					<exclude>**/application*.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
+
+		<pluginManagement>
+			<plugins>
+
+				<!-- maven-compiler-plugin: combines ecuacion-lib-dependencies' NullAway/ErrorProne
+				     enforcement with -parameters / -Xlint (needed for Spring MVC parameter
+				     resolution and to silence a JPMS warning; see ecuacion-splib-parent's own
+				     maven-compiler-plugin comment for why those two are needed). Declared
+				     wholesale here rather than just adding to the inherited config, since
+				     Maven's plugin-management merge replaces a List-typed element (compilerArgs)
+				     wholesale rather than merging entry-by-entry. -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<compilerArgs>
+							<arg>-parameters</arg>
+							<arg>-XDcompilePolicy=simple</arg>
+							<arg>-XDshould-stop.ifError=FLOW</arg>
+							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+							<arg>-Xplugin:ErrorProne ${errorprone.extra.args} -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
+							<arg>-Xlint:-requires-transitive-automatic</arg>
+						</compilerArgs>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>com.google.errorprone</groupId>
+								<artifactId>error_prone_core</artifactId>
+								<version>${com.google.errorprone.error_prone_core.version}</version>
+							</path>
+							<path>
+								<groupId>com.uber.nullaway</groupId>
+								<artifactId>nullaway</artifactId>
+								<version>${com.uber.nullaway.version}</version>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
+				</plugin>
+
+				<!-- maven-surefire-plugin: useModulePath=false for Spring Boot + JPMS.
+				     Not inherited from ecuacion-splib-parent (that pluginManagement doesn't
+				     propagate via the BOM import above), so redeclared here for splib's own
+				     modules, which depend on ecuacion-lib's named JPMS modules. -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
+					<configuration>
+						<useModulePath>false</useModulePath>
+					</configuration>
+				</plugin>
+
+				<!-- maven-resources-plugin: not inherited from ecuacion-splib-parent (that
+				     pluginManagement doesn't propagate via the BOM import below), so redeclared
+				     here. See ecuacion-splib-parent's own maven-resources-plugin comment for
+				     the filtering rationale. -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<configuration>
+						<propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
+						<delimiters>
+							<delimiter>${resource.delimiter}</delimiter>
+						</delimiters>
+						<useDefaultDelimiters>false</useDefaultDelimiters>
+					</configuration>
+				</plugin>
+
+				<!-- failOnMissingWebXml = false -->
+				<!-- Also: if the project root has a NOTICE.txt / LICENSE.txt (Apache License 2.0
+				     attribution notices and license text), bundle them at the WAR root META-INF,
+				     alongside the META-INF placement used for jar / spring-boot executable jar
+				     artifacts (see the copy-notice-to-meta-inf execution below). Projects without
+				     these files are unaffected: the include filter simply matches nothing. -->
+				<!-- Used only by WAR projects -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>${org.apache.maven.plugins.maven-war-plugin.version}</version>
+					<configuration>
+						<failOnMissingWebXml>false</failOnMissingWebXml>
+						<webResources>
+							<resource>
+								<directory>${maven.multiModuleProjectDirectory}</directory>
+								<targetPath>META-INF</targetPath>
+								<includes>
+									<include>NOTICE.txt</include>
+									<include>LICENSE.txt</include>
+								</includes>
+							</resource>
+						</webResources>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
+
+			<!-- If the multi-module project root has a NOTICE.txt / LICENSE.txt (Apache License
+			     2.0 attribution notices and license text), bundle them into META-INF of the
+			     build output so they travel with the packaged jar / spring-boot executable jar /
+			     war (the latter also gets a copy at the WAR root META-INF via the
+			     maven-war-plugin webResources configuration above), satisfying License section
+			     4(a) and 4(d) when the artifact is distributed.
+			     ${maven.multiModuleProjectDirectory} always points to the reactor root
+			     regardless of how deep a module is nested, and the include filter matches
+			     nothing (i.e. is a no-op) for projects without these files, so private projects
+			     are unaffected. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-notice-to-meta-inf</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${maven.multiModuleProjectDirectory}</directory>
+									<includes>
+										<include>NOTICE.txt</include>
+										<include>LICENSE.txt</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+	</build>
+
+	<dependencies>
+
+		<!-- dev -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- allure-jupiter test dependency is already inherited from ecuacion-lib-dependencies. -->
+
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<!-- BOM import of ecuacion-splib-parent: this is how splib-parent's own
+			     dependencyManagement (spring-boot-dependencies, ecuacion-util-parent,
+			     splib module versions) reaches this POM without making it a <parent>. -->
+			<dependency>
+				<groupId>jp.ecuacion.splib</groupId>
+				<artifactId>ecuacion-splib-parent</artifactId>
+				<version>${ecuacion-splib.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+</project>
