@@ -23,9 +23,9 @@
 	<packaging>jar</packaging>
 	<parent>
 		<groupId>jp.ecuacion.splib</groupId>
-		<artifactId>ecuacion-splib-parent</artifactId>
+		<artifactId>ecuacion-splib-dependencies</artifactId>
 		<version>0.0.2-SNAPSHOT</version>
-		<relativePath>..</relativePath>
+		<relativePath>../ecuacion-splib-dependencies</relativePath>
 	</parent>
 	<dependencies>
 
