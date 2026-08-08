@@ -22,6 +22,10 @@ ecuacion-splib's own build:
   `ecuacion-splib-parent`'s own `pom.xml` for the split rationale).
 - `maven-surefire-plugin`'s `useModulePath=false`, needed because ecuacion-splib depends on
   ecuacion-lib's named JPMS modules.
+- `maven-war-plugin` (`failOnMissingWebXml=false`, and bundling `NOTICE.txt` / `LICENSE.txt` into
+  the WAR's META-INF when present), plus the equivalent unconditional `NOTICE.txt` / `LICENSE.txt`
+  copy into the jar's META-INF. Neither is standard Spring Boot behavior, so both are kept out of
+  `ecuacion-splib-parent` to avoid surprising general consumers.
 
 `ecuacion-splib-parent` deliberately does **not** inherit any of this, so that general applications
 can use it as their own parent POM without picking up ecuacion's internal build enforcement or real

@@ -60,6 +60,9 @@
 		     ecuacion-splib-parent to avoid surprising general consumers; used only by
 		     splib's own modules and other projects that opt into this POM. -->
 		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
+		<!-- Not inherited from ecuacion-splib-parent (properties don't propagate via the BOM
+		     import below either), so redeclared here for spring-boot-maven-plugin's version. -->
+		<spring-boot.version>4.0.7</spring-boot.version>
 	</properties>
 
 	<build>
@@ -152,6 +155,24 @@
 						</delimiters>
 						<useDefaultDelimiters>false</useDefaultDelimiters>
 					</configuration>
+				</plugin>
+
+				<!-- spring-boot-maven-plugin: repackages jar into executable fat jar.
+				     Not inherited from ecuacion-splib-parent (that pluginManagement doesn't
+				     propagate via the BOM import below), so redeclared here. Used only by
+				     batch / standalone Spring Boot modules that declare this plugin themselves
+				     (no version/executions needed on their side; both come from here). -->
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>repackage</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 
 				<!-- failOnMissingWebXml = false -->
