@@ -48,14 +48,19 @@ jobs:
       - name: Validate POM after version update
         working-directory: ecuacion-splib
         run: |
+          # -DprocessAllModules=true on every goal below: ecuacion-splib-dependencies' <parent>
+          # points outside the reactor (jp.ecuacion.lib:ecuacion-lib-dependencies), which breaks
+          # these goals' default reactor-linked module discovery and leaves it (and every module
+          # that in turn has it as <parent>) at the old version.
+          #
           # versions:set and versions:set-property must run in the same mvn invocation:
           # versions:set bumps every module's own <version>, but the ecuacion-splib.version
           # property used for the self-referencing ecuacion-splib-parent BOM import in
           # ecuacion-splib-dependencies/pom.xml isn't a real <version>, so it's left stale.
           # A later, separate `mvn` call can't fix it either: parsing the now-inconsistent
           # POMs to start that call already fails before versions:set-property can run.
-          mvn versions:set -DnewVersion=0.0.0-CI-TEST -DgenerateBackupPoms=false versions:set-property -Dproperty=ecuacion-splib.version -DnewVersion=0.0.0-CI-TEST -DgenerateBackupPoms=false
-          mvn versions:update-properties -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DgenerateBackupPoms=false
+          mvn versions:set -DnewVersion=0.0.0-CI-TEST -DprocessAllModules=true -DgenerateBackupPoms=false versions:set-property -Dproperty=ecuacion-splib.version -DnewVersion=0.0.0-CI-TEST -DprocessAllModules=true -DgenerateBackupPoms=false
+          mvn versions:update-properties -DprocessAllModules=true -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DgenerateBackupPoms=false
           mvn validate
           git checkout -- .
 
