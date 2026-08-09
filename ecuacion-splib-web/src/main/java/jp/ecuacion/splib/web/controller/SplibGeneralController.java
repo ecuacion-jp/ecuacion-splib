@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import jp.ecuacion.lib.core.util.StringUtil;
 import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
@@ -267,7 +268,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     rolesAndAuthoritiesBean =
         loginUser == null ? new SplibSecurityUtil().getRolesAndAuthoritiesBean()
-            : new SplibSecurityUtil().getRolesAndAuthoritiesBean(loginUser);
+            : Objects.requireNonNull(new SplibSecurityUtil().getRolesAndAuthoritiesBean(loginUser));
     model.addAttribute("rolesAndAuthorities", rolesAndAuthoritiesBean);
   }
 

@@ -23,6 +23,7 @@ import jp.ecuacion.splib.batch.tasklet.SystemErrorTasklet;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.Step;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,8 +33,13 @@ import org.springframework.transaction.PlatformTransactionManager;
  * behavior (exception handling, logging, and so on) without requiring an actual bug.
  *
  * <p>Run it with {@code --spring.batch.job.name=ecuacionSystemErrorJob}.</p>
+ *
+ * <p>This configuration is loaded only when {@code spring.batch.job.name} is explicitly
+ * set to {@code ecuacionSystemErrorJob}, so it never adds a second {@code Job} bean
+ * to apps that only define their own job.</p>
  */
 @Configuration
+@ConditionalOnProperty(name = "spring.batch.job.name", havingValue = "ecuacionSystemErrorJob")
 public class SplibSystemErrorJobConfig extends SplibAppParentBatchConfig {
 
   /**

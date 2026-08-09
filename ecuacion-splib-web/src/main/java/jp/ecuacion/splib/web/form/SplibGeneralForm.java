@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import jp.ecuacion.lib.core.util.ItemUtil;
 import jp.ecuacion.lib.core.util.LocaleUtil;
@@ -129,7 +130,7 @@ public abstract class SplibGeneralForm {
     return dataKind;
   }
 
-  public void setDataKind(String dataKind) {
+  public void setDataKind(@Nullable String dataKind) {
     this.dataKind = dataKind;
   }
 
@@ -149,7 +150,7 @@ public abstract class SplibGeneralForm {
    */
   public SplibRecord get(String itemName) throws IllegalArgumentException, IllegalAccessException,
       NoSuchFieldException, SecurityException {
-    return (SplibRecord) this.getClass().getField(itemName).get(this);
+    return Objects.requireNonNull((SplibRecord) this.getClass().getField(itemName).get(this));
   }
 
   /**
@@ -163,7 +164,7 @@ public abstract class SplibGeneralForm {
     Class<?> formCls = this.getClass();
     List<Field> checkList = new ArrayList<>();
     while (true) {
-      Field[] fields = formCls.getDeclaredFields();
+      Field[] fields = Objects.requireNonNull(formCls).getDeclaredFields();
 
       // Check that a record correctly exists and retrieve it.
       for (Field field : fields) {

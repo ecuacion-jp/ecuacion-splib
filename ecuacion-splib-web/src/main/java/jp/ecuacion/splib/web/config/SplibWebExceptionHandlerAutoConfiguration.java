@@ -129,7 +129,6 @@ public class SplibWebExceptionHandlerAutoConfiguration {
           redirectAttributes);
     }
 
-    @SuppressWarnings("null")
     private ModelAndView handleAsForward(List<ConstraintViolation<?>> sortedCvs,
         List<BusinessViolation> businessViolations, MessageParameters params, Locale locale,
         String viewName, Model model) {

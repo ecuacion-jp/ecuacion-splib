@@ -15,21 +15,25 @@
  */
 package jp.ecuacion.splib.batch.config;
 
+import jp.ecuacion.splib.batch.autoconfigure.SplibBatchJobParametersConverterAutoConfiguration;
+import jp.ecuacion.splib.batch.autoconfigure.SplibBatchTransactionManagerAutoConfiguration;
 import jp.ecuacion.splib.batch.exceptionhandler.SplibExceptionHandler;
 import jp.ecuacion.splib.batch.listener.SplibJobExecutionListener;
 import jp.ecuacion.splib.batch.listener.SplibStepExecutionListener;
 import org.jspecify.annotations.Nullable;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.builder.TaskletStepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Provides {@code ecuacion-splib} standard {@code JobBuilder} and {@code stepBuilder}.
  */
+@ImportAutoConfiguration({SplibBatchTransactionManagerAutoConfiguration.class,
+    SplibBatchJobParametersConverterAutoConfiguration.class})
 public abstract class SplibAppParentBatchConfig {
 
   private SplibJobExecutionListener jobExecutionListener;
@@ -58,8 +62,7 @@ public abstract class SplibAppParentBatchConfig {
    * @return JobBuilder
    */
   protected JobBuilder preparedJobBuilder(String jobName, JobRepository jobRepository) {
-    return new JobBuilder(jobName, jobRepository).incrementer(new RunIdIncrementer())
-        .listener(jobExecutionListener);
+    return new JobBuilder(jobName, jobRepository).listener(jobExecutionListener);
   }
 
   /**

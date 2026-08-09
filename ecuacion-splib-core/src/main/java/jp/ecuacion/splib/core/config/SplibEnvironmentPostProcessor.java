@@ -18,6 +18,7 @@ package jp.ecuacion.splib.core.config;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.EnvironmentPostProcessor;
@@ -27,7 +28,7 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 
 /**
- * Performs two unrelated pieces of early {@link ConfigurableEnvironment} setup that both
+ * Performs three unrelated pieces of early {@link ConfigurableEnvironment} setup that all
  * need to run as a Spring Boot {@link EnvironmentPostProcessor} (i.e. before most of the
  * application context is available):
  *
@@ -36,6 +37,12 @@ import org.springframework.core.env.PropertySource;
  *       (e.g., {@code application_splib_web.properties}) into the {@link
  *       ConfigurableEnvironment}. See {@link #postProcessEnvironment} and {@link
  *       ApplicationPropertySource}.</li>
+ *   <li>Registers the reverse bridge: lets {@link PropertiesFileUtil}'s own
+ *       {@code application.properties} reading (which only knows the classpath) fall back to
+ *       this application's {@link ConfigurableEnvironment} — which, by the time this class
+ *       runs, already has Spring Boot's own externalized configuration merged in (e.g.
+ *       {@code file:./config/application.properties} next to an executable jar/war). See
+ *       {@link #postProcessEnvironment}.</li>
  *   <li>Falls back to {@code config/logback-spring.xml}, or else {@code logback-spring.xml}
  *       directly in the current working directory, for logging configuration when nothing
  *       has set {@code logging.config} already. See {@link #addLogbackConfigFallback}.</li>
@@ -58,9 +65,11 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
   /**
    * Adds a {@link PropertySource} backed by {@link PropertiesFileUtil} to the environment,
-   * and (see {@link #addLogbackConfigFallback}) makes {@code config/logback-spring.xml} (or a
-   * root-level {@code logback-spring.xml}) work without needing {@code -Dlogging.config} on
-   * the command line.
+   * registers the reverse bridge so {@link PropertiesFileUtil}'s own {@code
+   * application.properties} reading can fall back to this {@code environment} (see {@link
+   * #registerApplicationEnvironmentFallback}), and (see {@link #addLogbackConfigFallback})
+   * makes {@code config/logback-spring.xml} (or a root-level {@code logback-spring.xml}) work
+   * without needing {@code -Dlogging.config} on the command line.
    *
    * @param environment the environment to post-process
    * @param application the application to post-process
@@ -69,7 +78,38 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
   public void postProcessEnvironment(ConfigurableEnvironment environment,
       SpringApplication application) {
     environment.getPropertySources().addLast(new ApplicationPropertySource());
+    registerApplicationEnvironmentFallback(environment);
     addLogbackConfigFallback(environment);
+  }
+
+  /**
+   * Lets {@link PropertiesFileUtil#getApplication(String)} (and friends, e.g. {@link
+   * jp.ecuacion.lib.core.util.LocaleUtil}) see values from outside the classpath — most
+   * notably Spring Boot's own externalized {@code application.properties} locations (e.g.
+   * {@code file:./config/application.properties} next to an executable jar/war), which by the
+   * time this method runs have already been merged into {@code environment} by {@code
+   * ConfigDataEnvironmentPostProcessor} (a higher-priority {@link EnvironmentPostProcessor}
+   * than this class).
+   *
+   * <p>ecuacion-lib itself never depends on Spring; it only exposes an extension point ({@link
+   * PropertiesFileUtil#setApplicationEnvironmentFallbackResolver}) for a framework-specific
+   * module such as this one to plug into. A value returned here is consulted after an explicit
+   * JVM system property ({@code -D}) but before ecuacion-lib's own classpath-bundled {@code
+   * application.properties}, so an externally placed {@code application.properties} can
+   * override the classpath default the same way it already does for Spring-native properties
+   * (e.g. {@code spring.*}).</p>
+   *
+   * <p>Registered as a plain lambda delegating to {@code environment::getProperty} rather than
+   * a reference to {@code environment} itself: the {@link PropertiesFileUtil} side stores this
+   * resolver in a single static field, so whichever {@link ConfigurableEnvironment} registered
+   * here last is the one every caller in the JVM sees. That is a known limitation shared with
+   * {@link PropertiesFileUtil#setExternalPlaceholderResolver}, and matters only when more than
+   * one Spring context is bootstrapped concurrently in the same JVM (e.g. parallel tests).</p>
+   *
+   * @param environment the environment to fall back to
+   */
+  private void registerApplicationEnvironmentFallback(ConfigurableEnvironment environment) {
+    PropertiesFileUtil.setApplicationEnvironmentFallbackResolver(environment::getProperty);
   }
 
   /**
@@ -139,7 +179,7 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
    * @return the file found, or {@code null} if neither location has one
    */
   private @Nullable File findLogbackConfigFile() {
-    File userDir = new File(System.getProperty("user.dir"));
+    File userDir = new File(Objects.requireNonNull(System.getProperty("user.dir")));
 
     File configDirFile = new File(userDir, "config/logback-spring.xml");
     if (configDirFile.isFile()) {
@@ -171,21 +211,25 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
     /**
      * Returns the value for the given property name from {@link PropertiesFileUtil}.
      *
-     * <p>Uses {@link PropertiesFileUtil#getApplicationWithoutExternalPlaceholderResolution}
-     * rather than {@link PropertiesFileUtil#getApplication(String)}: this {@code PropertySource}
-     * is itself consulted from within Spring's own {@code ${...}} placeholder resolution
-     * (which ecuacion-lib's external placeholder resolver hook delegates to), so re-applying
-     * that hook here would recurse back into this same {@code Environment} instead of letting
-     * Spring's single resolution pass continue and detect any cycles itself.</p>
+     * <p>Uses {@link PropertiesFileUtil
+     * #getApplicationIfExistsWithoutExternalPlaceholderResolution} rather than {@link
+     * PropertiesFileUtil#getApplication(String)}, and rather than checking {@link
+     * PropertiesFileUtil#hasApplication(String)} separately beforehand: this {@code
+     * PropertySource} is itself consulted from within (a) Spring's own {@code ${...}}
+     * placeholder resolution, which ecuacion-lib's external placeholder resolver hook delegates
+     * to, and (b) this same class's application-environment fallback resolver (see {@link
+     * #registerApplicationEnvironmentFallback}), which queries this very {@code Environment}.
+     * Re-applying either hook here — including via a separate, unsuppressed {@code
+     * hasApplication} pre-check — would recurse back into this same {@code Environment}
+     * indefinitely instead of letting the single resolution pass that reached this method
+     * continue.</p>
      *
      * @param name the property name
      * @return the property value, or {@code null} if not found
      */
     @Override
     public @Nullable Object getProperty(String name) {
-      return PropertiesFileUtil.hasApplication(name)
-          ? PropertiesFileUtil.getApplicationWithoutExternalPlaceholderResolution(name)
-          : null;
+      return PropertiesFileUtil.getApplicationIfExistsWithoutExternalPlaceholderResolution(name);
     }
   }
 }
