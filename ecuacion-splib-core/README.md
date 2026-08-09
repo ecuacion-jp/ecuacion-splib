@@ -22,11 +22,10 @@
 
 (modules depending on `ecuacion-lib-core`)
 - `org.apache.commons:commons-lang3`
-- `jakarta.mail:jakarta.mail-api`
 
 ### Manual Load Needed Libraries
 
-(none)
+- (If you use `SplibMailUtil`, add `org.springframework.boot:spring-boot-starter-mail`.)
 
 ## Documentation
 
