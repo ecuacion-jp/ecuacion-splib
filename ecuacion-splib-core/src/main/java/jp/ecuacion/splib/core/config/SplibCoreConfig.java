@@ -16,6 +16,9 @@
 package jp.ecuacion.splib.core.config;
 
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -51,6 +54,17 @@ public class SplibCoreConfig {
    * Provides a {@link MessageSource} backed by
    * {@link jp.ecuacion.lib.core.util.PropertiesFileUtil}.
    *
+   * <p>Only registered when {@code jp.ecuacion.splib.core.messages.use-spring-native} is
+   * {@code false} (the default). Setting it to {@code true} skips this bean entirely, letting
+   * Spring Boot's own {@code MessageSourceAutoConfiguration} provide a standard
+   * {@code ResourceBundleMessageSource} instead — trading away {@link PropertiesFileUtil}'s
+   * {@code #{fileKind:key}} cross-references, {@code .default}/{@code .base} override
+   * hierarchy, and the other {@code spring.messages.*} settings rejected below (which Spring's
+   * own bean honors natively) for plain, unmodified Spring Boot behavior. This only affects
+   * {@code messages.properties}-family resolution ({@code MessageSource}); {@code
+   * ValidationMessages}, and direct {@link PropertiesFileUtil} calls such as {@code
+   * getItemName}/{@code getConstant}/{@code getEnumName}, are unaffected either way.</p>
+   *
    * <p>Basenames in {@code spring.messages.basename} that follow the
    * {@code messages_xxx} naming convention are registered via
    * {@link PropertiesFileUtil#addResourceBundlePostfix(String)}.
@@ -62,12 +76,17 @@ public class SplibCoreConfig {
    *   <li>{@code spring.messages.cache-duration}</li>
    *   <li>{@code spring.messages.fallback-to-system-locale=true}</li>
    *   <li>{@code spring.messages.encoding} (non-UTF-8 value)</li>
+   *   <li>{@code spring.messages.always-use-message-format}</li>
+   *   <li>{@code spring.messages.use-code-as-default-message=false}</li>
+   *   <li>{@code spring.messages.common-messages}</li>
    * </ul>
    *
    * @param env the Spring environment
    * @return the message source
    */
   @Bean
+  @ConditionalOnProperty(prefix = "jp.ecuacion.splib.core.messages", name = "use-spring-native",
+      havingValue = "false", matchIfMissing = true)
   MessageSource messageSource(Environment env) {
     validateUnsupportedSettings(env);
     registerExtraBasenames(env);
@@ -111,6 +130,37 @@ public class SplibCoreConfig {
           + "UTF-8 is the universal standard encoding capable of representing all languages "
           + "including Japanese, Chinese, and European characters. If you have legacy properties "
           + "files in a non-UTF-8 encoding, please convert them to UTF-8.");
+    }
+
+    if (env.getProperty("spring.messages.always-use-message-format") != null) {
+      throw new RuntimeException(
+          "'spring.messages.always-use-message-format' is not supported when using ecuacion's "
+          + "PropertiesFileUtil-based MessageSource. PropertiesFileUtil already skips "
+          + "MessageFormat parsing for argument-less messages (so literal single quotes need no "
+          + "escaping), matching this setting's default ('false'); there is no way to force "
+          + "MessageFormat parsing on argument-less messages beyond that. Set "
+          + "'jp.ecuacion.splib.core.messages.use-spring-native=true' instead if you need this "
+          + "setting honored.");
+    }
+
+    if ("false".equalsIgnoreCase(env.getProperty("spring.messages.use-code-as-default-message"))) {
+      throw new RuntimeException(
+          "'spring.messages.use-code-as-default-message=false' is not supported when using "
+          + "ecuacion's PropertiesFileUtil-based MessageSource, which always uses the code as "
+          + "the default message (matching this setting's 'true' value) so a missing key never "
+          + "throws NoSuchMessageException. Set "
+          + "'jp.ecuacion.splib.core.messages.use-spring-native=true' instead if you need this "
+          + "setting honored.");
+    }
+
+    if (Binder.get(env)
+        .bind("spring.messages.common-messages", Bindable.listOf(String.class)).isBound()) {
+      throw new RuntimeException(
+          "'spring.messages.common-messages' is not supported when using ecuacion's "
+          + "PropertiesFileUtil-based MessageSource; it has no equivalent of Spring's "
+          + "locale-independent common-messages properties files. Set "
+          + "'jp.ecuacion.splib.core.messages.use-spring-native=true' instead if you need this "
+          + "setting honored.");
     }
   }
 

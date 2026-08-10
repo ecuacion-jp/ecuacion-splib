@@ -55,17 +55,41 @@ public class PropertiesFileUtilMessageSource extends AbstractMessageSource {
    */
   @Override
   protected @Nullable MessageFormat resolveCode(String code, @Nullable Locale locale) {
-    String template;
+    String template = resolveTemplate(code, locale);
+    return template == null ? null
+        : new MessageFormat(template, locale != null ? locale : LocaleUtil.getFallbackLocale());
+  }
+
+  /**
+   * Resolves the given message code to its raw template via {@link PropertiesFileUtil}, without
+   * involving {@link MessageFormat}.
+   *
+   * <p>Overridden (the base class implementation delegates to {@link #resolveCode} and always
+   * runs the result through {@link MessageFormat}) so that argument-less messages retrieved via
+   * Spring's {@link org.springframework.context.MessageSource} API match {@link
+   * PropertiesFileUtil#getMessage(Locale, String, Object...)} called directly: a literal single
+   * quote (e.g. {@code It's raining}) is preserved either way, rather than being silently
+   * stripped by {@code MessageFormat} only when going through this Spring-facing class.</p>
+   *
+   * @param code the message code to resolve
+   * @param locale the locale to resolve the code for
+   * @return the raw message template, or {@code null} if not found
+   */
+  @Override
+  protected @Nullable String resolveCodeWithoutArguments(String code, Locale locale) {
+    return resolveTemplate(code, locale);
+  }
+
+  private @Nullable String resolveTemplate(String code, @Nullable Locale locale) {
     if (PropertiesFileUtil.hasMessage(code)) {
-      template = PropertiesFileUtil.getMessage(locale, code);
+      return PropertiesFileUtil.getMessage(locale, code);
     } else if (PropertiesFileUtil.hasConstant(code)) {
-      template = PropertiesFileUtil.getConstant(code);
+      return PropertiesFileUtil.getConstant(code);
     } else if (PropertiesFileUtil.hasItemName(code)) {
-      template = PropertiesFileUtil.getItemName(locale, code);
+      return PropertiesFileUtil.getItemName(locale, code);
     } else {
       return null;
     }
-    return new MessageFormat(template, locale != null ? locale : LocaleUtil.getFallbackLocale());
   }
 
   /**
