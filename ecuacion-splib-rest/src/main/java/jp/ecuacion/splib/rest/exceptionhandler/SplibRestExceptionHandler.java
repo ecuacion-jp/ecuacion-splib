@@ -136,6 +136,9 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   protected @Nullable ResponseEntity<Object> handleExceptionInternal(Exception ex,
       @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
 
+    dtlLogger.info("SplibRestExceptionHandler#handleExceptionInternal called. "
+        + "statusCode = " + statusCode);
+
     if (statusCode.is4xxClientError()) {
       dtlLogger.warn(ex.getMessage());
     } else {
@@ -154,6 +157,7 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(Throwable.class)
   public ErrorResponse handleThrowable(Throwable exception) {
 
+    dtlLogger.info("SplibRestExceptionHandler#handleThrowable called.");
     LogUtil.logSystemError(dtlLogger, exception);
 
     // app dependent procedures, like sending mail.

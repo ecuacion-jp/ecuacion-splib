@@ -16,7 +16,6 @@
 package jp.ecuacion.splib.web.controller;
 
 import java.util.Objects;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -139,7 +138,7 @@ public class ControllerContext {
    * @return ControllerContext
    */
   public ControllerContext subFunction(String subFunction) {
-    this.subFunction = ObjectsUtil.requireNonNull(subFunction);
+    this.subFunction = Objects.requireNonNull(subFunction);
     return this;
   }
 
