@@ -42,6 +42,17 @@
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 
+		<!-- spring-cloud-context: optional. When a consuming app adds this dependency itself,
+			SplibPropertiesCacheClearer additionally refreshes Spring's own properties cache
+			(via ContextRefresher) when clearing PropertiesFileUtil's cache; otherwise that part
+			is skipped at runtime (see SplibPropertiesCacheClearer). optional=true keeps it from
+			being pulled onto consuming apps' classpaths transitively. -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-context</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- ecuacion-lib -->
 		<dependency>
 			<groupId>jp.ecuacion.lib</groupId>
