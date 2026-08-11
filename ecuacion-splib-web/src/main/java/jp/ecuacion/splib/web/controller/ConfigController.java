@@ -15,11 +15,12 @@
  */
 package jp.ecuacion.splib.web.controller;
 
-import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import jp.ecuacion.splib.core.util.SplibPropertiesCacheClearer;
 import jp.ecuacion.splib.web.controller.ConfigController.ConfigForm;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.record.ConfigRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,6 +50,9 @@ public class ConfigController
    */
   static final String BASE_PATH = "/ecuacion-splib/admin/config";
 
+  @Autowired
+  private SplibPropertiesCacheClearer propertiesCacheClearer;
+
   /**
    * Constructs a new instance.
    */
@@ -57,14 +61,15 @@ public class ConfigController
   }
 
   /**
-   * Clears the cache of properties files read via {@code PropertiesFileUtil},
-   * so that changes to application.properties can be picked up without restarting the app.
+   * Clears the cache of properties files read via {@code PropertiesFileUtil} (and, when
+   * available, spring's own properties cache), so that changes to application.properties can
+   * be picked up without restarting the app.
    *
    * @return URL
    */
   @PostMapping(value = "action", params = "action=clearPropertiesCache")
   public String clearPropertiesCache() {
-    PropertiesFileUtil.clearCache();
+    propertiesCacheClearer.clear();
 
     return "redirect:" + BASE_PATH + "/page?success";
   }

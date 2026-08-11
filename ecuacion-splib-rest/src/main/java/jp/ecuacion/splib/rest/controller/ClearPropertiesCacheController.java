@@ -16,7 +16,8 @@
 package jp.ecuacion.splib.rest.controller;
 
 import jp.ecuacion.lib.core.logging.DetailLogger;
-import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import jp.ecuacion.splib.core.util.SplibPropertiesCacheClearer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,13 +32,17 @@ public class ClearPropertiesCacheController {
 
   private final DetailLogger detailLog = new DetailLogger(this);
 
+  @Autowired
+  private SplibPropertiesCacheClearer propertiesCacheClearer;
+
   /**
-   * Clears the cache of properties files read via {@code PropertiesFileUtil},
-   * so that changes to application.properties can be picked up without restarting the app.
+   * Clears the cache of properties files read via {@code PropertiesFileUtil} (and, when
+   * available, spring's own properties cache), so that changes to application.properties can
+   * be picked up without restarting the app.
    */
   @PostMapping("/api/ecuacion-splib/key/clearPropertiesCache")
   public void clearPropertiesCache() {
-    PropertiesFileUtil.clearCache();
+    propertiesCacheClearer.clear();
     detailLog.info("PropertiesFileUtil cache was cleared via clearPropertiesCache API.");
   }
 }
