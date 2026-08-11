@@ -23,7 +23,6 @@ import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.batch.advice.SplibBatchAdvice;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import org.jspecify.annotations.NonNull;
@@ -61,10 +60,10 @@ public class SplibExceptionHandler implements ExceptionHandler {
           + "or the advice to register current {0} is not implemented.)";
 
   @Override
-  public void handleException(@Nullable RepeatContext context, @Nullable Throwable throwable)
+  public void handleException(@Nullable RepeatContext context, Throwable throwable)
       throws Throwable {
 
-    throwable = ObjectsUtil.requireNonNull(throwable);
+    Objects.requireNonNull(throwable);
     StringBuilder sb = new StringBuilder();
     sb.append(formatMsg("job", SplibBatchAdvice.getCurrentJob(), true));
     sb.append(formatMsg("step", SplibBatchAdvice.getCurrentStep(), false));
