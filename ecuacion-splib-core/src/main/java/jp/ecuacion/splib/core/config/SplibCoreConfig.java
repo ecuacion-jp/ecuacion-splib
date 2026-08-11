@@ -36,17 +36,10 @@ public class SplibCoreConfig {
   /**
    * Needs to use {@code @Value}.
    *
-   * <p>Also registers ecuacion-lib's external placeholder resolver hook, so that
-   * {@code ${...}} left in {@code application.properties} values (e.g., environment
-   * variables, system properties) is resolved via this Spring application's own
-   * {@link Environment}.</p>
-   *
-   * @param env the Spring environment
    * @return the placeholder configurer
    */
   @Bean
-  static PropertySourcesPlaceholderConfigurer propertyConfigInDev(Environment env) {
-    PropertiesFileUtil.setExternalPlaceholderResolver(env::resolvePlaceholders);
+  static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
     return new PropertySourcesPlaceholderConfigurer();
   }
 

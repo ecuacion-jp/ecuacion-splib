@@ -27,11 +27,11 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
 /**
- * Verifies the reverse bridge {@link SplibEnvironmentPostProcessor#postProcessEnvironment}
- * registers: once it has run, {@link PropertiesFileUtil}'s own {@code application.properties}
- * reading (used by, e.g., {@link jp.ecuacion.lib.core.util.LocaleUtil}) can see a value that
- * exists only in the Spring {@code Environment} — such as a value Spring Boot itself merged in
- * from an externalized {@code application.properties} location (e.g.
+ * Verifies the resolver {@link SplibEnvironmentPostProcessor#postProcessEnvironment} registers:
+ * once it has run, {@link PropertiesFileUtil}'s own {@code application.properties} lookups
+ * (used by, e.g., {@link jp.ecuacion.lib.core.util.LocaleUtil}) delegate entirely to the Spring
+ * {@code Environment} — including a value that exists only there, such as one Spring Boot
+ * itself merged in from an externalized {@code application.properties} location (e.g.
  * {@code file:./config/application.properties} next to an executable jar/war) that is not on
  * the classpath.
  */
@@ -42,7 +42,7 @@ class SplibEnvironmentPostProcessorTest {
 
   @AfterEach
   void clearResolver() {
-    PropertiesFileUtil.setApplicationEnvironmentFallbackResolver(null);
+    PropertiesFileUtil.setApplicationResolver(null);
   }
 
   @Test
