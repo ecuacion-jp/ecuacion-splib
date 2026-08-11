@@ -45,6 +45,12 @@
 		<ecuacion-util.version>0.0.2-SNAPSHOT</ecuacion-util.version>
 		<!-- 3rd party module versions -->
 		<spring-boot.version>4.0.7</spring-boot.version>
+		<!-- Spring Cloud release train compatible with spring-boot.version above (per the
+		     spring.io Spring Boot / Spring Cloud compatibility matrix). Only spring-cloud-context
+		     (an optional dependency of ecuacion-splib-core; see its pom.xml) needs a managed
+		     version, but importing the full BOM keeps that version aligned with spring-boot.version
+		     instead of hand-pinning a single artifact version that could drift out of sync. -->
+		<spring-cloud.version>2025.1.1</spring-cloud.version>
 		<!-- Delimiter used for build-time property filtering of application*.{yml,yaml,properties}
 		     below (e.g. "@project.version@"). Using "@" instead of Maven's default "${...}" avoids
 		     colliding with Spring's own runtime "${...}" placeholders (env var substitution etc.)
@@ -164,6 +170,15 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
 				<version>${spring-boot.version}</version>
+			</dependency>
+
+			<!-- spring-cloud-dependencies: see spring-cloud.version property above -->
+			<dependency>
+				<type>pom</type>
+				<scope>import</scope>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
 			</dependency>
 
 			<!-- ecuacion-util-import -->
