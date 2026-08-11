@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.item.ItemContainer;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil.Arg;
 import jp.ecuacion.lib.core.util.PropertyPathUtil;
 import jp.ecuacion.lib.core.util.StringUtil;
@@ -70,7 +69,7 @@ public class SplibCoreBl {
           "#{messages:jp.ecuacion.lib.core.common.itemName.prependSymbol}#{item_names:",
           "}#{messages:jp.ecuacion.lib.core.common.itemName.appendSymbol}");
       throw new ViolationException(new Violations().add(new BusinessViolation(itemPropertyPaths,
-          msgId, ObjectsUtil.requireNonNull(Arg.formattedString(str)))));
+          msgId, Objects.requireNonNull(Arg.formattedString(str)))));
     }
   }
 

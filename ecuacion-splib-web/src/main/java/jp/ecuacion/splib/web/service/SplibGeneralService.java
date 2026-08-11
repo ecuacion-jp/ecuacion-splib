@@ -17,9 +17,9 @@ package jp.ecuacion.splib.web.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import jp.ecuacion.lib.core.logging.DetailLogger;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import jp.ecuacion.splib.web.exceptionhandler.ViolationWebWarningException;
@@ -57,7 +57,7 @@ public abstract class SplibGeneralService {
   protected void throwWarning(Set<String> confirmedWarningMessageSet,
       @Nullable String buttonIdToPressOnConfirm, String msgId, String... params) {
 
-    if (!ObjectsUtil.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
+    if (!Objects.requireNonNull(confirmedWarningMessageSet).contains(msgId)) {
       Violations violations = new Violations().add(msgId, (Object[]) params);
       if (buttonIdToPressOnConfirm != null) {
         throw new ViolationWebWarningException(violations, buttonIdToPressOnConfirm);

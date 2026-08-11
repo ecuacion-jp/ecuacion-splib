@@ -18,7 +18,6 @@ package jp.ecuacion.splib.web.config;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import jp.ecuacion.lib.core.util.ObjectsUtil;
 import jp.ecuacion.splib.core.bean.AuthorizationBean;
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
@@ -234,7 +233,7 @@ public abstract class SplibWebSecurityConfig {
       }
     });
 
-    SplibOauth2AuthSuccessHandler handler = ObjectsUtil.requireNonNull(oauth2SuccessHandler);
+    SplibOauth2AuthSuccessHandler handler = Objects.requireNonNull(oauth2SuccessHandler);
     handler.setDefaultTargetUrl(getDefaultSuccessUrl());
 
     http.oauth2Login(oauth2 -> oauth2.loginPage(getLoginNeededPage())
