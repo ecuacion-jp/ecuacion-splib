@@ -33,15 +33,17 @@ import org.springframework.util.ClassUtils;
  *     logging that fact at INFO level instead of failing.</p>
  *
  * <p><strong>Known limitation (as of {@code spring-cloud-context} 5.0.1):</strong> the
- *     spring-side refresh does not take effect when the app is run as a Spring Boot executable
- *     WAR ({@code java -jar xxx.war}). {@code ContextRefresher} fails to enumerate
- *     {@code META-INF/spring.factories} across nested jars when invoked from a running bean, so
- *     {@code ConfigDataEnvironmentPostProcessor} never actually runs and property files are not
- *     re-read — this is a {@code spring-cloud-context} limitation, not something this class can
- *     work around. It works correctly when the WAR is exploded and launched with
- *     {@code WEB-INF/classes} and {@code WEB-INF/lib/*.jar} on a flat classpath (a normal
- *     deployment to an external Tomcat is expected to work the same way, though that has not
- *     been verified).</p>
+ *     spring-side refresh only reliably picks up changes to {@code application.properties} (the
+ *     <em>primary</em> {@code spring.config.name}) — verified working across a Spring Boot
+ *     executable WAR ({@code java -jar xxx.war}), a normal deployment to an external Tomcat, and
+ *     a flat classpath launch alike, so this is not a classloader/packaging issue. It does
+ *     <strong>not</strong>, however, pick up changes to property files loaded via any
+ *     <em>additional</em> name in a multi-name {@code spring.config.name} (e.g.
+ *     {@code spring.config.name=application,my-app}) — {@code my-app.properties} changes are
+ *     never re-read by {@code ContextRefresher}, consistently, regardless of deployment style.
+ *     This appears to be a limitation in how {@code ContextRefresher} merges re-loaded property
+ *     sources back into the running {@code Environment} for non-primary config names, not
+ *     something this class can work around.</p>
  */
 @Component
 public class SplibPropertiesCacheClearer {
