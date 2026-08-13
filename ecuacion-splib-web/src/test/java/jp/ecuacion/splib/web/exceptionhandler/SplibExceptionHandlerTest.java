@@ -605,7 +605,7 @@ class SplibExceptionHandlerTest {
   // =========================================================================
   // ConstraintViolation: field-level (propertyPath = "name")
   //
-  // Verifies the basic field-level CV behaviour.
+  // Verifies the basic field-level CV behavior.
   // No special MessageParameters are set (default values apply).
   // =========================================================================
 

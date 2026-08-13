@@ -378,45 +378,24 @@ public abstract class SplibExceptionHandler {
           getPropertyPathsFromAnnotation(cv.getConstraintDescriptor().getAnnotation());
       // annotationPaths is guaranteed non-empty by MultiplePropertyPathsValidator.initialize(),
       // so no length check is needed here.
-      if (beanPath.isEmpty()) {
-        if (br.getTarget() instanceof SplibGeneralForm form) {
-          // For SplibGeneralForm targets, verify each annotation path exists in the form records.
-          // Paths not found fall back to a global error (same behaviour as non-ClassValidator).
-          List<String> foundList = new ArrayList<>();
-          for (String path : annotationPaths) {
-            String qualified = resolveFormPath(form, path);
-            if (qualified != null) {
-              foundList.add(qualified);
-            } else {
-              anyPathNotFound = true;
-            }
-          }
-          propertyPaths = foundList.toArray(new String[0]);
-        } else {
-          propertyPaths = qualifyItemPropertyPaths(br, annotationPaths);
-        }
+      // beanPath is the path (already fully qualified from the form root, e.g. "cloudService"
+      // for a ClassValidator on a @Valid-cascaded nested record) at which the ClassValidator's
+      // target object was found; when non-empty, beanPath + "." + path is therefore usually
+      // already fully qualified too (e.g. "cloudService.awsAccessKeyId").
+      String[] paths = beanPath.isEmpty() ? annotationPaths
+          : Arrays.stream(annotationPaths).map(p -> beanPath + "." + p).toArray(String[]::new);
+
+      if (br.getTarget() instanceof SplibGeneralForm form) {
+        // For SplibGeneralForm targets, verify each path exists in the form records.
+        // Paths not found fall back to a global error (same behaviour as non-ClassValidator).
+        // resolveFormPath tries the path as-is first (it may already be fully qualified, as
+        // above), falling back to qualifyForForm's record-relative resolution, so both shapes
+        // are handled.
+        propertyPaths = Arrays.stream(paths).map(path -> resolveFormPath(form, path))
+            .filter(Objects::nonNull).toArray(String[]::new);
+        anyPathNotFound = propertyPaths.length < paths.length;
       } else {
-        if (br.getTarget() instanceof SplibGeneralForm form) {
-          // beanPath is the path (already fully qualified from the form root, e.g.
-          // "cloudService" for a ClassValidator on a @Valid-cascaded nested record) at which
-          // the ClassValidator's target object was found; beanPath + "." + path is therefore
-          // usually already fully qualified too (e.g. "cloudService.awsAccessKeyId") and must
-          // be tried as-is first (resolveFormPath), not immediately re-resolved as a
-          // record-relative path via qualifyForForm.
-          List<String> foundList = new ArrayList<>();
-          for (String path : annotationPaths) {
-            String qualified = resolveFormPath(form, beanPath + "." + path);
-            if (qualified != null) {
-              foundList.add(qualified);
-            } else {
-              anyPathNotFound = true;
-            }
-          }
-          propertyPaths = foundList.toArray(new String[0]);
-        } else {
-          propertyPaths =
-              Arrays.stream(annotationPaths).map(p -> beanPath + "." + p).toArray(String[]::new);
-        }
+        propertyPaths = paths;
       }
     } else {
       String pathStr = cv.getPropertyPath().toString();
@@ -486,50 +465,15 @@ public abstract class SplibExceptionHandler {
     // For SplibGeneralForm targets, verify each path exists in the form records.
     // Paths that cannot be resolved fall back to a global error so the message is never lost.
     if (br.getTarget() instanceof SplibGeneralForm form && inputPaths.length > 0) {
-      List<String> foundList = new ArrayList<>();
-      for (String path : inputPaths) {
-        String qualified = qualifyForForm(form, path);
-        if (qualified != null) {
-          foundList.add(qualified);
-        } else {
-          anyPathNotFound = true;
-        }
-      }
-      qualifiedPaths = foundList.toArray(new String[0]);
+      qualifiedPaths = Arrays.stream(inputPaths).map(path -> qualifyForForm(form, path))
+          .filter(Objects::nonNull).toArray(String[]::new);
+      anyPathNotFound = qualifiedPaths.length < inputPaths.length;
     }
 
     // Fall back to global when no paths are specified, or when any path was not found in the form.
-    boolean needsMsgAtTop = needsMsgAtTopDefault || qualifiedPaths.length == 0 || anyPathNotFound;
+    boolean needsMsgAtTop = needsMsgAtTopDefault || inputPaths.length == 0 || anyPathNotFound;
     return addViolation(br, errorCode, qualifiedPaths, single, needsMsgAtItemDefault, needsMsgAtTop,
         locale);
-  }
-
-  /**
-   * Qualifies each {@code itemPropertyPath} with the owning record's field name
-   * so that it matches the path Spring binds in the {@code BindingResult}.
-   *
-   * <p>When the form's rootBean is itself an {@code ItemContainer}, no prefix is needed.
-   *     Otherwise, the path is resolved against each record returned by
-   *     {@code SplibGeneralForm#getRootRecordFields()} and the field name of the first
-   *     record under which the path resolves is prepended.</p>
-   */
-  private String[] qualifyItemPropertyPaths(BindingResult br, String[] paths) {
-    Object rootBean = br.getTarget();
-    if (rootBean == null || rootBean instanceof ItemContainer) {
-      return paths;
-    }
-    if (!(rootBean instanceof SplibGeneralForm form)) {
-      return paths;
-    }
-    String[] result = new String[paths.length];
-    for (int i = 0; i < paths.length; i++) {
-      // qualifyForForm returns null when the path is not found in any record.
-      // Fall back to the original path to preserve the existing behaviour for ClassValidator
-      // callers.
-      String qualified = qualifyForForm(form, paths[i]);
-      result[i] = qualified != null ? qualified : paths[i];
-    }
-    return result;
   }
 
   /**
