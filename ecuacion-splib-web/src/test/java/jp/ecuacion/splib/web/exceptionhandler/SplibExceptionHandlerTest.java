@@ -37,9 +37,11 @@ import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.validation.constraints.AnyNotNull;
 import jp.ecuacion.splib.core.record.SplibRecord;
+import jp.ecuacion.lib.core.util.internal.PropertiesFileUtilBundleReader;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -64,6 +66,11 @@ class SplibExceptionHandlerTest {
   // message IDs defined in messages_splib-web-test.properties
   private static final String MSG1 = "jp.ecuacion.splib.web.test.violation1";
   private static final String MSG2 = "jp.ecuacion.splib.web.test.violation2";
+
+  @BeforeAll
+  static void init() {
+    PropertiesFileUtilBundleReader.addToDynamicPostfixList("splib-web-test");
+  }
 
   @SuppressWarnings("null")
   @Mock
@@ -658,11 +665,24 @@ class SplibExceptionHandlerTest {
   // =========================================================================
   // ConstraintViolation: class-level (propertyPath = "")
   //
-  // A class-level ConstraintViolation has an empty propertyPath.toString().
-  // Since there is no field to attach the error to, it always falls back to
-  // a global error (the CV's already-interpolated message is used directly
-  // because ExceptionUtil.getMessageList cannot resolve an item name from
-  // an empty path).
+  // "Class-level CV" covers two different patterns, and only one of them
+  // actually reaches this early return:
+  //
+  // - Pattern B (tested here): a constraint whose validator does NOT implement
+  //   ClassValidator, annotated directly on a class/record, producing a CV with
+  //   propertyPath="". addConstraintViolation's else-branch short-circuits on
+  //   pathStr.isEmpty() BEFORE addViolation() is ever called, using the CV's
+  //   already-interpolated message as-is (ExceptionUtil.getMessageList cannot
+  //   resolve an item name from an empty path - it would throw
+  //   RequireNonEmptyException inside Item.<init>). This path is unaffected by
+  //   the withItemName fix in addViolation() below.
+  // - Pattern A: a constraint whose validator DOES implement ClassValidator
+  //   (e.g. @AnyNotNull), even when placed at the class/root level (empty
+  //   beanPath). This does NOT short-circuit - annotationPaths is guaranteed
+  //   non-empty by MultiplePropertyPathsValidator.initialize(), so it always
+  //   reaches addViolation() with a real, nameable target property. See
+  //   ConstraintViolation_ClassValidatorBased.splibFormTarget_pathNotFound__globalMessageIncludesItemName
+  //   for this pattern.
   // =========================================================================
 
   @Nested
@@ -694,6 +714,21 @@ class SplibExceptionHandlerTest {
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+    }
+
+    @Test
+    void atTop_only__usesRawConstraintMessage_unaffectedByWithItemNameFix() {
+      // Pattern B never reaches addViolation()'s withItemName logic at all - it always
+      // uses cv.getMessage() (AlwaysFailClassLevel's message() attribute, a plain string
+      // rather than a "{...}" bundle-key reference, so Hibernate Validator's interpolator
+      // returns it unchanged) regardless of the withItemName fix.
+      BindingResult br = newBindingResult();
+
+      handler.addViolationErrorsTo(classLevelCvOf(), br, false, true, Locale.ROOT);
+
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+      assertThat(br.getGlobalErrors().get(0).getDefaultMessage())
+          .isEqualTo("jp.ecuacion.splib.web.test.violation1");
     }
   }
 
@@ -740,6 +775,25 @@ class SplibExceptionHandlerTest {
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+    }
+
+    @Test
+    void atTop_pathNotFound__globalMessageIncludesItemName() {
+      // Same violation as atItem_pathNotFound__globalFallback, but verifies the actual
+      // message TEXT, not just error counts. This reproduces the real bug report shape:
+      // a ConstraintViolation validated against an object that isn't part of the current
+      // form at all (e.g. ecuacion-util-excel-table validating an Excel-row bean) still
+      // has a real, nameable property ("email") - it just has no matching form field.
+      // Since there's no field to visually pair the message with, the top message must
+      // include the item name to be understandable on its own; withItemName must not be
+      // tied to whether a form field happened to be found.
+      ViolationException ex = new ViolationException(new Violations().validate(new CvBeanEmail()));
+      BindingResult br = brWithTestForm();
+
+      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+      assertThat(br.getGlobalErrors().get(0).getDefaultMessage()).contains("email");
     }
   }
 
@@ -882,6 +936,25 @@ class SplibExceptionHandlerTest {
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+    }
+
+    @Test
+    void splibFormTarget_pathNotFound__globalMessageIncludesItemName() {
+      // Pattern A of "class-level CV": AnyNotNullBeanWithEmail is validated standalone, so
+      // beanPath (cv.getPropertyPath()) is empty - the constraint fires at the class/root
+      // level, exactly like ClassLevelBean in ConstraintViolation_ClassLevel. Unlike that
+      // pattern-B case, this DOES reach addViolation() (annotationPaths=["email"] is
+      // guaranteed non-empty), and even though "email" doesn't resolve to a TestForm field,
+      // the annotation still names a real target property - so the top message must include
+      // its item name, same as the plain-CV case above.
+      ViolationException ex =
+          new ViolationException(new Violations().validate(new AnyNotNullBeanWithEmail()));
+      BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
+
+      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+      assertThat(br.getGlobalErrors().get(0).getDefaultMessage()).contains("email");
     }
   }
 

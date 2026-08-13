@@ -577,10 +577,7 @@ public abstract class SplibExceptionHandler {
       atEachItemAdded = needsMsgAtItem;
     }
     if (needsMsgAtTop) {
-      // When no field paths are available (class-level CV or global fallback),
-      // item-name inclusion makes no sense; fall back to withItemName=false.
-      boolean withItemName = propertyPaths.length > 0;
-      String message = ExceptionUtil.getMessageList(singleViolation, locale, withItemName).get(0);
+      String message = ExceptionUtil.getMessageList(singleViolation, locale, true).get(0);
       addGlobalError(br, errorCode, message);
     }
     return atEachItemAdded;
