@@ -57,6 +57,7 @@ import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import jp.ecuacion.splib.web.util.internal.RefererRedirectUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -349,7 +350,7 @@ public abstract class SplibExceptionHandler {
    * Returns the constraint violations of {@code violations}, sorted by property path,
    * so that field-level errors are added to the {@code BindingResult} in a deterministic order.
    */
-  private List<ConstraintViolation<?>> sortedConstraintViolations(Violations violations) {
+  private List<@NonNull ConstraintViolation<?>> sortedConstraintViolations(Violations violations) {
     return violations.getConstraintViolations().stream()
         .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString())).toList();
   }
