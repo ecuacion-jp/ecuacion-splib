@@ -214,8 +214,7 @@ public abstract class SplibExceptionHandler {
     Locale locale = request.getLocale();
     MessageParameters params = violations.messageParameters();
 
-    List<ConstraintViolation<?>> sortedCvs = violations.getConstraintViolations().stream()
-        .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString())).toList();
+    List<ConstraintViolation<?>> sortedCvs = sortedConstraintViolations(violations);
     List<String> errorMessages = new ArrayList<>();
     for (ConstraintViolation<?> cv : sortedCvs) {
       errorMessages.addAll(ExceptionUtil
@@ -321,8 +320,7 @@ public abstract class SplibExceptionHandler {
     Violations violations = exception.getViolations();
     MessageParameters params = violations.messageParameters();
 
-    List<ConstraintViolation<?>> sortedCvs = violations.getConstraintViolations().stream()
-        .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString())).toList();
+    List<ConstraintViolation<?>> sortedCvs = sortedConstraintViolations(violations);
 
     boolean atEachItemErrorAdded = false;
 
@@ -345,6 +343,15 @@ public abstract class SplibExceptionHandler {
     }
 
     return br;
+  }
+
+  /**
+   * Returns the constraint violations of {@code violations}, sorted by property path,
+   * so that field-level errors are added to the {@code BindingResult} in a deterministic order.
+   */
+  private List<ConstraintViolation<?>> sortedConstraintViolations(Violations violations) {
+    return violations.getConstraintViolations().stream()
+        .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString())).toList();
   }
 
   /**
@@ -723,7 +730,7 @@ public abstract class SplibExceptionHandler {
     SplibGeneralController<?> ctrl = Objects.requireNonNull(getController());
 
     String msgId = "jp.ecuacion.splib.web.common.message.optimisticLocking";
-    if (getController() instanceof SplibEditController) {
+    if (ctrl instanceof SplibEditController) {
       String loginState = (String) requireModel().getAttribute("loginState");
       String path = "/" + loginState + "/" + ctrl.getFunction() + "/"
           + ctrl.getDefaultDestSubFunctionOnNormalEnd() + "/"
