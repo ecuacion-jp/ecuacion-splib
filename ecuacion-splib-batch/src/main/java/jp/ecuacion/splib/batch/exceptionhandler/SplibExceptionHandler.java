@@ -82,9 +82,9 @@ public class SplibExceptionHandler implements ExceptionHandler {
     }
 
     // For ViolationException, list all messages so they are visible in the log.
-    if (throwable instanceof ViolationException) {
+    if (throwable instanceof ViolationException violationException) {
       List<@NonNull String> msgList = ExceptionUtil.getMessageList(
-          (ViolationException) throwable, LocaleUtil.getFallbackLocale(), true);
+          violationException, LocaleUtil.getFallbackLocale(), true);
       detailLog.info("==========");
       detailLog.info("[ViolationException message list]");
       msgList.stream().forEach(msg -> detailLog.info(msg));
