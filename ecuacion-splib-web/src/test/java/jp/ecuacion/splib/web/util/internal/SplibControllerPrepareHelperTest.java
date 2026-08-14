@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.util.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.util.function.Function;
 import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
@@ -131,8 +132,8 @@ class SplibControllerPrepareHelperTest {
         .add(new BusinessViolation(new String[] {"testRecord.name"},
             SplibWebConstants.MESSAGE_KEY_NOT_EMPTY));
 
-    Violations filtered = helper.excludeConstraintViolationsMaskedByRequiredError(violations,
-        java.util.function.Function.identity());
+    Violations filtered =
+        helper.excludeConstraintViolationsMaskedByRequiredError(violations, Function.identity());
 
     assertThat(filtered.getConstraintViolations()).isEmpty();
   }
