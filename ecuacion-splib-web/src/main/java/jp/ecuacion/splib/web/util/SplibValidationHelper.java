@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import jp.ecuacion.lib.core.util.ItemUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
@@ -83,7 +84,6 @@ public class SplibValidationHelper {
     Violations violations = new Violations();
     violations.addAll(Validation.buildDefaultValidatorFactory().getValidator().validate(form));
     validateHtmlItemContainers(form, violations);
-    violations.throwIfAny();
   }
 
   /**
@@ -139,7 +139,6 @@ public class SplibValidationHelper {
    */
   private void validateNotEmptyForContainer(Object rootBean, HtmlItemContainer container,
       @Nullable String fieldPrefix, String loginState, Violations violations) {
-    final String messageKey = "jakarta.validation.constraints.NotEmpty.message";
     RolesAndAuthoritiesBean bean = new SplibSecurityUtil().getRolesAndAuthoritiesBean();
     for (String path : container.getNotEmptyItemPropertyPathList(loginState, bean)) {
       Object value = container.getValue(path);
@@ -147,7 +146,7 @@ public class SplibValidationHelper {
         String fullPath = fieldPrefix == null ? path : fieldPrefix + "." + path;
         violations.add(new BusinessViolation(
             new String[] {ItemUtil.resolveItem(fullPath, rootBean).getItemNameKey()},
-            new String[] {fullPath}, messageKey));
+            new String[] {fullPath}, SplibWebConstants.MESSAGE_KEY_NOT_EMPTY));
       }
     }
   }

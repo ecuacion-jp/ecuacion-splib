@@ -44,7 +44,13 @@ public class SplibWebConstants {
 
   public static final String KEY_BASE_PAGE_LOGIN_STATE = "data-show-page-login-state";
 
-  /** Flash attribute key used to carry FieldErrors across a redirect 
+  /** Flash attribute key used to carry FieldErrors across a redirect
    * so they survive form re-binding. */
   public static final String KEY_FLASH_FIELD_ERRORS = "_splibFlashFieldErrors";
+
+  /** {@code messageId} used for the {@code BusinessViolation} raised by ecuacion-splib's
+   *  own required-field ({@code notEmpty}) check, which runs independently of Jakarta
+   *  Validation's {@code @NotEmpty}. */
+  public static final String MESSAGE_KEY_NOT_EMPTY =
+      "jakarta.validation.constraints.NotEmpty.message";
 }
