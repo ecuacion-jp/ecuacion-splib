@@ -472,8 +472,13 @@ public abstract class SplibExceptionHandler {
 
     // For SplibGeneralForm targets, verify each path exists in the form records.
     // Paths that cannot be resolved fall back to a global error so the message is never lost.
+    // A BusinessViolation's itemPropertyPath is usually relative to the record it was raised
+    // against (e.g. SplibGeneralForm#validateNotEmpty), but some callers pass an already
+    // form-qualified path instead. resolveFormPath tries the path as-is first (verifyFormPath),
+    // falling back to qualifyForForm's itemPropertyPath-relative resolution, so both shapes
+    // are handled.
     if (br.getTarget() instanceof SplibGeneralForm form && inputPaths.length > 0) {
-      qualifiedPaths = Arrays.stream(inputPaths).map(path -> qualifyForForm(form, path))
+      qualifiedPaths = Arrays.stream(inputPaths).map(path -> resolveFormPath(form, path))
           .filter(Objects::nonNull).toArray(String[]::new);
       anyPathNotFound = qualifiedPaths.length < inputPaths.length;
     }

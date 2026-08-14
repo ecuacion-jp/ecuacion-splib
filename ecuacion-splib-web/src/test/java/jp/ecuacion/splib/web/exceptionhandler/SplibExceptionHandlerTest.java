@@ -33,11 +33,12 @@ import java.util.Locale;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.item.Item;
 import jp.ecuacion.lib.core.item.ItemContainer;
+import jp.ecuacion.lib.core.util.PropertyPathUtil;
+import jp.ecuacion.lib.core.util.internal.PropertiesFileUtilBundleReader;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.validation.constraints.AnyNotNull;
 import jp.ecuacion.splib.core.record.SplibRecord;
-import jp.ecuacion.lib.core.util.internal.PropertiesFileUtilBundleReader;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.jspecify.annotations.Nullable;
@@ -1008,6 +1009,35 @@ class SplibExceptionHandlerTest {
       assertThat(br.getFieldErrors().stream().map(e -> e.getField()).toList())
           .containsExactlyInAnyOrder("name", "email");
       assertThat(br.getGlobalErrorCount()).isEqualTo(3);
+    }
+  }
+
+  // =========================================================================
+  // BusinessViolation: itemPropertyPath is already fully form-qualified
+  //
+  // Callers that already know the record field name (SplibGeneralForm#validateNotEmpty,
+  // SplibValidationHelper) qualify their BusinessViolation's itemPropertyPath up front
+  // (e.g. "testRecord.name") rather than leaving it record-relative ("name"). addBusinessViolation
+  // must accept that shape directly via resolveFormPath (try as-is first), the same way plain
+  // ConstraintViolations are resolved - not go straight to qualifyForForm's record-relative-only
+  // resolution, which would fail to find "testRecord.name" as a property of TestRecord itself
+  // and incorrectly fall back to a global error.
+  // =========================================================================
+
+  @Nested
+  class BusinessViolation_AlreadyQualifiedPath {
+
+    @Test
+    void atItem__fieldErrorOnAlreadyQualifiedPath_withSummary() {
+      ViolationException ex =
+          violationOf(new BusinessViolation(new String[] {"testRecord.name"}, MSG1));
+      BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
+
+      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+
+      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
+      assertThat(br.getGlobalErrorCount()).isEqualTo(1); // summary only
     }
   }
 
