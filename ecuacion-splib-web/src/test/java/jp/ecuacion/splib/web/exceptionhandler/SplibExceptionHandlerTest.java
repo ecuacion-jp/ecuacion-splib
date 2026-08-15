@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import jp.ecuacion.lib.core.exception.ConstraintViolationExceptionWithParameters;
 import jp.ecuacion.lib.core.exception.ViolationException;
@@ -1295,7 +1296,7 @@ class SplibExceptionHandlerTest {
       WarnMessageBean bean =
           (WarnMessageBean) model.getAttribute(SplibWebConstants.KEY_WARN_MESSAGE);
       assertThat(bean).isNotNull();
-      assertThat(bean.getMessageId()).isEqualTo(MSG1);
+      assertThat(Objects.requireNonNull(bean).getMessageId()).isEqualTo(MSG1);
       assertThat(bean.getMessage()).isEqualTo("Test violation 1");
       assertThat(bean.getButtonName()).isEqualTo("btnConfirm");
 
@@ -1318,7 +1319,7 @@ class SplibExceptionHandlerTest {
       WarnMessageBean bean =
           (WarnMessageBean) model.getAttribute(SplibWebConstants.KEY_WARN_MESSAGE);
       assertThat(bean).isNotNull();
-      assertThat(bean.getMessage()).isEqualTo("Test violation 2");
+      assertThat(Objects.requireNonNull(bean).getMessage()).isEqualTo("Test violation 2");
       // Not a ViolationWebWarningException, so no button id -> getButtonName() falls back to "".
       assertThat(bean.getButtonName()).isEqualTo("");
     }
@@ -1418,7 +1419,7 @@ class SplibExceptionHandlerTest {
       // addViolationErrorsTo delegation: field error resolved against the form's record.
       BindingResult br = (BindingResult) model
           .getAttribute(BindingResult.MODEL_KEY_PREFIX + "testForm");
-      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(Objects.requireNonNull(br).getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
 
       // prepareFormForReturn delegation.
@@ -1456,7 +1457,7 @@ class SplibExceptionHandlerTest {
 
       BindingResult br = (BindingResult) model
           .getAttribute(BindingResult.MODEL_KEY_PREFIX + "testFormWithNested");
-      assertThat(br.getFieldErrorCount()).isEqualTo(1);
+      assertThat(Objects.requireNonNull(br).getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField())
           .isEqualTo("testRecord.nestedBean.name");
     }
@@ -1477,7 +1478,8 @@ class SplibExceptionHandlerTest {
 
       BindingResult br = (BindingResult) model
           .getAttribute(BindingResult.MODEL_KEY_PREFIX + "testFormWithValidNested");
-      assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("rec.acc.mailAddress");
+      assertThat(Objects.requireNonNull(br).getFieldErrors().get(0).getField())
+          .isEqualTo("rec.acc.mailAddress");
 
       // Controller-specified override is used verbatim instead of forAbnormalEnd().
       assertThat(mav.getViewName()).isEqualTo("redirect:/custom/abnormal");
@@ -1497,7 +1499,7 @@ class SplibExceptionHandlerTest {
 
       BindingResult br = (BindingResult) model
           .getAttribute(BindingResult.MODEL_KEY_PREFIX + "testForm");
-      assertThat(br.getFieldErrorCount()).isEqualTo(0);
+      assertThat(Objects.requireNonNull(br).getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
 
       // No field errors were produced, so nothing needs to be snapshotted to flash.
@@ -1556,7 +1558,7 @@ class SplibExceptionHandlerTest {
       List<String> errors = (List<String>) redirectAttributes.getFlashAttributes()
           .get(SplibWebConstants.KEY_GLOBAL_ERRORS);
       assertThat(errors).hasSize(1);
-      assertThat(errors.get(0)).startsWith("PREFIX-").endsWith("-SUFFIX");
+      assertThat(Objects.requireNonNull(errors).get(0)).startsWith("PREFIX-").endsWith("-SUFFIX");
     }
   }
 
@@ -1625,7 +1627,7 @@ class SplibExceptionHandlerTest {
 
       BindingResult br =
           (BindingResult) model.getAttribute(BindingResult.MODEL_KEY_PREFIX + "testForm");
-      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+      assertThat(Objects.requireNonNull(br).getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getGlobalErrors().get(0).getDefaultMessage()).isEqualTo("Test violation 1");
 
       // Routed to the form's BindingResult, not flashed as a raw string.
@@ -1691,7 +1693,7 @@ class SplibExceptionHandlerTest {
       // up on the form's BindingResult rather than a raw flash string.
       BindingResult br =
           (BindingResult) model.getAttribute(BindingResult.MODEL_KEY_PREFIX + "testForm");
-      assertThat(br.getGlobalErrorCount()).isEqualTo(1);
+      assertThat(Objects.requireNonNull(br).getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getGlobalErrors().get(0).getDefaultMessage())
           .isEqualTo(OPTIMISTIC_LOCKING_MSG);
 

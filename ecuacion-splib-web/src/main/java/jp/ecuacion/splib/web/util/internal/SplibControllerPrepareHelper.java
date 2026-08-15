@@ -135,7 +135,7 @@ public class SplibControllerPrepareHelper {
   }
 
   /**
-   * Removes {@code ConstraintViolation}s whose {@code itemPropertyPath} already has a
+   * Removes {@code ConstraintViolation}s whose item property path already has a
    * required-field {@code BusinessViolation} (added by {@link SplibGeneralForm#validateNotEmpty}
    * or {@code SplibValidationHelper}'s own not-empty check, both of which run independently of
    * Jakarta Validation).
