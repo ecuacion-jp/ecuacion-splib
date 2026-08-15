@@ -14,11 +14,13 @@ and accelerate development of business applications.
 **What's included:**
 
 - `ecuacion-splib-core` — Common foundation (BL, exception handling, common beans / records)
+- `ecuacion-splib-ui` — UI display logic shared across `ecuacion-splib-web` / `ecuacion-splib-cli`
 - `ecuacion-splib-web` — Web MVC (controllers, services, forms, Thymeleaf)
 - `ecuacion-splib-web-jpa` — Web + JPA integration (Edit / SearchList operations)
 - `ecuacion-splib-web-markdown` — Markdown-based page rendering
 - `ecuacion-splib-jpa` — JPA / Hibernate (Soft Delete, group filter, repositories)
 - `ecuacion-splib-batch` — Spring Batch (job and step listeners)
+- `ecuacion-splib-cli` — Lightweight foundation for one-shot CUI apps (no Spring Batch)
 - `ecuacion-splib-rest` — REST API (exception handling, Spring Security configuration)
 
 `ecuacion-splib` uses `Spring Boot 4`. `ecuacion-lib` and other ecuacion libraries,

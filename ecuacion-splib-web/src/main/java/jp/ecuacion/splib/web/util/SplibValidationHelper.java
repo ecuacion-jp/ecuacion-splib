@@ -22,7 +22,7 @@ import java.util.function.Function;
 import jp.ecuacion.lib.core.util.ItemUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
-import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import jp.ecuacion.splib.ui.constant.SplibUiConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
@@ -152,7 +152,7 @@ public class SplibValidationHelper {
         String fullPath = fieldPrefix == null ? path : fieldPrefix + "." + path;
         violations.add(new BusinessViolation(
             new String[] {ItemUtil.resolveItem(fullPath, rootBean).getItemNameKey()},
-            new String[] {fullPath}, SplibWebConstants.MESSAGE_KEY_NOT_EMPTY));
+            new String[] {fullPath}, SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
       }
     }
   }

@@ -18,20 +18,17 @@ package jp.ecuacion.splib.web.util.internal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Validation;
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
-import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import jp.ecuacion.splib.ui.util.SplibViolationUtil;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -140,20 +137,9 @@ public class SplibControllerPrepareHelper {
    * or {@code SplibValidationHelper}'s own not-empty check, both of which run independently of
    * Jakarta Validation).
    *
-   * <p>Without this, an empty field can show both the required-field error and an unrelated
-   * constraint error (e.g. {@code @Min}/{@code @Max} fail to parse the empty value as a
-   * number), which is confusing to the user.</p>
-   *
-   * <p>A {@code ConstraintViolation}'s {@code propertyPath} is always fully qualified from the
-   * validation root (e.g. {@code "instance.defaultIntervalMinToStop"}), while whether a
-   * {@code BusinessViolation}'s item property path is qualified the same way depends on the
-   * caller: {@link SplibGeneralForm#validateNotEmpty} leaves it relative to the record it was
-   * raised against (e.g. {@code "defaultIntervalMinToStop"}), whereas {@code
-   * SplibValidationHelper} already prefixes it with the containing field name. {@code
-   * toItemPropertyPath} lets each caller supply whatever conversion (if any) makes its
-   * {@code ConstraintViolation} paths comparable to its own {@code BusinessViolation} paths -
-   * {@link SplibGeneralForm#toItemPropertyPath} for the former, {@link Function#identity()} for
-   * the latter.</p>
+   * <p>Delegates to {@link SplibViolationUtil#excludeConstraintViolationsMaskedByRequiredError},
+   * shared with other ecuacion-splib UI modules (see its javadoc for the full rationale and the
+   * meaning of {@code toItemPropertyPath}).</p>
    *
    * @param violations violations collected so far
    * @param toItemPropertyPath converts a {@code ConstraintViolation}'s fully qualified
@@ -163,16 +149,7 @@ public class SplibControllerPrepareHelper {
    */
   public Violations excludeConstraintViolationsMaskedByRequiredError(Violations violations,
       Function<String, String> toItemPropertyPath) {
-    Set<@NonNull String> requiredItemPropertyPaths = violations.getBusinessViolations().stream()
-        .filter(bv -> bv.getMessageId().equals(SplibWebConstants.MESSAGE_KEY_NOT_EMPTY))
-        .flatMap(bv -> Arrays.stream(bv.getItemPropertyPaths())).collect(Collectors.toSet());
-
-    Violations filtered = new Violations().messageParameters(violations.messageParameters());
-    violations.getConstraintViolations().stream()
-        .filter(cv -> !requiredItemPropertyPaths
-            .contains(toItemPropertyPath.apply(cv.getPropertyPath().toString())))
-        .forEach(filtered::add);
-    violations.getBusinessViolations().forEach(filtered::add);
-    return filtered;
+    return SplibViolationUtil.excludeConstraintViolationsMaskedByRequiredError(violations,
+        toItemPropertyPath);
   }
 }
