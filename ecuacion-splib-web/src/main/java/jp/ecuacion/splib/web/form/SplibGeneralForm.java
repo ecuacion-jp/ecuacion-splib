@@ -28,7 +28,7 @@ import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.record.SplibRecord;
-import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import jp.ecuacion.splib.ui.constant.SplibUiConstants;
 import jp.ecuacion.splib.web.controller.ControllerContext;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
@@ -314,7 +314,7 @@ public abstract class SplibGeneralForm {
               new String[] {ItemUtil.resolveItem(
                   notEmptyItemPropertyPath, rootBean).getItemNameKey()},
               new String[] {notEmptyItemPropertyPath},
-              SplibWebConstants.MESSAGE_KEY_NOT_EMPTY));
+              SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
         }
       }
     }

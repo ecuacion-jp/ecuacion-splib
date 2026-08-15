@@ -13,52 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.ecuacion.splib.web.util.internal;
+package jp.ecuacion.splib.ui.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.function.Function;
-import jp.ecuacion.lib.core.item.Item;
-import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
-import jp.ecuacion.splib.core.record.SplibRecord;
-import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.form.SplibGeneralForm;
+import jp.ecuacion.splib.ui.constant.SplibUiConstants;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for
- * {@link SplibControllerPrepareHelper#excludeConstraintViolationsMaskedByRequiredError}.
+ * {@link SplibViolationUtil#excludeConstraintViolationsMaskedByRequiredError}.
  */
-class SplibControllerPrepareHelperTest {
+class SplibViolationUtilTest {
 
-  private final SplibControllerPrepareHelper helper = new SplibControllerPrepareHelper();
+  /** Prefix a real caller (e.g. {@code SplibGeneralForm#toItemPropertyPath}) would strip off a
+   *  {@code ConstraintViolation}'s fully qualified propertyPath before comparing it against
+   *  {@code BusinessViolation} item property paths. */
+  private static final Function<String, String> STRIP_TEST_RECORD_PREFIX = path -> path
+      .startsWith("testRecord.") ? path.substring("testRecord.".length()) : path;
 
   /**
    * Record with a {@code @NotNull name} field, left {@code null} by default so validating a
    * {@code TestForm} cascades into it and produces a {@code ConstraintViolation} whose
    * {@code propertyPath} is fully qualified as {@code "testRecord.name"}.
    */
-  private static class TestRecord extends SplibRecord implements ItemContainer {
+  private static class TestRecord {
     @NotNull
     @SuppressWarnings({"UnusedVariable", "MultipleNullnessAnnotations"})
     @Nullable
     String name;
-
-    @Override
-    public Item[] customizedItems() {
-      return new Item[] {};
-    }
   }
 
   /**
    * Test form whose record field is {@code @Valid}-cascaded, matching how a real
    * {@code SplibEditRecForm}'s root record field is declared.
    */
-  private static class TestForm extends SplibGeneralForm {
+  private static class TestForm {
     @Valid
     @SuppressWarnings("unused")
     TestRecord testRecord = new TestRecord();
@@ -71,11 +66,10 @@ class SplibControllerPrepareHelperTest {
     // it) -> both refer to the same field once "testRecord." is stripped from the CV's path.
     Violations violations = new Violations().validate(new TestForm())
         .add(new BusinessViolation(new String[] {"name"},
-            SplibWebConstants.MESSAGE_KEY_NOT_EMPTY));
+            SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
 
-    Violations filtered =
-        helper.excludeConstraintViolationsMaskedByRequiredError(violations,
-            new TestForm()::toItemPropertyPath);
+    Violations filtered = SplibViolationUtil
+        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
 
     assertThat(filtered.getConstraintViolations()).isEmpty();
     assertThat(filtered.getBusinessViolations()).hasSize(1);
@@ -86,11 +80,10 @@ class SplibControllerPrepareHelperTest {
     // BV targets "otherField", unrelated to the CV's "name" -> nothing is removed.
     Violations violations = new Violations().validate(new TestForm())
         .add(new BusinessViolation(new String[] {"otherField"},
-            SplibWebConstants.MESSAGE_KEY_NOT_EMPTY));
+            SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
 
-    Violations filtered =
-        helper.excludeConstraintViolationsMaskedByRequiredError(violations,
-            new TestForm()::toItemPropertyPath);
+    Violations filtered = SplibViolationUtil
+        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
 
     assertThat(filtered.getConstraintViolations().stream()
         .map(cv -> cv.getPropertyPath().toString())).containsExactly("testRecord.name");
@@ -103,9 +96,8 @@ class SplibControllerPrepareHelperTest {
     Violations violations = new Violations().validate(new TestForm())
         .add(new BusinessViolation(new String[] {"name"}, "some.other.message"));
 
-    Violations filtered =
-        helper.excludeConstraintViolationsMaskedByRequiredError(violations,
-            new TestForm()::toItemPropertyPath);
+    Violations filtered = SplibViolationUtil
+        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
 
     assertThat(filtered.getConstraintViolations().stream()
         .map(cv -> cv.getPropertyPath().toString())).containsExactly("testRecord.name");
@@ -115,9 +107,8 @@ class SplibControllerPrepareHelperTest {
   void noBusinessViolations_keepsAllConstraintViolations() {
     Violations violations = new Violations().validate(new TestForm());
 
-    Violations filtered =
-        helper.excludeConstraintViolationsMaskedByRequiredError(violations,
-            new TestForm()::toItemPropertyPath);
+    Violations filtered = SplibViolationUtil
+        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
 
     assertThat(filtered.getConstraintViolations()).hasSize(1);
     assertThat(filtered.getBusinessViolations()).isEmpty();
@@ -130,10 +121,10 @@ class SplibControllerPrepareHelperTest {
     // paths are, so Function.identity() (no conversion) is the correct comparison.
     Violations violations = new Violations().validate(new TestForm())
         .add(new BusinessViolation(new String[] {"testRecord.name"},
-            SplibWebConstants.MESSAGE_KEY_NOT_EMPTY));
+            SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
 
-    Violations filtered =
-        helper.excludeConstraintViolationsMaskedByRequiredError(violations, Function.identity());
+    Violations filtered = SplibViolationUtil
+        .excludeConstraintViolationsMaskedByRequiredError(violations, Function.identity());
 
     assertThat(filtered.getConstraintViolations()).isEmpty();
   }
