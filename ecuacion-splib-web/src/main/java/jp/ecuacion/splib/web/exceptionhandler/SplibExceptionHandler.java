@@ -75,6 +75,22 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  */
 public abstract class SplibExceptionHandler {
 
+  /**
+   * {@code application.properties} key controlling whether messages are shown next to each
+   * field. See {@link #addViolationErrorsTo} for how it is used together with
+   * {@link #PROP_KEY_SHOWN_AT_THE_TOP}.
+   */
+  public static final String PROP_KEY_SHOWN_AT_EACH_ITEM =
+      "jp.ecuacion.splib.web.process-result-message.shown-at-each-item";
+
+  /**
+   * {@code application.properties} key controlling whether messages are shown at the top of
+   * the page. See {@link #addViolationErrorsTo} for how it is used together with
+   * {@link #PROP_KEY_SHOWN_AT_EACH_ITEM}.
+   */
+  public static final String PROP_KEY_SHOWN_AT_THE_TOP =
+      "jp.ecuacion.splib.web.process-result-message.shown-at-the-top";
+
   private DetailLogger detailLog = new DetailLogger(this);
 
   HttpServletRequest request;
@@ -249,10 +265,10 @@ public abstract class SplibExceptionHandler {
 
     Locale locale = request.getLocale();
 
-    boolean needsMsgAtItemDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-each-item", "false"));
-    boolean needsMsgAtTopDefault = Boolean.valueOf(PropertiesFileUtil.getApplicationOrElse(
-        "jp.ecuacion.splib.web.process-result-message.shown-at-the-top", "false"));
+    boolean needsMsgAtItemDefault = Boolean.valueOf(
+        PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_EACH_ITEM, "false"));
+    boolean needsMsgAtTopDefault = Boolean.valueOf(
+        PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_THE_TOP, "false"));
 
     addViolationErrorsTo(exception, getPrimaryBindingResult(), needsMsgAtItemDefault,
         needsMsgAtTopDefault, locale);
@@ -305,10 +321,8 @@ public abstract class SplibExceptionHandler {
    *
    * @param exception the exception whose violations should be added
    * @param br the {@code BindingResult} to populate
-   * @param needsMsgAtItemDefault value of
-   *     {@code jp.ecuacion.splib.web.process-result-message.shown-at-each-item}
-   * @param needsMsgAtTopDefault value of
-   *     {@code jp.ecuacion.splib.web.process-result-message.shown-at-the-top}
+   * @param needsMsgAtItemDefault value of {@link #PROP_KEY_SHOWN_AT_EACH_ITEM}
+   * @param needsMsgAtTopDefault value of {@link #PROP_KEY_SHOWN_AT_THE_TOP}
    * @param locale locale for message resolution
    * @return the same {@code BindingResult}, with errors added
    */
@@ -360,9 +374,8 @@ public abstract class SplibExceptionHandler {
    */
   private void validateMessageDisplayConfig(boolean atItem, boolean atTop) {
     if (!atItem && !atTop) {
-      throw new RuntimeException(
-          "One of 'jp.ecuacion.splib.web.process-result-message.shown-at-each-item' or "
-              + "'jp.ecuacion.splib.web.process-result-message.shown-at-the-top' must be true.");
+      throw new RuntimeException("One of '" + PROP_KEY_SHOWN_AT_EACH_ITEM + "' or '"
+          + PROP_KEY_SHOWN_AT_THE_TOP + "' must be true.");
     }
   }
 
