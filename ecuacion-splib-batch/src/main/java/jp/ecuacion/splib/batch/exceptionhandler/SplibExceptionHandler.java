@@ -70,6 +70,17 @@ public class SplibExceptionHandler implements ExceptionHandler {
     sb.append(formatMsg("tasklet or chunk", SplibBatchAdvice.getCurrentTaskletOrChunk(), false));
     detailLog.info(sb.toString());
 
+    // For ViolationException, list all messages first so batch users see the
+    // human-readable summary before the stack trace below.
+    if (throwable instanceof ViolationException violationException) {
+      List<@NonNull String> msgList = ExceptionUtil.getMessageList(
+          violationException, LocaleUtil.getFallbackLocale(), true);
+      detailLog.info("==========");
+      detailLog.info("ViolationExceptions occured. Messages are as follows.");
+      msgList.stream().forEach(msg -> detailLog.info("  - " + msg));
+      detailLog.info("==========");
+    }
+
     LogUtil.logSystemError(detailLog, throwable);
 
     if (action != null) {
@@ -79,16 +90,6 @@ public class SplibExceptionHandler implements ExceptionHandler {
       } catch (Throwable th) {
         LogUtil.logSystemError(detailLog, th);
       }
-    }
-
-    // For ViolationException, list all messages so they are visible in the log.
-    if (throwable instanceof ViolationException violationException) {
-      List<@NonNull String> msgList = ExceptionUtil.getMessageList(
-          violationException, LocaleUtil.getFallbackLocale(), true);
-      detailLog.info("==========");
-      detailLog.info("[ViolationException message list]");
-      msgList.stream().forEach(msg -> detailLog.info(msg));
-      detailLog.info("==========");
     }
 
     throw throwable;
