@@ -69,11 +69,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @AutoConfiguration
 public class SplibWebExceptionHandlerAutoConfiguration {
 
-  private static final String PROP_AT_TOP =
-      "jp.ecuacion.splib.web.process-result-message.shown-at-the-top";
-  private static final String PROP_AT_ITEM =
-      "jp.ecuacion.splib.web.process-result-message.shown-at-each-item";
-
   /**
    * Minimal {@link ControllerAdvice} that handles only {@link ViolationException}.
    */
@@ -133,10 +128,10 @@ public class SplibWebExceptionHandlerAutoConfiguration {
         List<BusinessViolation> businessViolations, MessageParameters params, Locale locale,
         String viewName, Model model) {
 
-      boolean atTop =
-          Boolean.parseBoolean(PropertiesFileUtil.getApplicationOrElse(PROP_AT_TOP, "false"));
-      boolean atItem =
-          Boolean.parseBoolean(PropertiesFileUtil.getApplicationOrElse(PROP_AT_ITEM, "true"));
+      boolean atTop = Boolean.parseBoolean(PropertiesFileUtil
+          .getApplicationOrElse(SplibExceptionHandler.PROP_KEY_SHOWN_AT_THE_TOP, "false"));
+      boolean atItem = Boolean.parseBoolean(PropertiesFileUtil
+          .getApplicationOrElse(SplibExceptionHandler.PROP_KEY_SHOWN_AT_EACH_ITEM, "true"));
 
       if (atTop) {
         List<String> topMessages = new ArrayList<>();
