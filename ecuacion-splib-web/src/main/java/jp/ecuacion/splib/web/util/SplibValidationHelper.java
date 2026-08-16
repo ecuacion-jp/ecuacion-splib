@@ -18,9 +18,11 @@ package jp.ecuacion.splib.web.util;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Validation;
 import java.lang.reflect.Field;
+import java.util.function.Function;
 import jp.ecuacion.lib.core.util.ItemUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.ui.constant.SplibUiConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
@@ -83,7 +85,11 @@ public class SplibValidationHelper {
     Violations violations = new Violations();
     violations.addAll(Validation.buildDefaultValidatorFactory().getValidator().validate(form));
     validateHtmlItemContainers(form, violations);
-    violations.throwIfAny();
+    // Unlike SplibGeneralForm#validateNotEmpty, validateNotEmptyForContainer (below) already
+    // prefixes its BusinessViolation paths with the containing field name, so a
+    // ConstraintViolation's propertyPath needs no further conversion to compare against them.
+    prepareHelper.excludeConstraintViolationsMaskedByRequiredError(violations, Function.identity())
+        .throwIfAny();
   }
 
   /**
@@ -139,7 +145,6 @@ public class SplibValidationHelper {
    */
   private void validateNotEmptyForContainer(Object rootBean, HtmlItemContainer container,
       @Nullable String fieldPrefix, String loginState, Violations violations) {
-    final String messageKey = "jakarta.validation.constraints.NotEmpty.message";
     RolesAndAuthoritiesBean bean = new SplibSecurityUtil().getRolesAndAuthoritiesBean();
     for (String path : container.getNotEmptyItemPropertyPathList(loginState, bean)) {
       Object value = container.getValue(path);
@@ -147,7 +152,7 @@ public class SplibValidationHelper {
         String fullPath = fieldPrefix == null ? path : fieldPrefix + "." + path;
         violations.add(new BusinessViolation(
             new String[] {ItemUtil.resolveItem(fullPath, rootBean).getItemNameKey()},
-            new String[] {fullPath}, messageKey));
+            new String[] {fullPath}, SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
       }
     }
   }

@@ -21,8 +21,10 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.ui.util.SplibViolationUtil;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
@@ -125,6 +127,29 @@ public class SplibControllerPrepareHelper {
       }
     }
 
-    violations.throwIfAny();
+    excludeConstraintViolationsMaskedByRequiredError(violations, form::toItemPropertyPath)
+        .throwIfAny();
+  }
+
+  /**
+   * Removes {@code ConstraintViolation}s whose item property path already has a
+   * required-field {@code BusinessViolation} (added by {@link SplibGeneralForm#validateNotEmpty}
+   * or {@code SplibValidationHelper}'s own not-empty check, both of which run independently of
+   * Jakarta Validation).
+   *
+   * <p>Delegates to {@link SplibViolationUtil#excludeConstraintViolationsMaskedByRequiredError},
+   * shared with other ecuacion-splib UI modules (see its javadoc for the full rationale and the
+   * meaning of {@code toItemPropertyPath}).</p>
+   *
+   * @param violations violations collected so far
+   * @param toItemPropertyPath converts a {@code ConstraintViolation}'s fully qualified
+   *     {@code propertyPath} into the same shape as the {@code BusinessViolation} item property
+   *     paths raised by the caller
+   * @return a new {@code Violations} with the masked constraint violations removed
+   */
+  public Violations excludeConstraintViolationsMaskedByRequiredError(Violations violations,
+      Function<String, String> toItemPropertyPath) {
+    return SplibViolationUtil.excludeConstraintViolationsMaskedByRequiredError(violations,
+        toItemPropertyPath);
   }
 }

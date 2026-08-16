@@ -208,6 +208,16 @@
 			</dependency>
 			<dependency>
 				<groupId>jp.ecuacion.splib</groupId>
+				<artifactId>ecuacion-splib-ui</artifactId>
+				<version>${ecuacion-splib.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>jp.ecuacion.splib</groupId>
+				<artifactId>ecuacion-splib-cli</artifactId>
+				<version>${ecuacion-splib.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>jp.ecuacion.splib</groupId>
 				<artifactId>ecuacion-splib-rest</artifactId>
 				<version>${ecuacion-splib.version}</version>
 			</dependency>
@@ -253,6 +263,8 @@
 		<module>ecuacion-splib-core</module>
 		<module>ecuacion-splib-jpa</module>
 		<module>ecuacion-splib-batch</module>
+		<module>ecuacion-splib-ui</module>
+		<module>ecuacion-splib-cli</module>
 		<module>ecuacion-splib-web</module>
 		<module>ecuacion-splib-web-jpa</module>
 		<module>ecuacion-splib-web-markdown</module>

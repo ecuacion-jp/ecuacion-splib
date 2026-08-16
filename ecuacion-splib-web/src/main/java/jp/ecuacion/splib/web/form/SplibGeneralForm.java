@@ -28,6 +28,7 @@ import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.record.SplibRecord;
+import jp.ecuacion.splib.ui.constant.SplibUiConstants;
 import jp.ecuacion.splib.web.controller.ControllerContext;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
@@ -185,6 +186,31 @@ public abstract class SplibGeneralForm {
   }
 
   /**
+   * Strips a root-record-field prefix from {@code propertyPath} (e.g. {@code "testRecord.name"}
+   * &rarr; {@code "name"}), returning the {@code itemPropertyPath} relative to whichever record
+   * it belongs to.
+   *
+   * <p>Inverse of the qualification {@code SplibExceptionHandler#qualifyForForm} applies to an
+   *     {@code itemPropertyPath} (such as a {@link BusinessViolation}'s item property paths
+   *     raised by {@link #validateNotEmpty}). Used to compare a {@code ConstraintViolation}'s
+   *     already-form-qualified {@code propertyPath} against those {@code itemPropertyPath}s on
+   *     equal footing.</p>
+   *
+   * @param propertyPath a property path, typically already fully qualified from the form root
+   * @return the {@code itemPropertyPath} form of {@code propertyPath} (its root-record-field
+   *     prefix removed), or {@code propertyPath} unchanged when no root record field prefixes it
+   */
+  public String toItemPropertyPath(String propertyPath) {
+    for (Field rootRecordField : getRootRecordFields()) {
+      String prefix = rootRecordField.getName() + ".";
+      if (propertyPath.startsWith(prefix)) {
+        return propertyPath.substring(prefix.length());
+      }
+    }
+    return propertyPath;
+  }
+
+  /**
    * Gets root record.
    */
   public @Nullable Object getRootRecord(String recordName) {
@@ -273,9 +299,6 @@ public abstract class SplibGeneralForm {
   public void validateNotEmpty(Object rootBean, Violations violations, Locale locale,
       String loginState, @Nullable RolesAndAuthoritiesBean bean) {
 
-    final String validationClass = "jakarta.validation.constraints.NotEmpty";
-    // Set<ConstraintViolationBean<SplibGeneralForm>> rtnSet = new HashSet<>();
-
     List<Field> rootRecordFieldList = getRootRecordFields();
     for (Field rootRecordField : rootRecordFieldList) {
       // Skip records that don't implement HtmlItemContainer (also handles null).
@@ -291,10 +314,7 @@ public abstract class SplibGeneralForm {
               new String[] {ItemUtil.resolveItem(
                   notEmptyItemPropertyPath, rootBean).getItemNameKey()},
               new String[] {notEmptyItemPropertyPath},
-              validationClass + ".message"));
-          // rtnSet.add(new ConstraintViolationBean<SplibGeneralForm>(validationClass, this,
-          // "(empty)",
-          // validationClass + ".message", rootRecordName + "." + notEmptyItemPropertyPath));
+              SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
         }
       }
     }
