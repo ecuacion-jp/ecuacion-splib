@@ -66,6 +66,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -240,6 +241,20 @@ public abstract class SplibExceptionHandler {
     for (BusinessViolation bv : violations.getBusinessViolations()) {
       errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
     }
+    return redirectToRefererWithGlobalErrors(errorMessages, redirectAttributes);
+  }
+
+  /**
+   * Redirects back to the referring page (falling back to {@code "/"}), passing
+   * {@code errorMessages} via a flash attribute so the redirect target can display them.
+   *
+   * <p>Used by exception handlers that fire before a {@link SplibGeneralController} is
+   *     available (no model, no forms), so there is no {@code BindingResult} to attach
+   *     field/global errors to.</p>
+   */
+  private ModelAndView redirectToRefererWithGlobalErrors(List<String> errorMessages,
+      RedirectAttributes redirectAttributes) {
+
     redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
 
     String redirectTarget = "/";
@@ -758,6 +773,29 @@ public abstract class SplibExceptionHandler {
           new ViolationException(new Violations().add(new BusinessViolation(msgId))), loginUser,
           redirectAttributes);
     }
+  }
+
+  /**
+   * Catches {@code MaxUploadSizeExceededException}, thrown when an uploaded file exceeds
+   * {@code spring.servlet.multipart.max-file-size} / {@code max-request-size}.
+   *
+   * <p>This fires while {@code DispatcherServlet} is parsing the multipart request, before the
+   *     controller's {@code prepare()} runs, so no model/forms are available yet. Redirect back
+   *     to the referring page with a flash error message, as
+   *     {@link #handleViolationExceptionWithoutController} does.</p>
+   *
+   * @param exception MaxUploadSizeExceededException
+   * @param redirectAttributes RedirectAttributes
+   * @return ModelAndView
+   */
+  @ExceptionHandler({MaxUploadSizeExceededException.class})
+  public ModelAndView handleMaxUploadSizeExceededException(
+      MaxUploadSizeExceededException exception, RedirectAttributes redirectAttributes) {
+
+    long maxUploadSizeMb = exception.getMaxUploadSize() / (1024 * 1024);
+    String message = PropertiesFileUtil.getMessage(request.getLocale(),
+        "jp.ecuacion.splib.web.common.message.maxUploadSizeExceeded", maxUploadSizeMb);
+    return redirectToRefererWithGlobalErrors(List.of(message), redirectAttributes);
   }
 
   /**
