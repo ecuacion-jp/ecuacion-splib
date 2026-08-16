@@ -66,6 +66,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -240,6 +241,20 @@ public abstract class SplibExceptionHandler {
     for (BusinessViolation bv : violations.getBusinessViolations()) {
       errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
     }
+    return redirectToRefererWithGlobalErrors(errorMessages, redirectAttributes);
+  }
+
+  /**
+   * Redirects back to the referring page (falling back to {@code "/"}), passing
+   * {@code errorMessages} via a flash attribute so the redirect target can display them.
+   *
+   * <p>Used by exception handlers that fire before a {@link SplibGeneralController} is
+   *     available (no model, no forms), so there is no {@code BindingResult} to attach
+   *     field/global errors to.</p>
+   */
+  private ModelAndView redirectToRefererWithGlobalErrors(List<String> errorMessages,
+      RedirectAttributes redirectAttributes) {
+
     redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
 
     String redirectTarget = "/";
@@ -265,10 +280,10 @@ public abstract class SplibExceptionHandler {
 
     Locale locale = request.getLocale();
 
-    boolean needsMsgAtItemDefault = Boolean.valueOf(
-        PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_EACH_ITEM, "false"));
-    boolean needsMsgAtTopDefault = Boolean.valueOf(
-        PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_THE_TOP, "false"));
+    boolean needsMsgAtItemDefault = Boolean
+        .valueOf(PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_EACH_ITEM, "false"));
+    boolean needsMsgAtTopDefault = Boolean
+        .valueOf(PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_THE_TOP, "false"));
 
     addViolationErrorsTo(exception, getPrimaryBindingResult(), needsMsgAtItemDefault,
         needsMsgAtTopDefault, locale);
@@ -334,18 +349,23 @@ public abstract class SplibExceptionHandler {
 
     Violations violations = exception.getViolations();
     MessageParameters params = violations.messageParameters();
+    // representativePropertyPath is a property of the Violations batch as a whole (via its
+    // single MessageParameters), not of any individual violation, so it's resolved once here
+    // and passed down as a plain value rather than threading MessageParameters into per-violation
+    // methods.
+    String representativePropertyPath = resolveRepresentativePropertyPath(br, params);
 
     List<ConstraintViolation<?>> sortedCvs = sortedConstraintViolations(violations);
 
     boolean atEachItemErrorAdded = false;
 
     for (ConstraintViolation<?> cv : sortedCvs) {
-      atEachItemErrorAdded |= addConstraintViolation(br, cv, params, needsMsgAtItemDefault,
-          needsMsgAtTopDefault, locale);
+      atEachItemErrorAdded |= addConstraintViolation(br, cv, params, representativePropertyPath,
+          needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
     }
     for (BusinessViolation bv : violations.getBusinessViolations()) {
-      atEachItemErrorAdded |=
-          addBusinessViolation(br, bv, needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
+      atEachItemErrorAdded |= addBusinessViolation(br, bv, representativePropertyPath,
+          needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
     }
 
     // When at least one field-level (at-each-item) error was added, prepend a summary message
@@ -385,8 +405,8 @@ public abstract class SplibExceptionHandler {
    * @return {@code true} if any at-each-item error was added.
    */
   private boolean addConstraintViolation(BindingResult br, ConstraintViolation<?> cv,
-      MessageParameters params, boolean needsMsgAtItemDefault, boolean needsMsgAtTopDefault,
-      Locale locale) {
+      MessageParameters params, @Nullable String representativePropertyPath,
+      boolean needsMsgAtItemDefault, boolean needsMsgAtTopDefault, Locale locale) {
     String errorCode =
         cv.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
 
@@ -421,13 +441,19 @@ public abstract class SplibExceptionHandler {
     } else {
       String pathStr = cv.getPropertyPath().toString();
       if (pathStr.isEmpty()) {
-        // Class-level constraint (propertyPath is empty): no field to attach the error to.
+        // Class-level constraint (propertyPath is empty): no field to attach the error to,
+        // unless a representativePropertyPath is available to stand in for it.
         // ExceptionUtil.getMessageList cannot resolve an item name from an empty path
         // (it throws RequireNonEmptyException inside Item.<init>), so we use the
         // CV's already-interpolated message directly and register it as a global error.
         // The error is always shown at the top regardless of the needsMsgAtTop setting.
         addGlobalError(br, errorCode, cv.getMessage());
-        return false; // no at-each-item error was added
+        String[] representativePaths =
+            applyRepresentativePropertyPathFallback(new String[0], representativePropertyPath);
+        if (representativePaths.length > 0) {
+          addFieldError(br, representativePaths[0], errorCode, cv.getMessage());
+        }
+        return representativePaths.length > 0; // at-each-item error added iff fallback resolved
       } else if (br.getTarget() instanceof SplibGeneralForm form) {
         // A plain ConstraintViolation's propertyPath is usually already fully qualified from
         // the form root (e.g. "rec.acc.mailAddress"), because the framework's real validation
@@ -443,10 +469,14 @@ public abstract class SplibExceptionHandler {
       }
     }
 
+    boolean pathsWereEmpty = propertyPaths.length == 0;
+    propertyPaths =
+        applyRepresentativePropertyPathFallback(propertyPaths, representativePropertyPath);
+
     Violations single = new Violations().messageParameters(params).add(cv);
-    // When no property paths are resolved, or when any path was not found in the form,
+    // When no property paths were resolved, or when any path was not found in the form,
     // fall back to a global (top-of-page) error so the message is never silently dropped.
-    boolean needsMsgAtTop = needsMsgAtTopDefault || propertyPaths.length == 0 || anyPathNotFound;
+    boolean needsMsgAtTop = needsMsgAtTopDefault || pathsWereEmpty || anyPathNotFound;
     return addViolation(br, errorCode, propertyPaths, single, needsMsgAtItemDefault, needsMsgAtTop,
         locale);
   }
@@ -475,7 +505,8 @@ public abstract class SplibExceptionHandler {
    * @return {@code true} if any at-each-item error was added.
    */
   private boolean addBusinessViolation(BindingResult br, BusinessViolation violation,
-      boolean needsMsgAtItemDefault, boolean needsMsgAtTopDefault, Locale locale) {
+      @Nullable String representativePropertyPath, boolean needsMsgAtItemDefault,
+      boolean needsMsgAtTopDefault, Locale locale) {
     String errorCode = violation.getMessageId();
     Violations single = new Violations().add(violation);
 
@@ -496,10 +527,46 @@ public abstract class SplibExceptionHandler {
       anyPathNotFound = qualifiedPaths.length < inputPaths.length;
     }
 
+    qualifiedPaths =
+        applyRepresentativePropertyPathFallback(qualifiedPaths, representativePropertyPath);
+
     // Fall back to global when no paths are specified, or when any path was not found in the form.
     boolean needsMsgAtTop = needsMsgAtTopDefault || inputPaths.length == 0 || anyPathNotFound;
     return addViolation(br, errorCode, qualifiedPaths, single, needsMsgAtItemDefault, needsMsgAtTop,
         locale);
+  }
+
+  /**
+   * Resolves {@code params}' {@code representativePropertyPath} (if set) against {@code br}'s
+   * form once per {@code Violations} batch, so every violation within the batch that has no
+   * property path of its own can fall back to the same, already-resolved item (e.g. a file
+   * upload field, for violations found deep inside the uploaded file's content).
+   *
+   * @return the resolved path, or {@code null} when none is set or it cannot be resolved.
+   */
+  @Nullable
+  private String resolveRepresentativePropertyPath(BindingResult br, MessageParameters params) {
+    String representativePath = params.getRepresentativePropertyPath();
+    if (representativePath == null) {
+      return null;
+    }
+
+    return br.getTarget() instanceof SplibGeneralForm form
+        ? resolveFormPath(form, representativePath)
+        : representativePath;
+  }
+
+  /**
+   * Returns {@code propertyPaths} unchanged unless it's empty, in which case it falls back to
+   * {@code representativePropertyPath} (already resolved by
+   * {@link #resolveRepresentativePropertyPath}) so a violation with no UI item of its own can
+   * still highlight the batch's associated item.
+   */
+  private String[] applyRepresentativePropertyPathFallback(String[] propertyPaths,
+      @Nullable String representativePropertyPath) {
+    return propertyPaths.length == 0 && representativePropertyPath != null
+        ? new String[] {representativePropertyPath}
+        : propertyPaths;
   }
 
   /**
@@ -713,7 +780,7 @@ public abstract class SplibExceptionHandler {
         addBusinessViolation(getPrimaryBindingResult(),
             new BusinessViolation(redirectException.getMessageId(),
                 (Object[]) redirectException.getMessageArgs()),
-            false, true, request.getLocale());
+            null, false, true, request.getLocale());
       } else {
         // Controller#prepare did not run or no forms in model; no form/BindingResult is available.
         // Resolve the message and pass it via flash attribute so the redirect target can show it.
@@ -758,6 +825,29 @@ public abstract class SplibExceptionHandler {
           new ViolationException(new Violations().add(new BusinessViolation(msgId))), loginUser,
           redirectAttributes);
     }
+  }
+
+  /**
+   * Catches {@code MaxUploadSizeExceededException}, thrown when an uploaded file exceeds
+   * {@code spring.servlet.multipart.max-file-size} / {@code max-request-size}.
+   *
+   * <p>This fires while {@code DispatcherServlet} is parsing the multipart request, before the
+   *     controller's {@code prepare()} runs, so no model/forms are available yet. Redirect back
+   *     to the referring page with a flash error message, as
+   *     {@link #handleViolationExceptionWithoutController} does.</p>
+   *
+   * @param exception MaxUploadSizeExceededException
+   * @param redirectAttributes RedirectAttributes
+   * @return ModelAndView
+   */
+  @ExceptionHandler({MaxUploadSizeExceededException.class})
+  public ModelAndView handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception,
+      RedirectAttributes redirectAttributes) {
+
+    long maxUploadSizeMb = exception.getMaxUploadSize() / (1024 * 1024);
+    String message = PropertiesFileUtil.getMessage(request.getLocale(),
+        "jp.ecuacion.splib.web.common.message.maxUploadSizeExceeded", maxUploadSizeMb);
+    return redirectToRefererWithGlobalErrors(List.of(message), redirectAttributes);
   }
 
   /**
