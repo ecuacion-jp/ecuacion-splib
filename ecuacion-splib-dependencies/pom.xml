@@ -62,7 +62,7 @@
 		<org.apache.maven.plugins.maven-war-plugin.version>3.5.1</org.apache.maven.plugins.maven-war-plugin.version>
 		<!-- Not inherited from ecuacion-splib-parent (properties don't propagate via the BOM
 		     import below either), so redeclared here for spring-boot-maven-plugin's version. -->
-		<spring-boot.version>4.0.7</spring-boot.version>
+		<spring-boot.version>4.1.0</spring-boot.version>
 	</properties>
 
 	<build>
