@@ -42,6 +42,19 @@
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 
+		<!-- Tomcat (Catalina) API: only for SplibAppConfDirLifecycleListener, a Tomcat
+			LifecycleListener a consuming app's own META-INF/context.xml can reference when
+			deployed to an existing Tomcat. provided (not optional=true, unlike spring-cloud-context
+			above): unlike that case, this really is "supplied by the runtime container," not an
+			opt-in enhancement — Catalina classes are on the classpath either via Tomcat's own
+			runtime (external-Tomcat deployment) or via the consuming app's own
+			spring-boot-starter-tomcat (executable WAR), never bundled here. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- spring-cloud-context: optional. When a consuming app adds this dependency itself,
 			SplibPropertiesCacheClearer additionally refreshes Spring's own properties cache
 			(via ContextRefresher) when clearing PropertiesFileUtil's cache; otherwise that part
