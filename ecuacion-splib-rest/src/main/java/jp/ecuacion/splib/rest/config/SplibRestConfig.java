@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackages = "jp.ecuacion.splib.core.config"
-    + ",jp.ecuacion.splib.rest.advice"
+    + ",jp.ecuacion.splib.rest.exceptionhandler"
     + ",jp.ecuacion.splib.rest.controller"
   )
 public class SplibRestConfig {
