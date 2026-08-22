@@ -79,7 +79,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
       List<@NonNull String> msgList = ExceptionUtil.getMessageList(
           violationException, LocaleUtil.getFallbackLocale(), true);
       detailLog.error("ViolationExceptions occured. Messages are as follows.");
-      msgList.stream().forEach(msg -> detailLog.error("  - " + msg));
+      msgList.stream().forEach(msg -> detailLog.error("- " + msg));
     }
 
     // Only the one-line summary is logged here, not the full stack trace: this handler
