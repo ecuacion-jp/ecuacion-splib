@@ -57,7 +57,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  *       expected to branch on it.</li>
  *   <li>Anything else — a genuinely unanticipated exception (a bug, not a reported failure).
  *       Handled by {@link #handleThrowable}: logged as a system error, optionally alerted on via
- *       {@link #actionOnThrowable}, and answered with a generic {@code 501} — there is no
+ *       {@link #actionOnThrowable}, and answered with a generic {@code 500} — there is no
  *       meaningful message to return either a human or a developer in this case.</li>
  * </ul>
  */
@@ -175,6 +175,6 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
       Objects.requireNonNull(actionOnThrowable).execute(exception);
     }
 
-    return ErrorResponse.create(exception, HttpStatusCode.valueOf(501), "Internal Server Error...");
+    return ErrorResponse.create(exception, HttpStatusCode.valueOf(500), "Internal Server Error...");
   }
 }
