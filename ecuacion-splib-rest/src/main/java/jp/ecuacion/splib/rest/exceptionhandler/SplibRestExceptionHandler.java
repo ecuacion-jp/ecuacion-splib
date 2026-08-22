@@ -21,6 +21,7 @@ import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
+import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.dto.ViolationsResponse;
 import org.jspecify.annotations.NonNull;
@@ -71,10 +72,19 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   /**
    * Constructs a new instance.
    *
-   * @param actionOnThrowable actionOnThrowable, may be {@code null}
+   * <p>{@code restAction} takes priority when both are registered. When only
+   *     {@code fallbackAction} ({@link SplibExceptionHandlerAction}) is registered — the common
+   *     case for an app that hasn't defined REST-specific behavior — it's used as-is, per
+   *     {@link SplibRestExceptionHandlerAction}'s Javadoc.</p>
+   *
+   * @param restAction REST-specific action, may be {@code null}
+   * @param fallbackAction shared action used when {@code restAction} is absent, may be
+   *     {@code null}
    */
-  public SplibRestExceptionHandler(@Nullable SplibRestExceptionHandlerAction actionOnThrowable) {
-    this.actionOnThrowable = actionOnThrowable;
+  public SplibRestExceptionHandler(@Nullable SplibRestExceptionHandlerAction restAction,
+      @Nullable SplibExceptionHandlerAction fallbackAction) {
+    this.actionOnThrowable =
+        restAction != null ? restAction : fallbackAction == null ? null : fallbackAction::execute;
   }
 
   /**

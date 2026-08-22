@@ -16,11 +16,16 @@
 package jp.ecuacion.splib.rest.advice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.Locale;
 import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
+import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.dto.ViolationsResponse;
 import jp.ecuacion.splib.rest.exceptionhandler.SplibRestExceptionHandler;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +47,7 @@ class SplibRestExceptionHandlerTest {
   private static final String MESSAGE_ID =
       "jp.ecuacion.lib.core.util.EmbeddedVariableUtil.paramNotFoundInMap.message";
 
-  private final SplibRestExceptionHandler handler = new SplibRestExceptionHandler(null);
+  private final SplibRestExceptionHandler handler = new SplibRestExceptionHandler(null, null);
 
   private ServletWebRequest requestWithLocale(Locale locale) {
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -92,5 +97,33 @@ class SplibRestExceptionHandlerTest {
     String enMessage = Objects.requireNonNull(enResponse.getBody()).messages().get(0);
     String jaMessage = Objects.requireNonNull(jaResponse.getBody()).messages().get(0);
     assertThat(enMessage).isNotEqualTo(jaMessage);
+  }
+
+  @Test
+  @DisplayName("handleThrowable falls back to SplibExceptionHandlerAction "
+      + "when no SplibRestExceptionHandlerAction is registered")
+  void handleThrowableFallsBackToSharedAction() {
+    SplibExceptionHandlerAction fallbackAction = mock(SplibExceptionHandlerAction.class);
+    SplibRestExceptionHandler handler = new SplibRestExceptionHandler(null, fallbackAction);
+    RuntimeException exception = new RuntimeException("test");
+
+    handler.handleThrowable(exception);
+
+    verify(fallbackAction).execute(exception);
+  }
+
+  @Test
+  @DisplayName("handleThrowable uses SplibRestExceptionHandlerAction over "
+      + "SplibExceptionHandlerAction when both are registered")
+  void handleThrowablePrefersRestSpecificAction() {
+    SplibRestExceptionHandlerAction restAction = mock(SplibRestExceptionHandlerAction.class);
+    SplibExceptionHandlerAction fallbackAction = mock(SplibExceptionHandlerAction.class);
+    SplibRestExceptionHandler handler = new SplibRestExceptionHandler(restAction, fallbackAction);
+    RuntimeException exception = new RuntimeException("test");
+
+    handler.handleThrowable(exception);
+
+    verify(restAction).execute(exception);
+    verify(fallbackAction, never()).execute(exception);
   }
 }
