@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE xml>
+<included>
+
+	<include resource="logback-spring-loggers-to-console-and-files.xml" />
+
+	<!-- additivity="false": root also feeds console-appender/detail-appender, so propagation to root must be cut to avoid double-writing every event -->
+	<!-- Logger for Spring Security: logs the URL of each incoming request; should appear in app log -->
+	<logger name="org.springframework.security" level="${loglevel-security:-${loglevel-root}}" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</logger>
+
+</included>

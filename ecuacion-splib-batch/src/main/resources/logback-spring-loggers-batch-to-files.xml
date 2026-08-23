@@ -19,9 +19,9 @@
 <!DOCTYPE xml>
 <included>
 
-	<!-- Logger for Spring Security: logs the URL of each incoming request; should appear in app log -->
-	<logger name="org.springframework.security" level="${loglevel-security}">
-		<appender-ref ref="app-detail-appender" />
-	</logger>
+	<include resource="logback-spring-loggers-to-files.xml" />
 
+	<logger name="summary-logger" level="INFO">
+		<appender-ref ref="summary-appender" />
+	</logger>
 </included>
