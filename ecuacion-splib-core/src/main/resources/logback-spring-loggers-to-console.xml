@@ -19,12 +19,23 @@
 <!DOCTYPE xml>
 <included>
 
+	<!--
+		loglevel-jp.ecuacion/loglevel-sql/loglevel-security below fall back to loglevel-root when
+		unset, so loglevel-root must exist - otherwise an unresolved level attribute silently
+		becomes DEBUG (logback's own fallback for an unrecognized level string).
+	 -->
+	<define name="_requireLoglevelRoot"
+		class="jp.ecuacion.splib.core.logging.LogbackRequiredPropertyChecker">
+		<propertyName>loglevel-root</propertyName>
+		<propertyValue>${loglevel-root:-}</propertyValue>
+	</define>
+
 	<!-- additivity="false": this and root both feed console-appender, so propagation to root must be cut to avoid double-writing every event -->
 	<logger name="error-logger" level="INFO" additivity="false">
 		<appender-ref ref="console-appender" />
 	</logger>
 
-	<logger name="jp.ecuacion" level="${loglevel-jp.ecuacion}" additivity="false">
+	<logger name="jp.ecuacion" level="${loglevel-jp.ecuacion:-${loglevel-root}}" additivity="false">
 		<appender-ref ref="console-appender" />
 	</logger>
 
@@ -34,16 +45,16 @@
 	</logger>
 
 	<!-- SQL log level cannot be changed via application.properties despite appearances; defined here explicitly to control it -->
-	<logger name="org.hibernate.SQL" level="${loglevel-sql}" additivity="false">
+	<logger name="org.hibernate.SQL" level="${loglevel-sql:-${loglevel-root}}" additivity="false">
 		<appender-ref ref="console-appender" />
 	</logger>
-	<logger name="org.hibernate.type" level="${loglevel-sql}" additivity="false">
+	<logger name="org.hibernate.type" level="${loglevel-sql:-${loglevel-root}}" additivity="false">
 		<appender-ref ref="console-appender" />
 	</logger>
-	<logger name="org.hibernate.orm.jdbc.bind" level="${loglevel-sql}" additivity="false">
+	<logger name="org.hibernate.orm.jdbc.bind" level="${loglevel-sql:-${loglevel-root}}" additivity="false">
 		<appender-ref ref="console-appender" />
 	</logger>
-	<logger name="org.hibernate.orm.jdbc.extract" level="${loglevel-sql}" additivity="false">
+	<logger name="org.hibernate.orm.jdbc.extract" level="${loglevel-sql:-${loglevel-root}}" additivity="false">
 		<appender-ref ref="console-appender" />
 	</logger>
 
