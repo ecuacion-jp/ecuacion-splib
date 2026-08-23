@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE xml>
+<included>
+
+	<!-- additivity="false": this and root both feed console-appender, so propagation to root must be cut to avoid double-writing every event -->
+	<logger name="error-logger" level="INFO" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="error-appender" />
+	</logger>
+
+	<!-- additivity="false": this and root both feed console-appender/detail-appender, so propagation to root must be cut to avoid double-writing every event -->
+	<logger name="jp.ecuacion" level="${loglevel-jp.ecuacion}" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</logger>
+
+	<!-- Setting the default logger name to "xxx" prevents unnecessary output when not specified -->
+	<logger name="${app-root:-xxx}" level="${loglevel-app:-error}" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</logger>
+
+	<!-- SQL log level cannot be changed via application.properties despite appearances; defined here explicitly to control it -->
+	<logger name="org.hibernate.SQL" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</logger>
+	<logger name="org.hibernate.type" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</logger>
+	<logger name="org.hibernate.orm.jdbc.bind" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</logger>
+	<logger name="org.hibernate.orm.jdbc.extract" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</logger>
+
+	<!-- root logger -->
+	<root level="${loglevel-root}">
+		<appender-ref ref="console-appender" />
+		<appender-ref ref="detail-appender" />
+	</root>
+
+</included>

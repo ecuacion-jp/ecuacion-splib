@@ -19,10 +19,12 @@
 <!DOCTYPE xml>
 <included>
 
+	<include resource="logback-spring-loggers-to-console.xml" />
+
+	<!-- additivity="false": root also feeds console-appender, so propagation to root must be cut to avoid double-writing every event -->
 	<!-- Logger for Spring Security: logs the URL of each incoming request; should appear in app log -->
-	<logger name="org.springframework.security" level="${loglevel-security}">
-		<appender-ref ref="app-console" />
-		<appender-ref ref="app-detail-appender" />
+	<logger name="org.springframework.security" level="${loglevel-security}" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
 
 </included>

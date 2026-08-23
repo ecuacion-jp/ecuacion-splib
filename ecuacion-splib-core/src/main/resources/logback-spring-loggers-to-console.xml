@@ -19,41 +19,37 @@
 <!DOCTYPE xml>
 <included>
 
-	<logger name="error-logger" level="INFO">
-		<appender-ref ref="error-appender" />
+	<!-- additivity="false": this and root both feed console-appender, so propagation to root must be cut to avoid double-writing every event -->
+	<logger name="error-logger" level="INFO" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
 
-	<logger name="jp.ecuacion" level="${loglevel-jp.ecuacion}">
-		<appender-ref ref="app-detail-appender" />
+	<logger name="jp.ecuacion" level="${loglevel-jp.ecuacion}" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
 
 	<!-- Setting the default logger name to "xxx" prevents unnecessary output when not specified -->
-	<logger name="${app-root:-xxx}" level="${loglevel-app:-error}">
-		<appender-ref ref="app-detail-appender" />
-	</logger>
-
-	<!-- Logger for Spring Security: logs the URL of each incoming request; should appear in app log -->
-	<logger name="org.springframework.security" level="${loglevel-security}">
-		<appender-ref ref="app-detail-appender" />
+	<logger name="${app-root:-xxx}" level="${loglevel-app:-error}" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
 
 	<!-- SQL log level cannot be changed via application.properties despite appearances; defined here explicitly to control it -->
-	<logger name="org.hibernate.SQL" level="${loglevel-sql}">
-		<appender-ref ref="app-detail-appender" />
+	<logger name="org.hibernate.SQL" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
-	<logger name="org.hibernate.type" level="${loglevel-sql}">
-		<appender-ref ref="app-detail-appender" />
+	<logger name="org.hibernate.type" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
-	<logger name="org.hibernate.orm.jdbc.bind" level="${loglevel-sql}">
-		<appender-ref ref="app-detail-appender" />
+	<logger name="org.hibernate.orm.jdbc.bind" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
-	<logger name="org.hibernate.orm.jdbc.extract" level="${loglevel-sql}">
-		<appender-ref ref="app-detail-appender" />
+	<logger name="org.hibernate.orm.jdbc.extract" level="${loglevel-sql}" additivity="false">
+		<appender-ref ref="console-appender" />
 	</logger>
 
 	<!-- root logger -->
 	<root level="${loglevel-root}">
-		<appender-ref ref="all-detail-appender" />
+		<appender-ref ref="console-appender" />
 	</root>
-	
+
 </included>

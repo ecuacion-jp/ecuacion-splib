@@ -21,55 +21,38 @@
 
 	<!-- spring default settings -->
 	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
-	
+
 	<!-- project-independent properties -->
 	<property name="logfile-path" value="${log-dir}/${project-name}" />
 	<Property name="archive-dir" value="${log-dir}/archive" />
 	<Property name="archivefile-path" value="${archive-dir}/${project-name}" />
 
 	<!--
-		File output for Spring and other external frameworks/libraries.
-		The log level of Spring Framework output cannot be controlled via logger level settings,
-		only via appender filter settings.
-		However, if the app-side logging is set to TRACE, Spring Framework logs also become TRACE,
-		which results in too much output.
-		Therefore, a separate appender for Spring Framework log output is required.
+		File output for both the app's own logs and logs from Spring and other external
+		frameworks/libraries. Loggers that need a detail level different from the root
+		logger (jp.ecuacion, app-root, org.springframework.security, org.hibernate.SQL, etc.)
+		are configured with additivity="false" and reference this appender directly, so this
+		single appender never receives the same event twice through propagation to root.
+
+		detail-filename-postfix defaults to "detail" here; a config that sets the property
+		before including this file (e.g. logback-spring-appenders-batch.xml, to fold in the
+		job name) overrides it without redefining this appender.
 	 -->
-	<appender name="all-detail-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	<appender name="detail-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<!-- File name -->
-		<file>${logfile-path}-all-detail.log</file>
+		<file>${logfile-path}-${detail-filename-postfix:-detail}.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<!-- File naming pattern for rotation -->
-			<fileNamePattern>${archivefile-path}-all-detail-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+			<fileNamePattern>${archivefile-path}-${detail-filename-postfix:-detail}-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>
-				
-		<encoder>
-			<charset>UTF-8</charset>
-			<pattern>${FILE_LOG_PATTERN}</pattern>
-		</encoder>
-		
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>${loglevel-root}</level>
-		</filter>
 
-	</appender>
-
-	<appender name="app-detail-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<!-- File name -->
-		<file>${logfile-path}-app-detail.log</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-			<!-- File naming pattern for rotation -->
-			<fileNamePattern>${archivefile-path}-app-detail-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
-			<maxFileSize>10MB</maxFileSize>
-		</rollingPolicy>
-		
 		<encoder>
 			<charset>UTF-8</charset>
 			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
 	</appender>
-	
+
 	<!-- File output for error-log -->
 	<appender name="error-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<!-- File name -->
@@ -79,10 +62,25 @@
 			<fileNamePattern>${archive-dir}/error-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
 			<maxFileSize>10MB</maxFileSize>
 		</rollingPolicy>
-		
+
 		<encoder>
 			<charset>UTF-8</charset>
 			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
 	</appender>
+
+	<!--
+		Console output for both the app's own logs and logs from Spring and other external
+		frameworks/libraries. Not just for local development - a client app that should only
+		ever show its logs on screen, even in production, can use this appender too. As with
+		detail-appender, loggers needing additivity="false" reference this appender directly.
+	 -->
+	<appender name="console-appender" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.out</target>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
 </included>

@@ -19,7 +19,12 @@
 <!DOCTYPE xml>
 <included>
 
-	<logger name="summary-logger" level="INFO">
-		<appender-ref ref="summary-appender" />
+	<include resource="logback-spring-loggers-to-files.xml" />
+
+	<!-- additivity="false": root also feeds detail-appender, so propagation to root must be cut to avoid double-writing every event -->
+	<!-- Logger for Spring Security: logs the URL of each incoming request; should appear in app log -->
+	<logger name="org.springframework.security" level="${loglevel-security}" additivity="false">
+		<appender-ref ref="detail-appender" />
 	</logger>
+
 </included>
