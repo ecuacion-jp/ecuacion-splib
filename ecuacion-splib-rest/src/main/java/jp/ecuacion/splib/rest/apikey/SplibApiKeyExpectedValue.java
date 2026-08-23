@@ -15,6 +15,9 @@
  */
 package jp.ecuacion.splib.rest.apikey;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * One value {@link SplibApiKeyExpectedValueProvider#getExpectedValues} returns, paired with how
  * that particular value is encoded.
@@ -28,6 +31,22 @@ package jp.ecuacion.splib.rest.apikey;
  * @param value the value to compare the presented {@code X-Api-Key} against, encoded as indicated
  *     by {@code mode}
  * @param mode how {@code value} is encoded, and therefore how it must be compared
+ * @param extraAuthorities additional authorities granted on top of {@code ROLE_API_KEY} when this
+ *     particular value is the one that matched — e.g. to give one issued key more or fewer
+ *     privileges than another. Empty by default.
  */
-public record SplibApiKeyExpectedValue(String value, SplibApiKeyComparisonMode mode) {
+public record SplibApiKeyExpectedValue(String value, SplibApiKeyComparisonMode mode,
+    Collection<String> extraAuthorities) {
+
+  /**
+   * Constructs a new instance with no {@link #extraAuthorities}, so the matching request is
+   * granted only {@code ROLE_API_KEY}.
+   *
+   * @param value the value to compare the presented {@code X-Api-Key} against, encoded as
+   *     indicated by {@code mode}
+   * @param mode how {@code value} is encoded, and therefore how it must be compared
+   */
+  public SplibApiKeyExpectedValue(String value, SplibApiKeyComparisonMode mode) {
+    this(value, mode, List.of());
+  }
 }

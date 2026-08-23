@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -97,16 +98,20 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
     Collection<SplibApiKeyExpectedValue> expectedValues = Objects
         .requireNonNull(expectedValueProvider).getExpectedValues(apiKeyId, presentedApiKey);
-    if (expectedValues == null || expectedValues.isEmpty()
-        || !matchesAny(presentedApiKey, expectedValues)) {
+    SplibApiKeyExpectedValue matched =
+        expectedValues == null ? null : findMatch(presentedApiKey, expectedValues);
+    if (matched == null) {
       detailLog.warn("apiKey mismatch on request to " + request.getRequestURI() + ".");
       reject(response);
       return;
     }
 
+    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+    authorities.add(new SimpleGrantedAuthority(API_KEY_AUTHORITY));
+    matched.extraAuthorities().forEach(a -> authorities.add(new SimpleGrantedAuthority(a)));
+
     UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
-        .authenticated(apiKeyId != null ? apiKeyId : "api-key-client", null,
-            List.of(new SimpleGrantedAuthority(API_KEY_AUTHORITY)));
+        .authenticated(apiKeyId != null ? apiKeyId : "api-key-client", null, authorities);
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
     filterChain.doFilter(request, response);
@@ -114,21 +119,24 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
   /**
    * Checks {@code presentedApiKey} against every value in {@code expectedValues}, always
-   * comparing against all of them (never short-circuiting on the first match) so that the total
-   * comparison time does not itself hint at which entry — or how many entries — matched.
+   * comparing against all of them (never short-circuiting on a match) so that the total
+   * comparison time does not itself hint at which entry — or how many entries — matched, and
+   * returns the matched entry (so its {@link SplibApiKeyExpectedValue#extraAuthorities} can be
+   * granted), or {@code null} if none matched. If more than one entry matches, the first one
+   * encountered is returned.
    */
-  private boolean matchesAny(String presentedApiKey,
+  private @Nullable SplibApiKeyExpectedValue findMatch(String presentedApiKey,
       Collection<SplibApiKeyExpectedValue> expectedValues) {
     byte[] presentedBytes = presentedApiKey.getBytes(StandardCharsets.UTF_8);
 
-    boolean matched = false;
+    SplibApiKeyExpectedValue matched = null;
     for (SplibApiKeyExpectedValue expectedValue : expectedValues) {
       boolean thisValueMatched = expectedValue.mode() == SplibApiKeyComparisonMode.BCRYPT
           ? bcryptPasswordEncoder.matches(presentedApiKey, expectedValue.value())
           // MessageDigest.isEqual() is used instead of String.equals() to avoid a timing attack.
           : MessageDigest.isEqual(presentedBytes,
               expectedValue.value().getBytes(StandardCharsets.UTF_8));
-      matched = matched || thisValueMatched;
+      matched = matched == null && thisValueMatched ? expectedValue : matched;
     }
 
     return matched;
