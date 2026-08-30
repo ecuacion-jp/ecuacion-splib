@@ -191,6 +191,14 @@
 	<!--/* td readOnly customizable */-->
 	<!--/* context options: (temporary)
 			- th:with="deleted=true"	adds a deleted line effect.
+			- linkUrl			string	Renders the cell as a link to this URL via th:href.
+									WARNING: th:href does not block the "javascript:" scheme (unlike
+									th:action-style attributes Thymeleaf treats specially), so if this
+									is ever set from user-controlled or otherwise untrusted data
+									(form input, uploaded content, values sourced from it, ...) it
+									becomes a stored XSS hole. Only use it for a URL the application
+									developer fully controls, or one already validated to be
+									http(s)-only.
 	*/-->
 	<div th:fragment="listReadOnlyCustomizable(value, position, options)" th:remove="tag">
 		<td th:class="'align-middle fs-6 text-' + ${position == 'left' ? 'start' : (position == 'right' ? 'end' : position)}"
