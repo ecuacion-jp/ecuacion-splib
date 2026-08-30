@@ -55,7 +55,6 @@ class SplibViolationUtilTest {
    */
   private static class TestForm {
     @Valid
-    @SuppressWarnings("unused")
     TestRecord testRecord = new TestRecord();
   }
 

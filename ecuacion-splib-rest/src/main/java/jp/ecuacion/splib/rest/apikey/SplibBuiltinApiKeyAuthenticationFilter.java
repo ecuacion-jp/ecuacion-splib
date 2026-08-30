@@ -25,6 +25,8 @@ import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Outcome;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Result;
+import org.jspecify.annotations.Nullable;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -56,14 +58,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
   /** Request header carrying the API key itself. Required on every request to this filter. */
-  public static final String HEADER_API_KEY = "X-Api-Key";
+  public static final String HEADER_API_KEY = SplibApiKeyHeaders.API_KEY;
 
   /**
    * Request header carrying an optional key identifier. Not used to look up which key to expect
    * (there is exactly one, fixed by {@code application.properties}) — only carried through as
    * the authenticated principal's name for logging/auditing purposes.
+   *
+   * <p>If present, it is validated by {@link SplibApiKeyIdValidator} (1-128 characters of
+   *     alphanumeric, {@code -}, {@code _}) before use, bounding what a downstream application
+   *     that logs or records {@code Authentication.getName()} ends up storing.</p>
    */
-  public static final String HEADER_API_KEY_ID = "X-Api-Key-Id";
+  public static final String HEADER_API_KEY_ID = SplibApiKeyHeaders.API_KEY_ID;
 
   /** The authority granted to a request that authenticates successfully via this filter. */
   private static final String API_KEY_AUTHORITY = "ROLE_BUILTIN_API_KEY";
@@ -71,10 +77,40 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
   private static final String PROPERTY_PREFIX = "jp.ecuacion.splib.rest.builtin-api-key";
 
   private final DetailLogger detailLog = new DetailLogger(this);
+  private final SplibApiKeyRateLimiter rateLimiter;
+
+  /**
+   * Constructs a new instance with the rate limiter's default thresholds (10 failures / 60
+   * seconds / a 300-second lockout) — mainly for tests;
+   * {@link jp.ecuacion.splib.rest.config.SplibRestSecurityConfig} instead
+   * uses {@link #SplibBuiltinApiKeyAuthenticationFilter(Environment)} so the thresholds are
+   * configurable.
+   */
+  public SplibBuiltinApiKeyAuthenticationFilter() {
+    this(null);
+  }
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param env source for the {@code jp.ecuacion.splib.rest.builtin-api-key.rate-limit.*}
+   *     properties (see {@link SplibApiKeyRateLimiter}), or {@code null} to use their defaults
+   */
+  public SplibBuiltinApiKeyAuthenticationFilter(@Nullable Environment env) {
+    this.rateLimiter = SplibApiKeyRateLimiter.fromEnvironment(env, PROPERTY_PREFIX);
+  }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
+
+    String remoteAddr = request.getRemoteAddr();
+    if (rateLimiter.isLockedOut(remoteAddr)) {
+      detailLog.warn("Request to " + request.getRequestURI() + " from " + remoteAddr
+          + " rejected: too many recent apiKey mismatches from this address.");
+      reject(response);
+      return;
+    }
 
     String presentedApiKey = request.getHeader(HEADER_API_KEY);
     final String apiKeyId = request.getHeader(HEADER_API_KEY_ID);
@@ -82,6 +118,14 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
     if (presentedApiKey == null || presentedApiKey.isEmpty()) {
       detailLog.warn("Request to " + request.getRequestURI() + " is missing the " + HEADER_API_KEY
           + " header.");
+      reject(response);
+      return;
+    }
+
+    if (apiKeyId != null && !SplibApiKeyIdValidator.isValid(apiKeyId)) {
+      detailLog.warn("Request to " + request.getRequestURI() + " has an invalid "
+          + HEADER_API_KEY_ID + " header value (must be 1-128 characters of alphanumeric, "
+          + "'-', '_').");
       reject(response);
       return;
     }
@@ -99,9 +143,12 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
 
     if (result.getOutcome() != Outcome.MATCHED) {
       detailLog.warn("apiKey mismatch on request to " + request.getRequestURI() + ".");
+      rateLimiter.recordFailure(remoteAddr);
       reject(response);
       return;
     }
+
+    rateLimiter.recordSuccess(remoteAddr);
 
     UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
         .authenticated(apiKeyId != null ? apiKeyId : "builtin-api-key-client", null,

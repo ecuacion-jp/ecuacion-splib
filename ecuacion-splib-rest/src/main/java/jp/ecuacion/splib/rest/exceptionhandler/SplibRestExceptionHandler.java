@@ -21,6 +21,7 @@ import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
+import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.dto.ViolationsResponse;
 import org.jspecify.annotations.NonNull;
@@ -56,7 +57,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  *       expected to branch on it.</li>
  *   <li>Anything else — a genuinely unanticipated exception (a bug, not a reported failure).
  *       Handled by {@link #handleThrowable}: logged as a system error, optionally alerted on via
- *       {@link #actionOnThrowable}, and answered with a generic {@code 501} — there is no
+ *       {@link #actionOnThrowable}, and answered with a generic {@code 500} — there is no
  *       meaningful message to return either a human or a developer in this case.</li>
  * </ul>
  */
@@ -71,10 +72,19 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
   /**
    * Constructs a new instance.
    *
-   * @param actionOnThrowable actionOnThrowable, may be {@code null}
+   * <p>{@code restAction} takes priority when both are registered. When only
+   *     {@code fallbackAction} ({@link SplibExceptionHandlerAction}) is registered — the common
+   *     case for an app that hasn't defined REST-specific behavior — it's used as-is, per
+   *     {@link SplibRestExceptionHandlerAction}'s Javadoc.</p>
+   *
+   * @param restAction REST-specific action, may be {@code null}
+   * @param fallbackAction shared action used when {@code restAction} is absent, may be
+   *     {@code null}
    */
-  public SplibRestExceptionHandler(@Nullable SplibRestExceptionHandlerAction actionOnThrowable) {
-    this.actionOnThrowable = actionOnThrowable;
+  public SplibRestExceptionHandler(@Nullable SplibRestExceptionHandlerAction restAction,
+      @Nullable SplibExceptionHandlerAction fallbackAction) {
+    this.actionOnThrowable =
+        restAction != null ? restAction : fallbackAction == null ? null : fallbackAction::execute;
   }
 
   /**
@@ -165,6 +175,6 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
       Objects.requireNonNull(actionOnThrowable).execute(exception);
     }
 
-    return ErrorResponse.create(exception, HttpStatusCode.valueOf(501), "Internal Server Error...");
+    return ErrorResponse.create(exception, HttpStatusCode.valueOf(500), "Internal Server Error...");
   }
 }

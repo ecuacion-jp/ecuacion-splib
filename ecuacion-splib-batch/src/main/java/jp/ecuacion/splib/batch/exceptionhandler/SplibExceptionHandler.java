@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.logging.DetailLogger;
+import jp.ecuacion.lib.core.logging.ErrorLogger;
 import jp.ecuacion.lib.core.util.ExceptionUtil;
 import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.util.LogUtil;
@@ -54,6 +55,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
   }
 
   private DetailLogger detailLog = new DetailLogger(this);
+  private ErrorLogger errorLog = new ErrorLogger();
 
   private static final String NOT_FOUND_MSG_TMPL =
       "(The classname of {0} is null because the error occurred outside {0}"
@@ -68,20 +70,24 @@ public class SplibExceptionHandler implements ExceptionHandler {
     sb.append(formatMsg("job", SplibBatchAdvice.getCurrentJob(), true));
     sb.append(formatMsg("step", SplibBatchAdvice.getCurrentStep(), false));
     sb.append(formatMsg("tasklet or chunk", SplibBatchAdvice.getCurrentTaskletOrChunk(), false));
-    detailLog.info(sb.toString());
+    detailLog.error(sb.toString());
 
-    // For ViolationException, list all messages first so batch users see the
-    // human-readable summary before the stack trace below.
+    // For ViolationException, list all messages so batch users see the human-readable
+    // summary, since neither the exception's own stack trace nor the one-line summary
+    // logged below carries this detail.
     if (throwable instanceof ViolationException violationException) {
       List<@NonNull String> msgList = ExceptionUtil.getMessageList(
           violationException, LocaleUtil.getFallbackLocale(), true);
-      detailLog.info("==========");
-      detailLog.info("ViolationExceptions occured. Messages are as follows.");
-      msgList.stream().forEach(msg -> detailLog.info("  - " + msg));
-      detailLog.info("==========");
+      detailLog.error("ViolationExceptions occured. Messages are as follows.");
+      msgList.stream().forEach(msg -> detailLog.error("- " + msg));
     }
 
-    LogUtil.logSystemError(detailLog, throwable);
+    // Only the one-line summary is logged here, not the full stack trace: this handler
+    // always rethrows below, and Spring Batch's AbstractStep logs the full stack trace
+    // itself once the exception propagates out of the step. Logging it here too would
+    // duplicate that (see LogOrRethrowExceptionHandler / DefaultExceptionHandler in
+    // Spring Batch itself, which never log and rethrow the same exception).
+    errorLog.logSystemError(throwable);
 
     if (action != null) {
       try {

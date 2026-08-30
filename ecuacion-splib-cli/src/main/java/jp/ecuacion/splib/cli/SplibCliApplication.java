@@ -54,6 +54,12 @@ public class SplibCliApplication {
    * <p>{@code --verbose} among {@code args} makes {@link SplibExceptionHandler} print a full
    *     stack trace on failure, on top of its normal concise message.</p>
    *
+   * <p>{@code --ecuacion-system-error} among {@code args} deliberately throws a system error
+   *     instead of running the app's {@code SplibCliRunner}, so the system error behavior
+   *     (exception handling, logging, and so on) can be tested without requiring an actual bug
+   *     — the CLI counterpart of {@code ecuacion-splib-batch}'s built-in
+   *     {@code ecuacionSystemErrorJob}.</p>
+   *
    * <p>A timestamped "starting" message is printed before {@code execute} runs, and a
    *     timestamped "completed successfully" message after it returns normally — see
    *     {@link ConsoleUtil}. On failure, {@link SplibExceptionHandler} prints its own
@@ -82,6 +88,11 @@ public class SplibCliApplication {
     SpinnerUtil.start(PropertiesFileUtil.getMessage(
         LocaleUtil.getFallbackLocale(), "jp.ecuacion.splib.cli.common.message.running"));
     try {
+      if (Arrays.asList(args).contains("--ecuacion-system-error")) {
+        throw new RuntimeException(
+            "A system error was intentionally caused for testing purposes.");
+      }
+
       context.getBean(SplibCliRunner.class).execute(args);
       exitCode = 0;
       ConsoleUtil.printlnWithTimestamp(false, PropertiesFileUtil.getMessage(

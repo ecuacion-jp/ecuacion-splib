@@ -77,6 +77,27 @@
     margin-bottom: 1rem;
 }
 
+/*
+ * Bootstrap's reboot zeroes the bottom margin of a nested ul/ol via
+ * `ol ul, ul ul, ol ol, ul ol { margin-bottom: 0; }`, which is two element
+ * selectors (specificity 0,0,0,2) — higher than the bare `ul`/`ol` rule
+ * above (0,0,0,1) even inside :where()'s zero-specificity wrapper. That
+ * collapses the gap after a sub-list back to 0, so a list item like
+ * "1. Do X" with sub-bullets ends up sitting flush against "2. Do Y".
+ * Match that specificity here (still tied with Bootstrap, but this file
+ * loads after bootstrap.css so it wins the tie) to restore the gap, and
+ * tighten the gap between an item's intro text and its own sub-list so the
+ * two read as one block rather than two.
+ */
+:where(.markdown-body) li > ul,
+:where(.markdown-body) li > ol {
+    margin-bottom: 1rem;
+}
+:where(.markdown-body) li > p:has(+ ul),
+:where(.markdown-body) li > p:has(+ ol) {
+    margin-bottom: 0.35rem;
+}
+
 /* Prevent navbar links from wrapping mid-text */
 .navbar-nav .nav-item .nav-link {
     white-space: nowrap;

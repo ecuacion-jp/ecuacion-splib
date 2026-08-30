@@ -360,12 +360,16 @@ public abstract class SplibExceptionHandler {
     boolean atEachItemErrorAdded = false;
 
     for (ConstraintViolation<?> cv : sortedCvs) {
-      atEachItemErrorAdded |= addConstraintViolation(br, cv, params, representativePropertyPath,
-          needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
+      if (addConstraintViolation(br, cv, params, representativePropertyPath,
+          needsMsgAtItemDefault, needsMsgAtTopDefault, locale)) {
+        atEachItemErrorAdded = true;
+      }
     }
     for (BusinessViolation bv : violations.getBusinessViolations()) {
-      atEachItemErrorAdded |= addBusinessViolation(br, bv, representativePropertyPath,
-          needsMsgAtItemDefault, needsMsgAtTopDefault, locale);
+      if (addBusinessViolation(br, bv, representativePropertyPath,
+          needsMsgAtItemDefault, needsMsgAtTopDefault, locale)) {
+        atEachItemErrorAdded = true;
+      }
     }
 
     // When at least one field-level (at-each-item) error was added, prepend a summary message

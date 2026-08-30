@@ -19,6 +19,19 @@
 <!DOCTYPE xml>
 <included>
 
+	<!--
+		Each job runs as its own JVM process (one job per invocation), so job-name is fixed for
+		the life of the process. Setting detail-filename-postfix before the include below makes
+		logback-spring-appenders.xml's own detail-appender pick it up via its "${...:-detail}"
+		default, instead of a second competing definition of the same appender.
+		logfile-path/archivefile-path themselves are left untouched since summary-appender below
+		shares them and must not pick up job-name too.
+	 -->
+	<springProperty scope="context" name="job-name" source="spring.batch.job.name" defaultValue="batch" />
+	<property name="detail-filename-postfix" value="${job-name}-detail" />
+
+	<include resource="logback-spring-appenders.xml" />
+
 	<!-- File output for summary-log -->
 	<appender name="summary-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<!-- File name -->
