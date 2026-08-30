@@ -17,8 +17,6 @@
 package jp.ecuacion.splib.web.markdown.controller;
 
 import java.util.Locale;
-import java.util.Objects;
-import jp.ecuacion.lib.core.util.LogUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.markdown.service.MarkdownPageService;
@@ -57,9 +55,9 @@ public class ShowMarkdownPageController {
 
     // Validate input string to prevent from attacks.
     if (!MarkdownPageService.ID_PATTERN.matcher(id).matches()) {
-      // The raw id is attacker-controlled and ends up in the log; sanitize control characters
+      // The raw id is attacker-controlled and ends up in the log; strip control characters
       // (CR/LF etc.) and cap the length to prevent log injection / log flooding.
-      String idForMessage = Objects.requireNonNull(LogUtil.sanitizeForLog(id));
+      String idForMessage = id.replaceAll("\\p{Cntrl}", "_");
       if (idForMessage.length() > 100) {
         idForMessage = idForMessage.substring(0, 100) + "...";
       }
