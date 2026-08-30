@@ -55,18 +55,31 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
   /** Request header carrying the API key itself. Required on every request to this filter. */
-  public static final String HEADER_API_KEY = "X-Api-Key";
+  public static final String HEADER_API_KEY = SplibApiKeyHeaders.API_KEY;
 
   /**
    * Request header carrying an optional key identifier, passed through to
    * {@link SplibApiKeyExpectedValueProvider#getExpectedValues} as-is. See that method's javadoc.
+   *
+   * <p>If present, it is validated by {@link SplibApiKeyIdValidator} (1-128 characters of
+   *     alphanumeric, {@code -}, {@code _}) before use — it also becomes the authenticated
+   *     principal's name, and this bounds what a downstream application that logs or records
+   *     {@code Authentication.getName()} ends up storing.</p>
    */
-  public static final String HEADER_API_KEY_ID = "X-Api-Key-Id";
+  public static final String HEADER_API_KEY_ID = SplibApiKeyHeaders.API_KEY_ID;
 
   /** The authority granted to a request that authenticates successfully via this filter. */
   private static final String API_KEY_AUTHORITY = "ROLE_API_KEY";
 
   private static final String RATE_LIMIT_PROPERTY_PREFIX = "jp.ecuacion.splib.rest.api-key";
+
+  /**
+   * Above this many entries, a {@link SplibApiKeyExpectedValueProvider} is very likely returning
+   * its whole key set instead of narrowing by {@code apiKeyId} as its javadoc instructs — logged
+   * as a warning so the misuse (each guess forces a {@code BCRYPT} comparison against every
+   * entry, an amplification an unauthenticated caller can trigger) is noticed early.
+   */
+  private static final int EXPECTED_VALUES_WARN_THRESHOLD = 10;
 
   private final DetailLogger detailLog = new DetailLogger(this);
 
@@ -125,6 +138,14 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
 
+    if (apiKeyId != null && !SplibApiKeyIdValidator.isValid(apiKeyId)) {
+      detailLog.warn("Request to " + request.getRequestURI() + " has an invalid "
+          + HEADER_API_KEY_ID + " header value (must be 1-128 characters of alphanumeric, "
+          + "'-', '_').");
+      reject(response);
+      return;
+    }
+
     if (expectedValueProvider == null) {
       detailLog.warn("A request reached " + request.getRequestURI() + " but no "
           + "SplibApiKeyExpectedValueProvider bean is registered, so it is being rejected. "
@@ -136,6 +157,13 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
     Collection<SplibApiKeyExpectedValue> expectedValues = Objects
         .requireNonNull(expectedValueProvider).getExpectedValues(apiKeyId, presentedApiKey);
+    if (expectedValues != null && expectedValues.size() > EXPECTED_VALUES_WARN_THRESHOLD) {
+      detailLog.warn("SplibApiKeyExpectedValueProvider#getExpectedValues returned "
+          + expectedValues.size() + " entries for a single request, exceeding the expected "
+          + "threshold of " + EXPECTED_VALUES_WARN_THRESHOLD + ". It should narrow the returned "
+          + "values by apiKeyId rather than returning the whole key set; see its javadoc.");
+    }
+
     SplibApiKeyExpectedValue matched =
         expectedValues == null ? null : findMatch(presentedApiKey, expectedValues);
     if (matched == null) {

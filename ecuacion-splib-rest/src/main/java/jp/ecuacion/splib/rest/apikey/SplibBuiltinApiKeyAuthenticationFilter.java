@@ -58,14 +58,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
   /** Request header carrying the API key itself. Required on every request to this filter. */
-  public static final String HEADER_API_KEY = "X-Api-Key";
+  public static final String HEADER_API_KEY = SplibApiKeyHeaders.API_KEY;
 
   /**
    * Request header carrying an optional key identifier. Not used to look up which key to expect
    * (there is exactly one, fixed by {@code application.properties}) — only carried through as
    * the authenticated principal's name for logging/auditing purposes.
+   *
+   * <p>If present, it is validated by {@link SplibApiKeyIdValidator} (1-128 characters of
+   *     alphanumeric, {@code -}, {@code _}) before use, bounding what a downstream application
+   *     that logs or records {@code Authentication.getName()} ends up storing.</p>
    */
-  public static final String HEADER_API_KEY_ID = "X-Api-Key-Id";
+  public static final String HEADER_API_KEY_ID = SplibApiKeyHeaders.API_KEY_ID;
 
   /** The authority granted to a request that authenticates successfully via this filter. */
   private static final String API_KEY_AUTHORITY = "ROLE_BUILTIN_API_KEY";
@@ -114,6 +118,14 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
     if (presentedApiKey == null || presentedApiKey.isEmpty()) {
       detailLog.warn("Request to " + request.getRequestURI() + " is missing the " + HEADER_API_KEY
           + " header.");
+      reject(response);
+      return;
+    }
+
+    if (apiKeyId != null && !SplibApiKeyIdValidator.isValid(apiKeyId)) {
+      detailLog.warn("Request to " + request.getRequestURI() + " has an invalid "
+          + HEADER_API_KEY_ID + " header value (must be 1-128 characters of alphanumeric, "
+          + "'-', '_').");
       reject(response);
       return;
     }
