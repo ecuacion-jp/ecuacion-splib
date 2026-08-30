@@ -44,7 +44,7 @@
 		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
 		<ecuacion-util.version>0.0.2-SNAPSHOT</ecuacion-util.version>
 		<!-- 3rd party module versions -->
-		<spring-boot.version>4.0.7</spring-boot.version>
+		<spring-boot.version>4.0.8</spring-boot.version>
 		<!-- Spring Cloud release train compatible with spring-boot.version above (per the
 		     spring.io Spring Boot / Spring Cloud compatibility matrix). Only spring-cloud-context
 		     (an optional dependency of ecuacion-splib-core; see its pom.xml) needs a managed
