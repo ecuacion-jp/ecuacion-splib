@@ -55,12 +55,12 @@ public class ShowMarkdownPageController {
 
     // Validate input string to prevent from attacks.
     if (!MarkdownPageService.ID_PATTERN.matcher(id).matches()) {
-      // The raw id is attacker-controlled and ends up in the log; strip control characters
-      // (CR/LF etc.) and cap the length to prevent log injection / log flooding.
-      String idForMessage = id.replaceAll("\\p{Cntrl}", "_");
-      if (idForMessage.length() > 100) {
-        idForMessage = idForMessage.substring(0, 100) + "...";
-      }
+      // The raw id is attacker-controlled and is both shown on the redirected-to page (escaped
+      // by Thymeleaf's [[...]] there, so HTML injection isn't a concern) and logged (sanitized
+      // automatically by AbstractLogger when SplibExceptionHandler logs it). Only the length is
+      // capped here, to keep an unusually long id from bloating the displayed page.
+      String idForMessage =
+          id.length() > 100 ? id.substring(0, 100) + "..." : id;
       throw new RedirectToHomePageException(Level.INFO, "MARKDOWN_PAGE_NOT_FOUND_MSG",
           new String[] {idForMessage});
     }
