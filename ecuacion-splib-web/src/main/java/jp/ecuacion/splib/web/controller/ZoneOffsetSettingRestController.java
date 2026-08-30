@@ -39,11 +39,23 @@ public class ZoneOffsetSettingRestController {
   
   /**
    * Receives zone offset value from the user PC and set it into the session.
-   * 
+   *
+   * <p>{@code zoneOffset} is silently ignored (the session is left unchanged) when it is not a
+   *     valid integer, rather than storing it as-is and letting {@link
+   *     jp.ecuacion.splib.web.util.SplibDatetimeFormatUtil#getParams} fail later with a
+   *     {@code NumberFormatException} when the value is finally parsed.</p>
+   *
    * @param zoneOffset zoneOffset
    */
   @GetMapping("/public/zoneOffset")
   public void zoneOffset(@RequestParam String zoneOffset) {
+    try {
+      Integer.parseInt(zoneOffset);
+
+    } catch (NumberFormatException ex) {
+      return;
+    }
+
     request.getSession().setAttribute("zoneOffset", zoneOffset);
   }
 }
