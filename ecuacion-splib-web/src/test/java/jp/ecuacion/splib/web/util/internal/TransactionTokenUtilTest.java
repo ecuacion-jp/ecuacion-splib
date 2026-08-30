@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.util.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -61,7 +62,7 @@ class TransactionTokenUtilTest {
 
   @SuppressWarnings("unchecked")
   private static Set<String> tokenSet(MockHttpServletRequest request) {
-    return (Set<String>) request.getSession()
+    return (Set<String>) Objects.requireNonNull(request.getSession())
         .getAttribute(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
   }
 }
