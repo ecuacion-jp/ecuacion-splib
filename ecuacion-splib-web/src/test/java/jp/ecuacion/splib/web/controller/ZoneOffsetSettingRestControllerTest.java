@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -29,7 +30,8 @@ class ZoneOffsetSettingRestControllerTest {
 
     controller.zoneOffset("-540");
 
-    assertThat(request.getSession().getAttribute("zoneOffset")).isEqualTo("-540");
+    assertThat(Objects.requireNonNull(request.getSession()).getAttribute("zoneOffset"))
+        .isEqualTo("-540");
   }
 
   @Test
@@ -39,6 +41,6 @@ class ZoneOffsetSettingRestControllerTest {
 
     controller.zoneOffset("not-a-number");
 
-    assertThat(request.getSession().getAttribute("zoneOffset")).isNull();
+    assertThat(Objects.requireNonNull(request.getSession()).getAttribute("zoneOffset")).isNull();
   }
 }
