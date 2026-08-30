@@ -25,6 +25,8 @@ import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Outcome;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Result;
+import org.jspecify.annotations.Nullable;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -71,10 +73,40 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
   private static final String PROPERTY_PREFIX = "jp.ecuacion.splib.rest.builtin-api-key";
 
   private final DetailLogger detailLog = new DetailLogger(this);
+  private final SplibApiKeyRateLimiter rateLimiter;
+
+  /**
+   * Constructs a new instance with the rate limiter's default thresholds (10 failures / 60
+   * seconds / a 300-second lockout) — mainly for tests;
+   * {@link jp.ecuacion.splib.rest.config.SplibRestSecurityConfig} instead
+   * uses {@link #SplibBuiltinApiKeyAuthenticationFilter(Environment)} so the thresholds are
+   * configurable.
+   */
+  public SplibBuiltinApiKeyAuthenticationFilter() {
+    this(null);
+  }
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param env source for the {@code jp.ecuacion.splib.rest.builtin-api-key.rate-limit.*}
+   *     properties (see {@link SplibApiKeyRateLimiter}), or {@code null} to use their defaults
+   */
+  public SplibBuiltinApiKeyAuthenticationFilter(@Nullable Environment env) {
+    this.rateLimiter = SplibApiKeyRateLimiter.fromEnvironment(env, PROPERTY_PREFIX);
+  }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
+
+    String remoteAddr = request.getRemoteAddr();
+    if (rateLimiter.isLockedOut(remoteAddr)) {
+      detailLog.warn("Request to " + request.getRequestURI() + " from " + remoteAddr
+          + " rejected: too many recent apiKey mismatches from this address.");
+      reject(response);
+      return;
+    }
 
     String presentedApiKey = request.getHeader(HEADER_API_KEY);
     final String apiKeyId = request.getHeader(HEADER_API_KEY_ID);
@@ -99,9 +131,12 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
 
     if (result.getOutcome() != Outcome.MATCHED) {
       detailLog.warn("apiKey mismatch on request to " + request.getRequestURI() + ".");
+      rateLimiter.recordFailure(remoteAddr);
       reject(response);
       return;
     }
+
+    rateLimiter.recordSuccess(remoteAddr);
 
     UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
         .authenticated(apiKeyId != null ? apiKeyId : "builtin-api-key-client", null,

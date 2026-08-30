@@ -17,12 +17,15 @@ package jp.ecuacion.splib.rest.apikey;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -72,10 +75,25 @@ class SplibApiKeyAuthenticationFilterTest {
 
   private void doFilter(SplibApiKeyAuthenticationFilter filter, String presentedApiKey,
       MockHttpServletResponse response) throws Exception {
+    doFilterFromIp(filter, presentedApiKey, "127.0.0.1", response);
+  }
+
+  private void doFilterFromIp(SplibApiKeyAuthenticationFilter filter, String presentedApiKey,
+      String remoteAddr, MockHttpServletResponse response) throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setRequestURI("/api/key/executeScript");
+    request.setRemoteAddr(remoteAddr);
     request.addHeader(SplibApiKeyAuthenticationFilter.HEADER_API_KEY, presentedApiKey);
     filter.doFilter(request, response, new MockFilterChain());
+  }
+
+  private static MockEnvironment rateLimitEnv(int maxFailures) {
+    MockEnvironment env = new MockEnvironment();
+    env.setProperty("jp.ecuacion.splib.rest.api-key.rate-limit.max-failures",
+        Integer.toString(maxFailures));
+    env.setProperty("jp.ecuacion.splib.rest.api-key.rate-limit.window-seconds", "60");
+    env.setProperty("jp.ecuacion.splib.rest.api-key.rate-limit.lockout-seconds", "60");
+    return env;
   }
 
   @Test
@@ -166,5 +184,80 @@ class SplibApiKeyAuthenticationFilterTest {
 
     assertEquals(401, response.getStatus());
     assertNull(SecurityContextHolder.getContext().getAuthentication());
+  }
+
+  @Test
+  void constructorThrowsWhenRateLimitMaxFailuresIsNotPositive() {
+    MockEnvironment env = new MockEnvironment();
+    env.setProperty("jp.ecuacion.splib.rest.api-key.rate-limit.max-failures", "0");
+
+    IllegalStateException ex = assertThrows(IllegalStateException.class,
+        () -> new SplibApiKeyAuthenticationFilter(new FixedValuesProvider(List.of()), env));
+
+    assertTrue(Objects.requireNonNull(ex.getMessage()).contains("rate-limit.max-failures"));
+  }
+
+  @Test
+  void locksOutAfterMaxFailuresFromTheSameIpEvenForTheCorrectKeyAfterward() throws Exception {
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(plain(FIRST_KEY))), rateLimitEnv(3));
+
+    for (int i = 0; i < 3; i++) {
+      MockHttpServletResponse response = new MockHttpServletResponse();
+      doFilterFromIp(filter, "wrong-key", "10.0.0.1", response);
+      assertEquals(401, response.getStatus());
+    }
+
+    // A 4th request from the same IP is rejected purely by the lockout, even with the correct
+    // key — proving the lockout check happens before (and independently of) key comparison.
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    doFilterFromIp(filter, FIRST_KEY, "10.0.0.1", response);
+
+    assertEquals(401, response.getStatus());
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
+  }
+
+  @Test
+  void lockoutOnOneIpDoesNotAffectAnother() throws Exception {
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(plain(FIRST_KEY))), rateLimitEnv(3));
+
+    for (int i = 0; i < 3; i++) {
+      MockHttpServletResponse response = new MockHttpServletResponse();
+      doFilterFromIp(filter, "wrong-key", "10.0.0.1", response);
+      assertEquals(401, response.getStatus());
+    }
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    doFilterFromIp(filter, FIRST_KEY, "10.0.0.2", response);
+
+    assertEquals(200, response.getStatus());
+  }
+
+  @Test
+  void successfulMatchResetsTheFailureCountForThatIp() throws Exception {
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(plain(FIRST_KEY))), rateLimitEnv(3));
+
+    // Two failures — one short of the 3-failure threshold — followed by a success.
+    for (int i = 0; i < 2; i++) {
+      MockHttpServletResponse response = new MockHttpServletResponse();
+      doFilterFromIp(filter, "wrong-key", "10.0.0.1", response);
+      assertEquals(401, response.getStatus());
+    }
+    MockHttpServletResponse successResponse = new MockHttpServletResponse();
+    doFilterFromIp(filter, FIRST_KEY, "10.0.0.1", successResponse);
+    assertEquals(200, successResponse.getStatus());
+
+    // Two more failures afterward: if the count hadn't been reset by the success above, this
+    // would be the 3rd and 4th failure and would already be locked out.
+    for (int i = 0; i < 2; i++) {
+      MockHttpServletResponse response = new MockHttpServletResponse();
+      doFilterFromIp(filter, "wrong-key", "10.0.0.1", response);
+      assertEquals(401, response.getStatus());
+    }
+    MockHttpServletResponse stillOkResponse = new MockHttpServletResponse();
+    doFilterFromIp(filter, FIRST_KEY, "10.0.0.1", stillOkResponse);
+    assertEquals(200, stillOkResponse.getStatus());
   }
 }

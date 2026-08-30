@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import org.jspecify.annotations.Nullable;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,9 +40,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * {@code X-Api-Key-Id}) request headers.
  *
  * <p>All rejection paths (missing header, no {@link SplibApiKeyExpectedValueProvider} bean
- *     registered, no matching key, wrong key) return the same generic 401 response, so a caller
- *     cannot distinguish a server misconfiguration from a wrong key. Details are logged
- *     server-side only, and the presented key value itself is never logged.</p>
+ *     registered, no matching key, wrong key, rate-limit lockout) return the same generic 401
+ *     response, so a caller cannot distinguish a server misconfiguration from a wrong key.
+ *     Details are logged server-side only, and the presented key value itself is never
+ *     logged.</p>
+ *
+ * <p>A key-mismatch failure counts against a per-source-IP lockout (see
+ *     {@link SplibApiKeyRateLimiter}), configurable via {@code
+ *     jp.ecuacion.splib.rest.api-key.rate-limit.max-failures} / {@code .window-seconds} /
+ *     {@code .lockout-seconds} — this bounds both unlimited key-guessing and, when the comparison
+ *     mode is {@code BCRYPT}, the CPU an attacker could otherwise burn by forcing a bcrypt
+ *     comparison against every registered key on every single guess.</p>
  */
 public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
@@ -57,25 +66,54 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
   /** The authority granted to a request that authenticates successfully via this filter. */
   private static final String API_KEY_AUTHORITY = "ROLE_API_KEY";
 
+  private static final String RATE_LIMIT_PROPERTY_PREFIX = "jp.ecuacion.splib.rest.api-key";
+
   private final DetailLogger detailLog = new DetailLogger(this);
 
   private final @Nullable SplibApiKeyExpectedValueProvider expectedValueProvider;
   private final BCryptPasswordEncoder bcryptPasswordEncoder = new BCryptPasswordEncoder();
+  private final SplibApiKeyRateLimiter rateLimiter;
 
   /**
-   * Constructs a new instance.
+   * Constructs a new instance with the rate limiter's default thresholds (10 failures / 60
+   * seconds / a 300-second lockout) — mainly for tests;
+   * {@link jp.ecuacion.splib.rest.config.SplibRestSecurityConfig} instead uses
+   * {@link #SplibApiKeyAuthenticationFilter(SplibApiKeyExpectedValueProvider, Environment)}
+   * so the thresholds are configurable.
    *
    * @param expectedValueProvider the application-supplied provider, or {@code null} if the
    *     application never registered one — every request is then rejected
    */
   public SplibApiKeyAuthenticationFilter(
       @Nullable SplibApiKeyExpectedValueProvider expectedValueProvider) {
+    this(expectedValueProvider, null);
+  }
+
+  /**
+   * Constructs a new instance.
+   *
+   * @param expectedValueProvider the application-supplied provider, or {@code null} if the
+   *     application never registered one — every request is then rejected
+   * @param env source for the {@code jp.ecuacion.splib.rest.api-key.rate-limit.*} properties (see
+   *     the class javadoc), or {@code null} to use their defaults
+   */
+  public SplibApiKeyAuthenticationFilter(
+      @Nullable SplibApiKeyExpectedValueProvider expectedValueProvider, @Nullable Environment env) {
     this.expectedValueProvider = expectedValueProvider;
+    this.rateLimiter = SplibApiKeyRateLimiter.fromEnvironment(env, RATE_LIMIT_PROPERTY_PREFIX);
   }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
+
+    String remoteAddr = request.getRemoteAddr();
+    if (rateLimiter.isLockedOut(remoteAddr)) {
+      detailLog.warn("Request to " + request.getRequestURI() + " from " + remoteAddr
+          + " rejected: too many recent apiKey mismatches from this address.");
+      reject(response);
+      return;
+    }
 
     String presentedApiKey = request.getHeader(HEADER_API_KEY);
     String apiKeyId = request.getHeader(HEADER_API_KEY_ID);
@@ -102,9 +140,12 @@ public class SplibApiKeyAuthenticationFilter extends OncePerRequestFilter {
         expectedValues == null ? null : findMatch(presentedApiKey, expectedValues);
     if (matched == null) {
       detailLog.warn("apiKey mismatch on request to " + request.getRequestURI() + ".");
+      rateLimiter.recordFailure(remoteAddr);
       reject(response);
       return;
     }
+
+    rateLimiter.recordSuccess(remoteAddr);
 
     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
     authorities.add(new SimpleGrantedAuthority(API_KEY_AUTHORITY));

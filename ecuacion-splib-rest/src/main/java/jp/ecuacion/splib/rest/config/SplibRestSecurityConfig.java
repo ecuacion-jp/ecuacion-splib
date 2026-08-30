@@ -23,6 +23,7 @@ import jp.ecuacion.splib.rest.apikey.SplibBuiltinApiKeyAuthenticationFilter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -131,18 +132,20 @@ public abstract class SplibRestSecurityConfig {
    *     read-only).</p>
    *
    * @param http http
+   * @param env source for {@code jp.ecuacion.splib.rest.api-key.rate-limit.*} (see
+   *     {@link SplibApiKeyAuthenticationFilter})
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
   @Order(9)
   @Bean
-  SecurityFilterChain filterChainForApiKey(HttpSecurity http) throws Exception {
+  SecurityFilterChain filterChainForApiKey(HttpSecurity http, Environment env) throws Exception {
     http.securityMatcher("/api/key/**");
 
     http.httpBasic(basic -> basic.disable());
     http.csrf(csrf -> csrf.disable());
 
-    http.addFilterBefore(new SplibApiKeyAuthenticationFilter(apiKeyExpectedValueProvider),
+    http.addFilterBefore(new SplibApiKeyAuthenticationFilter(apiKeyExpectedValueProvider, env),
         UsernamePasswordAuthenticationFilter.class);
 
     // The filter above already rejects (401) any request that fails API-key authentication, so
@@ -171,18 +174,21 @@ public abstract class SplibRestSecurityConfig {
    *     for CSRF protection to add.</p>
    *
    * @param http http
+   * @param env source for {@code jp.ecuacion.splib.rest.builtin-api-key.rate-limit.*} (see
+   *     {@link SplibBuiltinApiKeyAuthenticationFilter})
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
   @Order(10)
   @Bean
-  SecurityFilterChain filterChainForApiEcuacionSplibKey(HttpSecurity http) throws Exception {
+  SecurityFilterChain filterChainForApiEcuacionSplibKey(HttpSecurity http, Environment env)
+      throws Exception {
     http.securityMatcher("/api/ecuacion-splib/key/**");
 
     http.httpBasic(basic -> basic.disable());
     http.csrf(csrf -> csrf.disable());
 
-    http.addFilterBefore(new SplibBuiltinApiKeyAuthenticationFilter(),
+    http.addFilterBefore(new SplibBuiltinApiKeyAuthenticationFilter(env),
         UsernamePasswordAuthenticationFilter.class);
 
     // The filter above already rejects (401) any request that fails API-key authentication, so
