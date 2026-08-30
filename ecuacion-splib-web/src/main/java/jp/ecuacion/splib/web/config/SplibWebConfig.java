@@ -27,9 +27,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Provides configs for web.
- * 
- * <p>It also provides the feature to persist jsessionId to cookie 
+ *
+ * <p>It also provides the feature to persist jsessionId to cookie
  *     to avoid jsessionId from emerging in url.</p>
+ *
+ * <p><strong>Secure cookie attribute / reverse proxy TLS termination.</strong> This class does
+ *     not set {@code server.servlet.session.cookie.secure=true}, nor register a
+ *     {@code ForwardedHeaderFilter} (or enable {@code server.forward-headers-strategy}). In the
+ *     common deployment where TLS is terminated at a reverse proxy and the application itself
+ *     only ever sees plain HTTP from that proxy, leaving both unset means the session cookie is
+ *     issued without the {@code Secure} attribute (so it could be sent over a plaintext
+ *     connection if one is ever reached), and {@code HttpServletRequest#isSecure()} / redirect
+ *     URL generation see the connection as insecure even though the original client request was
+ *     HTTPS. If your application is deployed behind such a proxy, set both
+ *     {@code server.servlet.session.cookie.secure=true} and
+ *     {@code server.forward-headers-strategy=framework} (or {@code native}) yourself — the proxy
+ *     must also be configured to set the {@code X-Forwarded-Proto} header (or equivalent) for the
+ *     latter to have any effect.</p>
  */
 @Configuration
 @ComponentScan(basePackages = "jp.ecuacion.splib.core.config" + ",jp.ecuacion.splib.web.advice"
