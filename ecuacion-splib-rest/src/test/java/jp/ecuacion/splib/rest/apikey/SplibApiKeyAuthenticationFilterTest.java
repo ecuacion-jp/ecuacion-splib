@@ -87,6 +87,16 @@ class SplibApiKeyAuthenticationFilterTest {
     filter.doFilter(request, response, new MockFilterChain());
   }
 
+  private void doFilterWithKeyId(SplibApiKeyAuthenticationFilter filter, String presentedApiKey,
+      String apiKeyId, MockHttpServletResponse response) throws Exception {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.setRequestURI("/api/key/executeScript");
+    request.setRemoteAddr("127.0.0.1");
+    request.addHeader(SplibApiKeyAuthenticationFilter.HEADER_API_KEY, presentedApiKey);
+    request.addHeader(SplibApiKeyAuthenticationFilter.HEADER_API_KEY_ID, apiKeyId);
+    filter.doFilter(request, response, new MockFilterChain());
+  }
+
   private static MockEnvironment rateLimitEnv(int maxFailures) {
     MockEnvironment env = new MockEnvironment();
     env.setProperty("jp.ecuacion.splib.rest.api-key.rate-limit.max-failures",
@@ -259,5 +269,61 @@ class SplibApiKeyAuthenticationFilterTest {
     MockHttpServletResponse stillOkResponse = new MockHttpServletResponse();
     doFilterFromIp(filter, FIRST_KEY, "10.0.0.1", stillOkResponse);
     assertEquals(200, stillOkResponse.getStatus());
+  }
+
+  @Test
+  void acceptsAnApiKeyIdWithOnlyAllowedCharacters() throws Exception {
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(plain(FIRST_KEY))));
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    doFilterWithKeyId(filter, FIRST_KEY, "caller-01_A", response);
+
+    assertEquals(200, response.getStatus());
+    assertEquals("caller-01_A",
+        Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName());
+  }
+
+  @Test
+  void rejectsAnApiKeyIdContainingAControlCharacter() throws Exception {
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(plain(FIRST_KEY))));
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    doFilterWithKeyId(filter, FIRST_KEY, "caller\nid", response);
+
+    assertEquals(401, response.getStatus());
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
+  }
+
+  @Test
+  void rejectsAnApiKeyIdExceedingTheMaxLength() throws Exception {
+    SplibApiKeyAuthenticationFilter filter = new SplibApiKeyAuthenticationFilter(
+        new FixedValuesProvider(List.of(plain(FIRST_KEY))));
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    doFilterWithKeyId(filter, FIRST_KEY, "a".repeat(129), response);
+
+    assertEquals(401, response.getStatus());
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
+  }
+
+  @Test
+  void stillMatchesWhenExpectedValuesExceedsTheWarnThreshold() throws Exception {
+    // Exercises the >10-entries warning path added for the bcrypt-CPU-amplification finding;
+    // the match itself must still succeed (the warning is purely informational).
+    List<SplibApiKeyExpectedValue> manyValues = new java.util.ArrayList<>();
+    for (int i = 0; i < 15; i++) {
+      manyValues.add(plain("decoy-key-" + i));
+    }
+    manyValues.add(plain(FIRST_KEY));
+
+    SplibApiKeyAuthenticationFilter filter =
+        new SplibApiKeyAuthenticationFilter(new FixedValuesProvider(manyValues));
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    doFilter(filter, FIRST_KEY, response);
+
+    assertEquals(200, response.getStatus());
   }
 }
