@@ -88,7 +88,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
- * Unit tests for {@link SplibExceptionHandler#addViolationErrorsTo}.
+ * Unit tests for {@link SplibExceptionHandler#addViolationErrorsToBindingResult}.
  *
  * <p>These tests exercise the core violation-to-BindingResult mapping logic
  * independently of Spring MVC / Servlet infrastructure.</p>
@@ -109,7 +109,7 @@ class SplibExceptionHandlerTest {
   }
 
   // application.properties values consumed by the handler methods under test (as opposed to
-  // addViolationErrorsTo, which receives needsMsgAtItem / needsMsgAtTop as explicit arguments
+  // addViolationErrorsToBindingResult, which receives needsMsgAtItem / needsMsgAtTop as explicit arguments
   // and never reads these). Registered once via PropertiesFileUtil#setApplicationResolver
   // because RedirectToHomePageException reads "home-page" in a static initializer, so it must
   // be available before that class is first loaded by any test.
@@ -428,7 +428,7 @@ class SplibExceptionHandlerTest {
   // =========================================================================
   // Support classes for handler-level tests (handleWarning, handleViolationException, etc.)
   //
-  // Unlike addViolationErrorsTo, these methods go through Model / RedirectAttributes /
+  // Unlike addViolationErrorsToBindingResult, these methods go through Model / RedirectAttributes /
   // SplibGeneralController, so a minimal but real (non-mocked) controller + service pair is
   // used, matching the "extracted to be independently testable" pattern used elsewhere:
   // Model uses the real ExtendedModelMap, RedirectAttributes uses the real
@@ -550,7 +550,7 @@ class SplibExceptionHandlerTest {
     ViolationException ex = violationOf(new BusinessViolation(MSG1));
     BindingResult br = newBindingResult();
 
-    assertThatThrownBy(() -> handler.addViolationErrorsTo(ex, br, false, false, Locale.ROOT))
+    assertThatThrownBy(() -> handler.addViolationErrorsToBindingResult(ex, br, false, false, Locale.ROOT))
         .isInstanceOf(RuntimeException.class).hasMessageContaining("shown-at-each-item");
   }
 
@@ -567,7 +567,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(MSG1));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
@@ -579,7 +579,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(MSG1));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       // Even with atItem=true, an empty path falls back to top
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
@@ -592,7 +592,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(MSG1));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, true, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
@@ -613,7 +613,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
@@ -628,7 +628,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
@@ -642,7 +642,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, true, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, true, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
@@ -674,7 +674,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(new String[] {"name"}, MSG1));
       BindingResult br = brWithTestForm();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
@@ -689,7 +689,7 @@ class SplibExceptionHandlerTest {
           violationOf(new BusinessViolation(new String[] {"nonExistent"}, MSG1));
       BindingResult br = brWithTestForm();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
@@ -710,7 +710,7 @@ class SplibExceptionHandlerTest {
           violationOf(new BusinessViolation(new String[] {"name", "email"}, MSG1));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(2);
       assertThat(br.getFieldErrors().stream().map(e -> e.getField()).toList())
@@ -731,7 +731,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = violationOf(new BusinessViolation(MSG1), new BusinessViolation(MSG2));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(2);
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
@@ -744,7 +744,7 @@ class SplibExceptionHandlerTest {
           new BusinessViolation(new String[] {"name"}, MSG2));
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       // MSG1: no path → top fallback → global(1)
       // MSG2: has path → field(1)
@@ -773,7 +773,7 @@ class SplibExceptionHandlerTest {
       // @NotNull violation (name=null) → propertyPath="name" → field error + summary
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(cvOf(), br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(cvOf(), br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
@@ -786,7 +786,7 @@ class SplibExceptionHandlerTest {
       // but atEachItemAdded=false so the summary is not added.
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(cvOf(), br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(cvOf(), br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
@@ -799,7 +799,7 @@ class SplibExceptionHandlerTest {
       // globalErrorCount = at-top(1) + summary(1) = 2
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(cvOf(), br, true, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(cvOf(), br, true, true, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
@@ -843,7 +843,7 @@ class SplibExceptionHandlerTest {
       // → registered as a global error even though atTop=false
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(classLevelCvOf(), br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(classLevelCvOf(), br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
@@ -855,7 +855,7 @@ class SplibExceptionHandlerTest {
       // global: at-top(1) only
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(classLevelCvOf(), br, true, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(classLevelCvOf(), br, true, true, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
@@ -869,7 +869,7 @@ class SplibExceptionHandlerTest {
       // returns it unchanged) regardless of the withItemName fix.
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(classLevelCvOf(), br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(classLevelCvOf(), br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getGlobalErrors().get(0).getDefaultMessage())
@@ -901,7 +901,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = new ViolationException(new Violations().validate(new CvBean()));
       BindingResult br = brWithTestForm();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
@@ -916,7 +916,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = new ViolationException(new Violations().validate(new CvBeanEmail()));
       BindingResult br = brWithTestForm();
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
@@ -935,7 +935,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = new ViolationException(new Violations().validate(new CvBeanEmail()));
       BindingResult br = brWithTestForm();
 
-      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getGlobalErrors().get(0).getDefaultMessage()).contains("email");
@@ -963,7 +963,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = new ViolationException(new Violations().validate(form));
       BindingResult br = new BeanPropertyBindingResult(form, "testFormWithValidNested");
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("rec.acc.mailAddress");
@@ -979,7 +979,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = new ViolationException(new Violations().validate(form));
       BindingResult br = new BeanPropertyBindingResult(form, "testFormWithValidNested");
 
-      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, false, true, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("rec.acc.mailAddress");
@@ -1009,7 +1009,7 @@ class SplibExceptionHandlerTest {
       BindingResult br =
           new BeanPropertyBindingResult(form, "testFormWithDirectClassValidatorRecord");
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("rec.name");
@@ -1045,7 +1045,7 @@ class SplibExceptionHandlerTest {
       // atItem=true → field error at "name" + summary
       BindingResult br = newBindingResult(); // target=Object
 
-      handler.addViolationErrorsTo(anyNotNullCvOf(), br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(anyNotNullCvOf(), br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
@@ -1060,7 +1060,7 @@ class SplibExceptionHandlerTest {
       // atItem=true → field error at "testRecord.name" + summary
       BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
 
-      handler.addViolationErrorsTo(anyNotNullCvOf(), br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(anyNotNullCvOf(), br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
@@ -1077,7 +1077,7 @@ class SplibExceptionHandlerTest {
           new ViolationException(new Violations().validate(new AnyNotNullBeanWithEmail()));
       BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
@@ -1096,7 +1096,7 @@ class SplibExceptionHandlerTest {
           new ViolationException(new Violations().validate(new AnyNotNullBeanWithEmail()));
       BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
 
-      handler.addViolationErrorsTo(ex, br, false, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, false, true, Locale.ROOT);
 
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
       assertThat(br.getGlobalErrors().get(0).getDefaultMessage()).contains("email");
@@ -1130,7 +1130,7 @@ class SplibExceptionHandlerTest {
       // CV("name") + BV("email") → both registered as field errors + summary
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(mixedEx(), br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(mixedEx(), br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(2);
       assertThat(br.getFieldErrors().stream().map(e -> e.getField()).toList())
@@ -1147,7 +1147,7 @@ class SplibExceptionHandlerTest {
       // the summary is added only once.
       BindingResult br = newBindingResult();
 
-      handler.addViolationErrorsTo(mixedEx(), br, true, true, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(mixedEx(), br, true, true, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(2);
       assertThat(br.getFieldErrors().stream().map(e -> e.getField()).toList())
@@ -1177,7 +1177,7 @@ class SplibExceptionHandlerTest {
           violationOf(new BusinessViolation(new String[] {"testRecord.name"}, MSG1));
       BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.name");
@@ -1217,7 +1217,7 @@ class SplibExceptionHandlerTest {
       BindingResult br =
           new BeanPropertyBindingResult(new TestFormWithNested(), "testFormWithNested");
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.nestedBean.name");
@@ -1234,7 +1234,7 @@ class SplibExceptionHandlerTest {
           new ViolationException(new Violations().validate(new TestRecordWithNested()));
       BindingResult br = new BeanPropertyBindingResult(new TestForm(), "testForm");
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(0);
       assertThat(br.getGlobalErrorCount()).isEqualTo(1);
@@ -1253,7 +1253,7 @@ class SplibExceptionHandlerTest {
       BindingResult br =
           new BeanPropertyBindingResult(new TestFormWithNestedList(), "testFormWithNestedList");
 
-      handler.addViolationErrorsTo(ex, br, true, false, Locale.ROOT);
+      handler.addViolationErrorsToBindingResult(ex, br, true, false, Locale.ROOT);
 
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("testRecord.nestedList[0].name");
@@ -1416,7 +1416,7 @@ class SplibExceptionHandlerTest {
       ViolationException ex = new ViolationException(new Violations().validate(new CvBean()));
       ModelAndView mav = handler.handleViolationException(ex, null, redirectAttributes);
 
-      // addViolationErrorsTo delegation: field error resolved against the form's record.
+      // addViolationErrorsToBindingResult delegation: field error resolved against the form's record.
       BindingResult br = (BindingResult) model
           .getAttribute(BindingResult.MODEL_KEY_PREFIX + "testForm");
       assertThat(Objects.requireNonNull(br).getFieldErrorCount()).isEqualTo(1);
