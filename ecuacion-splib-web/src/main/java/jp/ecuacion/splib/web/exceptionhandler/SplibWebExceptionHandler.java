@@ -58,6 +58,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
@@ -403,7 +404,8 @@ public abstract class SplibWebExceptionHandler {
    * @return ModelAndView
    */
   @SuppressWarnings("null")
-  @ExceptionHandler({NoResourceFoundException.class, RedirectException.class})
+  @ExceptionHandler({NoResourceFoundException.class, RedirectException.class,
+      UnsatisfiedServletRequestParameterException.class})
   public ModelAndView handleRedirectNeededExceptions(Exception exception, @Nullable Model newModel,
       RedirectAttributes redirectAttributes) {
 
@@ -417,38 +419,49 @@ public abstract class SplibWebExceptionHandler {
       detailLog.info(exception.getMessage());
     }
 
-    RedirectException redirectException = exception instanceof NoResourceFoundException nrfe
-        ? new RedirectToHomePageException(
-            "jp.ecuacion.splib.web.common.message.NoResourceFoundException", nrfe.getResourcePath())
-        : (RedirectException) exception;
+    RedirectException redEx = null;
+
+    if (exception instanceof RedirectException) {
+      redEx = (RedirectException) exception;
+      
+    } else if (exception instanceof NoResourceFoundException nrfe) {
+      String msgNrf = "jp.ecuacion.splib.web.common.message.NoResourceFoundException";
+      redEx = new RedirectToHomePageException(msgNrf, nrfe.getResourcePath());
+      
+    } else if (exception instanceof UnsatisfiedServletRequestParameterException) {
+      String msgUsrp = "jp.ecuacion.splib.web.login.message.notFound";
+      redEx = new RedirectToHomePageException(msgUsrp);
+      
+    } else {
+      throw new RuntimeException("Unexpected.");
+    }
 
     // Logging
-    if (redirectException.getLogLevel() != null) {
-      detailLog.log(redirectException.getLogLevel(), redirectException.getLogString());
+    if (redEx.getLogLevel() != null) {
+      detailLog.log(redEx.getLogLevel(), redEx.getLogString());
     }
 
     // Showing message
-    if (!StringUtils.isEmpty(redirectException.getMessageId())) {
+    if (!StringUtils.isEmpty(redEx.getMessageId())) {
       SplibGeneralForm[] forms = getModel() != null
           ? (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS)
           : null;
       if (forms != null && forms.length > 0) {
         ViolationBindingResultMapper.addBusinessViolation(getPrimaryBindingResult(),
-            new BusinessViolation(redirectException.getMessageId(),
-                (Object[]) redirectException.getMessageArgs()),
-            null, false, true, request.getLocale());
+            new BusinessViolation(redEx.getMessageId(), (Object[]) redEx.getMessageArgs()), null,
+            false, true, request.getLocale());
       } else {
         // Controller#prepare did not run or no forms in model; no form/BindingResult is available.
         // Resolve the message and pass it via flash attribute so the redirect target can show it.
-        String resolved = PropertiesFileUtil.getMessage(request.getLocale(),
-            redirectException.getMessageId(), (Object[]) redirectException.getMessageArgs());
+        String resolved = PropertiesFileUtil.getMessage(request.getLocale(), redEx.getMessageId(),
+            (Object[]) redEx.getMessageArgs());
         redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS,
             List.of(resolved));
       }
     }
 
     // redirect
-    ReturnUrlBuilder redirectBuilder = ReturnUrlBuilder.ofPath(redirectException.getRedirectPath());
+    ReturnUrlBuilder redirectBuilder = ReturnUrlBuilder.ofPath(redEx.getRedirectPath());
     SplibSavedModelUtil.saveToFlash(model, redirectAttributes, true);
     return new ModelAndView(redirectBuilder.getUrl());
   }
