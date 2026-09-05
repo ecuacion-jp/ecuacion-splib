@@ -27,7 +27,6 @@ import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -48,8 +47,7 @@ public abstract class SplibWebJpaExceptionHandler extends SplibWebExceptionHandl
    * @param loginStateUtil loginStateUtil
    */
   protected SplibWebJpaExceptionHandler(HttpServletRequest request,
-      @Nullable SplibExceptionHandlerAction actionOnThrowable,
-      SplibLoginStateUtil loginStateUtil) {
+      @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibLoginStateUtil loginStateUtil) {
     super(request, actionOnThrowable, loginStateUtil);
   }
 
@@ -75,10 +73,9 @@ public abstract class SplibWebJpaExceptionHandler extends SplibWebExceptionHandl
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
   public ModelAndView handleObjectOptimisticLockingFailureException(
       ObjectOptimisticLockingFailureException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser,
       RedirectAttributes redirectAttributes) throws Exception {
-    return super.handleOptimisticLockingFailureException(null, loginUser, model,
-        redirectAttributes);
+    return super.handleOptimisticLockingFailureException(null, loginUser, redirectAttributes);
   }
 
   /**
