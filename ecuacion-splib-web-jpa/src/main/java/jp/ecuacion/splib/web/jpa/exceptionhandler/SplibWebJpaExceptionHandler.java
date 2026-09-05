@@ -20,14 +20,13 @@ import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.web.exceptionhandler.SplibWebExceptionHandler;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -38,7 +37,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * 
  * <p>Use this class when the app uses JPA.</p>
  */
-public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
+public abstract class SplibWebJpaExceptionHandler extends SplibWebExceptionHandler {
 
   /**
    * Constructs a new instance.
@@ -47,9 +46,8 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
    * @param actionOnThrowable actionOnThrowable, may be {@code null}
    * @param loginStateUtil loginStateUtil
    */
-  protected SplibJpaExceptionHandler(HttpServletRequest request,
-      @Nullable SplibExceptionHandlerAction actionOnThrowable,
-      SplibLoginStateUtil loginStateUtil) {
+  protected SplibWebJpaExceptionHandler(HttpServletRequest request,
+      @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibLoginStateUtil loginStateUtil) {
     super(request, actionOnThrowable, loginStateUtil);
   }
 
@@ -75,10 +73,9 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
   @ExceptionHandler({ObjectOptimisticLockingFailureException.class})
   public ModelAndView handleObjectOptimisticLockingFailureException(
       ObjectOptimisticLockingFailureException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser,
       RedirectAttributes redirectAttributes) throws Exception {
-    return super.handleOptimisticLockingFailureException(null, loginUser, model,
-        redirectAttributes);
+    return super.handleOptimisticLockingFailureException(null, loginUser, redirectAttributes);
   }
 
   /**

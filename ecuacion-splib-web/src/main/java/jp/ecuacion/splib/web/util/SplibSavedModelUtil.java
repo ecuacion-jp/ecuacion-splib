@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.util;
 import java.util.HashMap;
 import java.util.Map;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
+import org.jspecify.annotations.Nullable;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -52,19 +53,19 @@ public class SplibSavedModelUtil {
    * @param redirectAttributes redirectAttributes
    * @param takeOverMessages whether to carry over warning / error / success messages
    */
-  public static void saveToFlash(Model model, RedirectAttributes redirectAttributes,
+  public static void saveToFlash(@Nullable Model model, RedirectAttributes redirectAttributes,
       boolean takeOverMessages) {
 
-    Map<String, Object> modelSnapshot = new HashMap<>(model.asMap());
-    modelSnapshot.remove(SplibWebConstants.KEY_GLOBAL_ERRORS);
+    Map<String, Object> modelMap = model == null ? new HashMap<>() : new HashMap<>(model.asMap());
+    modelMap.remove(SplibWebConstants.KEY_GLOBAL_ERRORS);
 
     if (!takeOverMessages) {
-      modelSnapshot.remove(SplibWebConstants.KEY_WARN_MESSAGE);
-      modelSnapshot.remove(SplibWebConstants.KEY_NEEDS_SUCCESS_MESSAGE);
-      modelSnapshot.entrySet()
+      modelMap.remove(SplibWebConstants.KEY_WARN_MESSAGE);
+      modelMap.remove(SplibWebConstants.KEY_NEEDS_SUCCESS_MESSAGE);
+      modelMap.entrySet()
           .removeIf(entry -> entry.getKey().startsWith(BindingResult.MODEL_KEY_PREFIX));
     }
 
-    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_SAVED_MODEL, modelSnapshot);
+    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_SAVED_MODEL, modelMap);
   }
 }

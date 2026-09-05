@@ -19,7 +19,7 @@ import java.util.Arrays;
 import jp.ecuacion.lib.core.util.LocaleUtil;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.cli.banner.SplibCliBanner;
-import jp.ecuacion.splib.cli.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.cli.exceptionhandler.SplibCliExceptionHandler;
 import jp.ecuacion.splib.cli.runner.SplibCliRunner;
 import jp.ecuacion.splib.cli.util.ConsoleUtil;
 import jp.ecuacion.splib.cli.util.SpinnerUtil;
@@ -51,7 +51,7 @@ public class SplibCliApplication {
    *     this runs the app's single {@code SplibCliRunner} bean directly and exits, with no
    *     Job/Step/JobRepository involved.</p>
    *
-   * <p>{@code --verbose} among {@code args} makes {@link SplibExceptionHandler} print a full
+   * <p>{@code --verbose} among {@code args} makes {@link SplibCliExceptionHandler} print a full
    *     stack trace on failure, on top of its normal concise message.</p>
    *
    * <p>{@code --ecuacion-system-error} among {@code args} deliberately throws a system error
@@ -62,7 +62,7 @@ public class SplibCliApplication {
    *
    * <p>A timestamped "starting" message is printed before {@code execute} runs, and a
    *     timestamped "completed successfully" message after it returns normally — see
-   *     {@link ConsoleUtil}. On failure, {@link SplibExceptionHandler} prints its own
+   *     {@link ConsoleUtil}. On failure, {@link SplibCliExceptionHandler} prints its own
    *     timestamped message instead of the "completed" one.</p>
    */
   public static void main(Class<?> cls, String[] args) {
@@ -101,7 +101,7 @@ public class SplibCliApplication {
     } catch (Throwable th) {
       // SplibExceptionHandler prints through System.out/err, which the spinner has wrapped
       // to clear its own line first, so the error message still appears cleanly.
-      context.getBean(SplibExceptionHandler.class).handle(th, verbose);
+      context.getBean(SplibCliExceptionHandler.class).handle(th, verbose);
       exitCode = 1;
 
     } finally {

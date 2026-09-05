@@ -53,7 +53,7 @@ import org.springframework.stereotype.Component;
  *     which receives the same {@code Throwable}.</p>
  */
 @Component
-public class SplibExceptionHandler {
+public class SplibCliExceptionHandler {
 
   private static final PrintStream err = Objects.requireNonNull(System.err);
   private final DetailLogger detailLog = new DetailLogger(this);
@@ -66,7 +66,7 @@ public class SplibExceptionHandler {
    *
    * @param action action, may be {@code null}
    */
-  public SplibExceptionHandler(@Nullable SplibExceptionHandlerAction action) {
+  public SplibCliExceptionHandler(@Nullable SplibExceptionHandlerAction action) {
     this.action = action;
   }
 
