@@ -177,20 +177,34 @@ public abstract class SplibWebExceptionHandler {
    * <p>{@code violations}, if any, are shown on the redirect target: attached to the primary
    *     form's {@code BindingResult} when a {@link SplibGeneralController} (with forms) is
    *     present in the model, or otherwise resolved to messages and flashed under
-   *     {@link SplibWebConstants#KEY_GLOBAL_ERRORS}. The current model (if any) is always
-   *     saved to flash via {@link SplibSavedModelUtil#saveToFlash} so
-   *     {@code SplibControllerAdvice} can restore it on the redirect target, whichever of the
-   *     two targets above is used.</p>
+   *     {@link SplibWebConstants#KEY_GLOBAL_ERRORS}. When attached to a {@code BindingResult},
+   *     field errors are also snapshotted to flash under
+   *     {@link SplibWebConstants#KEY_FLASH_FIELD_ERRORS} so they survive form re-binding on the
+   *     redirect target. The current model (if any) is always saved to flash via
+   *     {@link SplibSavedModelUtil#saveToFlash} so {@code SplibControllerAdvice} can restore it
+   *     on the redirect target, whichever of the two targets above is used.
+   *
+   * @param needsMsgAtItemDefault value of {@link #PROP_KEY_SHOWN_AT_EACH_ITEM}
+   * @param needsMsgAtTopDefault value of {@link #PROP_KEY_SHOWN_AT_THE_TOP}
    */
-  private ModelAndView redirectWithGlobalMessage(RedirectAttributes redirectAttributes,
-      @Nullable String redirectPath, Violations violations) {
+  private ModelAndView redirectWithViolations(RedirectAttributes redirectAttributes,
+      @Nullable String redirectPath, Violations violations, boolean needsMsgAtItemDefault,
+      boolean needsMsgAtTopDefault) {
 
     if (!violations.isEmpty()) {
       SplibGeneralForm[] forms = getForms();
 
       if (forms != null && forms.length > 0) {
         addViolationErrorsToBindingResult(new ViolationException(violations),
-            getPrimaryBindingResult(), false, true, request.getLocale());
+            getPrimaryBindingResult(), needsMsgAtItemDefault, needsMsgAtTopDefault,
+            request.getLocale());
+
+        // Save FieldErrors separately so they survive form re-binding after the redirect.
+        Map<String, List<FieldError>> fieldErrorsSnapshot = snapshotFieldErrors();
+        if (!fieldErrorsSnapshot.isEmpty()) {
+          redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_FLASH_FIELD_ERRORS,
+              fieldErrorsSnapshot);
+        }
       } else {
         redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS,
             resolveMessages(violations));
@@ -215,6 +229,36 @@ public abstract class SplibWebExceptionHandler {
   }
 
   /**
+   * Same as {@link #redirectWithViolations(RedirectAttributes, String, Violations, boolean,
+   * boolean)}, but always shows messages only at the top of the page (never at-item) — for
+   * system-level redirects that are not tied to a specific form field.
+   */
+  private ModelAndView redirectWithGlobalMessage(RedirectAttributes redirectAttributes,
+      @Nullable String redirectPath, Violations violations) {
+    return redirectWithViolations(redirectAttributes, redirectPath, violations, false, true);
+  }
+
+  /**
+   * Convenience overload of {@link #redirectWithGlobalMessage(RedirectAttributes, String,
+   * Violations)} for a single message.
+   */
+  private ModelAndView redirectWithGlobalMessage(RedirectAttributes redirectAttributes,
+      @Nullable String redirectPath, String messageId, Object... messageArgs) {
+    return redirectWithGlobalMessage(redirectAttributes, redirectPath,
+        new Violations().add(messageId, messageArgs));
+  }
+
+  /**
+   * Convenience overload of {@link #redirectWithGlobalMessage(RedirectAttributes, String,
+   * String, Object...)} that always redirects to the application's home page.
+   */
+  private ModelAndView redirectToHomeWithGlobalMessage(RedirectAttributes redirectAttributes,
+      String messageId, Object... args) {
+    return redirectWithGlobalMessage(redirectAttributes,
+        new RedirectToHomePageException().getRedirectPath(), messageId, args);
+  }
+
+  /**
    * Resolves {@code violations} into a flat list of messages, without item names.
    */
   private List<String> resolveMessages(Violations violations) {
@@ -232,18 +276,6 @@ public abstract class SplibWebExceptionHandler {
       errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
     }
     return errorMessages;
-  }
-
-  /**
-   * Redirects to the application's home page, showing {@code messageId} (if given) as a
-   * global message, as {@link #redirectWithGlobalMessage} does.
-   */
-  private ModelAndView redirectToHomeWithGlobalMessage(RedirectAttributes redirectAttributes,
-      @Nullable String messageId, Object... args) {
-    Violations violations =
-        messageId == null ? new Violations() : new Violations().add(messageId, args);
-    return redirectWithGlobalMessage(redirectAttributes,
-        new RedirectToHomePageException().getRedirectPath(), violations);
   }
 
   /**
@@ -280,9 +312,10 @@ public abstract class SplibWebExceptionHandler {
    *     registered in the model:</p>
    * <ul>
    *   <li>controller present → {@link #handleViolationExceptionWithController}</li>
-   *   <li>controller absent (plain {@code SplibBaseController}) → redirects back to the
-   *       referring page, flashing error messages without item names, since there is no
-   *       form/{@code BindingResult} to attach them to.</li>
+   *   <li>controller absent (plain {@code SplibBaseController}) → delegates to
+   *       {@link #redirectWithGlobalMessage(RedirectAttributes, String, Violations)},
+   *       redirecting back to the referring page and flashing error messages without item
+   *       names, since there is no form/{@code BindingResult} to attach them to.</li>
    * </ul>
    *
    * @param exception ViolationException
@@ -306,21 +339,17 @@ public abstract class SplibWebExceptionHandler {
   /**
    * Handles {@code ViolationException} when a {@link SplibGeneralController} is present.
    *
-   * <p>Adds violation errors to the primary {@link BindingResult}, saves field-error snapshots
-   *     and the full model to flash attributes, then redirects to the abnormal-end URL.</p>
+   * <p>Delegates to {@link #redirectWithViolations} to attach violation errors to the
+   *     primary {@link BindingResult}, save field-error snapshots and the full model to flash
+   *     attributes, then redirects to the abnormal-end URL.</p>
    */
   private ModelAndView handleViolationExceptionWithController(ViolationException exception,
       @Nullable UserDetails loginUser, RedirectAttributes redirectAttributes) {
-
-    Locale locale = request.getLocale();
 
     boolean needsMsgAtItemDefault = Boolean
         .valueOf(PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_EACH_ITEM, "false"));
     boolean needsMsgAtTopDefault = Boolean
         .valueOf(PropertiesFileUtil.getApplicationOrElse(PROP_KEY_SHOWN_AT_THE_TOP, "false"));
-
-    addViolationErrorsToBindingResult(exception, getPrimaryBindingResult(), needsMsgAtItemDefault,
-        needsMsgAtTopDefault, locale);
 
     prepareFormForReturn(loginUser);
 
@@ -330,15 +359,8 @@ public abstract class SplibWebExceptionHandler {
       redirectBuilder = ReturnUrlBuilder.forAbnormalEnd(controller, loginStateUtil);
     }
 
-    // Save FieldErrors separately so they survive form re-binding after the redirect.
-    Map<String, List<FieldError>> fieldErrorsSnapshot = snapshotFieldErrors();
-    if (!fieldErrorsSnapshot.isEmpty()) {
-      redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_FLASH_FIELD_ERRORS,
-          fieldErrorsSnapshot);
-    }
-
-    SplibSavedModelUtil.saveToFlash(requireModel(), redirectAttributes, true);
-    return new ModelAndView(redirectBuilder.getUrl());
+    return redirectWithViolations(redirectAttributes, redirectBuilder.getPath(),
+        exception.getViolations(), needsMsgAtItemDefault, needsMsgAtTopDefault);
   }
 
   /**
@@ -441,7 +463,8 @@ public abstract class SplibWebExceptionHandler {
         : new Violations().add(Objects.requireNonNull(exception.getMessageId()),
             (Object[]) exception.getMessageArgs());
 
-    return redirectWithGlobalMessage(redirectAttributes, exception.getRedirectPath(), violations);
+    return redirectWithGlobalMessage(redirectAttributes, exception.getRedirectPath(),
+        violations);
   }
 
   /**
@@ -476,8 +499,8 @@ public abstract class SplibWebExceptionHandler {
    *
    * <p>This fires while {@code DispatcherServlet} is parsing the multipart request, before the
    *     controller's {@code prepare()} runs, so no model/forms are available yet. Redirect back
-   *     to the referring page with a flash error message, as
-   *     {@link #handleViolationExceptionWithoutController} does.</p>
+   *     to the referring page with a flash error message via
+   *     {@link #redirectWithGlobalMessage(RedirectAttributes, String, Violations)}.</p>
    *
    * @param exception MaxUploadSizeExceededException
    * @param redirectAttributes RedirectAttributes
