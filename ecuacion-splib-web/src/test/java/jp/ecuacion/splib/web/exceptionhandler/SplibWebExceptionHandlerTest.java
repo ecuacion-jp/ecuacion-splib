@@ -294,6 +294,8 @@ class SplibWebExceptionHandlerTest {
   @Nested
   class HandleWarning {
 
+    private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
     @SuppressWarnings("null")
     private TestForm form;
     @SuppressWarnings("null")
@@ -303,6 +305,8 @@ class SplibWebExceptionHandlerTest {
 
     @BeforeEach
     void setUpController() {
+      when(loginStateUtil.getLoginState()).thenReturn("account");
+
       form = new TestForm();
       controller = new TestController("testFunc", new TestService());
       model = modelWithForm(form, controller);
@@ -317,7 +321,7 @@ class SplibWebExceptionHandlerTest {
       ViolationWebWarningException ex =
           new ViolationWebWarningException(violations, "btnConfirm");
 
-      ModelAndView mav = handler.handleViolationWarningException(ex, null);
+      ModelAndView mav = handler.handleViolationWarningException(ex, null, redirectAttributes);
 
       WarnMessageBean bean =
           (WarnMessageBean) model.getAttribute(SplibWebConstants.KEY_WARN_MESSAGE);
@@ -330,8 +334,12 @@ class SplibWebExceptionHandlerTest {
       TestService service = (TestService) controller.getService();
       assertThat(service.preparedForms).containsExactly(form);
 
-      assertThat(mav.getViewName()).isEqualTo(controller.getDefaultHtmlPageName());
-      assertThat(mav.getModel()).isEqualTo(model.asMap());
+      // Post-Redirect-Get: redirects back to the same form's abnormal-end URL (no app-specific
+      // override configured -> ReturnUrlBuilder.forAbnormalEnd()), taking the warning message
+      // and form input along via flash so a page reload cannot resubmit.
+      assertThat(mav.getViewName()).isEqualTo("redirect:/account/testFunc/page");
+      assertThat(redirectAttributes.getFlashAttributes())
+          .containsKey(SplibWebConstants.KEY_SAVED_MODEL);
     }
 
     @SuppressWarnings("null")
@@ -340,7 +348,7 @@ class SplibWebExceptionHandlerTest {
       Violations violations = new Violations().add(new BusinessViolation(MSG2));
       ViolationWarningException ex = new ViolationWarningException(violations);
 
-      handler.handleViolationWarningException(ex, null);
+      handler.handleViolationWarningException(ex, null, redirectAttributes);
 
       WarnMessageBean bean =
           (WarnMessageBean) model.getAttribute(SplibWebConstants.KEY_WARN_MESSAGE);

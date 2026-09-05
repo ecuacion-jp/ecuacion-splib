@@ -281,13 +281,23 @@ public abstract class SplibWebExceptionHandler {
   /**
    * Catches {@code ViolationWarningException}.
    *
+   * <p>A warning means the submit did not complete — the user must confirm before
+   *     resubmitting — so this follows the same Post-Redirect-Get flow as a validation
+   *     failure: the warning message is placed in the model under
+   *     {@link SplibWebConstants#KEY_WARN_MESSAGE}, then {@link #redirectWithGlobalMessage}
+   *     redirects back to the form so a page reload cannot resubmit it. Since the warning
+   *     itself is not a {@code Violation} to attach to a {@code BindingResult} or flash as a
+   *     global error, an empty {@link Violations} is passed.</p>
+   *
    * @param exception ViolationWarningException
    * @param loginUser UserDetails, may be {@code null} when the user is not logged in
+   * @param redirectAttributes RedirectAttributes
    * @return ModelAndView
    */
   @ExceptionHandler({ViolationWarningException.class})
   public ModelAndView handleViolationWarningException(ViolationWarningException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser) {
+      @Nullable @AuthenticationPrincipal UserDetails loginUser,
+      RedirectAttributes redirectAttributes) {
 
     BusinessViolation v = exception.getViolations().getBusinessViolations().get(0);
     String buttonId = exception instanceof ViolationWebWarningException vwwe
@@ -298,11 +308,10 @@ public abstract class SplibWebExceptionHandler {
         PropertiesFileUtil.getMessage(request.getLocale(), v.getMessageId(), v.getMessageArgs()),
         buttonId));
 
-    // Since warning means the submit did not complete, processing returns to the same page,
-    // so no redirect to a different page occurs.
     prepareFormForReturn(loginUser);
-    return new ModelAndView(Objects.requireNonNull(getController()).getDefaultHtmlPageName(),
-        requireModel().asMap());
+
+    String path = abnormalEndRedirectPath(Objects.requireNonNull(getController()));
+    return redirectWithGlobalMessage(redirectAttributes, path, new Violations());
   }
 
   /**
@@ -353,14 +362,22 @@ public abstract class SplibWebExceptionHandler {
 
     prepareFormForReturn(loginUser);
 
-    SplibGeneralController<?> controller = Objects.requireNonNull(getController());
+    String path = abnormalEndRedirectPath(Objects.requireNonNull(getController()));
+    return redirectWithViolations(redirectAttributes, path, exception.getViolations(),
+        needsMsgAtItemDefault, needsMsgAtTopDefault);
+  }
+
+  /**
+   * Returns the path to redirect to so the same form is re-shown after a failed submission
+   * (a validation failure, or a warning awaiting user confirmation): {@code controller}'s
+   * explicit override if set, otherwise the default abnormal-end destination.
+   */
+  private String abnormalEndRedirectPath(SplibGeneralController<?> controller) {
     ReturnUrlBuilder redirectBuilder = controller.getRedirectUrlOnAppException();
     if (redirectBuilder == null) {
       redirectBuilder = ReturnUrlBuilder.forAbnormalEnd(controller, loginStateUtil);
     }
-
-    return redirectWithViolations(redirectAttributes, redirectBuilder.getPath(),
-        exception.getViolations(), needsMsgAtItemDefault, needsMsgAtTopDefault);
+    return redirectBuilder.getPath();
   }
 
   /**
