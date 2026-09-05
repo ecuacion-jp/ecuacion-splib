@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import org.jspecify.annotations.Nullable;
 import org.springframework.ui.Model;
@@ -56,7 +57,8 @@ public class SplibSavedModelUtil {
   public static void saveToFlash(@Nullable Model model, RedirectAttributes redirectAttributes,
       boolean takeOverMessages) {
 
-    Map<String, Object> modelMap = model == null ? new HashMap<>() : new HashMap<>(model.asMap());
+    Map<String, Object> modelMap =
+        model == null ? new HashMap<>() : new HashMap<>(Objects.requireNonNull(model).asMap());
     modelMap.remove(SplibWebConstants.KEY_GLOBAL_ERRORS);
 
     if (!takeOverMessages) {
