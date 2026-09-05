@@ -574,16 +574,14 @@ class SplibWebExceptionHandlerTest {
     private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
     @Test
-    void noResourceFoundException_modelAbsent__wrapsToHomePage_flashesMessage_savesNewModel() {
+    void noResourceFoundException_modelAbsent__wrapsToHomePage_flashesMessage_savesEmptyModel() {
       // getModel() (from the request attribute) is left unstubbed -> null, matching the real
       // situation this exception fires in: before any controller's prepare() ran.
       when(request.getLocale()).thenReturn(Locale.ROOT);
-      Model newModel = new ExtendedModelMap();
       NoResourceFoundException nrfe =
           new NoResourceFoundException(HttpMethod.GET, "No static resource foo/bar.", "foo/bar");
 
-      ModelAndView mav =
-          handler.handleRedirectNeededExceptions(nrfe, newModel, redirectAttributes);
+      ModelAndView mav = handler.handleRedirectNeededExceptions(nrfe, redirectAttributes);
 
       // Wrapped into RedirectToHomePageException -> redirects to the configured home page.
       assertThat(mav.getViewName()).isEqualTo("redirect:/top");
@@ -594,7 +592,9 @@ class SplibWebExceptionHandlerTest {
           .get(SplibWebConstants.KEY_GLOBAL_ERRORS);
       assertThat(errors).containsExactly("URL path not found. (URL path : foo/bar)");
 
-      // The caller-supplied newModel (not getModel(), which was null) is the one saved to flash.
+      // getModel() was null -> SplibSavedModelUtil.saveToFlash falls back to an empty map,
+      // but KEY_SAVED_MODEL is still flashed (so SplibControllerAdvice's restore path runs
+      // uniformly regardless of whether there was anything to restore).
       assertThat(redirectAttributes.getFlashAttributes())
           .containsKey(SplibWebConstants.KEY_SAVED_MODEL);
     }
@@ -605,7 +605,7 @@ class SplibWebExceptionHandlerTest {
       stubModel(model);
 
       RedirectException ex = new RedirectException("/some/path");
-      ModelAndView mav = handler.handleRedirectNeededExceptions(ex, null, redirectAttributes);
+      ModelAndView mav = handler.handleRedirectNeededExceptions(ex, redirectAttributes);
 
       assertThat(mav.getViewName()).isEqualTo("redirect:/some/path");
       assertThat(redirectAttributes.getFlashAttributes())
@@ -625,7 +625,7 @@ class SplibWebExceptionHandlerTest {
       // Also exercises the logLevel branch (no assertion on the log output itself).
       RedirectException ex =
           new RedirectException("/some/path", Level.WARN, "log message", MSG1);
-      handler.handleRedirectNeededExceptions(ex, null, redirectAttributes);
+      handler.handleRedirectNeededExceptions(ex, redirectAttributes);
 
       BindingResult br =
           (BindingResult) model.getAttribute(BindingResult.MODEL_KEY_PREFIX + "testForm");
@@ -664,7 +664,7 @@ class SplibWebExceptionHandlerTest {
       stubModel(model);
 
       ModelAndView mav = handler.handleOptimisticLockingFailureException(
-          new OverlappingFileLockException(), null, model, redirectAttributes);
+          new OverlappingFileLockException(), null, redirectAttributes);
 
       // pageTemplatePattern=SINGLE -> getDefaultDestSubFunctionOnNormalEnd()="edit";
       // getDefaultDestPageOnNormalEnd()="page" (not overridden).
@@ -688,7 +688,7 @@ class SplibWebExceptionHandlerTest {
       stubModel(model);
 
       ModelAndView mav = handler.handleOptimisticLockingFailureException(
-          new OverlappingFileLockException(), null, model, redirectAttributes);
+          new OverlappingFileLockException(), null, redirectAttributes);
 
       // Not a SplibEditController -> wrapped as a BusinessViolation and routed through
       // handleViolationException/handleViolationExceptionWithController, so the message ends

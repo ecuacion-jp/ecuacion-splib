@@ -51,6 +51,7 @@ import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import jp.ecuacion.splib.web.util.internal.RefererRedirectUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -162,7 +163,6 @@ public abstract class SplibWebExceptionHandler {
    * @param loginUser UserDetails, may be {@code null} when the user is not logged in
    * @return ModelAndView
    */
-  @SuppressWarnings("null")
   @ExceptionHandler({ViolationWarningException.class})
   public ModelAndView handleViolationWarningException(ViolationWarningException exception,
       @Nullable @AuthenticationPrincipal UserDetails loginUser) {
@@ -218,7 +218,6 @@ public abstract class SplibWebExceptionHandler {
    * <p>Collects error messages without item names and redirects back to the referring page,
    *     passing the errors via a flash attribute so the redirect target can display them.</p>
    */
-  @SuppressWarnings("null")
   private ModelAndView handleViolationExceptionWithoutController(ViolationException exception,
       RedirectAttributes redirectAttributes) {
 
@@ -226,7 +225,7 @@ public abstract class SplibWebExceptionHandler {
     Locale locale = request.getLocale();
     MessageParameters params = violations.messageParameters();
 
-    List<ConstraintViolation<?>> sortedCvs =
+    List<@NonNull ConstraintViolation<?>> sortedCvs =
         ViolationBindingResultMapper.sortedConstraintViolations(violations);
     List<String> errorMessages = new ArrayList<>();
     for (ConstraintViolation<?> cv : sortedCvs) {
@@ -245,7 +244,10 @@ public abstract class SplibWebExceptionHandler {
    *
    * <p>Used by exception handlers that fire before a {@link SplibGeneralController} is
    *     available (no model, no forms), so there is no {@code BindingResult} to attach
-   *     field/global errors to.</p>
+   *     field/global errors to. For the same reason, the model is not saved via
+   *     {@link SplibSavedModelUtil#saveToFlash} here: there is no controller-populated model
+   *     worth restoring on the redirect target, which is an unrelated page (the referer),
+   *     not a re-rendering of the page that threw.</p>
    */
   private ModelAndView redirectToRefererWithGlobalErrors(List<String> errorMessages,
       RedirectAttributes redirectAttributes) {
@@ -398,22 +400,12 @@ public abstract class SplibWebExceptionHandler {
    * </ul>
    *
    * @param exception Exception
-   * @param newModel When Exception occurs before Controller#prepare called, getModel() is null.
-   *     In that case, this new model can be used.
-   *     This is different from the one you get at controller.
    * @return ModelAndView
    */
-  @SuppressWarnings("null")
   @ExceptionHandler({NoResourceFoundException.class, RedirectException.class,
       UnsatisfiedServletRequestParameterException.class})
-  public ModelAndView handleRedirectNeededExceptions(Exception exception, @Nullable Model newModel,
+  public ModelAndView handleRedirectNeededExceptions(Exception exception,
       RedirectAttributes redirectAttributes) {
-
-    // Setup model if it's new.
-    Model model = getModel();
-    if (model == null) {
-      model = Objects.requireNonNull(newModel);
-    }
 
     if (!StringUtils.isEmpty(exception.getMessage())) {
       detailLog.info(exception.getMessage());
@@ -423,38 +415,39 @@ public abstract class SplibWebExceptionHandler {
 
     if (exception instanceof RedirectException) {
       redEx = (RedirectException) exception;
-      
+      // Logging
+      if (redEx.getLogLevel() != null) {
+        detailLog.log(Objects.requireNonNull(redEx.getLogLevel()), redEx.getLogString());
+      }
+
     } else if (exception instanceof NoResourceFoundException nrfe) {
       String msgNrf = "jp.ecuacion.splib.web.common.message.NoResourceFoundException";
       redEx = new RedirectToHomePageException(msgNrf, nrfe.getResourcePath());
-      
+
     } else if (exception instanceof UnsatisfiedServletRequestParameterException) {
       String msgUsrp = "jp.ecuacion.splib.web.login.message.notFound";
       redEx = new RedirectToHomePageException(msgUsrp);
-      
+
     } else {
       throw new RuntimeException("Unexpected.");
-    }
-
-    // Logging
-    if (redEx.getLogLevel() != null) {
-      detailLog.log(redEx.getLogLevel(), redEx.getLogString());
     }
 
     // Showing message
     if (!StringUtils.isEmpty(redEx.getMessageId())) {
       SplibGeneralForm[] forms = getModel() != null
-          ? (SplibGeneralForm[]) getModel().getAttribute(SplibWebConstants.KEY_FORMS)
+          ? (SplibGeneralForm[]) requireModel().getAttribute(SplibWebConstants.KEY_FORMS)
           : null;
+
       if (forms != null && forms.length > 0) {
         ViolationBindingResultMapper.addBusinessViolation(getPrimaryBindingResult(),
-            new BusinessViolation(redEx.getMessageId(), (Object[]) redEx.getMessageArgs()), null,
-            false, true, request.getLocale());
+            new BusinessViolation(Objects.requireNonNull(redEx.getMessageId()),
+                (Object[]) redEx.getMessageArgs()),
+            null, false, true, request.getLocale());
       } else {
         // Controller#prepare did not run or no forms in model; no form/BindingResult is available.
         // Resolve the message and pass it via flash attribute so the redirect target can show it.
-        String resolved = PropertiesFileUtil.getMessage(request.getLocale(), redEx.getMessageId(),
-            (Object[]) redEx.getMessageArgs());
+        String resolved = PropertiesFileUtil.getMessage(request.getLocale(),
+            Objects.requireNonNull(redEx.getMessageId()), (Object[]) redEx.getMessageArgs());
         redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS,
             List.of(resolved));
       }
@@ -462,7 +455,7 @@ public abstract class SplibWebExceptionHandler {
 
     // redirect
     ReturnUrlBuilder redirectBuilder = ReturnUrlBuilder.ofPath(redEx.getRedirectPath());
-    SplibSavedModelUtil.saveToFlash(model, redirectAttributes, true);
+    SplibSavedModelUtil.saveToFlash(getModel(), redirectAttributes, true);
     return new ModelAndView(redirectBuilder.getUrl());
   }
 
@@ -476,7 +469,7 @@ public abstract class SplibWebExceptionHandler {
   @ExceptionHandler({OverlappingFileLockException.class})
   public ModelAndView handleOptimisticLockingFailureException(
       @Nullable OverlappingFileLockException exception,
-      @Nullable @AuthenticationPrincipal UserDetails loginUser, Model model,
+      @Nullable @AuthenticationPrincipal UserDetails loginUser,
       RedirectAttributes redirectAttributes) {
 
     SplibGeneralController<?> ctrl = Objects.requireNonNull(getController());
@@ -487,8 +480,7 @@ public abstract class SplibWebExceptionHandler {
       String path = "/" + loginState + "/" + ctrl.getFunction() + "/"
           + ctrl.getDefaultDestSubFunctionOnNormalEnd() + "/"
           + ctrl.getDefaultDestPageOnNormalEnd();
-      return handleRedirectNeededExceptions(new RedirectException(path, msgId), model,
-          redirectAttributes);
+      return handleRedirectNeededExceptions(new RedirectException(path, msgId), redirectAttributes);
     } else {
       return handleViolationException(
           new ViolationException(new Violations().add(new BusinessViolation(msgId))), loginUser,
@@ -523,21 +515,21 @@ public abstract class SplibWebExceptionHandler {
    * Catches {@code Throwable}.
    *
    * @param exception Throwable
-   * @param model model
+   * @param newModel model
    * @return ModelAndView
    */
-  @SuppressWarnings("null")
   @ExceptionHandler({Throwable.class})
-  public ModelAndView handleThrowable(Throwable exception, Model model) {
+  public ModelAndView handleThrowable(Throwable exception, Model newModel) {
 
     LogUtil.logSystemError(detailLog, exception);
 
     // app dependent procedures, like sending mail.
     if (actionOnThrowable != null) {
-      actionOnThrowable.execute(exception);
+      Objects.requireNonNull(actionOnThrowable).execute(exception);
     }
 
-    Model mdl = getModel() == null ? model : getModel();
-    return new ModelAndView("error", mdl.asMap(), HttpStatusCode.valueOf(500));
+    Model mdl = getModel() == null ? newModel : getModel();
+    return new ModelAndView("error", Objects.requireNonNull(mdl).asMap(),
+        HttpStatusCode.valueOf(500));
   }
 }
