@@ -20,7 +20,7 @@ import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
-import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.web.exceptionhandler.SplibWebExceptionHandler;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -38,7 +38,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * 
  * <p>Use this class when the app uses JPA.</p>
  */
-public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
+public abstract class SplibWebJpaExceptionHandler extends SplibWebExceptionHandler {
 
   /**
    * Constructs a new instance.
@@ -47,7 +47,7 @@ public abstract class SplibJpaExceptionHandler extends SplibExceptionHandler {
    * @param actionOnThrowable actionOnThrowable, may be {@code null}
    * @param loginStateUtil loginStateUtil
    */
-  protected SplibJpaExceptionHandler(HttpServletRequest request,
+  protected SplibWebJpaExceptionHandler(HttpServletRequest request,
       @Nullable SplibExceptionHandlerAction actionOnThrowable,
       SplibLoginStateUtil loginStateUtil) {
     super(request, actionOnThrowable, loginStateUtil);

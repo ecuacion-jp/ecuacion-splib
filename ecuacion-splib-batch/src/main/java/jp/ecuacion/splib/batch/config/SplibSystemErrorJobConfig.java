@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.batch.config;
 
 import java.util.Objects;
-import jp.ecuacion.splib.batch.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.batch.exceptionhandler.SplibBatchExceptionHandler;
 import jp.ecuacion.splib.batch.listener.SplibJobExecutionListener;
 import jp.ecuacion.splib.batch.listener.SplibStepExecutionListener;
 import jp.ecuacion.splib.batch.tasklet.SystemErrorTasklet;
@@ -50,7 +50,8 @@ public class SplibSystemErrorJobConfig extends SplibAppParentBatchConfig {
    * @param exceptionHandler exceptionHandler
    */
   public SplibSystemErrorJobConfig(SplibJobExecutionListener jobExecutionListener,
-      SplibStepExecutionListener stepExecutionListener, SplibExceptionHandler exceptionHandler) {
+      SplibStepExecutionListener stepExecutionListener,
+      SplibBatchExceptionHandler exceptionHandler) {
     super(jobExecutionListener, stepExecutionListener, exceptionHandler);
   }
 

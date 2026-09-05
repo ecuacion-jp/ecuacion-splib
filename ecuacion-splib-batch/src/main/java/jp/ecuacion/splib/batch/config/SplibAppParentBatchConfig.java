@@ -17,7 +17,7 @@ package jp.ecuacion.splib.batch.config;
 
 import jp.ecuacion.splib.batch.autoconfigure.SplibBatchJobParametersConverterAutoConfiguration;
 import jp.ecuacion.splib.batch.autoconfigure.SplibBatchTransactionManagerAutoConfiguration;
-import jp.ecuacion.splib.batch.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.batch.exceptionhandler.SplibBatchExceptionHandler;
 import jp.ecuacion.splib.batch.listener.SplibJobExecutionListener;
 import jp.ecuacion.splib.batch.listener.SplibStepExecutionListener;
 import org.jspecify.annotations.Nullable;
@@ -38,7 +38,7 @@ public abstract class SplibAppParentBatchConfig {
 
   private SplibJobExecutionListener jobExecutionListener;
   private SplibStepExecutionListener stepExecutionListener;
-  private SplibExceptionHandler exceptionHandler;
+  private SplibBatchExceptionHandler exceptionHandler;
 
   /**
    * Constructs a new instance.
@@ -48,7 +48,8 @@ public abstract class SplibAppParentBatchConfig {
    * @param exceptionHandler exceptionHandler
    */
   protected SplibAppParentBatchConfig(SplibJobExecutionListener jobExecutionListener,
-      SplibStepExecutionListener stepExecutionListener, SplibExceptionHandler exceptionHandler) {
+      SplibStepExecutionListener stepExecutionListener,
+      SplibBatchExceptionHandler exceptionHandler) {
     this.jobExecutionListener = jobExecutionListener;
     this.stepExecutionListener = stepExecutionListener;
     this.exceptionHandler = exceptionHandler;
@@ -75,8 +76,8 @@ public abstract class SplibAppParentBatchConfig {
    * @return TaskletStepBuilder
    */
   protected @Nullable TaskletStepBuilder preparedStepBuilder(String stepName,
-      JobRepository jobRepository,
-      PlatformTransactionManager transactionManager, Tasklet... tasklets) {
+      JobRepository jobRepository, PlatformTransactionManager transactionManager,
+      Tasklet... tasklets) {
     StepBuilder builder = new StepBuilder(stepName, jobRepository).listener(stepExecutionListener);
     TaskletStepBuilder tlBuilder = null;
     for (Tasklet tasklet : tasklets) {
@@ -93,10 +94,10 @@ public abstract class SplibAppParentBatchConfig {
 
   private TaskletStepBuilder buildTasklet(Object builder, Tasklet tasklet,
       PlatformTransactionManager transactionManager) {
-    TaskletStepBuilder tlBuilder = builder instanceof StepBuilder sb
-        ? sb.tasklet(tasklet, transactionManager)
-        : ((TaskletStepBuilder) builder).tasklet(tasklet, transactionManager);
-    
+    TaskletStepBuilder tlBuilder =
+        builder instanceof StepBuilder sb ? sb.tasklet(tasklet, transactionManager)
+            : ((TaskletStepBuilder) builder).tasklet(tasklet, transactionManager);
+
     return tlBuilder.exceptionHandler(exceptionHandler);
   }
 }
