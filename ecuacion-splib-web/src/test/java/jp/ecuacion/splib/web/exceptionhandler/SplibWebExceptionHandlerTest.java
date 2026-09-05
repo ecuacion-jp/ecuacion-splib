@@ -549,8 +549,11 @@ class SplibWebExceptionHandlerTest {
     @SuppressWarnings("null")
     @Test
     void cveWithParameters__messageParametersPropagateToTheFinalMessage() {
-      MessageParameters params =
-          new MessageParameters(Boolean.FALSE, "PREFIX-", "-SUFFIX", false);
+      MessageParameters params = new MessageParameters()
+          .isMessageWithItemName(Boolean.FALSE)
+          .messagePrefix("PREFIX-")
+          .messagePostfix("-SUFFIX")
+          .showsItemNamePath(false);
       ConstraintViolationExceptionWithParameters cve =
           new ConstraintViolationExceptionWithParameters(cvsOf(new CvBean()), params);
 
