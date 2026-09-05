@@ -413,8 +413,8 @@ public abstract class SplibWebExceptionHandler {
 
     RedirectException redEx = null;
 
-    if (exception instanceof RedirectException) {
-      redEx = (RedirectException) exception;
+    if (exception instanceof RedirectException redirectException) {
+      redEx = redirectException;
       // Logging
       if (redEx.getLogLevel() != null) {
         detailLog.log(Objects.requireNonNull(redEx.getLogLevel()), redEx.getLogString());
