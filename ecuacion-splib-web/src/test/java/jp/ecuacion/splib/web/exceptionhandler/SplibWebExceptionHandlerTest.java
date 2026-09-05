@@ -702,10 +702,11 @@ class SplibWebExceptionHandlerTest {
 
     @Test
     void editController__redirectsToDefaultDestOnNormalEnd_withFlashedMessage() {
+      when(loginStateUtil.getLoginState()).thenReturn("account");
+
       TestEditController editController = new TestEditController("editFunc");
       Model model = new ExtendedModelMap();
       model.addAttribute(SplibWebConstants.KEY_CONTROLLER, editController);
-      model.addAttribute("loginState", "account");
       stubModel(model);
 
       ModelAndView mav = handler.handleOptimisticLockingFailureException(
