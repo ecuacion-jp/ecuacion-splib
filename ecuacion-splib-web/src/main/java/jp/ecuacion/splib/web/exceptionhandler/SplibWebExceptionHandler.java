@@ -87,6 +87,8 @@ public abstract class SplibWebExceptionHandler {
   public static final String PROP_KEY_SHOWN_AT_THE_TOP =
       "jp.ecuacion.splib.web.process-result-message.shown-at-the-top";
 
+  private static final String MSG_PREFIX = "jp.ecuacion.splib.web.common.message.";
+
   private DetailLogger detailLog = new DetailLogger(this);
 
   HttpServletRequest request;
@@ -123,6 +125,19 @@ public abstract class SplibWebExceptionHandler {
   }
 
   /**
+   * Returns the forms registered by {@link SplibGeneralController#prepare}, or {@code null}
+   * if the model is not yet available (in which case {@link #getController()} is also
+   * {@code null}, since both are registered together).
+   *
+   * @return forms, or {@code null}
+   */
+  private SplibGeneralForm @Nullable [] getForms() {
+    Model model = getModel();
+    return model == null ? null
+        : (SplibGeneralForm[]) model.getAttribute(SplibWebConstants.KEY_FORMS);
+  }
+
+  /**
    * Returns the model obtained at the controller, or {@code null} if the exception fired
    * before the controller set up the model (e.g. {@code NoResourceFoundException}).
    *
@@ -150,10 +165,85 @@ public abstract class SplibWebExceptionHandler {
     // #603:
     // Ideally prepareForm should only be called when not redirecting within the ExceptionHandler,
     // but that handling is not yet implemented. To be refactored when needed.
-    SplibGeneralForm[] forms =
-        (SplibGeneralForm[]) requireModel().getAttribute(SplibWebConstants.KEY_FORMS);
+    SplibGeneralForm[] forms = Objects.requireNonNull(getForms());
     Objects.requireNonNull(getController()).getService().prepareForm(Arrays.asList(forms),
         loginUser);
+  }
+
+  /**
+   * Redirects to {@code redirectPath} when given, otherwise back to the referring page
+   * (falling back to {@code "/"}).
+   *
+   * <p>{@code violations}, if any, are shown on the redirect target: attached to the primary
+   *     form's {@code BindingResult} when a {@link SplibGeneralController} (with forms) is
+   *     present in the model, or otherwise resolved to messages and flashed under
+   *     {@link SplibWebConstants#KEY_GLOBAL_ERRORS}. The current model (if any) is always
+   *     saved to flash via {@link SplibSavedModelUtil#saveToFlash} so
+   *     {@code SplibControllerAdvice} can restore it on the redirect target, whichever of the
+   *     two targets above is used.</p>
+   */
+  private ModelAndView redirectWithGlobalMessage(RedirectAttributes redirectAttributes,
+      @Nullable String redirectPath, Violations violations) {
+
+    if (!violations.isEmpty()) {
+      SplibGeneralForm[] forms = getForms();
+
+      if (forms != null && forms.length > 0) {
+        addViolationErrorsToBindingResult(new ViolationException(violations),
+            getPrimaryBindingResult(), false, true, request.getLocale());
+      } else {
+        redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS,
+            resolveMessages(violations));
+      }
+    }
+
+    SplibSavedModelUtil.saveToFlash(getModel(), redirectAttributes, true);
+
+    String redirectTarget = redirectPath;
+    if (redirectTarget == null) {
+      redirectTarget = "/";
+      String referer = request.getHeader("Referer");
+      if (referer != null) {
+        try {
+          redirectTarget = RefererRedirectUtil.toSameOriginRedirectTarget(referer);
+        } catch (IllegalArgumentException ex) {
+          LogUtil.logSystemError(detailLog, ex);
+        }
+      }
+    }
+    return new ModelAndView("redirect:" + redirectTarget);
+  }
+
+  /**
+   * Resolves {@code violations} into a flat list of messages, without item names.
+   */
+  private List<String> resolveMessages(Violations violations) {
+    Locale locale = request.getLocale();
+    MessageParameters params = violations.messageParameters();
+
+    List<@NonNull ConstraintViolation<?>> sortedCvs =
+        ViolationBindingResultMapper.sortedConstraintViolations(violations);
+    List<String> errorMessages = new ArrayList<>();
+    for (ConstraintViolation<?> cv : sortedCvs) {
+      errorMessages.addAll(ExceptionUtil
+          .getMessageList(new Violations().messageParameters(params).add(cv), locale, false));
+    }
+    for (BusinessViolation bv : violations.getBusinessViolations()) {
+      errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
+    }
+    return errorMessages;
+  }
+
+  /**
+   * Redirects to the application's home page, showing {@code messageId} (if given) as a
+   * global message, as {@link #redirectWithGlobalMessage} does.
+   */
+  private ModelAndView redirectToHomeWithGlobalMessage(RedirectAttributes redirectAttributes,
+      @Nullable String messageId, Object... args) {
+    Violations violations =
+        messageId == null ? new Violations() : new Violations().add(messageId, args);
+    return redirectWithGlobalMessage(redirectAttributes,
+        new RedirectToHomePageException().getRedirectPath(), violations);
   }
 
   /**
@@ -186,12 +276,13 @@ public abstract class SplibWebExceptionHandler {
   /**
    * Catches {@code ViolationException}.
    *
-   * <p>Dispatches to one of two private handlers depending on whether a
-   *     {@link SplibGeneralController} (with forms) is registered in the model:</p>
+   * <p>Dispatches depending on whether a {@link SplibGeneralController} (with forms) is
+   *     registered in the model:</p>
    * <ul>
    *   <li>controller present → {@link #handleViolationExceptionWithController}</li>
-   *   <li>controller absent (plain {@code SplibBaseController}) →
-   *       {@link #handleViolationExceptionWithoutController}</li>
+   *   <li>controller absent (plain {@code SplibBaseController}) → redirects back to the
+   *       referring page, flashing error messages without item names, since there is no
+   *       form/{@code BindingResult} to attach them to.</li>
    * </ul>
    *
    * @param exception ViolationException
@@ -205,65 +296,11 @@ public abstract class SplibWebExceptionHandler {
 
     if (getController() == null) {
       // Plain @Controller / SplibBaseController — no forms registered in the model.
-      return handleViolationExceptionWithoutController(exception, redirectAttributes);
+      return redirectWithGlobalMessage(redirectAttributes, null, exception.getViolations());
     } else {
       // SplibGeneralController — forms and BindingResults are available.
       return handleViolationExceptionWithController(exception, loginUser, redirectAttributes);
     }
-  }
-
-  /**
-   * Handles {@code ViolationException} when no {@link SplibGeneralController} is present.
-   *
-   * <p>Collects error messages without item names and redirects back to the referring page,
-   *     passing the errors via a flash attribute so the redirect target can display them.</p>
-   */
-  private ModelAndView handleViolationExceptionWithoutController(ViolationException exception,
-      RedirectAttributes redirectAttributes) {
-
-    Violations violations = exception.getViolations();
-    Locale locale = request.getLocale();
-    MessageParameters params = violations.messageParameters();
-
-    List<@NonNull ConstraintViolation<?>> sortedCvs =
-        ViolationBindingResultMapper.sortedConstraintViolations(violations);
-    List<String> errorMessages = new ArrayList<>();
-    for (ConstraintViolation<?> cv : sortedCvs) {
-      errorMessages.addAll(ExceptionUtil
-          .getMessageList(new Violations().messageParameters(params).add(cv), locale, false));
-    }
-    for (BusinessViolation bv : violations.getBusinessViolations()) {
-      errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
-    }
-    return redirectToRefererWithGlobalErrors(errorMessages, redirectAttributes);
-  }
-
-  /**
-   * Redirects back to the referring page (falling back to {@code "/"}), passing
-   * {@code errorMessages} via a flash attribute so the redirect target can display them.
-   *
-   * <p>Used by exception handlers that fire before a {@link SplibGeneralController} is
-   *     available (no model, no forms), so there is no {@code BindingResult} to attach
-   *     field/global errors to. For the same reason, the model is not saved via
-   *     {@link SplibSavedModelUtil#saveToFlash} here: there is no controller-populated model
-   *     worth restoring on the redirect target, which is an unrelated page (the referer),
-   *     not a re-rendering of the page that threw.</p>
-   */
-  private ModelAndView redirectToRefererWithGlobalErrors(List<String> errorMessages,
-      RedirectAttributes redirectAttributes) {
-
-    redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS, errorMessages);
-
-    String redirectTarget = "/";
-    String referer = request.getHeader("Referer");
-    if (referer != null) {
-      try {
-        redirectTarget = RefererRedirectUtil.toSameOriginRedirectTarget(referer);
-      } catch (IllegalArgumentException ex) {
-        LogUtil.logSystemError(detailLog, ex);
-      }
-    }
-    return new ModelAndView("redirect:" + redirectTarget);
   }
 
   /**
@@ -349,8 +386,7 @@ public abstract class SplibWebExceptionHandler {
    *     destination for global errors that are not bound to a specific form.
    */
   private BindingResult getPrimaryBindingResult() {
-    SplibGeneralForm[] forms =
-        (SplibGeneralForm[]) requireModel().getAttribute(SplibWebConstants.KEY_FORMS);
+    SplibGeneralForm[] forms = getForms();
     if (forms == null || forms.length == 0) {
       throw new RuntimeException(
           "No forms registered in the model; cannot locate a BindingResult.");
@@ -390,73 +426,22 @@ public abstract class SplibWebExceptionHandler {
   }
 
   /**
-   * Catches some specific exceptions.
+   * Catches {@code RedirectException}: {@code @RequestMapping} settings exist, but the
+   * controller explicitly requested a redirect (e.g. the target html file does not exist).
    *
-   * <ul>
-   * <li>NoResourceFoundException:
-   * No @RequestMapping settings in controllers which matches the request url.</li>
-   * <li>RedirectException: @RequestMapping settings
-   * exists, but html file does not exist.</li>
-   * </ul>
-   *
-   * @param exception Exception
+   * @param exception RedirectException
+   * @param redirectAttributes RedirectAttributes
    * @return ModelAndView
    */
-  @ExceptionHandler({NoResourceFoundException.class, RedirectException.class,
-      UnsatisfiedServletRequestParameterException.class})
-  public ModelAndView handleRedirectNeededExceptions(Exception exception,
+  @ExceptionHandler({RedirectException.class})
+  public ModelAndView handleRedirectException(RedirectException exception,
       RedirectAttributes redirectAttributes) {
 
-    if (!StringUtils.isEmpty(exception.getMessage())) {
-      detailLog.info(exception.getMessage());
-    }
+    Violations violations = StringUtils.isEmpty(exception.getMessageId()) ? new Violations()
+        : new Violations().add(Objects.requireNonNull(exception.getMessageId()),
+            (Object[]) exception.getMessageArgs());
 
-    RedirectException redEx = null;
-
-    if (exception instanceof RedirectException redirectException) {
-      redEx = redirectException;
-      // Logging
-      if (redEx.getLogLevel() != null) {
-        detailLog.log(Objects.requireNonNull(redEx.getLogLevel()), redEx.getLogString());
-      }
-
-    } else if (exception instanceof NoResourceFoundException nrfe) {
-      String msgNrf = "jp.ecuacion.splib.web.common.message.NoResourceFoundException";
-      redEx = new RedirectToHomePageException(msgNrf, nrfe.getResourcePath());
-
-    } else if (exception instanceof UnsatisfiedServletRequestParameterException) {
-      String msgUsrp = "jp.ecuacion.splib.web.login.message.notFound";
-      redEx = new RedirectToHomePageException(msgUsrp);
-
-    } else {
-      throw new RuntimeException("Unexpected.");
-    }
-
-    // Showing message
-    if (!StringUtils.isEmpty(redEx.getMessageId())) {
-      SplibGeneralForm[] forms = getModel() != null
-          ? (SplibGeneralForm[]) requireModel().getAttribute(SplibWebConstants.KEY_FORMS)
-          : null;
-
-      if (forms != null && forms.length > 0) {
-        ViolationBindingResultMapper.addBusinessViolation(getPrimaryBindingResult(),
-            new BusinessViolation(Objects.requireNonNull(redEx.getMessageId()),
-                (Object[]) redEx.getMessageArgs()),
-            null, false, true, request.getLocale());
-      } else {
-        // Controller#prepare did not run or no forms in model; no form/BindingResult is available.
-        // Resolve the message and pass it via flash attribute so the redirect target can show it.
-        String resolved = PropertiesFileUtil.getMessage(request.getLocale(),
-            Objects.requireNonNull(redEx.getMessageId()), (Object[]) redEx.getMessageArgs());
-        redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS,
-            List.of(resolved));
-      }
-    }
-
-    // redirect
-    ReturnUrlBuilder redirectBuilder = ReturnUrlBuilder.ofPath(redEx.getRedirectPath());
-    SplibSavedModelUtil.saveToFlash(getModel(), redirectAttributes, true);
-    return new ModelAndView(redirectBuilder.getUrl());
+    return redirectWithGlobalMessage(redirectAttributes, exception.getRedirectPath(), violations);
   }
 
   /**
@@ -474,13 +459,10 @@ public abstract class SplibWebExceptionHandler {
 
     SplibGeneralController<?> ctrl = Objects.requireNonNull(getController());
 
-    String msgId = "jp.ecuacion.splib.web.common.message.optimisticLocking";
+    String msgId = MSG_PREFIX + "optimisticLocking";
     if (ctrl instanceof SplibEditController) {
-      String loginState = (String) requireModel().getAttribute("loginState");
-      String path = "/" + loginState + "/" + ctrl.getFunction() + "/"
-          + ctrl.getDefaultDestSubFunctionOnNormalEnd() + "/"
-          + ctrl.getDefaultDestPageOnNormalEnd();
-      return handleRedirectNeededExceptions(new RedirectException(path, msgId), redirectAttributes);
+      String path = ReturnUrlBuilder.forNormalEnd(ctrl, loginStateUtil).getPath();
+      return handleRedirectException(new RedirectException(path, msgId), redirectAttributes);
     } else {
       return handleViolationException(
           new ViolationException(new Violations().add(new BusinessViolation(msgId))), loginUser,
@@ -505,10 +487,38 @@ public abstract class SplibWebExceptionHandler {
   public ModelAndView handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception,
       RedirectAttributes redirectAttributes) {
 
-    long maxUploadSizeMb = exception.getMaxUploadSize() / (1024 * 1024);
-    String message = PropertiesFileUtil.getMessage(request.getLocale(),
-        "jp.ecuacion.splib.web.common.message.maxUploadSizeExceeded", maxUploadSizeMb);
-    return redirectToRefererWithGlobalErrors(List.of(message), redirectAttributes);
+    return redirectWithGlobalMessage(redirectAttributes, null, new Violations()
+        .add(MSG_PREFIX + "maxUploadSizeExceeded", exception.getMaxUploadSize() / (1024 * 1024)));
+  }
+
+  /**
+   * Catches {@code NoResourceFoundException}: no {@code @RequestMapping} matches the request
+   * URL. Redirects to the home page.
+   *
+   * @param exception NoResourceFoundException
+   * @param redirectAttributes RedirectAttributes
+   * @return ModelAndView
+   */
+  @ExceptionHandler({NoResourceFoundException.class})
+  public ModelAndView handleNoResourceFoundException(NoResourceFoundException exception,
+      RedirectAttributes redirectAttributes) {
+    return redirectToHomeWithGlobalMessage(redirectAttributes,
+        MSG_PREFIX + "NoResourceFoundException", exception.getResourcePath());
+  }
+
+  /**
+   * Catches {@code UnsatisfiedServletRequestParameterException}. Redirects to the home page.
+   *
+   * @param exception UnsatisfiedServletRequestParameterException
+   * @param redirectAttributes RedirectAttributes
+   * @return ModelAndView
+   */
+  @ExceptionHandler({UnsatisfiedServletRequestParameterException.class})
+  public ModelAndView handleUnsatisfiedServletRequestParameterException(
+      UnsatisfiedServletRequestParameterException exception,
+      RedirectAttributes redirectAttributes) {
+    return redirectToHomeWithGlobalMessage(redirectAttributes,
+        "jp.ecuacion.splib.web.login.message.notFound");
   }
 
   /**

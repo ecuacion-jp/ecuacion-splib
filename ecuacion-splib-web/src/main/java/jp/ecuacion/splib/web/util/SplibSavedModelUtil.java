@@ -47,7 +47,7 @@ public class SplibSavedModelUtil {
    *     here is whatever this request computed <em>before</em> the redirect decision was
    *     made, so restoring it verbatim on the target page would overwrite a
    *     directly-flashed message (e.g. from
-   *     {@code SplibExceptionHandler#handleRedirectNeededExceptions}) with that stale,
+   *     {@code SplibExceptionHandler#handleRedirectException}) with that stale,
    *     usually-empty copy.</p>
    *
    * @param model model
