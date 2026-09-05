@@ -34,7 +34,7 @@ import jp.ecuacion.lib.core.util.PropertyPathUtil;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.core.violation.Violations.MessageParameters;
-import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.web.exceptionhandler.SplibWebExceptionHandler;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -45,7 +45,7 @@ import org.springframework.validation.FieldError;
  * Maps a {@code ViolationException}'s {@code Violations} onto a {@code BindingResult}.
  *
  * <p>Contains the core violation-to-error mapping logic used by
- * {@link SplibExceptionHandler}, separated out because it works purely off its arguments
+ * {@link SplibWebExceptionHandler}, separated out because it works purely off its arguments
  * ({@code Violations}, {@code BindingResult}, {@code Locale}) with no dependency on a live
  * HTTP request or Spring {@code Model}, which keeps it independently testable.</p>
  */
@@ -60,8 +60,8 @@ public class ViolationBindingResultMapper {
    * @param exception the exception whose violations should be added
    * @param br the {@code BindingResult} to populate
    * @param needsMsgAtItemDefault value of
-   *     {@link SplibExceptionHandler#PROP_KEY_SHOWN_AT_EACH_ITEM}
-   * @param needsMsgAtTopDefault value of {@link SplibExceptionHandler#PROP_KEY_SHOWN_AT_THE_TOP}
+   *     {@link SplibWebExceptionHandler#PROP_KEY_SHOWN_AT_EACH_ITEM}
+   * @param needsMsgAtTopDefault value of {@link SplibWebExceptionHandler#PROP_KEY_SHOWN_AT_THE_TOP}
    * @param locale locale for message resolution
    * @return the same {@code BindingResult}, with errors added
    */
@@ -124,8 +124,8 @@ public class ViolationBindingResultMapper {
    */
   private static void validateMessageDisplayConfig(boolean atItem, boolean atTop) {
     if (!atItem && !atTop) {
-      throw new RuntimeException("One of '" + SplibExceptionHandler.PROP_KEY_SHOWN_AT_EACH_ITEM
-          + "' or '" + SplibExceptionHandler.PROP_KEY_SHOWN_AT_THE_TOP + "' must be true.");
+      throw new RuntimeException("One of '" + SplibWebExceptionHandler.PROP_KEY_SHOWN_AT_EACH_ITEM
+          + "' or '" + SplibWebExceptionHandler.PROP_KEY_SHOWN_AT_THE_TOP + "' must be true.");
     }
   }
 

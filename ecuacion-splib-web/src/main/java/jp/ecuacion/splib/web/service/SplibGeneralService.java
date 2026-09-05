@@ -22,7 +22,7 @@ import java.util.Set;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
-import jp.ecuacion.splib.web.exceptionhandler.ViolationWebWarningException;
+import jp.ecuacion.splib.web.exception.ViolationWebWarningException;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibDatetimeFormatUtil;
 import org.jspecify.annotations.Nullable;

@@ -30,7 +30,7 @@ import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.core.violation.Violations.MessageParameters;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
-import jp.ecuacion.splib.web.exceptionhandler.SplibExceptionHandler;
+import jp.ecuacion.splib.web.exceptionhandler.SplibWebExceptionHandler;
 import jp.ecuacion.splib.web.util.SplibValidationHelper;
 import jp.ecuacion.splib.web.util.internal.RefererRedirectUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +47,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Auto-configures a minimal {@link ViolationException} handler when no
- * {@link SplibExceptionHandler} bean is present in the application context.
+ * {@link SplibWebExceptionHandler} bean is present in the application context.
  *
  * <p>This allows applications that use only Jakarta Validation via
  *     {@link jp.ecuacion.splib.web.util.SplibValidationHelper} to display error messages
@@ -129,9 +129,9 @@ public class SplibWebExceptionHandlerAutoConfiguration {
         String viewName, Model model) {
 
       boolean atTop = Boolean.parseBoolean(PropertiesFileUtil
-          .getApplicationOrElse(SplibExceptionHandler.PROP_KEY_SHOWN_AT_THE_TOP, "false"));
+          .getApplicationOrElse(SplibWebExceptionHandler.PROP_KEY_SHOWN_AT_THE_TOP, "false"));
       boolean atItem = Boolean.parseBoolean(PropertiesFileUtil
-          .getApplicationOrElse(SplibExceptionHandler.PROP_KEY_SHOWN_AT_EACH_ITEM, "true"));
+          .getApplicationOrElse(SplibWebExceptionHandler.PROP_KEY_SHOWN_AT_EACH_ITEM, "true"));
 
       if (atTop) {
         List<String> topMessages = new ArrayList<>();
@@ -197,14 +197,14 @@ public class SplibWebExceptionHandlerAutoConfiguration {
   }
 
   /**
-   * Provides {@link SplibValidationExceptionHandler} when no {@link SplibExceptionHandler}
+   * Provides {@link SplibValidationExceptionHandler} when no {@link SplibWebExceptionHandler}
    * bean is present.
    *
    * @param request request
    * @return a minimal validation exception handler
    */
   @Bean
-  @ConditionalOnMissingBean(SplibExceptionHandler.class)
+  @ConditionalOnMissingBean(SplibWebExceptionHandler.class)
   SplibValidationExceptionHandler splibValidationExceptionHandler(HttpServletRequest request) {
     return new SplibValidationExceptionHandler(request);
   }

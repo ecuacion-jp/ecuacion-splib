@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
  *     It seems that in batch apps that versatility is not needed.</p>
  */
 @Component
-public class SplibExceptionHandler implements ExceptionHandler {
+public class SplibBatchExceptionHandler implements ExceptionHandler {
 
   @Nullable
   private SplibExceptionHandlerAction action;
@@ -50,7 +50,7 @@ public class SplibExceptionHandler implements ExceptionHandler {
    *
    * @param action action, may be {@code null}
    */
-  public SplibExceptionHandler(@Nullable SplibExceptionHandlerAction action) {
+  public SplibBatchExceptionHandler(@Nullable SplibExceptionHandlerAction action) {
     this.action = action;
   }
 

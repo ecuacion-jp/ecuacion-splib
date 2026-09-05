@@ -49,6 +49,7 @@ import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.controller.SplibEditController;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.RedirectException;
+import jp.ecuacion.splib.web.exception.ViolationWebWarningException;
 import jp.ecuacion.splib.web.form.SplibEditForm;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneralService;
@@ -76,7 +77,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
- * Unit tests for {@link SplibExceptionHandler}'s {@code @ExceptionHandler} methods
+ * Unit tests for {@link SplibWebExceptionHandler}'s {@code @ExceptionHandler} methods
  * ({@code handleWarning}, {@code handleViolationException}, and so on).
  *
  * <p>These tests verify the wiring around each handler - Model / RedirectAttributes /
@@ -88,7 +89,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * {@code messages_splib-web-test.properties} (no locale suffix) is resolved.</p>
  */
 @ExtendWith(MockitoExtension.class)
-class SplibExceptionHandlerTest {
+class SplibWebExceptionHandlerTest {
 
   // message IDs defined in messages_splib-web-test.properties
   private static final String MSG1 = "jp.ecuacion.splib.web.test.violation1";
@@ -106,8 +107,8 @@ class SplibExceptionHandlerTest {
   // be available before that class is first loaded by any test.
   private static final Map<String, String> APPLICATION_PROPS = Map.of(
       "jp.ecuacion.splib.web.home-page", "/top",
-      SplibExceptionHandler.PROP_KEY_SHOWN_AT_EACH_ITEM, "true",
-      SplibExceptionHandler.PROP_KEY_SHOWN_AT_THE_TOP, "true");
+      SplibWebExceptionHandler.PROP_KEY_SHOWN_AT_EACH_ITEM, "true",
+      SplibWebExceptionHandler.PROP_KEY_SHOWN_AT_THE_TOP, "true");
 
   @BeforeAll
   static void initApplicationProps() {
@@ -129,7 +130,7 @@ class SplibExceptionHandlerTest {
 
   /** Concrete subclass for testing only; request-related methods are never invoked. */
   @SuppressWarnings("null")
-  private SplibExceptionHandler handler;
+  private SplibWebExceptionHandler handler;
 
   // =========================================================================
   // Test support classes
@@ -272,7 +273,7 @@ class SplibExceptionHandlerTest {
 
   @BeforeEach
   void setUp() {
-    handler = new SplibExceptionHandler(request, null, loginStateUtil) {};
+    handler = new SplibWebExceptionHandler(request, null, loginStateUtil) {};
   }
 
 
@@ -731,8 +732,8 @@ class SplibExceptionHandlerTest {
       // request.getAttribute(KEY_MODEL) left unstubbed -> getModel() is null.
       @SuppressWarnings("null")
       SplibExceptionHandlerAction action = mock(SplibExceptionHandlerAction.class);
-      SplibExceptionHandler handlerWithAction =
-          new SplibExceptionHandler(request, action, loginStateUtil) {};
+      SplibWebExceptionHandler handlerWithAction =
+          new SplibWebExceptionHandler(request, action, loginStateUtil) {};
 
       Model argModel = new ExtendedModelMap();
       argModel.addAttribute("marker", "fromArgument");

@@ -44,6 +44,7 @@ import jp.ecuacion.splib.web.controller.SplibEditController;
 import jp.ecuacion.splib.web.controller.SplibGeneralController;
 import jp.ecuacion.splib.web.exception.RedirectException;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
+import jp.ecuacion.splib.web.exception.ViolationWebWarningException;
 import jp.ecuacion.splib.web.exceptionhandler.internal.ViolationBindingResultMapper;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
@@ -66,7 +67,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 /**
  * Provides an exception handler.
  */
-public abstract class SplibExceptionHandler {
+public abstract class SplibWebExceptionHandler {
 
   /**
    * {@code application.properties} key controlling whether messages are shown next to each
@@ -100,7 +101,7 @@ public abstract class SplibExceptionHandler {
    * @param actionOnThrowable actionOnThrowable, may be {@code null}
    * @param loginStateUtil loginStateUtil
    */
-  protected SplibExceptionHandler(HttpServletRequest request,
+  protected SplibWebExceptionHandler(HttpServletRequest request,
       @Nullable SplibExceptionHandlerAction actionOnThrowable, SplibLoginStateUtil loginStateUtil) {
     this.request = request;
     this.actionOnThrowable = actionOnThrowable;
