@@ -83,7 +83,7 @@ public class SplibBuiltinAdminSecurityConfig {
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
-  @Order(12)
+  @Order(22)
   @Bean
   SecurityFilterChain filterChainForBuiltinAdmin(HttpSecurity http) throws Exception {
 
