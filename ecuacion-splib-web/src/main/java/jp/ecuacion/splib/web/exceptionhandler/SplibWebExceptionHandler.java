@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.exceptionhandler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.nio.channels.OverlappingFileLockException;
@@ -191,6 +192,12 @@ public abstract class SplibWebExceptionHandler {
       @Nullable String redirectPath, Violations violations, boolean needsMsgAtItemDefault,
       boolean needsMsgAtTopDefault) {
 
+    // Logged even when violations is empty (e.g. ViolationWarningException), so it is always
+    // visible from the log that this exceptional redirect flow ran.
+    List<String> logMessages = resolveMessages(violations, true);
+    detailLog
+        .info(logMessages.isEmpty() ? "(no violation messages)" : String.join(", ", logMessages));
+
     if (!violations.isEmpty()) {
       SplibGeneralForm[] forms = getForms();
 
@@ -207,7 +214,7 @@ public abstract class SplibWebExceptionHandler {
         }
       } else {
         redirectAttributes.addFlashAttribute(SplibWebConstants.KEY_GLOBAL_ERRORS,
-            resolveMessages(violations));
+            resolveMessages(violations, false));
       }
     }
 
@@ -260,8 +267,14 @@ public abstract class SplibWebExceptionHandler {
 
   /**
    * Resolves {@code violations} into a flat list of messages, without item names.
+   *
+   * @param withMessageKey when {@code true}, prefixes each message with its message key in
+   *     square brackets (e.g. {@code "[jp.ecuacion.splib.web.common.message.
+   *     NoResourceFoundException] ..."}), so the content stays identifiable even when the
+   *     request's locale renders it in a language the reader doesn't know. Used for the log
+   *     line in {@link #redirectWithViolations}.
    */
-  private List<String> resolveMessages(Violations violations) {
+  private List<String> resolveMessages(Violations violations, boolean withMessageKey) {
     Locale locale = request.getLocale();
     MessageParameters params = violations.messageParameters();
 
@@ -269,11 +282,20 @@ public abstract class SplibWebExceptionHandler {
         ViolationBindingResultMapper.sortedConstraintViolations(violations);
     List<String> errorMessages = new ArrayList<>();
     for (ConstraintViolation<?> cv : sortedCvs) {
-      errorMessages.addAll(ExceptionUtil
-          .getMessageList(new Violations().messageParameters(params).add(cv), locale, false));
+      String prefix = withMessageKey
+          ? "[" + cv.getMessageTemplate().replace("{", "").replace("}", "") + "] "
+          : "";
+      for (String message : ExceptionUtil
+          .getMessageList(new Violations().messageParameters(params).add(cv), locale, false)) {
+        errorMessages.add(prefix + message);
+      }
     }
     for (BusinessViolation bv : violations.getBusinessViolations()) {
-      errorMessages.addAll(ExceptionUtil.getMessageList(new Violations().add(bv), locale, false));
+      String prefix = withMessageKey ? "[" + bv.getMessageId() + "] " : "";
+      for (String message : ExceptionUtil.getMessageList(new Violations().add(bv), locale,
+          false)) {
+        errorMessages.add(prefix + message);
+      }
     }
     return errorMessages;
   }
@@ -533,15 +555,29 @@ public abstract class SplibWebExceptionHandler {
 
   /**
    * Catches {@code NoResourceFoundException}: no {@code @RequestMapping} matches the request
-   * URL. Redirects to the home page.
+   * URL.
+   *
+   * <p>When the request's {@code Accept} header includes {@code text/html}, this is a genuine
+   *     page-navigation attempt at a URL that doesn't exist, so redirects to the home page with
+   *     an error message. Otherwise — e.g. the browser's own {@code favicon.ico} probe, or any
+   *     other incidental non-HTML request a page silently triggers — this isn't a navigation
+   *     failure the user needs to be steered away from, so just answers 404 without redirecting
+   *     or logging.</p>
    *
    * @param exception NoResourceFoundException
+   * @param response HttpServletResponse
    * @param redirectAttributes RedirectAttributes
-   * @return ModelAndView
+   * @return ModelAndView, or {@code null} when 404 alone was already written to the response
    */
   @ExceptionHandler({NoResourceFoundException.class})
-  public ModelAndView handleNoResourceFoundException(NoResourceFoundException exception,
-      RedirectAttributes redirectAttributes) {
+  public @Nullable ModelAndView handleNoResourceFoundException(NoResourceFoundException exception,
+      HttpServletResponse response, RedirectAttributes redirectAttributes) {
+    String accept = request.getHeader("Accept");
+    if (accept != null && !accept.contains("text/html")) {
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      return null;
+    }
+
     return redirectToHomeWithGlobalMessage(redirectAttributes,
         MSG_PREFIX + "NoResourceFoundException", exception.getResourcePath());
   }

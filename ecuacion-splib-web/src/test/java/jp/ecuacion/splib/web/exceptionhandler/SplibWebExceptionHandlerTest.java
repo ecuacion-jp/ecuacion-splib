@@ -21,6 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotNull;
@@ -125,6 +126,10 @@ class SplibWebExceptionHandlerTest {
   @SuppressWarnings("null")
   @Mock
   private HttpServletRequest request;
+
+  @SuppressWarnings("null")
+  @Mock
+  private HttpServletResponse response;
 
   @SuppressWarnings("null")
   @Mock
@@ -598,7 +603,8 @@ class SplibWebExceptionHandlerTest {
       NoResourceFoundException nrfe =
           new NoResourceFoundException(HttpMethod.GET, "No static resource foo/bar.", "foo/bar");
 
-      ModelAndView mav = handler.handleNoResourceFoundException(nrfe, redirectAttributes);
+      ModelAndView mav = Objects.requireNonNull(
+          handler.handleNoResourceFoundException(nrfe, response, redirectAttributes));
 
       // Redirects to the configured home page.
       assertThat(mav.getViewName()).isEqualTo("redirect:/top");
@@ -614,6 +620,22 @@ class SplibWebExceptionHandlerTest {
       // uniformly regardless of whether there was anything to restore).
       assertThat(redirectAttributes.getFlashAttributes())
           .containsKey(SplibWebConstants.KEY_SAVED_MODEL);
+    }
+
+    @Test
+    void acceptHeaderHasNoTextHtml__returns404_noRedirect_noFlash() {
+      // Incidental non-navigation request (e.g. the browser's own favicon.ico probe): Accept
+      // doesn't ask for text/html, so this should just answer 404 without redirecting.
+      when(request.getHeader("Accept"))
+          .thenReturn("image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
+      NoResourceFoundException nrfe = new NoResourceFoundException(HttpMethod.GET,
+          "No static resource favicon.ico.", "favicon.ico");
+
+      ModelAndView mav = handler.handleNoResourceFoundException(nrfe, response, redirectAttributes);
+
+      assertThat(mav).isNull();
+      verify(response).setStatus(404);
+      assertThat(redirectAttributes.getFlashAttributes()).isEmpty();
     }
   }
 
