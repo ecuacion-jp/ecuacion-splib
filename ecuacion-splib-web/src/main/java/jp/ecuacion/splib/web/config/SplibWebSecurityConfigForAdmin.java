@@ -80,7 +80,8 @@ public abstract class SplibWebSecurityConfigForAdmin {
    * Adds security settings to the {@code HttpSecurity} object.
    *
    * <p>Since {@code @Order(21)} is added to the method,
-   *     the priority is higher than {@code SplibWebSecurityConfig#filterChain} ({@code @Order(29)}),
+   *     the priority is higher than {@code SplibWebSecurityConfig#filterChain} 
+   *     ({@code @Order(29)}),
    *     and lower than {@code jp.ecuacion.splib.rest.config.SplibRestSecurityConfig} ({@code
    *     @Order(11)}-{@code (14)}).</p>
    */
