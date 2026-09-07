@@ -77,13 +77,15 @@ public abstract class SplibWebSecurityConfigForAdmin {
   protected abstract String getAccessDeniedPage();
 
   /**
-   * Adds security settings to the {@code HttpSecurity} object. 
-   * 
-   * <p>Since {@code @Order(11)} is added to the method, 
-   *     the priority is higher than {@code SplibWebSecurityConfig#filterChain},
-   *     and lower than {@code jp.ecuacion.splib.rest.config.SplibRestSecurityConfig}.</p>
+   * Adds security settings to the {@code HttpSecurity} object.
+   *
+   * <p>Since {@code @Order(21)} is added to the method,
+   *     the priority is higher than {@code SplibWebSecurityConfig#filterChain} 
+   *     ({@code @Order(29)}),
+   *     and lower than {@code jp.ecuacion.splib.rest.config.SplibRestSecurityConfig} ({@code
+   *     @Order(11)}-{@code (14)}).</p>
    */
-  @Order(11)
+  @Order(21)
   @Bean
   SecurityFilterChain filterChainForAdmin(HttpSecurity http) throws Exception {
 

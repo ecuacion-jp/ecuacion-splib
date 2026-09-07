@@ -41,8 +41,8 @@ public class LoggingInterceptor implements HandlerInterceptor {
     List<String> paramList = request.getParameterMap().entrySet().stream()
         .map(e -> e.getKey() + "=" + formatParamValue(e.getKey(), e.getValue())).toList();
 
-    detailLog.debug(getPrefix(request) + "request process started. request: "
-        + request.getRequestURI() + (paramList.isEmpty() ? ""
+    log(getPrefix(request) + "request process started. request: " + request.getRequestURI()
+        + (paramList.isEmpty() ? ""
             : ", parameters: " + StringUtil.getSeparatedValuesString(paramList, "&")));
 
     return true;
@@ -64,13 +64,13 @@ public class LoggingInterceptor implements HandlerInterceptor {
   @Override
   public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
       @Nullable ModelAndView modelAndView) throws Exception {
-    detailLog.debug(getPrefix(request) + "request process finished.");
+    log(getPrefix(request) + "request process finished.");
   }
 
   @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
       Object handler, @Nullable Exception ex) throws Exception {
-    detailLog.debug(getPrefix(request) + "view rendering finished.");
+    log(getPrefix(request) + "view rendering finished.");
   }
 
   /**
@@ -85,5 +85,9 @@ public class LoggingInterceptor implements HandlerInterceptor {
         sessionId.length() > 8 ? sessionId.substring(sessionId.length() - 8) : sessionId;
     return "session ID (last 8 chars): " + sessionIdSuffix + ", thread ID: "
         + Thread.currentThread().threadId() + " : ";
+  }
+
+  private void log(String message) {
+    detailLog.trace(message);
   }
 }

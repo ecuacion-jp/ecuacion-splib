@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -100,8 +99,8 @@ public class SplibDevToolsPropertiesFileWatchConfig {
    */
   private List<File> classpathDirectories() {
     List<File> dirs = new ArrayList<>();
-    for (String entry : Pattern.compile(File.pathSeparator)
-        .split(Objects.requireNonNull(System.getProperty("java.class.path", "")))) {
+    for (String entry : Objects.requireNonNull(System.getProperty("java.class.path", ""))
+        .split(File.pathSeparator, -1)) {
       File file = new File(entry);
       if (file.isDirectory()) {
         dirs.add(file);

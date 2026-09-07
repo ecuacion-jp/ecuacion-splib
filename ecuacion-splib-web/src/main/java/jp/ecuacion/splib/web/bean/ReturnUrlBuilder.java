@@ -218,7 +218,17 @@ public class ReturnUrlBuilder {
    * @return URL string
    */
   public String getUrl() {
-    return getProtocol() + ":" + path + getParamsString();
+    return getProtocol() + ":" + getPath();
+  }
+
+  /**
+   * Returns the path and parameter parts of the URL, without the {@code redirect:} /
+   * {@code forward:} protocol prefix.
+   *
+   * @return path
+   */
+  public String getPath() {
+    return path + getParamsString();
   }
 
   public boolean isForward() {

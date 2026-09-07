@@ -37,7 +37,7 @@ class SplibSavedModelUtilTest {
    * at snapshot time (typically the empty list set at the start of the very request that is
    * now redirecting) were carried over, it would overwrite a message a caller flashes directly
    * under the same key on the redirect target
-   * (e.g. {@code SplibExceptionHandler#handleRedirectNeededExceptions}).</p>
+   * (e.g. {@code SplibExceptionHandler#handleRedirectException}).</p>
    */
   @Test
   void saveToFlash_neverCarriesOverGlobalErrors_evenWhenTakeOverMessagesIsTrue() {

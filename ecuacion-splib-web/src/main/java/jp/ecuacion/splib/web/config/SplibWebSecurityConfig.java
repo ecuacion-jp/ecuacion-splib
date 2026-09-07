@@ -24,6 +24,7 @@ import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -147,7 +148,26 @@ public abstract class SplibWebSecurityConfig {
 
   /**
    * Adds security settings to the {@code HttpSecurity} object.
+   *
+   * <p>Matches {@code anyRequest()} — every path not already claimed by a more specific,
+   *     lower-{@code @Order} chain ({@code SplibWebSecurityConfigForAdmin}'s {@code @Order(21)},
+   *     {@code SplibBuiltinAdminSecurityConfig}'s {@code @Order(22)}, and, when
+   *     {@code ecuacion-splib-rest} is also used, its {@code @Order(11)}-{@code (14)} chains for
+   *     {@code /api/**}) falls through to this one, which ends in {@code anyRequest().denyAll()}
+   *     — so this is effectively the application's catch-all.</p>
+   *
+   * <p>{@code @Order(29)} — the last number in this class's own {@code 21}-{@code 29} range (see
+   *     {@code SplibRestSecurityConfig}'s javadoc for the two modules' reserved ranges) — is
+   *     deliberately explicit (rather than left as the implicit {@code Ordered.LOWEST_PRECEDENCE}
+   *     default) so that {@code jp.ecuacion.splib.rest.config.SplibRestSecurityConfig}'s own
+   *     {@code /**} catch-all — added there specifically for apps that use
+   *     {@code ecuacion-splib-rest} <em>without</em> this class, which would otherwise have no
+   *     final catch-all at all — stays at a strictly lower priority than this one. That way, an
+   *     app using both modules together still gets this class's real
+   *     {@code permitAll}/{@code denyAll} policy for its non-{@code /api} pages, rather than an
+   *     unconditional {@code denyAll} from the rest module's fallback.</p>
    */
+  @Order(29)
   @Bean
   SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 

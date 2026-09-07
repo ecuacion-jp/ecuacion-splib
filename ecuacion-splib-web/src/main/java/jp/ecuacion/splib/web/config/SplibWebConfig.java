@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.config;
 
 import jakarta.servlet.SessionTrackingMode;
 import java.util.Collections;
+import jp.ecuacion.splib.web.interceptor.AccessLoggingInterceptor;
 import jp.ecuacion.splib.web.interceptor.LoggingInterceptor;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
@@ -76,8 +77,14 @@ public class SplibWebConfig implements WebMvcConfigurer {
     return new LoggingInterceptor();
   }
 
+  @Bean
+  AccessLoggingInterceptor accessLoggingInterceptor() {
+    return new AccessLoggingInterceptor();
+  }
+
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(logInterceptor());
+    registry.addInterceptor(accessLoggingInterceptor());
   }
 }

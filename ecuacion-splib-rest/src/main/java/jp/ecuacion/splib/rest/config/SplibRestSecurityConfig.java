@@ -33,6 +33,13 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 
 /**
  * Provides security config for rest.
+ *
+ * <p>This class's {@link SecurityFilterChain} beans use {@code @Order} values {@code 11}-{@code
+ *     19} (currently {@code 11}-{@code 14}, leaving room to insert more later without
+ *     renumbering). {@code jp.ecuacion.splib.web.config.SplibWebSecurityConfig} and its siblings
+ *     use {@code 21}-{@code 29} — the gap keeps the two modules' chains from ever numerically
+ *     colliding when an application uses both, even though today none of their {@code
+ *     securityMatcher}s actually overlap either.</p>
  */
 public abstract class SplibRestSecurityConfig {
 
@@ -96,7 +103,7 @@ public abstract class SplibRestSecurityConfig {
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
-  @Order(8)
+  @Order(11)
   @Bean
   SecurityFilterChain filterChainForApiPublic(HttpSecurity http) throws Exception {
     // MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
@@ -137,7 +144,7 @@ public abstract class SplibRestSecurityConfig {
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
-  @Order(9)
+  @Order(12)
   @Bean
   SecurityFilterChain filterChainForApiKey(HttpSecurity http, Environment env) throws Exception {
     http.securityMatcher("/api/key/**");
@@ -179,7 +186,7 @@ public abstract class SplibRestSecurityConfig {
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
-  @Order(10)
+  @Order(13)
   @Bean
   SecurityFilterChain filterChainForApiEcuacionSplibKey(HttpSecurity http, Environment env)
       throws Exception {
@@ -208,12 +215,51 @@ public abstract class SplibRestSecurityConfig {
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
-  @Order(11)
+  @Order(14)
   @Bean
   SecurityFilterChain filterChainForApi(HttpSecurity http) throws Exception {
     // MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
 
     http.securityMatcher("/api/**");
+
+    http.httpBasic(basic -> basic.disable());
+
+    http.authorizeHttpRequests(requests -> requests.anyRequest().denyAll());
+
+    return http.build();
+  }
+
+  /**
+   * Provides a last-resort {@code denyAll} {@link SecurityFilterChain} for every path not matched
+   * by any of this class's other chains (i.e. anything outside {@code /api/**}).
+   *
+   * <p>Defining any custom {@code SecurityFilterChain} bean disables Spring Boot's own default
+   *     security chain entirely. If an application uses {@code ecuacion-splib-rest} without also
+   *     using {@code ecuacion-splib-web} (whose {@code SplibWebSecurityConfig} normally provides
+   *     this same role for non-{@code /api} pages), a path that happens to match none of the
+   *     chains above — e.g. an endpoint added later outside {@code /api/**}, or {@code /error} —
+   *     would otherwise match <em>no</em> {@code SecurityFilterChain} at all and bypass Spring
+   *     Security entirely (no authentication, no authorization, not even CSRF), rather than
+   *     being denied. This chain closes that gap.</p>
+   *
+   * <p><strong>Left without an explicit {@code @Order}</strong> (defaulting to
+   *     {@code Ordered.LOWEST_PRECEDENCE}), deliberately, so it stays strictly lower priority than
+   *     {@code jp.ecuacion.splib.web.config.SplibWebSecurityConfig#filterChain}'s explicit
+   *     {@code @Order(29)}. That way, an application using both modules together still gets that
+   *     class's real {@code permitAll}/{@code denyAll} policy for its non-{@code /api} pages —
+   *     this chain never actually matches anything in that case, since
+   *     {@code SplibWebSecurityConfig}'s own {@code anyRequest()} chain is evaluated first and
+   *     already covers everything reaching this point. Giving this chain any explicit, finite
+   *     {@code @Order} instead would make it outrank that class's chain and blanket-deny the
+   *     entire non-{@code /api} application by mistake.</p>
+   *
+   * @param http http
+   * @return SecurityFilterChain
+   * @throws Exception Exception
+   */
+  @Bean
+  SecurityFilterChain filterChainCatchAll(HttpSecurity http) throws Exception {
+    http.securityMatcher("/**");
 
     http.httpBasic(basic -> basic.disable());
 

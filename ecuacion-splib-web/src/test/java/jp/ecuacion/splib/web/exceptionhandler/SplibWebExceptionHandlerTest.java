@@ -21,6 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotNull;
@@ -72,7 +73,9 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -123,6 +126,10 @@ class SplibWebExceptionHandlerTest {
   @SuppressWarnings("null")
   @Mock
   private HttpServletRequest request;
+
+  @SuppressWarnings("null")
+  @Mock
+  private HttpServletResponse response;
 
   @SuppressWarnings("null")
   @Mock
@@ -292,6 +299,8 @@ class SplibWebExceptionHandlerTest {
   @Nested
   class HandleWarning {
 
+    private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
     @SuppressWarnings("null")
     private TestForm form;
     @SuppressWarnings("null")
@@ -301,6 +310,8 @@ class SplibWebExceptionHandlerTest {
 
     @BeforeEach
     void setUpController() {
+      when(loginStateUtil.getLoginState()).thenReturn("account");
+
       form = new TestForm();
       controller = new TestController("testFunc", new TestService());
       model = modelWithForm(form, controller);
@@ -315,7 +326,7 @@ class SplibWebExceptionHandlerTest {
       ViolationWebWarningException ex =
           new ViolationWebWarningException(violations, "btnConfirm");
 
-      ModelAndView mav = handler.handleViolationWarningException(ex, null);
+      ModelAndView mav = handler.handleViolationWarningException(ex, null, redirectAttributes);
 
       WarnMessageBean bean =
           (WarnMessageBean) model.getAttribute(SplibWebConstants.KEY_WARN_MESSAGE);
@@ -328,8 +339,12 @@ class SplibWebExceptionHandlerTest {
       TestService service = (TestService) controller.getService();
       assertThat(service.preparedForms).containsExactly(form);
 
-      assertThat(mav.getViewName()).isEqualTo(controller.getDefaultHtmlPageName());
-      assertThat(mav.getModel()).isEqualTo(model.asMap());
+      // Post-Redirect-Get: redirects back to the same form's abnormal-end URL (no app-specific
+      // override configured -> ReturnUrlBuilder.forAbnormalEnd()), taking the warning message
+      // and form input along via flash so a page reload cannot resubmit.
+      assertThat(mav.getViewName()).isEqualTo("redirect:/account/testFunc/page");
+      assertThat(redirectAttributes.getFlashAttributes())
+          .containsKey(SplibWebConstants.KEY_SAVED_MODEL);
     }
 
     @SuppressWarnings("null")
@@ -338,7 +353,7 @@ class SplibWebExceptionHandlerTest {
       Violations violations = new Violations().add(new BusinessViolation(MSG2));
       ViolationWarningException ex = new ViolationWarningException(violations);
 
-      handler.handleViolationWarningException(ex, null);
+      handler.handleViolationWarningException(ex, null, redirectAttributes);
 
       WarnMessageBean bean =
           (WarnMessageBean) model.getAttribute(SplibWebConstants.KEY_WARN_MESSAGE);
@@ -382,6 +397,10 @@ class SplibWebExceptionHandlerTest {
       List<String> errors = (List<String>) redirectAttributes.getFlashAttributes()
           .get(SplibWebConstants.KEY_GLOBAL_ERRORS);
       assertThat(errors).hasSize(2); // one from the CV, one from the BV
+
+      // The (absent) model is still saved to flash, same as handleRedirectException.
+      assertThat(redirectAttributes.getFlashAttributes())
+          .containsKey(SplibWebConstants.KEY_SAVED_MODEL);
     }
 
     @Test
@@ -549,8 +568,11 @@ class SplibWebExceptionHandlerTest {
     @SuppressWarnings("null")
     @Test
     void cveWithParameters__messageParametersPropagateToTheFinalMessage() {
-      MessageParameters params =
-          new MessageParameters(Boolean.FALSE, "PREFIX-", "-SUFFIX", false);
+      MessageParameters params = new MessageParameters()
+          .isMessageWithItemName(Boolean.FALSE)
+          .messagePrefix("PREFIX-")
+          .messagePostfix("-SUFFIX")
+          .showsItemNamePath(false);
       ConstraintViolationExceptionWithParameters cve =
           new ConstraintViolationExceptionWithParameters(cvsOf(new CvBean()), params);
 
@@ -565,25 +587,26 @@ class SplibWebExceptionHandlerTest {
   }
 
   // =========================================================================
-  // handleRedirectNeededExceptions
+  // handleNoResourceFoundException
   // =========================================================================
 
   @Nested
-  class HandleRedirectNeededExceptions {
+  class HandleNoResourceFoundException {
 
     private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
     @Test
-    void noResourceFoundException_modelAbsent__wrapsToHomePage_flashesMessage_savesEmptyModel() {
+    void modelAbsent__wrapsToHomePage_flashesMessage_savesEmptyModel() {
       // getModel() (from the request attribute) is left unstubbed -> null, matching the real
       // situation this exception fires in: before any controller's prepare() ran.
       when(request.getLocale()).thenReturn(Locale.ROOT);
       NoResourceFoundException nrfe =
           new NoResourceFoundException(HttpMethod.GET, "No static resource foo/bar.", "foo/bar");
 
-      ModelAndView mav = handler.handleRedirectNeededExceptions(nrfe, redirectAttributes);
+      ModelAndView mav = Objects.requireNonNull(
+          handler.handleNoResourceFoundException(nrfe, response, redirectAttributes));
 
-      // Wrapped into RedirectToHomePageException -> redirects to the configured home page.
+      // Redirects to the configured home page.
       assertThat(mav.getViewName()).isEqualTo("redirect:/top");
 
       // No form/BindingResult available (model was absent) -> message flashed as a global error.
@@ -600,12 +623,64 @@ class SplibWebExceptionHandlerTest {
     }
 
     @Test
-    void redirectException_noMessageId__noMessageAdded_existingModelSaved() {
+    void acceptHeaderHasNoTextHtml__returns404_noRedirect_noFlash() {
+      // Incidental non-navigation request (e.g. the browser's own favicon.ico probe): Accept
+      // doesn't ask for text/html, so this should just answer 404 without redirecting.
+      when(request.getHeader("Accept"))
+          .thenReturn("image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
+      NoResourceFoundException nrfe = new NoResourceFoundException(HttpMethod.GET,
+          "No static resource favicon.ico.", "favicon.ico");
+
+      ModelAndView mav = handler.handleNoResourceFoundException(nrfe, response, redirectAttributes);
+
+      assertThat(mav).isNull();
+      verify(response).setStatus(404);
+      assertThat(redirectAttributes.getFlashAttributes()).isEmpty();
+    }
+  }
+
+  // =========================================================================
+  // handleUnsatisfiedServletRequestParameterException
+  // =========================================================================
+
+  @Nested
+  class HandleUnsatisfiedServletRequestParameterException {
+
+    private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
+    @Test
+    void modelAbsent__wrapsToHomePage_flashesMessage() {
+      when(request.getLocale()).thenReturn(Locale.ROOT);
+
+      ModelAndView mav = handler.handleUnsatisfiedServletRequestParameterException(
+          new UnsatisfiedServletRequestParameterException(new String[] {"id"}, Map.of()),
+          redirectAttributes);
+
+      assertThat(mav.getViewName()).isEqualTo("redirect:/top");
+
+      @SuppressWarnings("unchecked")
+      List<String> errors = (List<String>) redirectAttributes.getFlashAttributes()
+          .get(SplibWebConstants.KEY_GLOBAL_ERRORS);
+      assertThat(errors).hasSize(1);
+    }
+  }
+
+  // =========================================================================
+  // handleRedirectException
+  // =========================================================================
+
+  @Nested
+  class HandleRedirectException {
+
+    private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
+    @Test
+    void noMessageId__noMessageAdded_existingModelSaved() {
       Model model = new ExtendedModelMap();
       stubModel(model);
 
       RedirectException ex = new RedirectException("/some/path");
-      ModelAndView mav = handler.handleRedirectNeededExceptions(ex, redirectAttributes);
+      ModelAndView mav = handler.handleRedirectException(ex, redirectAttributes);
 
       assertThat(mav.getViewName()).isEqualTo("redirect:/some/path");
       assertThat(redirectAttributes.getFlashAttributes())
@@ -616,7 +691,7 @@ class SplibWebExceptionHandlerTest {
 
     @SuppressWarnings("null")
     @Test
-    void redirectException_withFormsInModel_andLogLevel__addsBusinessViolationToBindingResult() {
+    void withFormsInModel_andLogLevel__addsBusinessViolationToBindingResult() {
       when(request.getLocale()).thenReturn(Locale.ROOT);
       TestForm form = new TestForm();
       Model model = modelWithForm(form, new TestController("testFunc", new TestService()));
@@ -625,7 +700,7 @@ class SplibWebExceptionHandlerTest {
       // Also exercises the logLevel branch (no assertion on the log output itself).
       RedirectException ex =
           new RedirectException("/some/path", Level.WARN, "log message", MSG1);
-      handler.handleRedirectNeededExceptions(ex, redirectAttributes);
+      handler.handleRedirectException(ex, redirectAttributes);
 
       BindingResult br =
           (BindingResult) model.getAttribute(BindingResult.MODEL_KEY_PREFIX + "testForm");
@@ -657,10 +732,11 @@ class SplibWebExceptionHandlerTest {
 
     @Test
     void editController__redirectsToDefaultDestOnNormalEnd_withFlashedMessage() {
+      when(loginStateUtil.getLoginState()).thenReturn("account");
+
       TestEditController editController = new TestEditController("editFunc");
       Model model = new ExtendedModelMap();
       model.addAttribute(SplibWebConstants.KEY_CONTROLLER, editController);
-      model.addAttribute("loginState", "account");
       stubModel(model);
 
       ModelAndView mav = handler.handleOptimisticLockingFailureException(
@@ -700,6 +776,47 @@ class SplibWebExceptionHandlerTest {
           .isEqualTo(OPTIMISTIC_LOCKING_MSG);
 
       assertThat(mav.getViewName()).isEqualTo("redirect:/account/testFunc/page");
+    }
+  }
+
+  // =========================================================================
+  // handleMaxUploadSizeExceededException
+  // =========================================================================
+
+  @Nested
+  class HandleMaxUploadSizeExceededException {
+
+    private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
+    @Test
+    void modelAbsent_validReferer__globalErrorFlashed_redirectsToRefererPath_savesEmptyModel() {
+      when(request.getLocale()).thenReturn(Locale.ROOT);
+      when(request.getHeader("Referer")).thenReturn("https://example.com/prior/page?x=1");
+
+      ModelAndView mav = handler.handleMaxUploadSizeExceededException(
+          new MaxUploadSizeExceededException(5 * 1024 * 1024), redirectAttributes);
+
+      assertThat(mav.getViewName()).isEqualTo("redirect:/prior/page?x=1");
+
+      // No forms in the (absent) model -> message flashed as a global error.
+      @SuppressWarnings("unchecked")
+      List<String> errors = (List<String>) redirectAttributes.getFlashAttributes()
+          .get(SplibWebConstants.KEY_GLOBAL_ERRORS);
+      assertThat(errors).containsExactly("The uploaded file is too large. (max: 5MB)");
+
+      assertThat(redirectAttributes.getFlashAttributes())
+          .containsKey(SplibWebConstants.KEY_SAVED_MODEL);
+    }
+
+    @Test
+    void noRefererHeader__fallsBackToRoot() {
+      when(request.getLocale()).thenReturn(Locale.ROOT);
+      when(request.getHeader("Referer")).thenReturn(null);
+
+      ModelAndView mav = handler.handleMaxUploadSizeExceededException(
+          new MaxUploadSizeExceededException(5 * 1024 * 1024), redirectAttributes);
+
+      assertThat(mav.getViewName()).isEqualTo("redirect:/");
     }
   }
 

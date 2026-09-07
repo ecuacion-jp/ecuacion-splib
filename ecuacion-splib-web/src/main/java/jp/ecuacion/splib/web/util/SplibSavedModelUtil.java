@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import org.jspecify.annotations.Nullable;
 import org.springframework.ui.Model;
@@ -46,7 +47,7 @@ public class SplibSavedModelUtil {
    *     here is whatever this request computed <em>before</em> the redirect decision was
    *     made, so restoring it verbatim on the target page would overwrite a
    *     directly-flashed message (e.g. from
-   *     {@code SplibExceptionHandler#handleRedirectNeededExceptions}) with that stale,
+   *     {@code SplibExceptionHandler#handleRedirectException}) with that stale,
    *     usually-empty copy.</p>
    *
    * @param model model
@@ -56,7 +57,8 @@ public class SplibSavedModelUtil {
   public static void saveToFlash(@Nullable Model model, RedirectAttributes redirectAttributes,
       boolean takeOverMessages) {
 
-    Map<String, Object> modelMap = model == null ? new HashMap<>() : new HashMap<>(model.asMap());
+    Map<String, Object> modelMap =
+        model == null ? new HashMap<>() : new HashMap<>(Objects.requireNonNull(model).asMap());
     modelMap.remove(SplibWebConstants.KEY_GLOBAL_ERRORS);
 
     if (!takeOverMessages) {
