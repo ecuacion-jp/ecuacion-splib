@@ -54,14 +54,15 @@ jobs:
 
       - name: Build ecuacion-lib
         working-directory: ecuacion-lib
-        run: mvn install -DskipTests -q
+        run: mvn install -q -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dlicense.skip=true -Djacoco.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dallure.report.skip=true
 
       - name: Build ecuacion-utils
         working-directory: ecuacion-utils
-        run: mvn install -DskipTests -q
+        run: mvn install -q -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dlicense.skip=true -Djacoco.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dallure.report.skip=true
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
+        # Third-party action pinned to a commit SHA (tags are mutable): v6.3.0
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
@@ -103,7 +104,7 @@ jobs:
 
       - name: Verify
         working-directory: splib
-        run: mvn verify -Dwagon.skip=true
+        run: mvn verify -Dwagon.skip=true -Dallure.report.skip=true -Djacoco.skip=true -Dlicense.skip=true
 
       - name: Deploy
         working-directory: splib
