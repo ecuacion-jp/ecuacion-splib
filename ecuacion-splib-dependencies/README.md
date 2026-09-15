@@ -39,7 +39,7 @@ for the difference.
 
 ## Documentation
 
-(none)
+- Official reference documentation - [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=home)
 
 ## Installation
 

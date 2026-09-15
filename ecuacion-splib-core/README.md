@@ -29,7 +29,8 @@
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-core/)
+- Official reference documentation - [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=home)
+- javadoc - [javadoc.io](https://javadoc.io/doc/jp.ecuacion.splib/ecuacion-splib-core/latest/index.html)
 
 ## Installation
 
