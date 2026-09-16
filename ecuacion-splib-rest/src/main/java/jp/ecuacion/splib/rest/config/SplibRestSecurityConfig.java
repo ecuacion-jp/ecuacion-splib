@@ -21,6 +21,7 @@ import jp.ecuacion.splib.rest.apikey.SplibApiKeyComparisonMode;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyExpectedValueProvider;
 import jp.ecuacion.splib.rest.apikey.SplibBuiltinApiKeyAuthenticationFilter;
 import org.jspecify.annotations.Nullable;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
@@ -242,21 +243,22 @@ public abstract class SplibRestSecurityConfig {
    *     Security entirely (no authentication, no authorization, not even CSRF), rather than
    *     being denied. This chain closes that gap.</p>
    *
-   * <p><strong>Left without an explicit {@code @Order}</strong> (defaulting to
-   *     {@code Ordered.LOWEST_PRECEDENCE}), deliberately, so it stays strictly lower priority than
-   *     {@code jp.ecuacion.splib.web.config.SplibWebSecurityConfig#filterChain}'s explicit
-   *     {@code @Order(29)}. That way, an application using both modules together still gets that
-   *     class's real {@code permitAll}/{@code denyAll} policy for its non-{@code /api} pages —
-   *     this chain never actually matches anything in that case, since
-   *     {@code SplibWebSecurityConfig}'s own {@code anyRequest()} chain is evaluated first and
-   *     already covers everything reaching this point. Giving this chain any explicit, finite
-   *     {@code @Order} instead would make it outrank that class's chain and blanket-deny the
-   *     entire non-{@code /api} application by mistake.</p>
+   * <p><strong>Registered only when {@code SplibWebSecurityConfig} is absent</strong> ({@code
+   *     @ConditionalOnMissingBean}, matched by class name so this module keeps no compile-time
+   *     dependency on {@code ecuacion-splib-web}). An application using both modules together
+   *     gets {@code SplibWebSecurityConfig#filterChain}'s real {@code permitAll}/{@code denyAll}
+   *     policy for its non-{@code /api} pages instead, and this chain is skipped entirely rather
+   *     than merely outranked by {@code @Order}. That distinction matters because both chains'
+   *     {@code securityMatcher}s cover every path outside {@code /api/**} — Spring Security's own
+   *     {@code WebSecurityFilterChainValidator} now refuses to boot when two configured chains
+   *     both match "any request", regardless of their relative {@code @Order}, since the
+   *     lower-priority one can never actually be reached.</p>
    *
    * @param http http
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
+  @ConditionalOnMissingBean(type = "jp.ecuacion.splib.web.config.SplibWebSecurityConfig")
   @Bean
   SecurityFilterChain filterChainCatchAll(HttpSecurity http) throws Exception {
     http.securityMatcher("/**");
