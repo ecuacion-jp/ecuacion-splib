@@ -120,6 +120,21 @@ footer{
 	display: block;
 }
 
+/* On narrow screens there's no room to the right for the submenu to fly
+   out into (it renders off-screen, unreadable). Lay it out below the
+   toggle instead, like the top-level dropdown, keeping the same
+   :hover-driven show/hide above. */
+@media (max-width: 767.98px) {
+	.dropdown-menu .dropdown-submenu,
+	.dropdown-menu .dropdown-submenu-left {
+		position: static;
+		left: auto;
+		right: auto;
+		top: auto;
+		width: 100%;
+	}
+}
+
 /* inputDocumentViewer */
 
 .input-document-viewer-design {
