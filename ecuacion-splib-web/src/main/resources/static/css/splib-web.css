@@ -261,17 +261,26 @@ footer{
 /* Bootstrap's ".container" utility class (used here only as a plain flex
    wrapper around the toggler/menu, never as an actual centered content
    container) forces width:100% with a breakpoint-based max-width
-   (540/720/960/...). On desktop that cap is narrower than the menu's
-   actual content width at some breakpoints (e.g. 720px cap vs ~761px of
-   content between 768–991px) and wide enough at others, so the menu
-   wraps onto a second line only in that range — the navbar's height
-   visibly jumps while resizing through it. Dropping the cap at all
-   widths keeps the height stable; removed above the mobile breakpoint,
-   `justify-content: flex-start` etc. below simply need this + auto
-   margin behavior only when the toggler needs to sit next to the brand. */
+   (540/720/960/...) plus auto left/right margins.
+   - width:100% makes this flex item claim the whole row on its own
+     (the navbar-brand can't share a line with it), forcing the toggler
+     onto its own wrapped line below the brand even on mobile. Dropping
+     width to the content's natural size (and the max-width cap, which
+     would otherwise wrap the menu's content at some desktop widths
+     between 768–991px, visibly jumping the navbar's height while
+     resizing through that range) keeps the toggler inline with the
+     brand and the height stable.
+   - The auto left/right margins then center this now content-sized
+     block between the brand and the right-hand menu, which is never the
+     intended "centered content container" use of ".container" here —
+     pin it flush left instead. Below the mobile breakpoint this is
+     overridden again to sit flush right next to the brand, matching
+     Bootstrap's standard mobile navbar layout. */
 .navbar.navbar-expand-md > .container-fluid > .container {
 	width: auto;
 	max-width: none;
+	margin-left: 0;
+	margin-right: auto;
 }
 
 /* The nav-item lists carry Bootstrap's "mb-2 mb-lg-0" utility classes —
