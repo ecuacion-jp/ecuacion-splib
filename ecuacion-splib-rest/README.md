@@ -47,8 +47,8 @@ See [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-referenc
 
 ## Documentation
 
-- [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=rest/overview) — Official reference documentation
-- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-rest/)
+- Official reference documentation - [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=rest/overview)
+- javadoc - [javadoc.io](https://javadoc.io/doc/jp.ecuacion.splib/ecuacion-splib-rest/latest/index.html)
 
 ## Installation
 

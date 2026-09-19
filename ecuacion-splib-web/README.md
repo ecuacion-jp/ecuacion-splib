@@ -102,7 +102,8 @@ public class HomeService extends SplibGeneral1FormService<HomeForm> {
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-web/)
+- Official reference documentation - [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=home)
+- javadoc - [javadoc.io](https://javadoc.io/doc/jp.ecuacion.splib/ecuacion-splib-web/latest/index.html)
 
 ## Installation
 

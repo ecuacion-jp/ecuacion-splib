@@ -120,6 +120,21 @@ footer{
 	display: block;
 }
 
+/* On narrow screens there's no room to the right for the submenu to fly
+   out into (it renders off-screen, unreadable). Lay it out below the
+   toggle instead, like the top-level dropdown, keeping the same
+   :hover-driven show/hide above. */
+@media (max-width: 767.98px) {
+	.dropdown-menu .dropdown-submenu,
+	.dropdown-menu .dropdown-submenu-left {
+		position: static;
+		left: auto;
+		right: auto;
+		top: auto;
+		width: 100%;
+	}
+}
+
 /* inputDocumentViewer */
 
 .input-document-viewer-design {
@@ -239,4 +254,98 @@ footer{
 .balloon_r .says:after,.balloon_r .says-selectable:after {
   right: -26px;
   border-left: 22px solid #99dddd;
+}
+
+/* responsive navbar (navbarRoot) fixes */
+
+/* Bootstrap's ".container" utility class (used here only as a plain flex
+   wrapper around the toggler/menu, never as an actual centered content
+   container) forces width:100% with a breakpoint-based max-width
+   (540/720/960/...). On desktop that cap is narrower than the menu's
+   actual content width at some breakpoints (e.g. 720px cap vs ~761px of
+   content between 768–991px) and wide enough at others, so the menu
+   wraps onto a second line only in that range — the navbar's height
+   visibly jumps while resizing through it. Dropping the cap at all
+   widths keeps the height stable; removed above the mobile breakpoint,
+   `justify-content: flex-start` etc. below simply need this + auto
+   margin behavior only when the toggler needs to sit next to the brand. */
+.navbar.navbar-expand-md > .container-fluid > .container {
+	width: auto;
+	max-width: none;
+}
+
+/* The nav-item lists carry Bootstrap's "mb-2 mb-lg-0" utility classes —
+   a bottom margin meant to space out stacked rows on mobile, removed
+   once the navbar goes horizontal. But the navbar itself expands at the
+   "md" breakpoint (768px, "navbar-expand-md") while that removal is
+   keyed to "lg" (992px), so between 768–991px the navbar is already
+   horizontal yet still carries the margin — the same height jump as
+   above, from a mismatched breakpoint rather than the container's
+   max-width. Drop it from "md" instead, matching navbar-expand-md. */
+@media (min-width: 768px) {
+	.navbar.navbar-expand-md .navbar-nav.mb-2 {
+		margin-bottom: 0 !important;
+	}
+}
+
+/* On narrow (mobile) screens, keep the navbar-toggler button on the
+   brand's row, flush to the right, matching Bootstrap's standard mobile
+   navbar layout. */
+@media (max-width: 767.98px) {
+	.navbar.navbar-expand-md {
+		position: relative;
+	}
+	.navbar.navbar-expand-md > .container-fluid {
+		justify-content: flex-start;
+	}
+	.navbar.navbar-expand-md > .container-fluid > .container {
+		margin-left: auto;
+		margin-right: 0;
+	}
+	/* Once opened, detach the menu from the toggler's shrink-wrapped
+	   wrapper and lay it out edge-to-edge under the whole navbar, like
+	   Bootstrap's own collapsible-navbar example, instead of shrinking
+	   into a narrow column next to the toggler. Also applied to
+	   ".collapsing" (Bootstrap's transient class while the open/close
+	   animation runs) — without it, the animation plays out in the old
+	   narrow layout and only snaps to the full-width one once ".show" is
+	   added at the very end, producing a visible jump mid-animation. */
+	.navbar.navbar-expand-md #navbarText.show,
+	.navbar.navbar-expand-md #navbarText.collapsing {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		width: auto;
+		z-index: 1050;
+		padding: 0 0.75rem 0.5rem;
+		background-color: rgba(var(--bs-color-navbar-rgb), 1);
+	}
+	/* The version/language switch doesn't fit next to the toggler, so
+	   give it its own full-width row below, right-aligned. */
+	.navbar.navbar-expand-md > .container-fluid > .container + div {
+		flex-basis: 100%;
+		margin-left: auto;
+		margin-top: 0.5rem;
+	}
+	/* ".navbar-nav" sets "--bs-nav-link-padding-x: 0", and the horizontal
+	   padding dropdown items rely on for their left indent is only ever
+	   restored by the "navbar-expand-md .navbar-nav .nav-link" rule,
+	   which is scoped to "@media (min-width: 768px)". Below that, dropdown
+	   items lose all left indent — unlike the top-level items, which get
+	   an inline "margin-left: 20px" of their own. Restore the same
+	   indent dropdown items already have on desktop. */
+	.navbar.navbar-expand-md .navbar-nav .dropdown-menu .nav-link {
+		padding-left: var(--bs-navbar-nav-link-padding-x, 0.5rem);
+		padding-right: var(--bs-navbar-nav-link-padding-x, 0.5rem);
+	}
+	/* The version badge and language switch are separate <li> items in a
+	   ".navbar-nav", which stacks them vertically ("flex-direction: column")
+	   on mobile like the rest of the collapsed menu. Lay this particular
+	   list out as a row instead, right-aligned. */
+	.navbar.navbar-expand-md > .container-fluid > .container + div .navbar-nav {
+		flex-direction: row;
+		justify-content: flex-end;
+		align-items: center;
+	}
 }

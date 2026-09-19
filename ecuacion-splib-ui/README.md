@@ -42,7 +42,8 @@ otherwise UI-technology-specific.
 
 ## Documentation
 
-- [javadoc](https://docs.ecuacion.jp/javadoc/ecuacion-splib-ui/)
+- Official reference documentation - [ecuacion-references-splib](https://references.ecuacion.jp/ecuacion-references-splib/public/showMarkdown/page?id=home)
+- javadoc - [javadoc.io](https://javadoc.io/doc/jp.ecuacion.splib/ecuacion-splib-ui/latest/index.html)
 
 ## Installation
 
