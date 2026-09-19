@@ -15,7 +15,9 @@
  */
 package jp.ecuacion.splib.core.util;
 
+import java.util.List;
 import jp.ecuacion.lib.core.logging.DetailLogger;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.event.Level;
 
 /**
@@ -124,4 +126,25 @@ public class SplibLogUtil {
   public static enum SeparatorKind {
     LARGE, MEDIUM, SMALL
   }
+
+  /**
+   * Logs each key-value pair as {@code "- key : value"}, right-padding every key to the longest
+   * key's length in {@code list} so the colons line up.
+   *
+   * @param detailLogger the logger to write to
+   * @param logLevel the level to log at
+   * @param indents the indent depth
+   */
+  public static void logKeyValueList(DetailLogger detailLogger, Level logLevel, int indents,
+      List<LogKeyValue> list) {
+    int maxKeyLength = list.stream().mapToInt(entry -> entry.key().length()).max().orElse(0);
+    for (LogKeyValue entry : list) {
+      log(detailLogger, logLevel,
+          "- " + StringUtils.rightPad(entry.key(), maxKeyLength) + " : " + entry.value(),
+          indents);
+    }
+  }
+
+  /** A single key-value entry logged by {@link #logKeyValueList}. */
+  public record LogKeyValue(String key, String value) {}
 }
