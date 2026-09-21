@@ -38,10 +38,10 @@ import org.jspecify.annotations.Nullable;
 public abstract class SplibWebSecurityConfigForNoLogin extends SplibWebSecurityConfig {
 
   /**
-   * Constructs a new instance with no OAuth2 dependencies.
+   * Constructs a new instance.
    */
   protected SplibWebSecurityConfigForNoLogin() {
-    super(null, null, null);
+    super();
   }
 
   /**
