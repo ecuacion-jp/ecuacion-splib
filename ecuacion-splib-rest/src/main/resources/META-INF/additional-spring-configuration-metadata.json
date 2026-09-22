@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "jp.ecuacion.splib.rest.builtin-api-key.password-plain",
+    "type": "java.lang.String",
+    "description": "Optional. The plain-text key for ecuacion-splib's built-in API key authentication. Exactly one of this and 'jp.ecuacion.splib.rest.builtin-api-key.password-bcrypt' must be set; if neither is set, the built-in API key tier is disabled (fails closed)."
+  },
+  {
+    "name": "jp.ecuacion.splib.rest.builtin-api-key.password-bcrypt",
+    "type": "java.lang.String",
+    "description": "Optional. A bcrypt hash of the key for ecuacion-splib's built-in API key authentication. Exactly one of this and 'jp.ecuacion.splib.rest.builtin-api-key.password-plain' must be set; if neither is set, the built-in API key tier is disabled (fails closed)."
+  }
+]}

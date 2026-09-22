@@ -113,5 +113,15 @@
     "name": "jp.ecuacion.splib.web.admin-login.enabled",
     "type": "java.lang.String",
     "description": "A description for 'jp.ecuacion.splib.web.admin-login.enabled'"
+  },
+  {
+    "name": "jp.ecuacion.splib.web.builtin-admin-login.password-plain",
+    "type": "java.lang.String",
+    "description": "Optional. The plain-text password for ecuacion-splib's built-in admin login. Exactly one of this and 'jp.ecuacion.splib.web.builtin-admin-login.password-bcrypt' must be set; if neither is set, the built-in admin login is disabled (fails closed)."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.builtin-admin-login.password-bcrypt",
+    "type": "java.lang.String",
+    "description": "Optional. A bcrypt hash of the password for ecuacion-splib's built-in admin login. Exactly one of this and 'jp.ecuacion.splib.web.builtin-admin-login.password-plain' must be set; if neither is set, the built-in admin login is disabled (fails closed)."
   }
 ]}
