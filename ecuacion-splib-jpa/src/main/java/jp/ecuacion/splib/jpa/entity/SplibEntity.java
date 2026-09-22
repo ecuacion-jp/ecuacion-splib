@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides the customized jpa entity.
@@ -32,7 +33,12 @@ public abstract class SplibEntity {
   /**
    * Returns an array of fields which construct a unique
    * constraint connected to the natural key.
-   * 
+   *
+   * <p>Reads every {@code @UniqueConstraint} declared in this entity's {@code @Table}
+   *     annotation. Once {@code @Index(unique = true)} is supported (see {@link
+   *     #getNaturalKeyFieldList()} for why that must stay separate), those will be included here
+   *     too.</p>
+   *
    * @return set of unique constraint column list.
    */
   public Set<List<@NonNull String>> getSetOfUniqueConstraintFieldList() {
@@ -50,6 +56,28 @@ public abstract class SplibEntity {
     }
 
     return rtnSet;
+  }
+
+  /**
+   * Returns the natural key field list, or {@code null} if this entity has none.
+   *
+   * <p>Reads only this entity's {@code @Table(uniqueConstraints = ...)} (at most one, by
+   *     convention: the natural key). Deliberately does not go through {@link
+   *     #getSetOfUniqueConstraintFieldList()}: once that also reports {@code @Index(unique =
+   *     true)} columns unrelated to any natural key, picking an arbitrary entry from its result
+   *     would no longer reliably identify the natural key.</p>
+   *
+   * @return natural key field list, or {@code null} if none.
+   */
+  public @Nullable List<String> getNaturalKeyFieldList() {
+    Table table = Objects.requireNonNull(this.getClass().getAnnotation(Table.class));
+    UniqueConstraint[] ucs = table.uniqueConstraints();
+
+    if (ucs == null || ucs.length == 0) {
+      return null;
+    }
+
+    return Arrays.asList(ucs[0].columnNames());
   }
 
   /**
