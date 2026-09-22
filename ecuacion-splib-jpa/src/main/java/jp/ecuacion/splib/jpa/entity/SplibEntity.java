@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import org.hibernate.annotations.Filter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -30,6 +31,8 @@ import org.jspecify.annotations.Nullable;
  * Provides the customized jpa entity.
  */
 public abstract class SplibEntity {
+
+  private static final String SOFT_DELETE_FILTER_NAME = "softDeleteFilter";
 
   /**
    * Returns an array of fields which construct a unique
@@ -114,7 +117,22 @@ public abstract class SplibEntity {
   /**
    * Returns if the entity has soft-delete field.
    *
+   * <p>Determined dynamically: {@code true} if a {@code @Filter(name = "softDeleteFilter")}
+   *     annotation is present on this entity's class or any of its superclasses (e.g. {@code
+   *     SystemCommon}, when the soft-delete column is common to every entity rather than defined
+   *     per-table).</p>
+   *
    * @return has soft-delete field.
    */
-  public abstract boolean hasSoftDeleteField();
+  public boolean hasSoftDeleteField() {
+    for (Class<?> clazz = this.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
+      for (Filter filter : clazz.getAnnotationsByType(Filter.class)) {
+        if (filter.name().equals(SOFT_DELETE_FILTER_NAME)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
 }

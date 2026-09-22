@@ -21,6 +21,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.List;
+import org.hibernate.annotations.Filter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("SplibEntity")
 class SplibEntityTest {
 
-  /** Concrete entity with no natural key and no indexes at all. */
+  /** Concrete entity with no natural key, no indexes, and no soft-delete filter at all. */
   @Table(name = "no_key_entity")
   static class NoKeyEntity extends SplibEntity {
     @Override
@@ -36,11 +37,6 @@ class SplibEntityTest {
 
     @Override
     public void preUpdate() {}
-
-    @Override
-    public boolean hasSoftDeleteField() {
-      return false;
-    }
   }
 
   /** Concrete entity whose natural key is expressed via {@code @UniqueConstraint} only. */
@@ -52,11 +48,6 @@ class SplibEntityTest {
 
     @Override
     public void preUpdate() {}
-
-    @Override
-    public boolean hasSoftDeleteField() {
-      return false;
-    }
   }
 
   /**
@@ -71,11 +62,6 @@ class SplibEntityTest {
 
     @Override
     public void preUpdate() {}
-
-    @Override
-    public boolean hasSoftDeleteField() {
-      return false;
-    }
   }
 
   /**
@@ -94,11 +80,45 @@ class SplibEntityTest {
 
     @Override
     public void preUpdate() {}
+  }
+
+  /** Concrete entity with the soft-delete filter declared directly on its own class. */
+  @Table(name = "own_soft_delete_entity")
+  @Filter(name = "softDeleteFilter")
+  static class OwnSoftDeleteEntity extends SplibEntity {
+    @Override
+    public void preInsert() {}
 
     @Override
-    public boolean hasSoftDeleteField() {
-      return false;
-    }
+    public void preUpdate() {}
+  }
+
+  /** Simulates a {@code SystemCommon}-like superclass carrying the soft-delete filter, used when
+   *  the soft-delete column is common to every entity rather than defined per-table. */
+  @Filter(name = "softDeleteFilter")
+  abstract static class SoftDeleteSuperclass extends SplibEntity {
+    @Override
+    public void preInsert() {}
+
+    @Override
+    public void preUpdate() {}
+  }
+
+  /** Leaf entity with no filter of its own, inheriting the soft-delete filter from its
+   *  superclass. */
+  @Table(name = "inherited_soft_delete_entity")
+  static class InheritedSoftDeleteEntity extends SoftDeleteSuperclass {}
+
+  /** Concrete entity carrying an unrelated {@code @Filter}, which must not be mistaken for the
+   *  soft-delete filter. */
+  @Table(name = "other_filter_entity")
+  @Filter(name = "groupFilter")
+  static class OtherFilterEntity extends SplibEntity {
+    @Override
+    public void preInsert() {}
+
+    @Override
+    public void preUpdate() {}
   }
 
   @Nested
@@ -166,6 +186,39 @@ class SplibEntityTest {
       MixedEntity entity = new MixedEntity();
       assertThat(entity.getSetOfUniqueConstraintFieldList()).containsExactlyInAnyOrder(
           List.of("mailAddress"), List.of("code", "kind"));
+    }
+  }
+
+  @Nested
+  @DisplayName("hasSoftDeleteField()")
+  class HasSoftDeleteField {
+
+    @Test
+    @DisplayName("returns false when neither the entity's class nor any superclass carries "
+        + "@Filter(name = \"softDeleteFilter\")")
+    void noFilter() {
+      assertThat(new NoKeyEntity().hasSoftDeleteField()).isFalse();
+    }
+
+    @Test
+    @DisplayName("returns true when @Filter(name = \"softDeleteFilter\") is on the entity's own "
+        + "class")
+    void filterOnOwnClass() {
+      assertThat(new OwnSoftDeleteEntity().hasSoftDeleteField()).isTrue();
+    }
+
+    @Test
+    @DisplayName("returns true when @Filter(name = \"softDeleteFilter\") is inherited from a "
+        + "superclass (e.g. SystemCommon, when the soft-delete column is common to all entities)")
+    void filterOnSuperclass() {
+      assertThat(new InheritedSoftDeleteEntity().hasSoftDeleteField()).isTrue();
+    }
+
+    @Test
+    @DisplayName("returns false when a @Filter with a different name is present (must match by "
+        + "name, not merely by the presence of any @Filter)")
+    void differentFilterName() {
+      assertThat(new OtherFilterEntity().hasSoftDeleteField()).isFalse();
     }
   }
 }
