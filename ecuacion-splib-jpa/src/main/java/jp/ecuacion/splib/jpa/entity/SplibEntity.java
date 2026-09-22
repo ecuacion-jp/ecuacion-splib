@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.jpa.entity;
 
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.Arrays;
@@ -35,9 +36,9 @@ public abstract class SplibEntity {
    * constraint connected to the natural key.
    *
    * <p>Reads every {@code @UniqueConstraint} declared in this entity's {@code @Table}
-   *     annotation. Once {@code @Index(unique = true)} is supported (see {@link
-   *     #getNaturalKeyFieldList()} for why that must stay separate), those will be included here
-   *     too.</p>
+   *     annotation, plus every {@code @Index(unique = true)}. Note that this therefore also
+   *     includes unique indexes unrelated to any natural key; use {@link
+   *     #getNaturalKeyFieldList()} when the natural key specifically is needed.</p>
    *
    * @return set of unique constraint column list.
    */
@@ -47,12 +48,19 @@ public abstract class SplibEntity {
     Table table = Objects.requireNonNull(this.getClass().getAnnotation(Table.class));
     UniqueConstraint[] ucs = table.uniqueConstraints();
 
-    if (ucs == null) {
-      return rtnSet;
+    if (ucs != null) {
+      for (UniqueConstraint uc : ucs) {
+        rtnSet.add(Arrays.asList(uc.columnNames()));
+      }
     }
 
-    for (UniqueConstraint uc : ucs) {
-      rtnSet.add(Arrays.asList(uc.columnNames()));
+    Index[] indexes = table.indexes();
+    if (indexes != null) {
+      for (Index index : indexes) {
+        if (index.unique()) {
+          rtnSet.add(Arrays.stream(index.columnList().split(",")).map(String::trim).toList());
+        }
+      }
     }
 
     return rtnSet;
@@ -82,11 +90,11 @@ public abstract class SplibEntity {
 
   /**
    * Returns if the entity has natural keys.
-   * 
+   *
    * @return has natural keys.
    */
   public boolean hasNaturalKey() {
-    return getSetOfUniqueConstraintFieldList().size() != 0;
+    return getNaturalKeyFieldList() != null;
   }
 
   /**
