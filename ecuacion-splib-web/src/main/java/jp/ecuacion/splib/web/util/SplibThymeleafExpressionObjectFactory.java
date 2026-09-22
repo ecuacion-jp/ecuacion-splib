@@ -23,9 +23,9 @@ import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.expression.IExpressionObjectFactory;
 
 /**
- * Exposes {@code compUtil}/{@code exUtil}/{@code optUtil}/{@code propUtil}/{@code strUtil}/
- * {@code themeColorUtil} as {@code #}-prefixed Thymeleaf expression objects, in addition to their
- * existing {@code @Component}-based {@code @compUtil}/etc. Spring bean access.
+ * Exposes {@code compUtil}/{@code exUtil}/{@code msgUtil}/{@code optUtil}/{@code propUtil}/
+ * {@code strUtil}/{@code themeColorUtil} as {@code #}-prefixed Thymeleaf expression objects, in
+ * addition to their existing {@code @Component}-based {@code @compUtil}/etc. Spring bean access.
  *
  * <p>Thymeleaf evaluates fragment-selector parameters (and some other nested contexts) in a
  *     "restricted" SpEL mode that, since Thymeleaf 3.1.3, forbids raw {@code @beanName} SpEL bean
@@ -42,6 +42,7 @@ public class SplibThymeleafExpressionObjectFactory implements IExpressionObjectF
 
   private static final String COMP_UTIL = "compUtil";
   private static final String EX_UTIL = "exUtil";
+  private static final String MSG_UTIL = "msgUtil";
   private static final String OPT_UTIL = "optUtil";
   private static final String PROP_UTIL = "propUtil";
   private static final String STR_UTIL = "strUtil";
@@ -49,10 +50,11 @@ public class SplibThymeleafExpressionObjectFactory implements IExpressionObjectF
 
   @SuppressWarnings("null")
   private static final Set<String> ALL_EXPRESSION_OBJECT_NAMES = (@NonNull Set<@NonNull String>) Set
-      .of(COMP_UTIL, EX_UTIL, OPT_UTIL, PROP_UTIL, STR_UTIL, THEME_COLOR_UTIL);
+      .of(COMP_UTIL, EX_UTIL, MSG_UTIL, OPT_UTIL, PROP_UTIL, STR_UTIL, THEME_COLOR_UTIL);
 
   private final SplibThymeleafComponentUtil compUtil;
   private final SplibThymeleafExceptionUtil exUtil;
+  private final SplibThymeleafMessageUtil msgUtil;
   private final SplibThymeleafOptionUtil optUtil;
   private final SplibThymeleafPropertiesUtil propUtil;
   private final SplibThymeleafStringUtil strUtil;
@@ -62,11 +64,12 @@ public class SplibThymeleafExpressionObjectFactory implements IExpressionObjectF
    * Constructs a new instance.
    */
   public SplibThymeleafExpressionObjectFactory(SplibThymeleafComponentUtil compUtil,
-      SplibThymeleafExceptionUtil exUtil, SplibThymeleafOptionUtil optUtil,
-      SplibThymeleafPropertiesUtil propUtil, SplibThymeleafStringUtil strUtil,
-      SplibThemeColorUtil themeColorUtil) {
+      SplibThymeleafExceptionUtil exUtil, SplibThymeleafMessageUtil msgUtil,
+      SplibThymeleafOptionUtil optUtil, SplibThymeleafPropertiesUtil propUtil,
+      SplibThymeleafStringUtil strUtil, SplibThemeColorUtil themeColorUtil) {
     this.compUtil = compUtil;
     this.exUtil = exUtil;
+    this.msgUtil = msgUtil;
     this.optUtil = optUtil;
     this.propUtil = propUtil;
     this.strUtil = strUtil;
@@ -84,6 +87,7 @@ public class SplibThymeleafExpressionObjectFactory implements IExpressionObjectF
     return switch (expressionObjectName) {
       case COMP_UTIL -> compUtil;
       case EX_UTIL -> exUtil;
+      case MSG_UTIL -> msgUtil;
       case OPT_UTIL -> optUtil;
       case PROP_UTIL -> propUtil;
       case STR_UTIL -> strUtil;
