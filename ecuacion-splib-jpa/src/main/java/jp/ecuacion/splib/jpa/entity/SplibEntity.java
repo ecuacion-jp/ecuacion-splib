@@ -77,15 +77,8 @@ public abstract class SplibEntity {
 
   /**
    * Returns if the entity has soft-delete field.
-   * 
+   *
    * @return has soft-delete field.
    */
   public abstract boolean hasSoftDeleteField();
-
-  /**
-   * Returns field name array.
-   * 
-   * @return field name array.
-   */
-  public abstract String[] getFieldNameArr();
 }
