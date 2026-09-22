@@ -93,7 +93,7 @@ class SplibEntityTest {
     public void preUpdate() {}
   }
 
-  /** Simulates a {@code SystemCommon}-like superclass carrying the soft-delete filter, used when
+  /** Simulates an {@code AppCommon}-like superclass carrying the soft-delete filter, used when
    *  the soft-delete column is common to every entity rather than defined per-table. */
   @Filter(name = "softDeleteFilter")
   abstract static class SoftDeleteSuperclass extends SplibEntity {
@@ -209,7 +209,7 @@ class SplibEntityTest {
 
     @Test
     @DisplayName("returns true when @Filter(name = \"softDeleteFilter\") is inherited from a "
-        + "superclass (e.g. SystemCommon, when the soft-delete column is common to all entities)")
+        + "superclass (e.g. AppCommon, when the soft-delete column is common to all entities)")
     void filterOnSuperclass() {
       assertThat(new InheritedSoftDeleteEntity().hasSoftDeleteField()).isTrue();
     }

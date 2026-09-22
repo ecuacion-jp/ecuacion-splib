@@ -119,7 +119,7 @@ public abstract class SplibEntity {
    *
    * <p>Determined dynamically: {@code true} if a {@code @Filter(name = "softDeleteFilter")}
    *     annotation is present on this entity's class or any of its superclasses (e.g. {@code
-   *     SystemCommon}, when the soft-delete column is common to every entity rather than defined
+   *     AppCommon}, when the soft-delete column is common to every entity rather than defined
    *     per-table).</p>
    *
    * @return has soft-delete field.
