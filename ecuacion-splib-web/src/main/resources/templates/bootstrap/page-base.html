@@ -51,11 +51,11 @@
 		<!--/* navbar */-->
 		<th:block th:with="
 				titleDefaultApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title') ?: ''},
-				titleDefault=${titleDefaultApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title') ?: '')} : ${titleDefaultApp},
+				titleDefault=${titleDefaultApp} == '' ? ${#msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title', '')} : ${titleDefaultApp},
 				titleAccountApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title-account') ?: ''},
-				titleAccount=${titleAccountApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title-account') ?: titleDefault)} : ${titleAccountApp},
+				titleAccount=${titleAccountApp} == '' ? ${#msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title-account', titleDefault)} : ${titleAccountApp},
 				titleAdminApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title-admin') ?: ''},
-				titleAdmin=${titleAdminApp} == '' ? ${(#messages.msgOrNull('jp.ecuacion.splib.web.navbar.title-admin') ?: titleDefault)} : ${titleAdminApp},
+				titleAdmin=${titleAdminApp} == '' ? ${#msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title-admin', titleDefault)} : ${titleAdminApp},
 				title=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)},
 				imagePathValue=${#propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.image-path', '')},
 				imagePathTmp=@{${imagePathValue}},

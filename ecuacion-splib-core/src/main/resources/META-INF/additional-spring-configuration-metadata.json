@@ -22,12 +22,6 @@
 	  "description": "Whether to force starttls enabled.",
 	  "defaultValue": true
 	},
-	{
-	  "name": "jp.ecuacion.splib.mail.smtp.checks-certificate",
-	  "type": "java.lang.Boolean",
-	  "description": "Whether to verify the TLS certificate of the SMTP server.",
-	  "defaultValue": true
-	},
     {
       "name": "jp.ecuacion.splib.mail.debug",
       "type": "java.lang.Boolean",

@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.jpa.entity;
 
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.Arrays;
@@ -22,17 +23,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import org.hibernate.annotations.Filter;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides the customized jpa entity.
  */
 public abstract class SplibEntity {
 
+  private static final String SOFT_DELETE_FILTER_NAME = "softDeleteFilter";
+
   /**
    * Returns an array of fields which construct a unique
    * constraint connected to the natural key.
-   * 
+   *
+   * <p>Reads every {@code @UniqueConstraint} declared in this entity's {@code @Table}
+   *     annotation, plus every {@code @Index(unique = true)}. Note that this therefore also
+   *     includes unique indexes unrelated to any natural key; use {@link
+   *     #getNaturalKeyFieldList()} when the natural key specifically is needed.</p>
+   *
    * @return set of unique constraint column list.
    */
   public Set<List<@NonNull String>> getSetOfUniqueConstraintFieldList() {
@@ -41,24 +51,53 @@ public abstract class SplibEntity {
     Table table = Objects.requireNonNull(this.getClass().getAnnotation(Table.class));
     UniqueConstraint[] ucs = table.uniqueConstraints();
 
-    if (ucs == null) {
-      return rtnSet;
+    if (ucs != null) {
+      for (UniqueConstraint uc : ucs) {
+        rtnSet.add(Arrays.asList(uc.columnNames()));
+      }
     }
 
-    for (UniqueConstraint uc : ucs) {
-      rtnSet.add(Arrays.asList(uc.columnNames()));
+    Index[] indexes = table.indexes();
+    if (indexes != null) {
+      for (Index index : indexes) {
+        if (index.unique()) {
+          rtnSet.add(Arrays.stream(index.columnList().split(",")).map(String::trim).toList());
+        }
+      }
     }
 
     return rtnSet;
   }
 
   /**
+   * Returns the natural key field list, or {@code null} if this entity has none.
+   *
+   * <p>Reads only this entity's {@code @Table(uniqueConstraints = ...)} (at most one, by
+   *     convention: the natural key). Deliberately does not go through {@link
+   *     #getSetOfUniqueConstraintFieldList()}: once that also reports {@code @Index(unique =
+   *     true)} columns unrelated to any natural key, picking an arbitrary entry from its result
+   *     would no longer reliably identify the natural key.</p>
+   *
+   * @return natural key field list, or {@code null} if none.
+   */
+  public @Nullable List<String> getNaturalKeyFieldList() {
+    Table table = Objects.requireNonNull(this.getClass().getAnnotation(Table.class));
+    UniqueConstraint[] ucs = table.uniqueConstraints();
+
+    if (ucs == null || ucs.length == 0) {
+      return null;
+    }
+
+    return Arrays.asList(ucs[0].columnNames());
+  }
+
+  /**
    * Returns if the entity has natural keys.
-   * 
+   *
    * @return has natural keys.
    */
   public boolean hasNaturalKey() {
-    return getSetOfUniqueConstraintFieldList().size() != 0;
+    return getNaturalKeyFieldList() != null;
   }
 
   /**
@@ -77,15 +116,23 @@ public abstract class SplibEntity {
 
   /**
    * Returns if the entity has soft-delete field.
-   * 
+   *
+   * <p>Determined dynamically: {@code true} if a {@code @Filter(name = "softDeleteFilter")}
+   *     annotation is present on this entity's class or any of its superclasses (e.g. {@code
+   *     AppCommon}, when the soft-delete column is common to every entity rather than defined
+   *     per-table).</p>
+   *
    * @return has soft-delete field.
    */
-  public abstract boolean hasSoftDeleteField();
+  public boolean hasSoftDeleteField() {
+    for (Class<?> clazz = this.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
+      for (Filter filter : clazz.getAnnotationsByType(Filter.class)) {
+        if (filter.name().equals(SOFT_DELETE_FILTER_NAME)) {
+          return true;
+        }
+      }
+    }
 
-  /**
-   * Returns field name array.
-   * 
-   * @return field name array.
-   */
-  public abstract String[] getFieldNameArr();
+    return false;
+  }
 }

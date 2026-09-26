@@ -49,9 +49,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<!-- provided: apps that use OAuth2 login (google/apple SSO) must declare this
+			themselves so it is not bundled into apps that don't use it -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<!-- spring-data-core is needed but not individual JPA implementations; no suitable starter exists so modules are specified individually -->
 		<dependency>
