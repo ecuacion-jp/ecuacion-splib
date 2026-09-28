@@ -191,6 +191,8 @@ public final class SpinnerUtil {
    * real output take its place; the spinner reappears on its own on the next redraw.
    */
   private static PrintStream wrap(PrintStream target) {
+    // Must encode with target's own charset: the default (UTF-8 since JDK 18) differs from
+    // the console's (e.g. MS932 on Japanese Windows), which would garble non-ASCII output.
     return new PrintStream(new OutputStream() {
 
       @Override
@@ -210,6 +212,6 @@ public final class SpinnerUtil {
           target.flush();
         }
       }
-    }, true);
+    }, true, target.charset());
   }
 }
