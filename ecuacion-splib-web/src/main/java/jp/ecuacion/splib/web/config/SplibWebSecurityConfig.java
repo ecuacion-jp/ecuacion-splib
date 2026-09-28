@@ -190,7 +190,8 @@ public abstract class SplibWebSecurityConfig {
 
     http.exceptionHandling(
         handling -> handling.accessDeniedPage(getAccessDeniedPage()).authenticationEntryPoint(
-            (request, response, authException) -> response.sendRedirect(getAccessDeniedPage())));
+            (request, response, authException) -> response
+                .sendRedirect(request.getContextPath() + getAccessDeniedPage())));
 
     return http.build();
   }
