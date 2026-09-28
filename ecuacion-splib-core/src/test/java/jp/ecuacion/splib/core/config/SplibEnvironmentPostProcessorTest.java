@@ -17,11 +17,15 @@ package jp.ecuacion.splib.core.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -64,5 +68,41 @@ class SplibEnvironmentPostProcessorTest {
 
     assertThat(PropertiesFileUtil.hasApplication(key)).isTrue();
     assertThat(PropertiesFileUtil.getApplication(key)).isEqualTo("true");
+  }
+
+  @Test
+  @DisplayName("postProcessEnvironment: a logback-spring.xml found at the "
+      + "jp.ecuacion.splib.core.app-conf-dir property's directory is set as logging.config")
+  void postProcessEnvironment_findsLogbackConfigInAppConfDir(@TempDir Path appConfDir)
+      throws IOException {
+    Path logbackFile = appConfDir.resolve("logback-spring.xml");
+    Files.writeString(logbackFile, "<configuration></configuration>");
+
+    StandardEnvironment environment = new StandardEnvironment();
+    environment.getPropertySources().addFirst(new MapPropertySource("appConfDir",
+        Map.of("jp.ecuacion.splib.core.app-conf-dir", appConfDir.toString())));
+
+    processor.postProcessEnvironment(environment, new SpringApplication());
+
+    assertThat(environment.getProperty("logging.config"))
+        .isEqualTo("file:" + logbackFile.toAbsolutePath());
+  }
+
+  @Test
+  @DisplayName("postProcessEnvironment: an already-set logging.config is left untouched even "
+      + "when jp.ecuacion.splib.core.app-conf-dir also has a logback-spring.xml")
+  void postProcessEnvironment_doesNotOverrideExistingLoggingConfig(@TempDir Path appConfDir)
+      throws IOException {
+    Files.writeString(appConfDir.resolve("logback-spring.xml"), "<configuration></configuration>");
+
+    StandardEnvironment environment = new StandardEnvironment();
+    environment.getPropertySources().addFirst(new MapPropertySource("explicit",
+        Map.of("logging.config", "file:/explicitly/set/logback.xml",
+            "jp.ecuacion.splib.core.app-conf-dir", appConfDir.toString())));
+
+    processor.postProcessEnvironment(environment, new SpringApplication());
+
+    assertThat(environment.getProperty("logging.config"))
+        .isEqualTo("file:/explicitly/set/logback.xml");
   }
 }

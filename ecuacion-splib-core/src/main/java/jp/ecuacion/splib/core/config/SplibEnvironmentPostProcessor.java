@@ -40,10 +40,25 @@ import org.springframework.core.env.MapPropertySource;
  *       it), while {@link PropertiesFileUtil} still applies its own {@code #{fileKind:key}}
  *       post-processing on top of the resolved value. See {@link #postProcessEnvironment} and
  *       {@link #registerApplicationResolver}.</li>
- *   <li>Falls back to {@code config/logback-spring.xml}, or else {@code logback-spring.xml}
- *       directly in the current working directory, for logging configuration when nothing
- *       has set {@code logging.config} already. See {@link #addLogbackConfigFallback}.</li>
+ *   <li>Falls back to a {@code logback-spring.xml} for logging configuration when nothing has
+ *       set {@code logging.config} already — checked in order at: the {@code
+ *       jp.ecuacion.splib.core.app-conf-dir} property (see below), {@code
+ *       config/logback-spring.xml}, and {@code logback-spring.xml} directly in the current
+ *       working directory. See {@link #addLogbackConfigFallback}.</li>
  * </ol>
+ *
+ * <p>The {@code jp.ecuacion.splib.core.app-conf-dir} property is how a consuming app that
+ * externalizes {@code application.properties} to a directory outside its WAR via {@code
+ * spring.config.import} gets the same directory checked for a {@code logback-spring.xml} too,
+ * without needing a shared, process-wide {@code -Dlogging.config}.
+ * A consuming app's own bundled {@code application.properties} sets both in terms of the same
+ * expression, e.g.:
+ *
+ * <pre>{@code
+ * jp.ecuacion.splib.core.app-conf-dir=\
+ *     ${jp.ecuacion.tool.your-app.app-conf-dir:${catalina.base:.}/app-conf/ecuacion-tool-your-app}
+ * spring.config.import=optional:file:${jp.ecuacion.splib.core.app-conf-dir}/
+ * }</pre>
  *
  * <p>Registered via the {@code org.springframework.boot.EnvironmentPostProcessor} key in
  * {@code META-INF/spring.factories} — {@code EnvironmentPostProcessor} is one of the few
@@ -54,6 +69,13 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
   /** The Spring Boot property that points at a custom logback configuration file. */
   private static final String LOGGING_CONFIG_PROPERTY_KEY = "logging.config";
+
+  /**
+   * The property a consuming app sets (in its own bundled {@code application.properties}) to
+   * the already-resolved directory it also imports {@code application.properties} from via
+   * {@code spring.config.import} — see the class-level javadoc for the expected expression.
+   */
+  private static final String APP_CONF_DIR_PROPERTY_KEY = "jp.ecuacion.splib.core.app-conf-dir";
 
   /**
    * Constructs a new instance.
@@ -152,7 +174,7 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
       return;
     }
 
-    File logbackConfigFile = findLogbackConfigFile();
+    File logbackConfigFile = findLogbackConfigFile(environment);
     if (logbackConfigFile == null) {
       return;
     }
@@ -165,13 +187,24 @@ public class SplibEnvironmentPostProcessor implements EnvironmentPostProcessor {
   }
 
   /**
-   * Looks for a {@code logback-spring.xml} to fall back to, preferring {@code config/}
-   * (matching where {@code application.properties} is conventionally overridden) over the
-   * working directory root.
+   * Looks for a {@code logback-spring.xml} to fall back to: first at {@link
+   * #APP_CONF_DIR_PROPERTY_KEY} (a consuming app deployed to an existing Tomcat, externalizing
+   * its config outside the WAR — see the class-level javadoc), then {@code config/} (matching
+   * where {@code application.properties} is conventionally overridden when run standalone),
+   * then the working directory root.
    *
-   * @return the file found, or {@code null} if neither location has one
+   * @param environment the environment to resolve {@link #APP_CONF_DIR_PROPERTY_KEY} from
+   * @return the file found, or {@code null} if none of the three locations has one
    */
-  private @Nullable File findLogbackConfigFile() {
+  private @Nullable File findLogbackConfigFile(ConfigurableEnvironment environment) {
+    String appConfDir = environment.getProperty(APP_CONF_DIR_PROPERTY_KEY);
+    if (appConfDir != null && !appConfDir.isBlank()) {
+      File appConfDirFile = new File(appConfDir, "logback-spring.xml");
+      if (appConfDirFile.isFile()) {
+        return appConfDirFile;
+      }
+    }
+
     File userDir = new File(Objects.requireNonNull(System.getProperty("user.dir")));
 
     File configDirFile = new File(userDir, "config/logback-spring.xml");
