@@ -55,7 +55,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class SplibCliExceptionHandler {
 
-  private static final PrintStream err = Objects.requireNonNull(System.err);
   private final DetailLogger detailLog = new DetailLogger(this);
 
   @Nullable
@@ -115,6 +114,10 @@ public class SplibCliExceptionHandler {
         violationException.getViolations(), Function.identity());
     List<@NonNull String> msgList =
         ExceptionUtil.getMessageList(filtered, LocaleUtil.getFallbackLocale(), true);
+    // Resolve System.err at call time, not at class load: this bean is created before
+    // SpinnerUtil wraps System.err, and writing through the unwrapped stream would skip the
+    // spinner-line clearing, leaving the spinner text glued to the first message.
+    PrintStream err = Objects.requireNonNull(System.err);
     msgList.forEach(msg -> err.println("  - " + msg));
   }
 }
