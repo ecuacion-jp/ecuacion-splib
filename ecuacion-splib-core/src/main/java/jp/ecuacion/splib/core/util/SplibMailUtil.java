@@ -15,11 +15,13 @@
  */
 package jp.ecuacion.splib.core.util;
 
+import java.util.List;
 import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.MailUtil;
 import jp.ecuacion.lib.core.util.MailUtil.MailUtilConfig;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -89,20 +91,114 @@ public class SplibMailUtil {
    * @param th the throwable that caused the error
    */
   public void sendErrorMail(Throwable th) {
-    if (host == null || username == null || password == null || errorAddressCsv == null) {
+    sendErrorMail(th, null);
+  }
+
+  /**
+   * Sends an error notification mail adding an additional message to it.
+   *
+   * <p>If {@code spring.mail.host}, {@code spring.mail.username},
+   *     {@code spring.mail.password}, or
+   *     {@code jp.ecuacion.splib.mail.address-csv-on-system-error} is not configured,
+   *     logs a message and returns without sending.</p>
+   *
+   * @param th the throwable that caused the error
+   * @param additionalMessage additional message,
+   *     may be {@code null} if no {@code additionalMessage} is needed.
+   * @see MailUtil#sendErrorMail(Throwable, String, MailUtilConfig)
+   */
+  public void sendErrorMail(Throwable th, @Nullable String additionalMessage) {
+    if (!hasServerSettings() || errorAddressCsv == null) {
       detailLog.info("A system error occured but no mails sent since mail settings not exist.");
       return;
     }
 
     detailLog.info("Send a mail to notice the occurence of a system error to administrators.");
+    MailUtil.sendErrorMail(th, additionalMessage, getConfig());
+  }
+
+  /**
+   * Sends a warn mail.
+   *
+   * <p>If {@code spring.mail.host}, {@code spring.mail.username}
+   *     or {@code spring.mail.password} is not configured,
+   *     logs a message and returns without sending.</p>
+   *
+   * @param content content, may be {@code null} if no mailbody content needed.
+   * @param mailToList list of mailadresses used for "TO" address
+   * @see MailUtil#sendWarnMail(String, List, MailUtilConfig)
+   */
+  public void sendWarnMail(String content, List<@NonNull String> mailToList) {
+    if (!hasServerSettings()) {
+      detailLog.info("No warn mails sent since mail settings not exist.");
+      return;
+    }
+
+    MailUtil.sendWarnMail(content, mailToList, getConfig());
+  }
+
+  /**
+   * Sends a text-format mail.
+   *
+   * @param mailToList mailToList.
+   *     Either mailToList or mailCcList need to have at least one element.
+   * @param mailCcList mailCcList.
+   *     Either mailToList or mailCcList need to have at least one element.
+   * @param title title
+   * @param content content
+   * @throws IllegalStateException when {@code spring.mail.host}, {@code spring.mail.username}
+   *     or {@code spring.mail.password} is not configured
+   * @throws Exception Exception
+   * @see MailUtil#sendTextMail(List, List, String, String, MailUtilConfig)
+   */
+  public void sendTextMail(@Nullable List<@NonNull String> mailToList,
+      @Nullable List<@NonNull String> mailCcList, String title, String content)
+      throws Exception {
+    MailUtil.sendTextMail(mailToList, mailCcList, title, content, getRequiredConfig());
+  }
+
+  /**
+   * Sends a html-format mail.
+   *
+   * @param mailToList mailToList.
+   *     Either mailToList or mailCcList need to have at least one element.
+   * @param mailCcList mailCcList.
+   *     Either mailToList or mailCcList need to have at least one element.
+   * @param title title
+   * @param content content
+   * @throws IllegalStateException when {@code spring.mail.host}, {@code spring.mail.username}
+   *     or {@code spring.mail.password} is not configured
+   * @throws Exception Exception
+   * @see MailUtil#sendHtmlMail(List, List, String, String, MailUtilConfig)
+   */
+  public void sendHtmlMail(@Nullable List<@NonNull String> mailToList,
+      @Nullable List<@NonNull String> mailCcList, String title, String content)
+      throws Exception {
+    MailUtil.sendHtmlMail(mailToList, mailCcList, title, content, getRequiredConfig());
+  }
+
+  private boolean hasServerSettings() {
+    return host != null && username != null && password != null;
+  }
+
+  private MailUtilConfig getRequiredConfig() {
+    if (!hasServerSettings()) {
+      throw new IllegalStateException("Mail settings (spring.mail.host, spring.mail.username, "
+          + "spring.mail.password) are not configured.");
+    }
+
+    return getConfig();
+  }
+
+  private MailUtilConfig getConfig() {
     // title-prefix may contain non-ASCII (e.g. Japanese) characters. Spring's @Value reads
     // .properties as ISO-8859-1, which garbles them, so read it via PropertiesFileUtil
     // (ResourceBundle, UTF-8 since Java 9) instead.
     String titlePrefix = Objects.requireNonNull(
         PropertiesFileUtil.getApplicationOrElse("jp.ecuacion.splib.mail.title-prefix", ""));
-    MailUtilConfig config = new MailUtilConfig(Objects.requireNonNull(host), port, sslEnable, auth,
+    // errorAddressCsv is used only by sendErrorMail, which checks its existence beforehand.
+    return new MailUtilConfig(Objects.requireNonNull(host), port, sslEnable, auth,
         starttlsRequired, Objects.requireNonNull(username), Objects.requireNonNull(password),
-        bounceAddress, debug, titlePrefix, Objects.requireNonNull(errorAddressCsv));
-    MailUtil.sendErrorMail(th, config);
+        bounceAddress, debug, titlePrefix, Objects.requireNonNullElse(errorAddressCsv, ""));
   }
 }
