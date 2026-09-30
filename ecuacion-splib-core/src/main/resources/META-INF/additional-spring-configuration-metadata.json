@@ -3,7 +3,7 @@
     {
       "name": "jp.ecuacion.splib.mail.title-prefix",
       "type": "java.lang.String",
-      "description": "Prefix prepended to the email subject (e.g., environment label).",
+      "description": "Prefix prepended to the email subject (e.g., environment label). Write it in application.yml if it contains non-ASCII characters, since application.properties is read as ISO-8859-1.",
       "defaultValue": ""
     },
     {

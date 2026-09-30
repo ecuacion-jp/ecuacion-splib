@@ -20,7 +20,6 @@ import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.MailUtil;
 import jp.ecuacion.lib.core.util.MailUtil.MailUtilConfig;
-import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +69,16 @@ public class SplibMailUtil {
    */
   @Value("${jp.ecuacion.splib.mail.smtp.starttls-required:true}")
   private boolean starttlsRequired;
+
+  /**
+   * Prefix prepended to the mail subject.
+   *
+   * <p>Spring Boot reads {@code application.properties} as ISO-8859-1, so write this value in
+   *     {@code application.yml} (read as UTF-8) when it contains non-ASCII (e.g. Japanese)
+   *     characters.</p>
+   */
+  @Value("${jp.ecuacion.splib.mail.title-prefix:}")
+  private String titlePrefix = "";
 
   @Value("${jp.ecuacion.splib.mail.address-csv-on-system-error:#{null}}")
   private @Nullable String errorAddressCsv;
@@ -191,11 +200,6 @@ public class SplibMailUtil {
   }
 
   private MailUtilConfig getConfig() {
-    // title-prefix may contain non-ASCII (e.g. Japanese) characters. Spring's @Value reads
-    // .properties as ISO-8859-1, which garbles them, so read it via PropertiesFileUtil
-    // (ResourceBundle, UTF-8 since Java 9) instead.
-    String titlePrefix = Objects.requireNonNull(
-        PropertiesFileUtil.getApplicationOrElse("jp.ecuacion.splib.mail.title-prefix", ""));
     // errorAddressCsv is used only by sendErrorMail, which checks its existence beforehand.
     return new MailUtilConfig(Objects.requireNonNull(host), port, sslEnable, auth,
         starttlsRequired, Objects.requireNonNull(username), Objects.requireNonNull(password),
