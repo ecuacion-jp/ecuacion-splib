@@ -118,7 +118,7 @@ public class SplibMailUtil {
    */
   public void sendErrorMail(Throwable th, @Nullable String additionalMessage) {
     if (!hasServerSettings() || errorAddressCsv == null) {
-      detailLog.info("A system error occured but no mails sent since mail settings not exist.");
+      detailLog.warn("A system error occured but no mails sent since mail settings not exist.");
       return;
     }
 
@@ -139,10 +139,11 @@ public class SplibMailUtil {
    */
   public void sendWarnMail(String content, List<@NonNull String> mailToList) {
     if (!hasServerSettings()) {
-      detailLog.info("No warn mails sent since mail settings not exist.");
+      detailLog.warn("A system warning occured but no mails sent since mail settings not exist.");
       return;
     }
 
+    detailLog.warn("Send a mail to notice the occurence of a system warning to administrators.");
     MailUtil.sendWarnMail(content, mailToList, getConfig());
   }
 
