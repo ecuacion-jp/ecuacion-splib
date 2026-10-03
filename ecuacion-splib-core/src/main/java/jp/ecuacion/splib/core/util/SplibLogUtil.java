@@ -57,7 +57,7 @@ public class SplibLogUtil {
    * @param indents the indent depth
    */
   public static void warn(DetailLogger detailLogger, String message, int indents) {
-    log(detailLogger, Level.INFO, message, indents);
+    log(detailLogger, Level.WARN, message, indents);
   }
 
   /**
