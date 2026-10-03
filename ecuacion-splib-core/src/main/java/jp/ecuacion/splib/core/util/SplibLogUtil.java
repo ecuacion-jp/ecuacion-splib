@@ -50,6 +50,30 @@ public class SplibLogUtil {
   }
 
   /**
+   * Logs {@code "<processName> started."} at {@code INFO} level, with no indentation.
+   *
+   * <p>Intended for the start of a whole process such as a tasklet or a tool, so that the
+   *     wording stays the same across apps. Use it together with {@link #logFinished}.</p>
+   *
+   * @param detailLogger the logger to write to
+   * @param processName the name of the process, e.g. the tasklet's class name
+   */
+  public static void logStarted(DetailLogger detailLogger, String processName) {
+    log(detailLogger, Level.INFO, processName + " started.", 0);
+  }
+
+  /**
+   * Logs {@code "<processName> finished successfully."} at {@code INFO} level, with no
+   * indentation.
+   *
+   * @param detailLogger the logger to write to
+   * @param processName the name of the process, e.g. the tasklet's class name
+   */
+  public static void logFinished(DetailLogger detailLogger, String processName) {
+    log(detailLogger, Level.INFO, processName + " finished successfully.", 0);
+  }
+
+  /**
    * Logs {@code message} indented {@code indents} levels deep, at {@code WARN} level.
    *
    * @param detailLogger the logger to write to
@@ -57,7 +81,7 @@ public class SplibLogUtil {
    * @param indents the indent depth
    */
   public static void warn(DetailLogger detailLogger, String message, int indents) {
-    log(detailLogger, Level.INFO, message, indents);
+    log(detailLogger, Level.WARN, message, indents);
   }
 
   /**
