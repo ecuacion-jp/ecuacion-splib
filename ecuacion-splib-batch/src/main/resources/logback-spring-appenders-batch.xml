@@ -26,9 +26,24 @@
 		default, instead of a second competing definition of the same appender.
 		logfile-path/archivefile-path themselves are left untouched since summary-appender below
 		shares them and must not pick up job-name too.
+
+		The detail log file name is "<project-name>-detail-<job-name>.log" ("detail" first, so that
+		the log type stays recognizable whatever the job name is), or "<project-name>-detail.log"
+		when spring.batch.job.name is not set. The latter is the normal case for an app with only
+		one job, since Spring Boot then runs that single job without the property.
+
+		Logback has no conditional without janino, so the empty / non-empty branch is done with a
+		nested variable name and a default value:
+		  - job-name is empty: "${detail-postfix-of-${job-name}}" becomes "${detail-postfix-of-}",
+		    which is defined below as "detail".
+		  - job-name is "jobA": "${detail-postfix-of-jobA}" is not defined, so the default value
+		    after ":-" is used, which is "detail-jobA".
+		Do not define any other property whose name starts with "detail-postfix-of-", or a job with
+		the matching name would get that value instead.
 	 -->
-	<springProperty scope="context" name="job-name" source="spring.batch.job.name" defaultValue="batch" />
-	<property name="detail-filename-postfix" value="${job-name}-detail" />
+	<springProperty scope="context" name="job-name" source="spring.batch.job.name" defaultValue="" />
+	<property name="detail-postfix-of-" value="detail" />
+	<property name="detail-filename-postfix" value="${detail-postfix-of-${job-name}:-detail-${job-name}}" />
 
 	<include resource="logback-spring-appenders.xml" />
 
