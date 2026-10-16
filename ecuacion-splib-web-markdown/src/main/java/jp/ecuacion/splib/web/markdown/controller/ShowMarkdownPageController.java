@@ -20,6 +20,7 @@ import java.util.Locale;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.markdown.service.MarkdownPageService;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.event.Level;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
@@ -41,17 +42,27 @@ public class ShowMarkdownPageController {
   /**
    * Shows the Markdown page for the given page ID, in the requested language.
    *
-   * @param id    the Markdown page identifier
+   * @param id    the Markdown page identifier; may be absent when the URL is requested directly
+   *              without its query string (e.g. by scanners stripping it off a known URL)
    * @param lang  optional language tag (e.g. {@code "ja"}) overriding the resolved locale; when
    *              absent, the locale resolved by the configured {@code LocaleResolver} is used
    * @param model the Spring MVC model
    * @return template name
-   * @throws RedirectToHomePageException if {@code id} is malformed, or no Markdown page is found
-   *     for it, not even in the default language
+   * @throws RedirectToHomePageException if {@code id} is absent or malformed, or no Markdown page
+   *     is found for it, not even in the default language
    */
   @GetMapping("/public/showMarkdown/page")
-  public String showMarkdownPage(
-      @RequestParam String id, @RequestParam(required = false) String lang, Model model) {
+  public String showMarkdownPage(@RequestParam(required = false) @Nullable String id,
+      @RequestParam(required = false) @Nullable String lang, Model model) {
+
+    // A missing id is not a system error but a malformed request from outside, so it's handled
+    // the same way as an invalid id (redirect to home with an INFO log) instead of letting
+    // Spring throw MissingServletRequestParameterException, which is logged as an ERROR.
+    // No message is shown on the home page since there is no id to tell the user about.
+    if (id == null) {
+      throw new RedirectToHomePageException(Level.INFO,
+          "Markdown page requested without id. Redirected to home page.");
+    }
 
     // Validate input string to prevent from attacks.
     if (!MarkdownPageService.ID_PATTERN.matcher(id).matches()) {
