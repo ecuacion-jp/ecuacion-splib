@@ -26,12 +26,15 @@ import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.dto.ViolationsResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -60,9 +63,32 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  *       {@link #actionOnThrowable}, and answered with a generic {@code 500} — there is no
  *       meaningful message to return either a human or a developer in this case.</li>
  * </ul>
+ *
+ * <p>This advice applies only to {@link RestController} beans, and is ordered by
+ *     {@link #ORDER} ahead of advices without an explicit order. Both are needed so that it
+ *     can coexist with {@code ecuacion-splib-web} in one application: the app's
+ *     {@code SplibWebExceptionHandler} subclass is an unscoped, unordered
+ *     {@code @ControllerAdvice} that also handles {@link ViolationException} and
+ *     {@link Throwable}, and Spring MVC uses the first advice (in order) that has a matching
+ *     handler. Without the scope, a page controller's exception could be answered as JSON;
+ *     without the order, a REST endpoint's exception could be answered as an HTML error page.
+ *     (This mirrors {@code SplibControllerAdvice}, which likewise skips {@link RestController}
+ *     requests.)</p>
+ *
+ * <p>As a consequence, an exception not raised from a {@link RestController} — e.g. a
+ *     {@code 404} for a URL no controller maps — is not handled here, but by whatever else
+ *     handles it (Spring Boot's {@code /error} handling when nothing else does).</p>
  */
-@RestControllerAdvice
+@RestControllerAdvice(annotations = RestController.class)
+@Order(SplibRestExceptionHandler.ORDER)
 public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
+
+  /**
+   * The {@link Order} value of this advice: ahead of advices without an explicit order
+   *     ({@link Ordered#LOWEST_PRECEDENCE}), with room left for an app's own advice to be
+   *     placed ahead of this one.
+   */
+  public static final int ORDER = Ordered.LOWEST_PRECEDENCE - 100;
 
   private final DetailLogger dtlLogger = new DetailLogger(this);
 
