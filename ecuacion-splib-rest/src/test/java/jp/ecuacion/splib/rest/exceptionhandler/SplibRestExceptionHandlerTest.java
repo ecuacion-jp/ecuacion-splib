@@ -54,6 +54,7 @@ class SplibRestExceptionHandlerTest {
     return new ServletWebRequest(request);
   }
 
+  @SuppressWarnings("null")
   @Test
   @DisplayName("always responds 400 Bad Request, regardless of how many violations are present")
   void respondsBadRequest() {
@@ -73,6 +74,7 @@ class SplibRestExceptionHandlerTest {
         new Violations().add(MESSAGE_ID, "FIRST_VAR").add(MESSAGE_ID, "SECOND_VAR");
     ViolationException exception = new ViolationException(violations);
 
+    @SuppressWarnings("null")
     ResponseEntity<ViolationsResponse> response =
         handler.handleViolationException(exception, requestWithLocale(Locale.ENGLISH));
 
@@ -88,8 +90,10 @@ class SplibRestExceptionHandlerTest {
     ViolationException exception =
         new ViolationException(new Violations().add(MESSAGE_ID, "MY_VAR"));
 
+    @SuppressWarnings("null")
     ResponseEntity<ViolationsResponse> enResponse =
         handler.handleViolationException(exception, requestWithLocale(Locale.ENGLISH));
+    @SuppressWarnings("null")
     ResponseEntity<ViolationsResponse> jaResponse =
         handler.handleViolationException(exception, requestWithLocale(Locale.JAPANESE));
 
@@ -102,6 +106,7 @@ class SplibRestExceptionHandlerTest {
   @DisplayName("handleThrowable falls back to SplibExceptionHandlerAction "
       + "when no SplibRestExceptionHandlerAction is registered")
   void handleThrowableFallsBackToSharedAction() {
+    @SuppressWarnings("null")
     SplibExceptionHandlerAction fallbackAction = mock(SplibExceptionHandlerAction.class);
     SplibRestExceptionHandler handler = new SplibRestExceptionHandler(null, fallbackAction);
     RuntimeException exception = new RuntimeException("test");
@@ -115,7 +120,9 @@ class SplibRestExceptionHandlerTest {
   @DisplayName("handleThrowable uses SplibRestExceptionHandlerAction over "
       + "SplibExceptionHandlerAction when both are registered")
   void handleThrowablePrefersRestSpecificAction() {
+    @SuppressWarnings("null")
     SplibRestExceptionHandlerAction restAction = mock(SplibRestExceptionHandlerAction.class);
+    @SuppressWarnings("null")
     SplibExceptionHandlerAction fallbackAction = mock(SplibExceptionHandlerAction.class);
     SplibRestExceptionHandler handler = new SplibRestExceptionHandler(restAction, fallbackAction);
     RuntimeException exception = new RuntimeException("test");
