@@ -69,9 +69,15 @@ public abstract class SplibRestSecurityConfig {
    *     and logs a "Using generated security password" warning on every startup.
    *     Defining an empty one here suppresses that autoconfiguration.</p>
    *
+   * <p>Not registered when the application has its own {@code UserDetailsService} (e.g. for an
+   *     {@code ecuacion-splib-web} login form in the same application): Spring Security sets up
+   *     {@code UserDetailsService}-based authentication only when exactly one such bean exists,
+   *     so adding this one as well would silently break that login.</p>
+   *
    * @return UserDetailsService
    */
   @Bean
+  @ConditionalOnMissingBean(UserDetailsService.class)
   UserDetailsService userDetailsService() {
     return new InMemoryUserDetailsManager();
   }
