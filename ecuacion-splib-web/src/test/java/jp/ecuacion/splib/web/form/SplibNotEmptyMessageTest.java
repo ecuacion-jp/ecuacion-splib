@@ -28,9 +28,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Verifies that the message of ecuacion-splib's own required-field ({@code notEmpty}) check
- * contains the item name. The check raises a {@link BusinessViolation}, whose item name
- * placeholder is {@code {item_name}}, not {@code {0}}.
+ * Verifies the messages of ecuacion-splib's own required-field ({@code notEmpty}) check.
+ * The check raises a {@link BusinessViolation}, whose item name placeholder is
+ * {@code {item_name}}, not {@code {0}}.
  */
 class SplibNotEmptyMessageTest {
 
@@ -40,10 +40,15 @@ class SplibNotEmptyMessageTest {
   }
 
   private static String message(Locale locale) {
+    return message(locale, true);
+  }
+
+  private static String message(Locale locale, boolean isMessageWithItemName) {
     Violations violations = new Violations().add(new BusinessViolation(
         new String[] {"testRecord.name"}, new String[] {"name"},
         SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
-    List<String> messages = ExceptionUtil.getMessageList(violations, locale, true);
+    List<String> messages =
+        ExceptionUtil.getMessageList(violations, locale, isMessageWithItemName);
     assertThat(messages).hasSize(1);
     return messages.get(0);
   }
@@ -58,5 +63,19 @@ class SplibNotEmptyMessageTest {
   void japanese_itemNameIsEmbedded() {
     assertThat(message(Locale.JAPANESE)).contains("Test name").endsWith("は入力必須です")
         .doesNotContain("{");
+  }
+
+  // Message without the item name (shown next to the item). ecuacion-splib-web does not depend
+  // on ecuacion-lib-validation-business-messages, so these come from
+  // ValidationMessages_splib_web[_ja].properties.
+
+  @Test
+  void english_withoutItemName_fromSplibWebValidationMessages() {
+    assertThat(message(Locale.ENGLISH, false)).isEqualTo("must not be empty");
+  }
+
+  @Test
+  void japanese_withoutItemName_fromSplibWebValidationMessages() {
+    assertThat(message(Locale.JAPANESE, false)).isEqualTo("空要素は許可されていません");
   }
 }
