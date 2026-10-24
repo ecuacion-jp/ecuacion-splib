@@ -104,8 +104,9 @@ public class SplibOauth2AuthSuccessHandler
   private String resolveName(OidcUser oidcUser, String registrationId, String email,
       HttpServletRequest request) {
     // Google provides name in claims
-    if (oidcUser.getFullName() != null && !oidcUser.getFullName().isBlank()) {
-      return oidcUser.getFullName();
+    String fullNameClaim = oidcUser.getFullName();
+    if (fullNameClaim != null && !fullNameClaim.isBlank()) {
+      return fullNameClaim;
     }
 
     // Apple provides name only on the first login as a POST parameter
