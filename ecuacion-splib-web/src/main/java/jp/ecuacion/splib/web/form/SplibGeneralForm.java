@@ -32,6 +32,7 @@ import jp.ecuacion.splib.ui.constant.SplibUiConstants;
 import jp.ecuacion.splib.web.controller.ControllerContext;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import jp.ecuacion.splib.web.util.internal.NotEmptyCheckUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.validation.BindingResult;
 
@@ -309,7 +310,7 @@ public abstract class SplibGeneralForm {
           bean)) {
         Object value = ((SplibRecord) rootRecord).getValue(notEmptyItemPropertyPath);
 
-        if (value == null || (value instanceof String s && s.isEmpty())) {
+        if (NotEmptyCheckUtil.isEmpty(value)) {
           violations.add(new BusinessViolation(
               new String[] {ItemUtil.resolveItem(
                   notEmptyItemPropertyPath, rootBean).getItemNameKey()},
