@@ -26,6 +26,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -188,12 +189,28 @@ public abstract class SplibWebSecurityConfig {
           .logoutSuccessUrl("/public/login/page?logoutDone"));
     }
 
-    http.exceptionHandling(
-        handling -> handling.accessDeniedPage(getAccessDeniedPage()).authenticationEntryPoint(
-            (request, response, authException) -> response
-                .sendRedirect(request.getContextPath() + getAccessDeniedPage())));
+    http.exceptionHandling(handling -> handling.accessDeniedPage(getAccessDeniedPage())
+        .authenticationEntryPoint(getAuthenticationEntryPoint()));
 
     return http.build();
+  }
+
+  /**
+   * Returns the {@code AuthenticationEntryPoint}, which is called when a page that requires
+   * login is accessed without login.
+   *
+   * <p>Redirects to {@link #getAccessDeniedPage()} by default.
+   *     Override this to change the destination, for example to the login page.</p>
+   *
+   * <p>The original request is saved by Spring Security's {@code RequestCache}
+   *     before this entry point is called, regardless of the entry point,
+   *     so the user is redirected back to it after OAuth2 login.</p>
+   *
+   * @return the {@code AuthenticationEntryPoint}
+   */
+  protected AuthenticationEntryPoint getAuthenticationEntryPoint() {
+    return (request, response, authException) -> response
+        .sendRedirect(request.getContextPath() + getAccessDeniedPage());
   }
 
   /**
