@@ -18,18 +18,34 @@ package jp.ecuacion.splib.web.oauth2;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -43,7 +59,11 @@ import tools.jackson.databind.ObjectMapper;
  *       (for Apple first-login, the {@code name} is read from the {@code user}
  *       POST parameter).</li>
  *   <li>Calls {@link SplibOauth2UserHandler#findOrCreateUser} to obtain
- *       the application's {@link UserDetails}.</li>
+ *       the application's {@link UserDetails}.
+ *       When the handler is a {@link SplibOauth2UserHandlerWithRegistrationConfirm},
+ *       {@link SplibOauth2UserHandlerWithRegistrationConfirm#findUser} is called instead,
+ *       and if it returns {@code null}, the user is redirected to the registration confirm page
+ *       without being logged in (the following steps are skipped).</li>
  *   <li>Replaces the OAuth2 token in the security context with a
  *       {@link UsernamePasswordAuthenticationToken} so that the rest of the
  *       application behaves identically to form-based login.</li>
@@ -63,6 +83,22 @@ public class SplibOauth2AuthSuccessHandler
   private final SplibOauth2UserHandler userHandler;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
+  /** The same as Spring Security's default for servlet apps. */
+  private final SecurityContextRepository securityContextRepository =
+      new DelegatingSecurityContextRepository(new RequestAttributeSecurityContextRepository(),
+          new HttpSessionSecurityContextRepository());
+
+  private final RequestCache requestCache = new HttpSessionRequestCache();
+
+  /**
+   * Applied when logging in after the registration confirmation, which is outside of
+   * Spring Security's login filters. The same as the ones Spring Security applies on login.
+   */
+  private final SessionAuthenticationStrategy sessionAuthenticationStrategy =
+      new CompositeSessionAuthenticationStrategy(
+          List.of(new ChangeSessionIdAuthenticationStrategy(),
+              new CsrfAuthenticationStrategy(new HttpSessionCsrfTokenRepository())));
+
   /**
    * Constructs a new instance.
    *
@@ -70,6 +106,7 @@ public class SplibOauth2AuthSuccessHandler
    */
   public SplibOauth2AuthSuccessHandler(SplibOauth2UserHandler userHandler) {
     this.userHandler = userHandler;
+    setRequestCache(requestCache);
   }
 
   @Override
@@ -84,17 +121,110 @@ public class SplibOauth2AuthSuccessHandler
     String name = resolveName(oidcUser, registrationId, email, request);
     String provider = registrationId.toUpperCase(Locale.ROOT);
 
-    UserDetails userDetails = userHandler.findOrCreateUser(email, name, provider);
+    UserDetails userDetails;
+    if (userHandler instanceof SplibOauth2UserHandlerWithRegistrationConfirm confirmHandler) {
+      UserDetails foundUser = confirmHandler.findUser(email, name, provider);
+      if (foundUser == null) {
+        redirectToRegistrationConfirmPage(request, response,
+            new SplibOauth2PendingRegistration(email, name, provider),
+            confirmHandler.getRegistrationConfirmPage());
+        return;
+      }
+      userDetails = foundUser;
 
-    UsernamePasswordAuthenticationToken newAuth =
-        UsernamePasswordAuthenticationToken.authenticated(
-            userDetails, null, userDetails.getAuthorities());
-    newAuth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-    SecurityContextHolder.getContext().setAuthentication(newAuth);
+      // Discard the one left by an abandoned registration confirmation.
+      removePendingRegistration(request);
 
-    userHandler.afterLoginSuccess(request, userDetails);
+    } else {
+      userDetails = userHandler.findOrCreateUser(email, name, provider);
+    }
+
+    login(request, response, createAuthentication(request, userDetails), userDetails);
 
     super.onAuthenticationSuccess(request, response, authentication);
+  }
+
+  /**
+   * Logs in the user registered on the registration confirm page.
+   *
+   * @return the url to redirect to
+   */
+  String loginAfterRegistration(HttpServletRequest request, HttpServletResponse response,
+      UserDetails userDetails) {
+    removePendingRegistration(request);
+
+    UsernamePasswordAuthenticationToken auth = createAuthentication(request, userDetails);
+    sessionAuthenticationStrategy.onAuthentication(auth, request, response);
+    login(request, response, auth, userDetails);
+    clearAuthenticationAttributes(request);
+
+    SavedRequest savedRequest = requestCache.getRequest(request, response);
+    return savedRequest == null ? determineTargetUrl(request, response)
+        : savedRequest.getRedirectUrl();
+  }
+
+  /**
+   * Gets the pending registration from the session.
+   */
+  static @Nullable SplibOauth2PendingRegistration getPendingRegistration(
+      HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    return session == null ? null
+        : (SplibOauth2PendingRegistration) session
+            .getAttribute(SplibOauth2PendingRegistration.SESSION_KEY);
+  }
+
+  /**
+   * Removes the pending registration from the session.
+   */
+  static void removePendingRegistration(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.removeAttribute(SplibOauth2PendingRegistration.SESSION_KEY);
+    }
+  }
+
+  private UsernamePasswordAuthenticationToken createAuthentication(HttpServletRequest request,
+      UserDetails userDetails) {
+    UsernamePasswordAuthenticationToken auth = UsernamePasswordAuthenticationToken
+        .authenticated(userDetails, null, userDetails.getAuthorities());
+    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    return auth;
+  }
+
+  /**
+   * Replaces the security context with the one for {@code auth} and saves it to the session
+   * so that the rest of the application behaves identically to form-based login.
+   */
+  private void login(HttpServletRequest request, HttpServletResponse response,
+      UsernamePasswordAuthenticationToken auth, UserDetails userDetails) {
+    SecurityContext context = SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
+    context.setAuthentication(auth);
+    SecurityContextHolder.getContextHolderStrategy().setContext(context);
+    securityContextRepository.saveContext(context, request, response);
+
+    userHandler.afterLoginSuccess(request, userDetails);
+  }
+
+  /**
+   * Redirects to the registration confirm page without logging in.
+   *
+   * <p>Spring Security has already saved the OAuth2 authentication to the session before calling
+   *     this handler, so it's explicitly cleared here.</p>
+   */
+  private void redirectToRegistrationConfirmPage(HttpServletRequest request,
+      HttpServletResponse response, SplibOauth2PendingRegistration pendingRegistration,
+      String confirmPage) throws IOException {
+    SecurityContext emptyContext =
+        SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
+    SecurityContextHolder.getContextHolderStrategy().clearContext();
+    securityContextRepository.saveContext(emptyContext, request, response);
+
+    request.getSession().setAttribute(SplibOauth2PendingRegistration.SESSION_KEY,
+        pendingRegistration);
+    clearAuthenticationAttributes(request);
+
+    getRedirectStrategy().sendRedirect(request, response, confirmPage);
   }
 
   /**
