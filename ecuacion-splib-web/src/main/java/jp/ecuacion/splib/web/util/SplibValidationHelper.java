@@ -26,6 +26,7 @@ import jp.ecuacion.splib.ui.constant.SplibUiConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.item.HtmlItemContainer;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import jp.ecuacion.splib.web.util.internal.NotEmptyCheckUtil;
 import jp.ecuacion.splib.web.util.internal.SplibControllerPrepareHelper;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,7 +149,7 @@ public class SplibValidationHelper {
     RolesAndAuthoritiesBean bean = new SplibSecurityUtil().getRolesAndAuthoritiesBean();
     for (String path : container.getNotEmptyItemPropertyPathList(loginState, bean)) {
       Object value = container.getValue(path);
-      if (value == null || (value instanceof String s && s.isEmpty())) {
+      if (NotEmptyCheckUtil.isEmpty(value)) {
         String fullPath = fieldPrefix == null ? path : fieldPrefix + "." + path;
         violations.add(new BusinessViolation(
             new String[] {ItemUtil.resolveItem(fullPath, rootBean).getItemNameKey()},
