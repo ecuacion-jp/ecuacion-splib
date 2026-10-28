@@ -22,6 +22,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -91,7 +92,12 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
 
     oauth2SuccessHandler.setDefaultTargetUrl(getDefaultSuccessUrl());
 
+    // splib uses OAuth2 only for login and doesn't use the tokens afterwards,
+    // so they are kept in the session instead of Spring Boot's default
+    // (InMemoryOAuth2AuthorizedClientService, which keeps them until the app stops).
+    // Apps that call the provider's APIs from batches should store the tokens on their own.
     http.oauth2Login(oauth2 -> oauth2.loginPage(getLoginNeededPage())
+        .authorizedClientRepository(new HttpSessionOAuth2AuthorizedClientRepository())
         .authorizationEndpoint(ep -> ep.authorizationRequestResolver(requestResolver))
         .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient()))
         .successHandler(oauth2SuccessHandler));
