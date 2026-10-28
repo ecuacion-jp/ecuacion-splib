@@ -44,6 +44,27 @@ public class SplibWebConstants {
 
   public static final String KEY_BASE_PAGE_LOGIN_STATE = "data-show-page-login-state";
 
+  /**
+   * Model attribute key overriding the navbar title of {@code bootstrap/page-base.html}
+   *     per request.
+   *
+   * <p>The value is resolved as a message key, and is shown as it is when no message is found.
+   *     When the value is empty or the attribute is absent, the title is determined
+   *     by {@code jp.ecuacion.splib.web.navbar.title[-account|-admin]} as before.</p>
+   */
+  public static final String KEY_NAVBAR_TITLE = "splibNavbarTitle";
+
+  /**
+   * Model attribute key overriding the navbar image of {@code bootstrap/page-base.html}
+   *     per request.
+   *
+   * <p>The value is used as the {@code src} of the image as it is, so it needs to include
+   *     the context path (it can also be an absolute URL or a path handled by a controller).
+   *     When the value is empty or the attribute is absent, the image is determined
+   *     by {@code jp.ecuacion.splib.web.navbar.image-path} as before.</p>
+   */
+  public static final String KEY_NAVBAR_IMAGE_PATH = "splibNavbarImagePath";
+
   /** Flash attribute key used to carry FieldErrors across a redirect
    * so they survive form re-binding. */
   public static final String KEY_FLASH_FIELD_ERRORS = "_splibFlashFieldErrors";
