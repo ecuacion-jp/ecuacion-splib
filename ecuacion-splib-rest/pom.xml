@@ -33,7 +33,7 @@
 		<!-- spring boot -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
 			<exclusions>
 				<exclusion>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
@@ -55,6 +55,10 @@
 		<dependency>
 			<groupId>jp.ecuacion.splib</groupId>
 			<artifactId>ecuacion-splib-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jp.ecuacion.splib</groupId>
+			<artifactId>ecuacion-splib-webmvc</artifactId>
 		</dependency>
 
 	</dependencies>

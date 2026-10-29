@@ -20,9 +20,13 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Provides config.
+ *
+ * <p>{@code jp.ecuacion.splib.webmvc.audit} is scanned for the audit log, which registers nothing
+ *     unless {@code jp.ecuacion.splib.core.audit-log.enabled=true}.</p>
  */
 @Configuration
 @ComponentScan(basePackages = "jp.ecuacion.splib.core.config"
+    + ",jp.ecuacion.splib.webmvc.audit"
     + ",jp.ecuacion.splib.rest.exceptionhandler"
     + ",jp.ecuacion.splib.rest.controller"
   )
