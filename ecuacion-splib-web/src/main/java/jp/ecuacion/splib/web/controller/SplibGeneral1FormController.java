@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.web.controller;
 
+import jp.ecuacion.splib.core.audit.AuditLogTarget;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormService;
 import org.apache.commons.lang3.StringUtils;
@@ -72,6 +73,7 @@ public abstract class SplibGeneral1FormController
    * @return URL
    * @throws Exception Exception
    */
+  @AuditLogTarget(false)
   @RequestMapping(value = "page", method = {RequestMethod.GET, RequestMethod.POST})
   public String page(Model model, @NonNull F form, @AuthenticationPrincipal UserDetails loginUser)
       throws Exception {
@@ -103,6 +105,7 @@ public abstract class SplibGeneral1FormController
    * @return html page
    * @throws Exception Exception
    */
+  @AuditLogTarget(false)
   @RequestMapping(value = "action", params = "submitOnChangeToRefresh=true",
       method = {RequestMethod.GET, RequestMethod.POST})
   public String submitOnChangeToRefresh(Model model, @NonNull F form,

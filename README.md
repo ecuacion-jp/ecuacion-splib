@@ -15,6 +15,7 @@ and accelerate development of business applications.
 
 - `ecuacion-splib-core` — Common foundation (BL, exception handling, common beans / records)
 - `ecuacion-splib-ui` — UI display logic shared across `ecuacion-splib-web` / `ecuacion-splib-cli`
+- `ecuacion-splib-webmvc` — Spring MVC (servlet) logic shared across `ecuacion-splib-web` / `ecuacion-splib-rest` (audit log)
 - `ecuacion-splib-web` — Web MVC (controllers, services, forms, Thymeleaf)
 - `ecuacion-splib-web-jpa` — Web + JPA integration (Edit / SearchList operations)
 - `ecuacion-splib-web-markdown` — Markdown-based page rendering

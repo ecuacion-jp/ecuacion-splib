@@ -21,10 +21,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Outcome;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Result;
+import jp.ecuacion.splib.webmvc.audit.AuditLogger;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,6 +81,8 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
   private final DetailLogger detailLog = new DetailLogger(this);
   private final SplibApiKeyRateLimiter rateLimiter;
 
+  private @Nullable AuditLogger auditLogger;
+
   /**
    * Constructs a new instance with the rate limiter's default thresholds (10 failures / 60
    * seconds / a 300-second lockout) — mainly for tests;
@@ -108,7 +112,7 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
     if (rateLimiter.isLockedOut(remoteAddr)) {
       detailLog.warn("Request to " + request.getRequestURI() + " from " + remoteAddr
           + " rejected: too many recent apiKey mismatches from this address.");
-      reject(response);
+      reject(request, response, null, "locked out after too many X-Api-Key mismatches");
       return;
     }
 
@@ -118,7 +122,7 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
     if (presentedApiKey == null || presentedApiKey.isEmpty()) {
       detailLog.warn("Request to " + request.getRequestURI() + " is missing the " + HEADER_API_KEY
           + " header.");
-      reject(response);
+      reject(request, response, apiKeyId, "missing X-Api-Key header");
       return;
     }
 
@@ -126,7 +130,7 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
       detailLog.warn("Request to " + request.getRequestURI() + " has an invalid "
           + HEADER_API_KEY_ID + " header value (must be 1-128 characters of alphanumeric, "
           + "'-', '_').");
-      reject(response);
+      reject(request, response, null, "invalid X-Api-Key-Id header");
       return;
     }
 
@@ -144,7 +148,7 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
     if (result.getOutcome() != Outcome.MATCHED) {
       detailLog.warn("apiKey mismatch on request to " + request.getRequestURI() + ".");
       rateLimiter.recordFailure(remoteAddr);
-      reject(response);
+      reject(request, response, apiKeyId, "X-Api-Key mismatch");
       return;
     }
 
@@ -158,7 +162,27 @@ public class SplibBuiltinApiKeyAuthenticationFilter extends OncePerRequestFilter
     filterChain.doFilter(request, response);
   }
 
-  private void reject(HttpServletResponse response) throws IOException {
+  /**
+   * Sets the audit logger every rejection is recorded to as a failed login.
+   *
+   * @param auditLogger the audit logger, may be {@code null} when the audit log is disabled
+   */
+  public void setAuditLogger(@Nullable AuditLogger auditLogger) {
+    this.auditLogger = auditLogger;
+  }
+
+  /**
+   * Answers 401 and records the rejection in the audit log, if enabled, with {@code apiKeyId}
+   * only when it is a valid key ID — never the presented key itself.
+   */
+  private void reject(HttpServletRequest request, HttpServletResponse response,
+      @Nullable String apiKeyId, String reason) throws IOException {
+    if (auditLogger != null) {
+      Objects.requireNonNull(auditLogger).recordLoginFailure(request,
+          apiKeyId != null && SplibApiKeyIdValidator.isValid(apiKeyId) ? apiKeyId : null,
+          reason);
+    }
+
     response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
         "Invalid or missing " + HEADER_API_KEY + ".");
   }

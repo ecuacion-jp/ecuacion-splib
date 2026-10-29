@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.controller;
 
 import java.util.ArrayList;
 import jp.ecuacion.lib.core.exception.ViolationException;
+import jp.ecuacion.splib.core.audit.AuditLogTarget;
 import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
@@ -302,6 +303,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param loginUser loginUser
    * @return URL
    */
+  @AuditLogTarget(false)
   @PostMapping(value = "action", params = "action=showInsertForm")
   public String showInsertForm(Model model, @NonNull FST searchForm, @NonNull FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {
@@ -319,6 +321,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param loginUser loginUser
    * @return URL
    */
+  @AuditLogTarget(false)
   @PostMapping(value = "action", params = "action=showUpdateForm")
   public String showUpdateForm(Model model, @NonNull FST searchForm, @NonNull FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {

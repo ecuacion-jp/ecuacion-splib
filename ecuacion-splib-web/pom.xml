@@ -85,6 +85,10 @@
 			<groupId>jp.ecuacion.splib</groupId>
 			<artifactId>ecuacion-splib-ui</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>jp.ecuacion.splib</groupId>
+			<artifactId>ecuacion-splib-webmvc</artifactId>
+		</dependency>
 
 	</dependencies>
 </project>

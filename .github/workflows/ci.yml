@@ -96,6 +96,7 @@ jobs:
             ecuacion-splib/ecuacion-splib-jpa/target/site/jacoco/jacoco.xml,
             ecuacion-splib/ecuacion-splib-batch/target/site/jacoco/jacoco.xml,
             ecuacion-splib/ecuacion-splib-ui/target/site/jacoco/jacoco.xml,
+            ecuacion-splib/ecuacion-splib-webmvc/target/site/jacoco/jacoco.xml,
             ecuacion-splib/ecuacion-splib-web/target/site/jacoco/jacoco.xml,
             ecuacion-splib/ecuacion-splib-web-jpa/target/site/jacoco/jacoco.xml,
             ecuacion-splib/ecuacion-splib-rest/target/site/jacoco/jacoco.xml
