@@ -27,8 +27,10 @@ import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.splib.core.exceptionhandler.SplibExceptionHandlerAction;
 import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.dto.ViolationsResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -52,6 +54,11 @@ class SplibRestExceptionHandlerTest {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.addPreferredLocale(locale);
     return new ServletWebRequest(request);
+  }
+
+  @AfterEach
+  void tearDown() {
+    LocaleContextHolder.resetLocaleContext();
   }
 
   @SuppressWarnings("null")
@@ -85,21 +92,27 @@ class SplibRestExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("localizes the message to the request's locale")
-  void localizesToRequestLocale() {
+  @DisplayName("localizes the message to the LocaleResolver's locale, not the request's "
+      + "Accept-Language")
+  void localizesToLocaleContextHolderLocale() {
     ViolationException exception =
         new ViolationException(new Violations().add(MESSAGE_ID, "MY_VAR"));
 
+    // The request (Accept-Language) says English throughout; only the locale an app's
+    // LocaleResolver put into LocaleContextHolder changes.
+    LocaleContextHolder.setLocale(Locale.ENGLISH);
     @SuppressWarnings("null")
     ResponseEntity<ViolationsResponse> enResponse =
         handler.handleViolationException(exception, requestWithLocale(Locale.ENGLISH));
+    LocaleContextHolder.setLocale(Locale.JAPANESE);
     @SuppressWarnings("null")
     ResponseEntity<ViolationsResponse> jaResponse =
-        handler.handleViolationException(exception, requestWithLocale(Locale.JAPANESE));
+        handler.handleViolationException(exception, requestWithLocale(Locale.ENGLISH));
 
     String enMessage = Objects.requireNonNull(enResponse.getBody()).messages().get(0);
     String jaMessage = Objects.requireNonNull(jaResponse.getBody()).messages().get(0);
-    assertThat(enMessage).isNotEqualTo(jaMessage);
+    assertThat(enMessage).contains("Variable not defined");
+    assertThat(jaMessage).contains("パラメータが定義されていません");
   }
 
   @Test

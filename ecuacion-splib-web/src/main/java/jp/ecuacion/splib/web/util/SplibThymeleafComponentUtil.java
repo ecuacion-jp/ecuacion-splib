@@ -15,11 +15,11 @@
  */
 package jp.ecuacion.splib.web.util;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
 import jp.ecuacion.lib.core.item.ItemContainer;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,17 +27,6 @@ import org.springframework.stereotype.Component;
  */
 @Component("compUtil")
 public class SplibThymeleafComponentUtil {
-
-  private HttpServletRequest request;
-
-  /**
-   * Constructs a new instance.
-   * 
-   * @param request request
-   */
-  public SplibThymeleafComponentUtil(HttpServletRequest request) {
-    this.request = request;
-  }
 
   /**
    * Provides message string shown when the delete button pressed.
@@ -54,7 +43,7 @@ public class SplibThymeleafComponentUtil {
     StringBuilder fieldNameSb = new StringBuilder();
 
     for (String itemPropertyPath : fieldNameList) {
-      String itemName = PropertiesFileUtil.getItemName(request.getLocale(),
+      String itemName = PropertiesFileUtil.getItemName(LocaleContextHolder.getLocale(),
           rootRecord.getItem(itemPropertyPath).getItemNameKey());
       fieldNameSb.append(", ").append(itemName);
     }
@@ -63,7 +52,7 @@ public class SplibThymeleafComponentUtil {
         + (fieldNameList.isEmpty() ? "" : fieldNameSb.toString().substring(2))
         + (multiple ? ") " : "");
 
-    return PropertiesFileUtil.getMessage(request.getLocale(),
+    return PropertiesFileUtil.getMessage(LocaleContextHolder.getLocale(),
         "jp.ecuacion.splib.web.common.message.deleteConfirmation",
         (Object[]) new String[] {fieldNames.toString()});
   }
