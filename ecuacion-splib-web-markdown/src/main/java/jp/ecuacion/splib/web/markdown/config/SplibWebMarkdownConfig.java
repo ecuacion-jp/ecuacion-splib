@@ -17,13 +17,15 @@
 package jp.ecuacion.splib.web.markdown.config;
 
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
-/** Provides configs for splib-web-markdown. */
+/**
+ * Provides configs for splib-web-markdown.
+ *
+ * <p>The {@code LocaleResolver} for the language switch is provided separately by
+ *     {@code SplibWebMarkdownLocaleResolverAutoConfiguration}.</p>
+ */
 @Configuration
 @ComponentScan(basePackages = "jp.ecuacion.splib.web.markdown.controller"
     + ",jp.ecuacion.splib.web.markdown.service" + ",jp.ecuacion.splib.web.config")
@@ -34,15 +36,5 @@ public class SplibWebMarkdownConfig {
     // file; a library module bundling its own messages must use a dedicated postfix so its
     // keys are not shadowed by (or don't shadow) the app's file of the same bare name).
     PropertiesFileUtil.addResourceBundlePostfix("markdown");
-  }
-
-  /**
-   * Session-based locale resolver.
-   * Falls back to the browser's {@code Accept-Language} header when no locale is
-   * set in the session yet.
-   */
-  @Bean
-  LocaleResolver localeResolver() {
-    return new SessionLocaleResolver();
   }
 }

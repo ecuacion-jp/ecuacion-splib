@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -107,7 +108,7 @@ public class SplibWebExceptionHandlerAutoConfiguration {
 
       Violations violations = exception.getViolations();
       MessageParameters params = violations.messageParameters();
-      Locale locale = request.getLocale();
+      Locale locale = LocaleContextHolder.getLocale();
 
       List<ConstraintViolation<?>> sortedCvs = violations.getConstraintViolations().stream()
           .sorted(Comparator.comparing(cv -> cv.getPropertyPath().toString())).toList();
