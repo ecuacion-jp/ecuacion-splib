@@ -29,6 +29,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
  *  Provides the abstract SecurityConfig class for swith user (impersonation).
@@ -38,8 +39,23 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
  *     If you want to use this, create a new class 
  *     which extends it and put class annotations on the new class: 
  *     {@code Configuration}.</p>
+ *
+ * <p>The pages to redirect to are fixed per app by the methods with no arguments.
+ *     To decide them per request (for example, by the page the switching is started from),
+ *     override the methods with an {@code HttpServletRequest} argument.
+ *     Since the request to exit ({@code POST /account/exitUser}) has no information
+ *     about where the switching is started from, keep it in the session when switching
+ *     (in {@link #onSwitchingUserDone(HttpServletRequest, HttpServletResponse, Authentication)}
+ *     or before posting to {@code /admin/switchUser}), and read it when exiting.
+ *     The session is kept through switching and exiting.</p>
  */
 public abstract class SplibWebSecurityConfigForSwitchUser {
+
+  private static final RequestMatcher SWITCH_USER_MATCHER =
+      PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/admin/switchUser");
+
+  private static final RequestMatcher EXIT_USER_MATCHER =
+      PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/account/exitUser");
 
   /**
    * Returns the path of the page displayed when switching user is successfully done.
@@ -49,20 +65,97 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
   protected abstract String getSwitchingUserDonePagePath();
 
   /**
-   * Returns the path of the page displayed when switching user is successfully done.
+   * Returns the path of the page displayed when switching user is successfully done,
+   *     decided by the request.
+   *
+   * <p>Called on every successful switching.
+   *     By default it returns {@link #getSwitchingUserDonePagePath()}.</p>
+   *
+   * @param request request to switch user
+   * @return url path string in the app, like '/account/dashboard/page'.
+   *     It must start with '/' and must not start with '//' or '/\'.
+   */
+  protected String getSwitchingUserDonePagePath(HttpServletRequest request) {
+    return getSwitchingUserDonePagePath();
+  }
+
+  /**
+   * Returns the path of the page displayed when switching user is failed.
    * 
-   * @return url path string, like '/account/dashboard/page'.
+   * @return url path string, like '/admin/dashboard/page'.
    */
   protected abstract String getSwitchingUserFailurePagePath();
 
   /**
+   * Returns the path of the page displayed when switching user is failed,
+   *     decided by the request.
+   *
+   * <p>Called on every failed switching.
+   *     By default it returns {@link #getSwitchingUserFailurePagePath()}.</p>
+   *
+   * @param request request to switch user
+   * @return url path string in the app, like '/admin/dashboard/page'.
+   *     It must start with '/' and must not start with '//' or '/\'.
+   */
+  protected String getSwitchingUserFailurePagePath(HttpServletRequest request) {
+    return getSwitchingUserFailurePagePath();
+  }
+
+  /**
    * Returns the path of the page displayed when exitting the switched user is successfully done.
    * 
-   * <p>This path is also used when the switching is failed.</p>
-   * 
-   * @return url path string, like '/account/dashboard/page'.
+   * @return url path string, like '/admin/dashboard/page'.
    */
   protected abstract String getExitingUserDonePagePath();
+
+  /**
+   * Returns the path of the page displayed when exitting the switched user is successfully done,
+   *     decided by the request.
+   *
+   * <p>Called on every successful exiting.
+   *     By default it returns {@link #getExitingUserDonePagePath()}.</p>
+   *
+   * @param request request to exit the switched user.
+   *     Its session is the one used when switching.
+   * @return url path string in the app, like '/admin/dashboard/page'.
+   *     It must start with '/' and must not start with '//' or '/\'.
+   */
+  protected String getExitingUserDonePagePath(HttpServletRequest request) {
+    return getExitingUserDonePagePath();
+  }
+
+  /**
+   * Is called when switching user is successfully done, before the redirect.
+   *
+   * <p>It's called after {@link #getSwitchingUserDonePagePath(HttpServletRequest)},
+   *     so the information used to decide the path can be removed here.
+   *     Does nothing by default.</p>
+   *
+   * @param request request to switch user
+   * @param response response
+   * @param authentication authentication of the switched user
+   */
+  protected void onSwitchingUserDone(HttpServletRequest request, HttpServletResponse response,
+      Authentication authentication) {
+    // does nothing by default
+  }
+
+  /**
+   * Is called when exitting the switched user is successfully done, before the redirect.
+   *
+   * <p>It's called after {@link #getExitingUserDonePagePath(HttpServletRequest)},
+   *     so the information used to decide the path can be removed here.
+   *     Use it also to remove the information kept in the session while switched.
+   *     Does nothing by default.</p>
+   *
+   * @param request request to exit the switched user
+   * @param response response
+   * @param authentication authentication of the original user
+   */
+  protected void onExitingUserDone(HttpServletRequest request, HttpServletResponse response,
+      Authentication authentication) {
+    // does nothing by default
+  }
 
   UserDetailsService userDetailsService;
 
@@ -86,60 +179,57 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     filter.setUsernameParameter("switchUser.username");
     // POST (not GET) so that switching / exiting users is CSRF-protected
     // and the target username does not appear in URLs, access logs or Referer headers.
-    // filter.setSwitchUserUrl("/admin/switchUser");
-    filter.setSwitchUserMatcher(
-        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/admin/switchUser"));
-    // filter.setExitUserUrl("/account/exitUser");
-    filter.setExitUserMatcher(
-        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/account/exitUser"));
-    // filter.setTargetUrl("/account/cloudService/searchList/page");
-    filter.setSuccessHandler(new CustomLoginSuccessHandler(getSwitchingUserDonePagePath(),
-        getExitingUserDonePagePath()));
-    // filter.setSwitchFailureUrl("/public/error");
-    filter.setFailureHandler(new CustomLoginFailureHandler(getSwitchingUserFailurePagePath()));
+    filter.setSwitchUserMatcher(SWITCH_USER_MATCHER);
+    filter.setExitUserMatcher(EXIT_USER_MATCHER);
+    filter.setSuccessHandler(new CustomLoginSuccessHandler());
+    filter.setFailureHandler(new CustomLoginFailureHandler());
 
     return filter;
   }
 
-  private static class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
-
-    private String switchingUserDonePagePath;
-    private String exitingUserDonePagePath;
-
-    private CustomLoginSuccessHandler(String switchingUserDonePagePath,
-        String exitingUserDonePagePath) {
-      this.switchingUserDonePagePath = switchingUserDonePagePath;
-      this.exitingUserDonePagePath = exitingUserDonePagePath;
+  /**
+   * Redirects to the path in the app.
+   *
+   * <p>A path like '//example.com' is rejected 
+   *     since it's a url to the other site when the context path is empty.</p>
+   */
+  private static void redirect(HttpServletRequest request, HttpServletResponse response,
+      String path) throws IOException {
+    if (!path.startsWith("/") || path.startsWith("//") || path.startsWith("/\\")) {
+      throw new IllegalStateException(
+          "The path to redirect to must be the one in the app, starting with '/': " + path);
     }
+
+    response.sendRedirect(request.getContextPath() + path);
+  }
+
+  private class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(final HttpServletRequest request,
         final HttpServletResponse response, final Authentication authentication)
         throws IOException, ServletException {
 
-      if (request.getRequestURI().endsWith("/admin/switchUser")) {
-        response.sendRedirect(request.getContextPath() + switchingUserDonePagePath);
+      if (SWITCH_USER_MATCHER.matches(request)) {
+        String path = getSwitchingUserDonePagePath(request);
+        onSwitchingUserDone(request, response, authentication);
+        redirect(request, response, path);
 
       } else {
-        response.sendRedirect(request.getContextPath() + exitingUserDonePagePath);
+        String path = getExitingUserDonePagePath(request);
+        onExitingUserDone(request, response, authentication);
+        redirect(request, response, path);
       }
     }
   }
 
-  private static class CustomLoginFailureHandler implements AuthenticationFailureHandler {
-
-    private String exitingUserDonePagePath;
-
-    private CustomLoginFailureHandler(String exitingUserDonePagePath) {
-      this.exitingUserDonePagePath = exitingUserDonePagePath;
-    }
+  private class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request,
-        HttpServletResponse response, AuthenticationException exception)
-        throws IOException, ServletException {
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+        AuthenticationException exception) throws IOException, ServletException {
 
-      response.sendRedirect(request.getContextPath() + exitingUserDonePagePath);
+      redirect(request, response, getSwitchingUserFailurePagePath(request));
     }
   }
 }
