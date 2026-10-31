@@ -25,6 +25,9 @@ public class HtmlItemString extends HtmlItem {
 
   protected StringMatchingConditionBean matchingCondition;
 
+  /** See {@link #excludeFromExplicitSearchConditions()}. */
+  private boolean excludedFromExplicitSearchConditions = false;
+
   /**
    * Constructs a new instance.
    * 
@@ -65,6 +68,20 @@ public class HtmlItemString extends HtmlItem {
   /**
    * Offers the string search pattern.
    *
+   * <p>The pattern is used for two purposes:</p>
+   * <ul>
+   *   <li>The search pattern comment (like "partial match") shown next to the input field
+   *       by {@code bootstrap/components-search :: searchText}.
+   *       ({@code searchText} requires this setting, otherwise an exception is thrown.)</li>
+   *   <li>The search condition automatically created
+   *       by {@code SpecFactory#addExplicitSearchConditions(SplibRecord)} in splib-web-jpa,
+   *       which searches the entity field with the same itemPropertyPath.</li>
+   * </ul>
+   *
+   * <p>If the item is not an entity field (for example, a search item which matches
+   *     one of multiple fields), call {@link #excludeFromExplicitSearchConditions()} too
+   *     so that only the comment is shown and you can create the condition by yourself.</p>
+   *
    * @param stringMatchingPattern stringMatchingPattern
    * @param ignoresCase ignoresCase
    * @return HtmlItemString
@@ -73,6 +90,33 @@ public class HtmlItemString extends HtmlItem {
       boolean ignoresCase) {
     this.matchingCondition = new StringMatchingConditionBean(stringMatchingPattern, ignoresCase);
     return this;
+  }
+
+  /**
+   * Excludes the item from the search conditions automatically created
+   *     by {@code SpecFactory#addExplicitSearchConditions(SplibRecord)} in splib-web-jpa.
+   *
+   * <p>The search pattern comment set by
+   *     {@link #stringMatchingCondition(StringMatchingPatternEnum, boolean)} is still shown
+   *     by {@code bootstrap/components-search :: searchText}.
+   *     Use this when the item is not an entity field and you create the condition by yourself.
+   *     </p>
+   *
+   * @return HtmlItemString
+   */
+  public HtmlItemString excludeFromExplicitSearchConditions() {
+    this.excludedFromExplicitSearchConditions = true;
+    return this;
+  }
+
+  /**
+   * Returns whether the item is excluded from the search conditions automatically created
+   *     by {@code SpecFactory#addExplicitSearchConditions(SplibRecord)}.
+   *
+   * @return boolean
+   */
+  public boolean isExcludedFromExplicitSearchConditions() {
+    return excludedFromExplicitSearchConditions;
   }
 
   public StringMatchingPatternEnum getStringSearchPatternEnum() {
