@@ -38,6 +38,10 @@
 		</div></th:block>
 	</div>
 
+	<!--/* Shows the search pattern comment (like "partial match") next to the field.
+		The item needs to be added to getHtmlItems() as HtmlItemString with stringMatchingCondition(...), otherwise an exception is thrown.
+		SpecFactory#addExplicitSearchConditions creates the condition for the entity field with the same itemPropertyPath from that setting.
+		If the item is not an entity field, add excludeFromExplicitSearchConditions() to show the comment only. */-->
 	<div th:fragment="searchText(itemPropertyPath, options)" th:remove="tag">
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{bootstrap/components-input :: internalAllHtmlInputComponent('left')},
 				*{getSearchPatternComment(#locale, '__${itemPropertyPath}__')}, ${options})}"></div>

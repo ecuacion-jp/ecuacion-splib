@@ -389,7 +389,21 @@ public class SpecFactory<T extends SplibEntity> {
 
   /**
    * add all the search conditions which are sure how to search from the kind of HtmlItem.
-   * 
+   *
+   * <p>Conditions are created for the entity field with the same itemPropertyPath as the item:</p>
+   * <ul>
+   *   <li>{@code HtmlItemString} with {@code stringMatchingCondition(...)}:
+   *       string matching condition of the specified pattern.</li>
+   *   <li>{@code HtmlItemSelect}: equality condition.</li>
+   * </ul>
+   *
+   * <p>Items whose itemPropertyPath doesn't exist in {@code rec} are skipped.
+   *     {@code HtmlItemString} with {@code excludeFromExplicitSearchConditions()} is also skipped.
+   *     Use it when the item is not an entity field but you want to show the search pattern
+   *     comment by {@code bootstrap/components-search :: searchText}.
+   *     (Otherwise a condition for the unexistent entity field is created
+   *     and an exception is thrown when searching.)</p>
+   *
    * @param rec rec
    * @return {@code List<Specification<T>>}
    */
@@ -397,6 +411,11 @@ public class SpecFactory<T extends SplibEntity> {
     List<Specification<T>> list = new ArrayList<>();
 
     for (HtmlItem item : ((HtmlItemContainer) rec).getHtmlItems()) {
+      if (item instanceof HtmlItemString stringItem
+          && stringItem.isExcludedFromExplicitSearchConditions()) {
+        continue;
+      }
+
       String propertyPath = item.getPropertyPath();
       Object value = null;
 
