@@ -67,12 +67,17 @@ public final class AuditLogContext {
   }
 
   /**
-   * Adds a piece of data the operation is about.
+   * Adds a piece of data the operation is about, unless the same one has already been added.
+   *
+   * <p>The same data can be added more than once: for an update on {@code ecuacion-splib-web}'s
+   *     edit page, once from the form and once by {@code SplibEditJpaService} after saving.</p>
    *
    * @param target the data
    */
   public void addTarget(TargetData target) {
-    targets.add(target);
+    if (!targets.contains(target)) {
+      targets.add(target);
+    }
   }
 
   /**

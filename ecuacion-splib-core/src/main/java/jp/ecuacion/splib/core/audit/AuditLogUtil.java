@@ -40,11 +40,14 @@ public final class AuditLogUtil {
   private AuditLogUtil() {}
 
   /**
-   * Adds a piece of data the current operation is about.
+   * Adds a piece of data the current operation is about. Adding the same data again does
+   * nothing.
    *
-   * <p>{@code ecuacion-splib-web-jpa}'s {@code SplibEditJpaService#insertOrUpdate} adds the
-   *     saved entity automatically. Add others — deleted rows, rows changed by an application's
-   *     own service — with this method.</p>
+   * <p>Some are added automatically: {@code ecuacion-splib-web} adds the record its forms are
+   *     about (the record the edit page shows, the row whose button was pressed on the list
+   *     page), and {@code ecuacion-splib-web-jpa}'s {@code SplibEditJpaService#insertOrUpdate}
+   *     adds the saved entity. Add others — rows changed by an application's own service, rows
+   *     deleted by a bulk query — with this method.</p>
    *
    * @param type the kind of the data, such as the entity name
    * @param id the identifier of the data, such as the primary key. Recorded as

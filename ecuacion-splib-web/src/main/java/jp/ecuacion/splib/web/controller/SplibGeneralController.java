@@ -32,6 +32,7 @@ import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.SplibSavedModelUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
+import jp.ecuacion.splib.web.util.internal.AuditLogTargetUtil;
 import jp.ecuacion.splib.web.util.internal.SplibControllerPrepareHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -441,6 +442,9 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
 
     model.addAttribute(SplibWebConstants.KEY_FORMS, forms);
     model.addAttribute(SplibWebConstants.KEY_CONTROLLER, this);
+
+    // Before the checks below, so that an operation rejected by them still records its data.
+    AuditLogTargetUtil.addTargetsOf(forms);
 
     prepareHelper.transactionTokenCheck();
     prepareHelper.validateForms(forms, rolesAndAuthoritiesBean);
