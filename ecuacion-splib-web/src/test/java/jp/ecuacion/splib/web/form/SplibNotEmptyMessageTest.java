@@ -43,6 +43,7 @@ class SplibNotEmptyMessageTest {
     return message(locale, true);
   }
 
+  @SuppressWarnings("null")
   private static String message(Locale locale, boolean isMessageWithItemName) {
     Violations violations = new Violations().add(new BusinessViolation(
         new String[] {"testRecord.name"}, new String[] {"name"},
