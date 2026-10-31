@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -46,7 +45,6 @@ import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -72,11 +70,8 @@ import tools.jackson.databind.ObjectMapper;
  *   <li>Redirects to the saved request or default success URL.</li>
  * </ol>
  *
- * <p>This bean is activated only when a {@link SplibOauth2UserHandler} bean
- * is present in the application context.</p>
+ * <p>This bean is registered by {@link SplibOauth2Config}.</p>
  */
-@Component
-@ConditionalOnBean(SplibOauth2UserHandler.class)
 public class SplibOauth2AuthSuccessHandler
     extends SavedRequestAwareAuthenticationSuccessHandler {
 

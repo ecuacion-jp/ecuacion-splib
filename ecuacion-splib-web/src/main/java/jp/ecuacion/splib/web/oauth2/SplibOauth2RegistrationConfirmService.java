@@ -18,19 +18,14 @@ package jp.ecuacion.splib.web.oauth2;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.Nullable;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
 /**
  * Provides the operations used by the app's registration confirm page
  * of {@link SplibOauth2UserHandlerWithRegistrationConfirm}.
  *
- * <p>This bean is activated only when a {@link SplibOauth2UserHandler} bean
- * is present in the application context.</p>
+ * <p>This bean is registered by {@link SplibOauth2Config}.</p>
  */
-@Service
-@ConditionalOnBean(SplibOauth2UserHandler.class)
 public class SplibOauth2RegistrationConfirmService {
 
   private final SplibOauth2AuthSuccessHandler successHandler;
