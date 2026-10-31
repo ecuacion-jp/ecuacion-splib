@@ -20,7 +20,9 @@ import jp.ecuacion.splib.rest.apikey.SplibApiKeyAuthenticationFilter;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyComparisonMode;
 import jp.ecuacion.splib.rest.apikey.SplibApiKeyExpectedValueProvider;
 import jp.ecuacion.splib.rest.apikey.SplibBuiltinApiKeyAuthenticationFilter;
+import jp.ecuacion.splib.webmvc.audit.AuditLogger;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
@@ -148,19 +150,24 @@ public abstract class SplibRestSecurityConfig {
    * @param http http
    * @param env source for {@code jp.ecuacion.splib.rest.api-key.rate-limit.*} (see
    *     {@link SplibApiKeyAuthenticationFilter})
+   * @param auditLogger the audit logger rejections are recorded to, available only when the
+   *     audit log is enabled
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
   @Order(12)
   @Bean
-  SecurityFilterChain filterChainForApiKey(HttpSecurity http, Environment env) throws Exception {
+  SecurityFilterChain filterChainForApiKey(HttpSecurity http, Environment env,
+      ObjectProvider<AuditLogger> auditLogger) throws Exception {
     http.securityMatcher("/api/key/**");
 
     http.httpBasic(basic -> basic.disable());
     http.csrf(csrf -> csrf.disable());
 
-    http.addFilterBefore(new SplibApiKeyAuthenticationFilter(apiKeyExpectedValueProvider, env),
-        UsernamePasswordAuthenticationFilter.class);
+    SplibApiKeyAuthenticationFilter filter =
+        new SplibApiKeyAuthenticationFilter(apiKeyExpectedValueProvider, env);
+    filter.setAuditLogger(auditLogger.getIfAvailable());
+    http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
 
     // The filter above already rejects (401) any request that fails API-key authentication, so
     // authorization here only needs to admit requests that got past it.
@@ -190,20 +197,23 @@ public abstract class SplibRestSecurityConfig {
    * @param http http
    * @param env source for {@code jp.ecuacion.splib.rest.builtin-api-key.rate-limit.*} (see
    *     {@link SplibBuiltinApiKeyAuthenticationFilter})
+   * @param auditLogger the audit logger rejections are recorded to, available only when the
+   *     audit log is enabled
    * @return SecurityFilterChain
    * @throws Exception Exception
    */
   @Order(13)
   @Bean
-  SecurityFilterChain filterChainForApiEcuacionSplibKey(HttpSecurity http, Environment env)
-      throws Exception {
+  SecurityFilterChain filterChainForApiEcuacionSplibKey(HttpSecurity http, Environment env,
+      ObjectProvider<AuditLogger> auditLogger) throws Exception {
     http.securityMatcher("/api/ecuacion-splib/key/**");
 
     http.httpBasic(basic -> basic.disable());
     http.csrf(csrf -> csrf.disable());
 
-    http.addFilterBefore(new SplibBuiltinApiKeyAuthenticationFilter(env),
-        UsernamePasswordAuthenticationFilter.class);
+    SplibBuiltinApiKeyAuthenticationFilter filter = new SplibBuiltinApiKeyAuthenticationFilter(env);
+    filter.setAuditLogger(auditLogger.getIfAvailable());
+    http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
 
     // The filter above already rejects (401) any request that fails API-key authentication, so
     // authorization here only needs to admit requests that got past it.

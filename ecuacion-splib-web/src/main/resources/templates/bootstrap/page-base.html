@@ -49,6 +49,9 @@
 		">
 	<div class="content-wrapper">
 		<!--/* navbar */-->
+		<!--/* Title and image are overridden per request by model attributes "splibNavbarTitle"
+				(message key or plain text) and "splibNavbarImagePath" (URL used as-is, so it must
+				include the context path) when they are not empty. */-->
 		<th:block th:with="
 				titleDefaultApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title') ?: ''},
 				titleDefault=${titleDefaultApp} == '' ? ${#msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title', '')} : ${titleDefaultApp},
@@ -56,10 +59,12 @@
 				titleAccount=${titleAccountApp} == '' ? ${#msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title-account', titleDefault)} : ${titleAccountApp},
 				titleAdminApp=${@environment.getProperty('jp.ecuacion.splib.web.navbar.title-admin') ?: ''},
 				titleAdmin=${titleAdminApp} == '' ? ${#msgUtil.getValueOrElse(#locale, 'jp.ecuacion.splib.web.navbar.title-admin', titleDefault)} : ${titleAdminApp},
-				title=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)},
+				titleSetting=${loginState == 'account' ? titleAccount : (loginState == 'admin' ? titleAdmin : titleDefault)},
+				title=${#strings.isEmpty(splibNavbarTitle) ? titleSetting : (#messages.msgOrNull(splibNavbarTitle) ?: splibNavbarTitle)},
 				imagePathValue=${#propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.image-path', '')},
 				imagePathTmp=@{${imagePathValue}},
-				imagePath=${(!#strings.isEmpty(imagePathTmp) && !#strings.startsWith(imagePathTmp, '/') ? '/' : '') + imagePathTmp},
+				imagePathSetting=${(!#strings.isEmpty(imagePathTmp) && !#strings.startsWith(imagePathTmp, '/') ? '/' : '') + imagePathTmp},
+				imagePath=${#strings.isEmpty(splibNavbarImagePath) ? imagePathSetting : splibNavbarImagePath},
 				defaultPagePathValue=${#propUtil.getLoginStateDependentValueOrElse(loginState, 'jp.ecuacion.splib.web.navbar.default-page-path', '')},
 				defaultPagePathTmp=@{${defaultPagePathValue}},
 				defaultPagePath=${(!#strings.isEmpty(defaultPagePathTmp) && !#strings.startsWith(defaultPagePathTmp, '/') ? '/' : '') + defaultPagePathTmp},

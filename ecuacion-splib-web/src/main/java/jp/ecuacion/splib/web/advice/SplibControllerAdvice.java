@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import jp.ecuacion.splib.core.audit.AuditLogContext;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
@@ -89,7 +90,14 @@ public class SplibControllerAdvice {
 
     // Add url path. Direct use of request in Thymeleaf is no longer allowed,
     // and it is recommended to set url etc. to model in the controller.
-    model.addAttribute("loginState", loginStateUtil.getLoginState());
+    String loginState = loginStateUtil.getLoginState();
+    model.addAttribute("loginState", loginState);
+
+    // Also record it in the audit log, when the current request is recorded.
+    AuditLogContext auditLogContext = AuditLogContext.current();
+    if (auditLogContext != null) {
+      auditLogContext.putDetail("loginState", loginState);
+    }
   }
 
   private boolean isRestControllerRequest() {

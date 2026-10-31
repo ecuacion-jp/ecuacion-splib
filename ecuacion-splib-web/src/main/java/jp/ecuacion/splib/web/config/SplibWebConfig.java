@@ -44,12 +44,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *     {@code server.servlet.session.cookie.secure=true} and
  *     {@code server.forward-headers-strategy=framework} (or {@code native}) yourself — the proxy
  *     must also be configured to set the {@code X-Forwarded-Proto} header (or equivalent) for the
- *     latter to have any effect.</p>
+ *     latter to have any effect. The address recorded in the audit log
+ *     ({@code jp.ecuacion.splib.webmvc.audit}) is {@code HttpServletRequest#getRemoteAddr()} too,
+ *     so without {@code server.forward-headers-strategy} it is the proxy's address, not the
+ *     client's.</p>
+ *
+ * <p>{@code jp.ecuacion.splib.webmvc.audit} is scanned for the audit log, which registers nothing
+ *     unless {@code jp.ecuacion.splib.core.audit-log.enabled=true}.</p>
  */
 @Configuration
-@ComponentScan(basePackages = "jp.ecuacion.splib.core.config" + ",jp.ecuacion.splib.web.advice"
-    + ",jp.ecuacion.splib.web.controller" + ",jp.ecuacion.splib.web.service"
-    + ",jp.ecuacion.splib.web.util")
+@ComponentScan(basePackages = "jp.ecuacion.splib.core.config" + ",jp.ecuacion.splib.webmvc.audit"
+    + ",jp.ecuacion.splib.web.advice" + ",jp.ecuacion.splib.web.controller"
+    + ",jp.ecuacion.splib.web.service" + ",jp.ecuacion.splib.web.util")
 public class SplibWebConfig implements WebMvcConfigurer {
 
   // Sometimes ";" + jsessionId smuggles into urls, spring detects unknown character ";"

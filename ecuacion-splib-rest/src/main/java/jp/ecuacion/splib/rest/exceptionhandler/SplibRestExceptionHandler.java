@@ -26,6 +26,7 @@ import jp.ecuacion.splib.core.exceptionhandler.SplibRestExceptionHandlerAction;
 import jp.ecuacion.splib.rest.dto.ViolationsResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -47,8 +48,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  *   <li>{@link ViolationException} — for a business/validation failure whose message is meant
  *       to reach an actual human end user, e.g. a local/desktop app that calls this API on a
  *       user's behalf and displays the failure to them. Handled by
- *       {@link #handleViolationException}: the message(s) are localized to the request's
- *       locale, every violation {@code exception} carries is included (not just the first), and
+ *       {@link #handleViolationException}: the message(s) are localized to the locale resolved
+ *       by the app's {@code LocaleResolver} ({@link LocaleContextHolder}), every violation
+ *       {@code exception} carries is included (not just the first), and
  *       the status is always {@code 400 Bad Request} — no variety of statuses is needed because
  *       nothing on the calling side is expected to branch on it, only display the text.</li>
  *   <li>{@link org.springframework.web.server.ResponseStatusException} (and anything else
@@ -123,7 +125,8 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
    * a stack trace (see {@link #handleExceptionInternal}) nor {@link #actionOnThrowable}.</p>
    *
    * @param exception the violation exception
-   * @param request request, used only to resolve the response locale
+   * @param request request (not used; the locale comes from {@link LocaleContextHolder} so
+   *     that an app's {@code LocaleResolver} is honored. Kept for signature compatibility)
    * @return {@code 400 Bad Request} with every violation's message, localized
    */
   @ExceptionHandler(ViolationException.class)
@@ -131,7 +134,8 @@ public class SplibRestExceptionHandler extends ResponseEntityExceptionHandler {
       ViolationException exception, WebRequest request) {
 
     @NonNull List<@NonNull String> messages =
-        ExceptionUtil.getMessageList(exception.getViolations(), request.getLocale(), true);
+        ExceptionUtil.getMessageList(exception.getViolations(), LocaleContextHolder.getLocale(),
+            true);
     dtlLogger.warn(String.join(" / ", messages));
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ViolationsResponse(messages));

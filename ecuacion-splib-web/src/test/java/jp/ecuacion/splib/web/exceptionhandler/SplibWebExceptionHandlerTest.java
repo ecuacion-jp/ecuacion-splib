@@ -16,6 +16,7 @@
 package jp.ecuacion.splib.web.exceptionhandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -58,6 +59,7 @@ import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -66,6 +68,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.event.Level;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -88,7 +91,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * than the detailed violation-to-BindingResult path resolution, which is covered independently
  * by {@link jp.ecuacion.splib.web.exceptionhandler.internal.ViolationBindingResultMapperTest}.</p>
  *
- * <p>The test locale is fixed to {@code Locale.ROOT} so that
+ * <p>The test locale is fixed to {@code Locale.ROOT} via {@link LocaleContextHolder} (where
+ * the handler reads it, as set by the app's {@code LocaleResolver} in a real request) so that
  * {@code messages_splib-web-test.properties} (no locale suffix) is resolved.</p>
  */
 @ExtendWith(MockitoExtension.class)
@@ -281,6 +285,12 @@ class SplibWebExceptionHandlerTest {
   @BeforeEach
   void setUp() {
     handler = new SplibWebExceptionHandler(request, null, loginStateUtil) {};
+    LocaleContextHolder.setLocale(Locale.ROOT);
+  }
+
+  @AfterEach
+  void tearDown() {
+    LocaleContextHolder.resetLocaleContext();
   }
 
 
@@ -316,7 +326,6 @@ class SplibWebExceptionHandlerTest {
       controller = new TestController("testFunc", new TestService());
       model = modelWithForm(form, controller);
       stubModel(model);
-      when(request.getLocale()).thenReturn(Locale.ROOT);
     }
 
     @SuppressWarnings("null")
@@ -362,6 +371,24 @@ class SplibWebExceptionHandlerTest {
       // Not a ViolationWebWarningException, so no button id -> getButtonName() falls back to "".
       assertThat(bean.getButtonName()).isEqualTo("");
     }
+
+    @SuppressWarnings("null")
+    @Test
+    void messageLocale__followsLocaleContextHolder_notRequestLocale() {
+      // An app's LocaleResolver (e.g. a user's language setting) can differ from the browser's
+      // Accept-Language; messages must follow the former, as Thymeleaf's #{...} does.
+      lenient().when(request.getLocale()).thenReturn(Locale.ENGLISH);
+      LocaleContextHolder.setLocale(Locale.JAPANESE);
+      Violations violations = new Violations().add(new BusinessViolation(
+          "jp.ecuacion.lib.core.util.EmbeddedVariableUtil.paramNotFoundInMap.message", "VAR"));
+
+      handler.handleViolationWarningException(new ViolationWarningException(violations), null,
+          redirectAttributes);
+
+      WarnMessageBean bean =
+          (WarnMessageBean) model.getAttribute(SplibWebConstants.KEY_WARN_MESSAGE);
+      assertThat(Objects.requireNonNull(bean).getMessage()).contains("パラメータが定義されていません");
+    }
   }
 
   // =========================================================================
@@ -375,12 +402,8 @@ class SplibWebExceptionHandlerTest {
 
     private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
-    @BeforeEach
-    void setUpNoController() {
-      // getController() reads request.getAttribute(KEY_MODEL); leaving it unstubbed makes it
-      // return null, exactly like NoResourceFoundException firing before prepare() ran.
-      when(request.getLocale()).thenReturn(Locale.ROOT);
-    }
+    // getController() reads request.getAttribute(KEY_MODEL); leaving it unstubbed makes it
+    // return null, exactly like NoResourceFoundException firing before prepare() ran.
 
     @Test
     void mixedCvAndBv_validReferer__globalErrorsFlashed_redirectsToRefererPath() {
@@ -444,7 +467,6 @@ class SplibWebExceptionHandlerTest {
     void setUpController() {
       service = new TestService();
       controller = new TestController("testFunc", service);
-      when(request.getLocale()).thenReturn(Locale.ROOT);
     }
 
     @SuppressWarnings("null")
@@ -543,11 +565,6 @@ class SplibWebExceptionHandlerTest {
 
     private final RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
-    @BeforeEach
-    void setUpNoController() {
-      when(request.getLocale()).thenReturn(Locale.ROOT);
-    }
-
     @SuppressWarnings("null")
     private Set<ConstraintViolation<?>> cvsOf(Object bean) {
       return new HashSet<>(new Violations().validate(bean).getConstraintViolations());
@@ -599,7 +616,6 @@ class SplibWebExceptionHandlerTest {
     void modelAbsent__wrapsToHomePage_flashesMessage_savesEmptyModel() {
       // getModel() (from the request attribute) is left unstubbed -> null, matching the real
       // situation this exception fires in: before any controller's prepare() ran.
-      when(request.getLocale()).thenReturn(Locale.ROOT);
       NoResourceFoundException nrfe =
           new NoResourceFoundException(HttpMethod.GET, "No static resource foo/bar.", "foo/bar");
 
@@ -650,7 +666,6 @@ class SplibWebExceptionHandlerTest {
 
     @Test
     void modelAbsent__wrapsToHomePage_flashesMessage() {
-      when(request.getLocale()).thenReturn(Locale.ROOT);
 
       ModelAndView mav = handler.handleUnsatisfiedServletRequestParameterException(
           new UnsatisfiedServletRequestParameterException(new String[] {"id"}, Map.of()),
@@ -692,7 +707,6 @@ class SplibWebExceptionHandlerTest {
     @SuppressWarnings("null")
     @Test
     void withFormsInModel_andLogLevel__addsBusinessViolationToBindingResult() {
-      when(request.getLocale()).thenReturn(Locale.ROOT);
       TestForm form = new TestForm();
       Model model = modelWithForm(form, new TestController("testFunc", new TestService()));
       stubModel(model);
@@ -724,11 +738,6 @@ class SplibWebExceptionHandlerTest {
     private static final String OPTIMISTIC_LOCKING_MSG =
         "Another user has updated the data. Reload the displayed data and check what's been "
             + "changed.";
-
-    @BeforeEach
-    void setUpLocale() {
-      when(request.getLocale()).thenReturn(Locale.ROOT);
-    }
 
     @Test
     void editController__redirectsToDefaultDestOnNormalEnd_withFlashedMessage() {
@@ -790,7 +799,6 @@ class SplibWebExceptionHandlerTest {
 
     @Test
     void modelAbsent_validReferer__globalErrorFlashed_redirectsToRefererPath_savesEmptyModel() {
-      when(request.getLocale()).thenReturn(Locale.ROOT);
       when(request.getHeader("Referer")).thenReturn("https://example.com/prior/page?x=1");
 
       ModelAndView mav = handler.handleMaxUploadSizeExceededException(
@@ -810,7 +818,6 @@ class SplibWebExceptionHandlerTest {
 
     @Test
     void noRefererHeader__fallsBackToRoot() {
-      when(request.getLocale()).thenReturn(Locale.ROOT);
       when(request.getHeader("Referer")).thenReturn(null);
 
       ModelAndView mav = handler.handleMaxUploadSizeExceededException(

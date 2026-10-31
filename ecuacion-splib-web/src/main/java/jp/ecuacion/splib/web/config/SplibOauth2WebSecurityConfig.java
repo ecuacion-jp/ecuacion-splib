@@ -17,11 +17,14 @@ package jp.ecuacion.splib.web.config;
 
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
+import jp.ecuacion.splib.web.oauth2.SplibOauth2Config;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -35,10 +38,16 @@ import org.springframework.util.MultiValueMap;
  *     properties ({@code spring.security.oauth2.client.*}), and a {@code SplibOauth2UserHandler}
  *     bean must be registered in the application context.</p>
  *
+ * <p>The other beans needed for OAuth2 login ({@code SplibOauth2AuthSuccessHandler},
+ *     {@code SplibOauth2RegistrationConfirmService} and {@code SplibAppleClientSecretService})
+ *     are registered by {@link SplibOauth2Config} imported by this class,
+ *     so the app doesn't need to scan {@code jp.ecuacion.splib.web.oauth2}.</p>
+ *
  * <p>Since this class references OAuth2 client types, {@code spring-boot-starter-oauth2-client}
  *     must be on the app's own classpath (it is a {@code provided} dependency of
  *     {@code ecuacion-splib-web}, so apps that don't extend this class don't carry it).</p>
  */
+@Import(SplibOauth2Config.class)
 public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfig {
 
   /** Attribute key used by Spring Security to store the registrationId in the builder. */
@@ -91,7 +100,12 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
 
     oauth2SuccessHandler.setDefaultTargetUrl(getDefaultSuccessUrl());
 
+    // splib uses OAuth2 only for login and doesn't use the tokens afterwards,
+    // so they are kept in the session instead of Spring Boot's default
+    // (InMemoryOAuth2AuthorizedClientService, which keeps them until the app stops).
+    // Apps that call the provider's APIs from batches should store the tokens on their own.
     http.oauth2Login(oauth2 -> oauth2.loginPage(getLoginNeededPage())
+        .authorizedClientRepository(new HttpSessionOAuth2AuthorizedClientRepository())
         .authorizationEndpoint(ep -> ep.authorizationRequestResolver(requestResolver))
         .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient()))
         .successHandler(oauth2SuccessHandler));

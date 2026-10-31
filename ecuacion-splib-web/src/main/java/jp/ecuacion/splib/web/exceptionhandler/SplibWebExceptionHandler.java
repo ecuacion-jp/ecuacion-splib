@@ -54,6 +54,7 @@ import jp.ecuacion.splib.web.util.internal.RefererRedirectUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -204,7 +205,7 @@ public abstract class SplibWebExceptionHandler {
       if (forms != null && forms.length > 0) {
         addViolationErrorsToBindingResult(new ViolationException(violations),
             getPrimaryBindingResult(), needsMsgAtItemDefault, needsMsgAtTopDefault,
-            request.getLocale());
+            LocaleContextHolder.getLocale());
 
         // Save FieldErrors separately so they survive form re-binding after the redirect.
         Map<String, List<FieldError>> fieldErrorsSnapshot = snapshotFieldErrors();
@@ -275,7 +276,7 @@ public abstract class SplibWebExceptionHandler {
    *     line in {@link #redirectWithViolations}.
    */
   private List<String> resolveMessages(Violations violations, boolean withMessageKey) {
-    Locale locale = request.getLocale();
+    Locale locale = LocaleContextHolder.getLocale();
     MessageParameters params = violations.messageParameters();
 
     List<@NonNull ConstraintViolation<?>> sortedCvs =
@@ -327,7 +328,8 @@ public abstract class SplibWebExceptionHandler {
         : null;
     requireModel().addAttribute(SplibWebConstants.KEY_WARN_MESSAGE, new WarnMessageBean(
         v.getMessageId(),
-        PropertiesFileUtil.getMessage(request.getLocale(), v.getMessageId(), v.getMessageArgs()),
+        PropertiesFileUtil.getMessage(LocaleContextHolder.getLocale(), v.getMessageId(),
+            v.getMessageArgs()),
         buttonId));
 
     prepareFormForReturn(loginUser);

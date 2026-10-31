@@ -17,6 +17,8 @@ package jp.ecuacion.splib.web.jpa.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Objects;
+import jp.ecuacion.splib.core.audit.AuditLogUtil;
 import jp.ecuacion.splib.jpa.entity.SplibEntity;
 import jp.ecuacion.splib.jpa.repository.SplibRepository;
 import jp.ecuacion.splib.web.form.SplibEditForm;
@@ -64,10 +66,28 @@ public abstract class SplibEditJpaService<F extends SplibEditForm, E extends Spl
    *     Strictly speaking, {@code detach()} is not needed on insert, 
    *     but "insertOrUpdate" method is created for simplicity.
    * </p>
+   *
+   * <p>The saved entity is added to the audit log record of the current operation
+   *     ({@link AuditLogUtil#addTarget}) as its simple class name and its identifier. It does
+   *     nothing when the audit log is disabled.</p>
    */
   protected @NonNull <T extends SplibEntity> T insertOrUpdate(SplibRepository<T, ?> repo,
       @NonNull T e) {
 
-    return repo.save(e);
+    T saved = repo.save(e);
+    addAuditLogTarget(saved);
+    return saved;
+  }
+
+  private void addAuditLogTarget(SplibEntity saved) {
+    if (em == null) {
+      return;
+    }
+
+    Object id = Objects.requireNonNull(em).getEntityManagerFactory().getPersistenceUnitUtil()
+        .getIdentifier(saved);
+    if (id != null) {
+      AuditLogUtil.addTarget(saved.getClass().getSimpleName(), id);
+    }
   }
 }

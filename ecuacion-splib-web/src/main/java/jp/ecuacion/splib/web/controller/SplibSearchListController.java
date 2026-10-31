@@ -16,7 +16,11 @@
 package jp.ecuacion.splib.web.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import jp.ecuacion.lib.core.exception.ViolationException;
+import jp.ecuacion.splib.core.audit.AuditLogTarget;
 import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.form.SplibListForm;
@@ -211,8 +215,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   public String searchConditionClear(Model model, FST searchForm, FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) throws Exception {
     // Clear info.
-    String formName = getFunction() + "SearchForm";
-    String sessionKey = getSessionKey(formName, searchForm);
+    String sessionKey = getSessionKey(searchForm);
 
     request.getSession().setAttribute(sessionKey, newSearchForm);
 
@@ -236,8 +239,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
   @SuppressWarnings({"unchecked", "null"})
   protected @NonNull FST getProperSearchForm(Model model, @NonNull FST searchForm) {
 
-    String formName = getFunction() + "SearchForm";
-    String key = getSessionKey(formName, searchForm);
+    String key = getSessionKey(searchForm);
 
     if (searchForm.isRequestFromSearchForm()) {
       // Argument searchForm (= submitted by pressing search button in a search page) is adopted
@@ -270,9 +272,27 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
     return (FST) request.getSession().getAttribute(key);
   }
 
-  private String getSessionKey(String formName, @NonNull FST searchForm) {
+  /**
+   * Returns the session key of the searchForm.
+   * 
+   * <p>The key is separated by the same unit as the URL
+   *     ({@code loginState}, {@code functionKinds} and {@code function}) and {@code dataKind},
+   *     like {@code admin.kind1.kind2.inquirySearchForm.dataKind}.
+   *     Otherwise searchForms of different pages with the same {@code function} 
+   *     (like {@code /admin/inquiry/...} and {@code /account/inquiry/...}) collide.</p>
+   */
+  private String getSessionKey(@NonNull FST searchForm) {
+    List<String> list = new ArrayList<>();
+    list.add(loginStateUtil.getLoginState());
+    list.addAll(Arrays.asList(getFunctionKinds()));
+    list.add(getFunction() + "SearchForm");
+
     String dataKind = java.util.Objects.toString(searchForm.getDataKind(), "");
-    return formName + (dataKind == null || dataKind.isEmpty() ? "" : "." + dataKind);
+    if (!Objects.requireNonNull(dataKind).isEmpty()) {
+      list.add(dataKind);
+    }
+
+    return String.join(".", list);
   }
 
   /**
@@ -302,6 +322,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param loginUser loginUser
    * @return URL
    */
+  @AuditLogTarget(false)
   @PostMapping(value = "action", params = "action=showInsertForm")
   public String showInsertForm(Model model, @NonNull FST searchForm, @NonNull FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {
@@ -319,6 +340,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param loginUser loginUser
    * @return URL
    */
+  @AuditLogTarget(false)
   @PostMapping(value = "action", params = "action=showUpdateForm")
   public String showUpdateForm(Model model, @NonNull FST searchForm, @NonNull FLT listForm,
       @AuthenticationPrincipal UserDetails loginUser) {

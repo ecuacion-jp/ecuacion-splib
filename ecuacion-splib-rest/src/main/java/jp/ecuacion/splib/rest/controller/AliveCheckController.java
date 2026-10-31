@@ -15,6 +15,7 @@
  */
 package jp.ecuacion.splib.rest.controller;
 
+import jp.ecuacion.splib.core.audit.AuditLogTarget;
 import jp.ecuacion.splib.rest.dto.StatusResponse;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,6 +36,7 @@ public class AliveCheckController {
    *
    * @return a {@code StatusResponse} with {@code "OK"}
    */
+  @AuditLogTarget(false)
   @RequestMapping(value = "/api/ecuacion-splib/public/aliveCheck",
       method = {RequestMethod.GET, RequestMethod.POST})
   public StatusResponse aliveCheck() {

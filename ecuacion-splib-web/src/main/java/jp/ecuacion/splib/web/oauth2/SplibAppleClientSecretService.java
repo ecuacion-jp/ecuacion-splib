@@ -27,8 +27,6 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 
 /**
  * Generates the Apple client secret JWT required for Sign in with Apple.
@@ -37,8 +35,8 @@ import org.springframework.stereotype.Service;
  * token request. This service builds and signs that JWT from the properties
  * below.</p>
  *
- * <p>Required properties (activate this bean by setting
- * {@code ecuacion.oauth2.apple.team-id}):</p>
+ * <p>Required properties (this bean is registered by {@link SplibOauth2Config}
+ * when {@code ecuacion.oauth2.apple.team-id} is set):</p>
  * <pre>
  * ecuacion.oauth2.apple.team-id=&lt;Apple Developer Team ID&gt;
  * ecuacion.oauth2.apple.key-id=&lt;Key ID from Apple Developer Portal&gt;
@@ -46,8 +44,6 @@ import org.springframework.stereotype.Service;
  * ecuacion.oauth2.apple.private-key=&lt;PKCS8 PEM private key (single line, no headers)&gt;
  * </pre>
  */
-@Service
-@ConditionalOnProperty(name = "ecuacion.oauth2.apple.team-id")
 public class SplibAppleClientSecretService {
 
   /** Valid duration of the generated JWT: 6 months in milliseconds. */
