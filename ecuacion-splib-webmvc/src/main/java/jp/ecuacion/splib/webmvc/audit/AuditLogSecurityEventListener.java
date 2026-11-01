@@ -18,6 +18,7 @@ package jp.ecuacion.splib.webmvc.audit;
 import jakarta.servlet.http.HttpServletRequest;
 import jp.ecuacion.splib.core.audit.enums.AuditLogEventType;
 import jp.ecuacion.splib.core.audit.enums.AuditLogResult;
+import jp.ecuacion.splib.webmvc.util.SwitchUserUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -118,7 +119,7 @@ public class AuditLogSecurityEventListener {
   public void onSwitchUser(AuthenticationSwitchUserEvent event) {
     Authentication current = event.getAuthentication();
     UserDetails target = event.getTargetUser();
-    Authentication source = AuditLogger.switchUserSourceOf(current);
+    Authentication source = SwitchUserUtil.getSwitchUserSource(current);
     HttpServletRequest request = currentRequest();
 
     if (target == null) {

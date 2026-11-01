@@ -48,12 +48,13 @@ class AuditLogWriterTest {
     details.put("clientIp", "127.0.0.1");
     details.put("sessionIdSuffix", null);
     details.put("uri", "/account/sample/action");
-    Entry record = new Entry(TIMESTAMP,
+    Entry record = new Entry(TIMESTAMP, "op-1",
         AuditLogEventType.OPERATION, AuditLogResult.SUCCESS, "user1", null, details,
         List.of(new TargetData("Sample", "1"), new TargetData("Other", "2")), null, attributes);
 
     assertThat(AuditLogWriter.toJson(record)).isEqualTo("{"
-        + "\"timestamp\":\"2026-10-29T12:34:56+09:00\",\"eventType\":\"OPERATION\","
+        + "\"timestamp\":\"2026-10-29T12:34:56+09:00\",\"operationId\":\"op-1\","
+        + "\"eventType\":\"OPERATION\","
         + "\"result\":\"SUCCESS\",\"actor\":\"user1\",\"originalActor\":null,"
         + "\"clientIp\":\"127.0.0.1\",\"sessionIdSuffix\":null,"
         + "\"uri\":\"/account/sample/action\","
@@ -64,7 +65,7 @@ class AuditLogWriterTest {
   @Test
   @DisplayName("toJson: no targets / no attributes are written as an empty array / object")
   void empty() {
-    Entry record = new Entry(TIMESTAMP, AuditLogEventType.LOGOUT,
+    Entry record = new Entry(TIMESTAMP, null, AuditLogEventType.LOGOUT,
         AuditLogResult.SUCCESS, null, null, Map.of(), List.of(), null, Map.of());
 
     assertThat(AuditLogWriter.toJson(record))
@@ -75,7 +76,7 @@ class AuditLogWriterTest {
   @DisplayName("toJson: quotes, backslashes and control characters are escaped, "
       + "so a typed-in value cannot forge another line")
   void escaped() {
-    Entry record = new Entry(TIMESTAMP, AuditLogEventType.LOGIN,
+    Entry record = new Entry(TIMESTAMP, null, AuditLogEventType.LOGIN,
         AuditLogResult.FAILURE, "a\"b\\c\nd\re\tf\u0001g", null, Map.of(),
         List.of(), null, Map.of());
 

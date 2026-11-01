@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.LogUtil;
-import jp.ecuacion.splib.core.audit.AuditLogTarget;
+import jp.ecuacion.splib.core.annotation.ReadOnlyOperation;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import org.springframework.boot.webmvc.error.ErrorController;
@@ -49,7 +49,7 @@ public class SplibErrorController implements ErrorController {
    * @param model model
    * @return ModelAndView
    */
-  @AuditLogTarget(false)
+  @ReadOnlyOperation
   @RequestMapping(produces = MediaType.TEXT_HTML_VALUE,
       method = {RequestMethod.POST, RequestMethod.GET})
   public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response,

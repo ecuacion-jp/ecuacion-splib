@@ -20,6 +20,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import jp.ecuacion.splib.web.bean.SwitchUserStatusBean;
+import jp.ecuacion.splib.web.interceptor.SwitchUserReadOnlyInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
@@ -30,6 +32,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  *  Provides the abstract SecurityConfig class for swith user (impersonation).
@@ -48,8 +52,26 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
  *     (in {@link #onSwitchingUserDone(HttpServletRequest, HttpServletResponse, Authentication)}
  *     or before posting to {@code /admin/switchUser}), and read it when exiting.
  *     The session is kept through switching and exiting.</p>
+ *
+ * <p><strong>View only.</strong> To let the switched user only view pages, override
+ *     {@link #isReadOnlyWhileSwitched()} to return {@code true}. Requests that change something
+ *     are then rejected while switched ({@link SwitchUserReadOnlyInterceptor}), with a message
+ *     on the page they were sent from. Exiting the switched user and logging out are not
+ *     rejected. To hide buttons that cannot be used, templates can use
+ *     {@code ${@splibSwitchUserStatus.readOnly}} ({@link SwitchUserStatusBean}). Use
+ *     {@code SwitchUserUtil} ({@code ecuacion-splib-webmvc}) to check whether the current user
+ *     is a switched user in Java.</p>
  */
 public abstract class SplibWebSecurityConfigForSwitchUser {
+
+  /** The name of the {@link SwitchUserStatusBean} bean, for Thymeleaf templates. */
+  public static final String BEAN_NAME_SWITCH_USER_STATUS = "splibSwitchUserStatus";
+
+  /**
+   * The order of {@link SwitchUserReadOnlyInterceptor}: after the audit log's interceptor
+   *     (order {@code 0}), so that a rejected request is recorded in the audit log.
+   */
+  public static final int READ_ONLY_INTERCEPTOR_ORDER = 1;
 
   private static final RequestMatcher SWITCH_USER_MATCHER =
       PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/admin/switchUser");
@@ -125,6 +147,18 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
   }
 
   /**
+   * Returns whether the switched user can only view pages.
+   *
+   * <p>When {@code true}, requests that change something are rejected while switched. See the
+   *     class Javadoc. Returns {@code false} by default (nothing is rejected).</p>
+   *
+   * @return {@code true} if the switched user can only view pages
+   */
+  protected boolean isReadOnlyWhileSwitched() {
+    return false;
+  }
+
+  /**
    * Is called when switching user is successfully done, before the redirect.
    *
    * <p>It's called after {@link #getSwitchingUserDonePagePath(HttpServletRequest)},
@@ -185,6 +219,32 @@ public abstract class SplibWebSecurityConfigForSwitchUser {
     filter.setFailureHandler(new CustomLoginFailureHandler());
 
     return filter;
+  }
+
+  /**
+   * Registers {@link SwitchUserReadOnlyInterceptor} when {@link #isReadOnlyWhileSwitched()}
+   *     returns {@code true}.
+   */
+  @Bean
+  WebMvcConfigurer splibSwitchUserReadOnlyConfigurer() {
+    boolean readOnly = isReadOnlyWhileSwitched();
+    return new WebMvcConfigurer() {
+      @Override
+      public void addInterceptors(InterceptorRegistry registry) {
+        if (readOnly) {
+          registry.addInterceptor(new SwitchUserReadOnlyInterceptor())
+              .order(READ_ONLY_INTERCEPTOR_ORDER);
+        }
+      }
+    };
+  }
+
+  /**
+   * Provides the state of the switch user to Thymeleaf templates.
+   */
+  @Bean(BEAN_NAME_SWITCH_USER_STATUS)
+  SwitchUserStatusBean splibSwitchUserStatus() {
+    return new SwitchUserStatusBean(isReadOnlyWhileSwitched());
   }
 
   /**
