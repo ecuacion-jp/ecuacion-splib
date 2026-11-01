@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.core.annotation.ReadOnlyOperation;
 import jp.ecuacion.splib.core.audit.AuditLogConstants;
 import jp.ecuacion.splib.core.audit.AuditLogContext;
 import jp.ecuacion.splib.core.audit.AuditLogTarget;
@@ -159,6 +160,28 @@ class AuditLogInterceptorTest {
     @PostMapping("back")
     @ResponseBody
     String back() {
+      return "ok";
+    }
+
+    @ReadOnlyOperation
+    @PostMapping("showDetail")
+    @ResponseBody
+    String showDetail() {
+      return "ok";
+    }
+
+    @AuditLogTarget
+    @ReadOnlyOperation
+    @PostMapping("showPersonalData")
+    @ResponseBody
+    String showPersonalData() {
+      return "ok";
+    }
+
+    @ReadOnlyOperation(false)
+    @GetMapping("getThatWrites")
+    @ResponseBody
+    String getThatWrites() {
       return "ok";
     }
 
@@ -315,6 +338,33 @@ class AuditLogInterceptorTest {
       mockMvc.perform(post("/account/sub/back")).andExpect(status().isOk());
 
       assertThat(writer.records).isEmpty();
+    }
+
+    @Test
+    @DisplayName("POST with @ReadOnlyOperation: not recorded")
+    void postWithReadOnlyOperation() throws Exception {
+      mockMvc.perform(post("/account/sample/showDetail")).andExpect(status().isOk());
+
+      assertThat(writer.records).isEmpty();
+    }
+
+    @Test
+    @DisplayName("POST with @ReadOnlyOperation and @AuditLogTarget: recorded "
+        + "(@AuditLogTarget takes precedence)")
+    void auditLogTargetTakesPrecedence() throws Exception {
+      mockMvc.perform(post("/account/sample/showPersonalData")).andExpect(status().isOk());
+
+      assertThat(onlyRecord().details().get("handler"))
+          .isEqualTo("SampleController#showPersonalData");
+    }
+
+    @Test
+    @DisplayName("GET with @ReadOnlyOperation(false): recorded")
+    void getWithReadOnlyOperationFalse() throws Exception {
+      mockMvc.perform(get("/account/sample/getThatWrites")).andExpect(status().isOk());
+
+      assertThat(onlyRecord().details().get("handler"))
+          .isEqualTo("SampleController#getThatWrites");
     }
 
     @Test

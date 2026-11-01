@@ -20,12 +20,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Objects;
-import java.util.Set;
 import jp.ecuacion.lib.core.exception.ViolationException;
+import jp.ecuacion.splib.core.annotation.ReadOnlyOperation;
 import jp.ecuacion.splib.core.audit.AuditLogContext;
 import jp.ecuacion.splib.core.audit.AuditLogTarget;
 import jp.ecuacion.splib.core.audit.AuditLogUtil;
 import jp.ecuacion.splib.core.audit.enums.AuditLogResult;
+import jp.ecuacion.splib.webmvc.util.ReadOnlyOperationUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.security.core.Authentication;
@@ -39,11 +40,14 @@ import org.springframework.web.servlet.ModelAndView;
  * Records requests to controller methods in the audit log, one record per request.
  *
  * <p><strong>Which requests.</strong> Requests whose handler is a controller method
- *     ({@link HandlerMethod}) and whose HTTP method is not {@code GET}, {@code HEAD},
- *     {@code OPTIONS} or {@code TRACE}, unless {@link AuditLogTarget} says otherwise. Only
- *     {@code REQUEST} and {@code ASYNC} dispatches are looked at: the {@code ERROR} dispatch that
- *     renders the error page, and {@code FORWARD} / {@code INCLUDE}, belong to a request already
- *     recorded. When the handler starts asynchronous processing, the record is written once, at
+ *     ({@link HandlerMethod}) and that change something, unless {@link AuditLogTarget} says
+ *     otherwise. Whether a request changes something is decided by
+ *     {@link ReadOnlyOperationUtil#isReadOnly}: by default, its HTTP method is not {@code GET},
+ *     {@code HEAD}, {@code OPTIONS} or {@code TRACE}, unless {@link ReadOnlyOperation} says
+ *     otherwise. Only {@code REQUEST} and {@code ASYNC} dispatches are looked at: the
+ *     {@code ERROR} dispatch that renders the error page, and {@code FORWARD} /
+ *     {@code INCLUDE}, belong to a request already recorded. 
+ *     When the handler starts asynchronous processing, the record is written once, at
  *     the end of the {@code ASYNC} dispatch that completes it. What {@link AuditLogUtil} collected
  *     before the asynchronous processing started is not taken over (splib has no asynchronous
  *     controllers; add it when one is needed).</p>
@@ -67,9 +71,6 @@ public class AuditLogInterceptor implements AsyncHandlerInterceptor {
 
   /** Request attribute holding the exception the handler threw. */
   private static final String ATTR_EXCEPTION = AuditLogInterceptor.class.getName() + ".EXCEPTION";
-
-  private static final Set<String> NOT_RECORDED_BY_DEFAULT =
-      Set.of("GET", "HEAD", "OPTIONS", "TRACE");
 
   private final @Nullable AuditLogger auditLogger;
 
@@ -159,7 +160,7 @@ public class AuditLogInterceptor implements AsyncHandlerInterceptor {
     }
 
     return annotation != null ? annotation.value()
-        : !NOT_RECORDED_BY_DEFAULT.contains(request.getMethod());
+        : !ReadOnlyOperationUtil.isReadOnly(request, handlerMethod);
   }
 
   /**

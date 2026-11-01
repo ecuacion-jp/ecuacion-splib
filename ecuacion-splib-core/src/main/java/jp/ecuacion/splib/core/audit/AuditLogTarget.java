@@ -20,27 +20,29 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import jp.ecuacion.splib.core.annotation.ReadOnlyOperation;
 
 /**
  * Specifies whether the operations a method handles — for a Spring MVC application, requests to
  *     a controller method — are recorded in the audit log.
  *
- * <p>Which operations are recorded without this annotation is decided by the module that records
- *     them. For a Spring MVC application ({@code ecuacion-splib-webmvc}), requests with an HTTP
- *     method other than {@code GET}, {@code HEAD}, {@code OPTIONS} and {@code TRACE} are recorded.
- *     Use it to change that for a method or a whole controller:</p>
+ * <p>Without this annotation, operations that change something are recorded: for a Spring MVC
+ *     application ({@code ecuacion-splib-webmvc}), requests with an HTTP method other than
+ *     {@code GET}, {@code HEAD}, {@code OPTIONS} and {@code TRACE}, unless
+ *     {@link ReadOnlyOperation} says otherwise. Use it to change that for a method or a whole
+ *     controller:</p>
  *
  * <ul>
- *   <li>{@code @AuditLogTarget(false)}: not recorded, for a {@code POST} that changes nothing
- *       (e.g. going back to the previous page).</li>
+ *   <li>{@code @AuditLogTarget(false)}: not recorded, for an operation that changes something
+ *       but is not worth recording. For a {@code POST} that changes nothing (e.g. going back to
+ *       the previous page), use {@link ReadOnlyOperation} instead, which also lets it run while
+ *       switched to another user.</li>
  *   <li>{@code @AuditLogTarget}: recorded, for a {@code GET} worth recording (e.g.
  *       downloading personal data).</li>
  * </ul>
  *
- * <p>Looked up on the method first (including the method it overrides), then on the class. Methods
- *     of {@code ecuacion-splib}'s own controllers that change nothing already carry
- *     {@code @AuditLogTarget(false)}, which an overriding method in the application inherits.
- *     </p>
+ * <p>Looked up on the method first (including the method it overrides), then on the class. When
+ *     found, it takes precedence over {@link ReadOnlyOperation}.</p>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

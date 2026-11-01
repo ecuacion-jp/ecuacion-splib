@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
-import jp.ecuacion.splib.core.audit.AuditLogTarget;
+import jp.ecuacion.splib.core.annotation.ReadOnlyOperation;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
@@ -71,7 +71,7 @@ public class ShowPageController extends SplibBaseController {
    * @return page
    * @throws IOException IOException
    */
-  @AuditLogTarget(false)
+  @ReadOnlyOperation
   @RequestMapping(value = "page", method = {RequestMethod.POST, RequestMethod.GET})
   public String page(Model model, @RequestParam("id") String page) throws IOException {
 
