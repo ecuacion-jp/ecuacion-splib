@@ -24,7 +24,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import jp.ecuacion.splib.web.bean.SwitchUserStatusBean;
+import jp.ecuacion.splib.web.interceptor.SwitchUserReadOnlyInterceptor;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,11 +36,15 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
+import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 @DisplayName("SplibWebSecurityConfigForSwitchUser")
 class SplibWebSecurityConfigForSwitchUserTest {
@@ -215,6 +222,74 @@ class SplibWebSecurityConfigForSwitchUserTest {
         assertThatThrownBy(() -> success(config, request("/admin/switchUser")))
             .isInstanceOf(IllegalStateException.class);
       }
+    }
+  }
+  /** Returns the interceptors registered, in the order they run. */
+  @SuppressWarnings("unchecked")
+  private static List<Object> interceptors(SplibWebSecurityConfigForSwitchUser config) {
+    InterceptorRegistry registry = new InterceptorRegistry();
+    config.splibSwitchUserReadOnlyConfigurer().addInterceptors(registry);
+    // As the audit log's interceptor, registered with the default order (0). Registered after
+    // the one above, so that the order decides which runs first.
+    registry.addInterceptor(new HandlerInterceptor() {});
+    return (List<Object>) Objects
+        .requireNonNull(ReflectionTestUtils.invokeMethod(registry, "getInterceptors"));
+  }
+
+  @Nested
+  @DisplayName("view only")
+  class ReadOnly {
+
+    private static class ReadOnlyConfig extends FixedConfig {
+
+      @Override
+      protected boolean isReadOnlyWhileSwitched() {
+        return true;
+      }
+    }
+
+    private static final Authentication SWITCHED = UsernamePasswordAuthenticationToken
+        .authenticated("user", null, List.of(new SwitchUserGrantedAuthority(
+            "ROLE_PREVIOUS_ADMINISTRATOR", UsernamePasswordAuthenticationToken
+                .authenticated("admin", null, List.of()))));
+
+    @AfterEach
+    void tearDown() {
+      SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("by default: the interceptor is not registered")
+    void notRegisteredByDefault() {
+      assertThat(interceptors(new FixedConfig())).hasSize(1)
+          .noneMatch(i -> i instanceof SwitchUserReadOnlyInterceptor);
+    }
+
+    @Test
+    @DisplayName("enabled: the interceptor is registered after the audit log's interceptor")
+    void registeredAfterAuditLog() {
+      List<Object> interceptors = interceptors(new ReadOnlyConfig());
+
+      assertThat(interceptors).hasSize(2);
+      assertThat(interceptors.get(1)).isInstanceOf(SwitchUserReadOnlyInterceptor.class);
+    }
+
+    @Test
+    @DisplayName("status bean: readOnly only when enabled and switched")
+    void statusBean() {
+      SwitchUserStatusBean byDefault = new FixedConfig().splibSwitchUserStatus();
+      SwitchUserStatusBean enabled = new ReadOnlyConfig().splibSwitchUserStatus();
+
+      SecurityContextHolder.getContext().setAuthentication(AUTH);
+      assertThat(byDefault.isSwitchedUser()).isFalse();
+      assertThat(enabled.isSwitchedUser()).isFalse();
+      assertThat(enabled.isReadOnly()).isFalse();
+
+      SecurityContextHolder.getContext().setAuthentication(SWITCHED);
+      assertThat(byDefault.isSwitchedUser()).isTrue();
+      assertThat(byDefault.isReadOnly()).isFalse();
+      assertThat(enabled.isSwitchedUser()).isTrue();
+      assertThat(enabled.isReadOnly()).isTrue();
     }
   }
 }

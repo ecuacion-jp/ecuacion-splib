@@ -16,7 +16,7 @@
 package jp.ecuacion.splib.web.controller;
 
 import java.util.Objects;
-import jp.ecuacion.splib.core.audit.AuditLogTarget;
+import jp.ecuacion.splib.core.annotation.ReadOnlyOperation;
 import jp.ecuacion.splib.web.bean.ReturnUrlBuilder;
 import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
@@ -185,7 +185,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @param model Model
    * @return URL
    */
-  @AuditLogTarget(false)
+  @ReadOnlyOperation
   @PostMapping(value = "action", params = "action=back")
   public String back(@NonNull F editForm, Model model) {
     boolean isSingle = pageTemplatePattern == PageTemplatePatternEnum.SINGLE;

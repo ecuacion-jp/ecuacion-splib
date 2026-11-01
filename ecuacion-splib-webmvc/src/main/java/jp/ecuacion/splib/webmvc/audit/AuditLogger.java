@@ -34,11 +34,10 @@ import jp.ecuacion.splib.core.audit.AuditLogWriter;
 import jp.ecuacion.splib.core.audit.AuditLogWriter.Entry;
 import jp.ecuacion.splib.core.audit.enums.AuditLogEventType;
 import jp.ecuacion.splib.core.audit.enums.AuditLogResult;
+import jp.ecuacion.splib.webmvc.util.SwitchUserUtil;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.web.authentication.switchuser.SwitchUserGrantedAuthority;
 
 /**
  * Builds audit log records and passes them to {@link AuditLogWriter}.
@@ -157,26 +156,8 @@ public class AuditLogger {
    * {@code authentication} is not a switched user.
    */
   static @Nullable String originalActorOf(@Nullable Authentication authentication) {
-    Authentication source = switchUserSourceOf(authentication);
+    Authentication source = SwitchUserUtil.getSwitchUserSource(authentication);
     return source == null ? null : actorOf(source);
-  }
-
-  /**
-   * Returns the {@code Authentication} from before the switch user, {@code null} if
-   * {@code authentication} is not a switched user.
-   */
-  static @Nullable Authentication switchUserSourceOf(@Nullable Authentication authentication) {
-    if (authentication == null) {
-      return null;
-    }
-
-    for (GrantedAuthority authority : authentication.getAuthorities()) {
-      if (authority instanceof SwitchUserGrantedAuthority switchUserAuthority) {
-        return switchUserAuthority.getSource();
-      }
-    }
-
-    return null;
   }
 
   /**
