@@ -19,6 +19,7 @@ import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
+import java.util.Objects;
 import java.util.Set;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.splib.core.audit.AuditLogContext;
@@ -27,6 +28,7 @@ import jp.ecuacion.splib.core.audit.AuditLogUtil;
 import jp.ecuacion.splib.core.audit.enums.AuditLogResult;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
@@ -46,6 +48,11 @@ import org.springframework.web.servlet.ModelAndView;
  *     before the asynchronous processing started is not taken over (splib has no asynchronous
  *     controllers; add it when one is needed).</p>
  *
+ * <p><strong>Data change history.</strong> For every request to a controller method, recorded
+ *     or not, it keeps who does the operation and the operation's ID ({@link AuditLogContext})
+ *     during the request, which {@code ecuacion-splib-jpa}'s data change history records with
+ *     each change. With only the data change history enabled, it records nothing itself.</p>
+ *
  * <p><strong>Result.</strong> Decided in {@link #resultOf}. An exception handled by an
  *     {@code @ExceptionHandler} (e.g. a {@code ViolationException} that
  *     {@code SplibWebExceptionHandler} turns into a redirect back to the form) never reaches
@@ -59,28 +66,35 @@ import org.springframework.web.servlet.ModelAndView;
 public class AuditLogInterceptor implements AsyncHandlerInterceptor {
 
   /** Request attribute holding the exception the handler threw. */
-  private static final String ATTR_EXCEPTION =
-      AuditLogInterceptor.class.getName() + ".EXCEPTION";
+  private static final String ATTR_EXCEPTION = AuditLogInterceptor.class.getName() + ".EXCEPTION";
 
   private static final Set<String> NOT_RECORDED_BY_DEFAULT =
       Set.of("GET", "HEAD", "OPTIONS", "TRACE");
 
-  private final AuditLogger auditLogger;
+  private final @Nullable AuditLogger auditLogger;
 
   /**
    * Constructs a new instance with {@code auditLogger}.
    *
-   * @param auditLogger the logger records are passed to
+   * @param auditLogger the logger records are passed to, {@code null} when the audit log is
+   *     disabled and only the data change history is enabled
    */
-  public AuditLogInterceptor(AuditLogger auditLogger) {
+  public AuditLogInterceptor(@Nullable AuditLogger auditLogger) {
     this.auditLogger = auditLogger;
   }
 
+  /**
+   * Starts collecting for every request to a controller method, recorded or not, so that the
+   * data change history knows who changed the data even in a request the audit log does not
+   * record (e.g. a {@code POST} with {@code @AuditLogTarget(false)}).
+   */
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-      Object handler) throws Exception {
-    if (isRecorded(request, handler)) {
-      AuditLogContext.begin();
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+      throws Exception {
+    if (isOperation(request, handler)) {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      AuditLogContext.begin(AuditLogger.actorOf(authentication),
+          AuditLogger.originalActorOf(authentication));
     }
 
     return true;
@@ -99,32 +113,44 @@ public class AuditLogInterceptor implements AsyncHandlerInterceptor {
   @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
       Object handler, @Nullable Exception ex) throws Exception {
-    if (!isRecorded(request, handler)) {
+    if (!isOperation(request, handler)) {
       return;
     }
 
     AuditLogContext context = AuditLogContext.end();
+    if (auditLogger == null || !isRecorded(request, handler)) {
+      return;
+    }
+
     Throwable handled = request.getAttribute(ATTR_EXCEPTION) instanceof Throwable t ? t : null;
     Throwable exception = ex != null ? ex : handled;
 
     HandlerMethod handlerMethod = (HandlerMethod) handler;
-    auditLogger.recordOperation(request, SecurityContextHolder.getContext().getAuthentication(),
+    Objects.requireNonNull(auditLogger).recordOperation(request,
+        SecurityContextHolder.getContext().getAuthentication(),
         handlerMethod.getBeanType().getSimpleName() + "#" + handlerMethod.getMethod().getName(),
         resultOf(ex, handled, response.getStatus()), exception, context);
   }
 
   /**
-   * Returns whether the request is recorded. See the class Javadoc.
+   * Returns whether the request is an operation: a {@code REQUEST} or {@code ASYNC} dispatch to a
+   * controller method. See the class Javadoc.
+   */
+  static boolean isOperation(HttpServletRequest request, Object handler) {
+    DispatcherType dispatcherType = request.getDispatcherType();
+    return (dispatcherType == DispatcherType.REQUEST || dispatcherType == DispatcherType.ASYNC)
+        && handler instanceof HandlerMethod;
+  }
+
+  /**
+   * Returns whether the request is recorded in the audit log. See the class Javadoc.
    */
   static boolean isRecorded(HttpServletRequest request, Object handler) {
-    DispatcherType dispatcherType = request.getDispatcherType();
-    if (dispatcherType != DispatcherType.REQUEST && dispatcherType != DispatcherType.ASYNC) {
+    if (!isOperation(request, handler)) {
       return false;
     }
 
-    if (!(handler instanceof HandlerMethod handlerMethod)) {
-      return false;
-    }
+    HandlerMethod handlerMethod = (HandlerMethod) handler;
 
     AuditLogTarget annotation = handlerMethod.getMethodAnnotation(AuditLogTarget.class);
     if (annotation == null) {

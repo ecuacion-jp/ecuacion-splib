@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import jp.ecuacion.splib.core.audit.AuditLogWriter.TargetData;
 import org.jspecify.annotations.Nullable;
 
@@ -35,15 +36,32 @@ public final class AuditLogContext {
 
   private static final ThreadLocal<AuditLogContext> CURRENT = new ThreadLocal<>();
 
+  private final String operationId = UUID.randomUUID().toString();
+  private final @Nullable String actor;
+  private final @Nullable String originalActor;
   private final List<TargetData> targets = new ArrayList<>();
   private final Map<String, String> attributes = new LinkedHashMap<>();
   private final Map<String, @Nullable String> details = new LinkedHashMap<>();
 
-  private AuditLogContext() {}
+  private AuditLogContext(@Nullable String actor, @Nullable String originalActor) {
+    this.actor = actor;
+    this.originalActor = originalActor;
+  }
 
-  /** Starts collecting information on the current thread, discarding any left over. */
-  public static void begin() {
-    CURRENT.set(new AuditLogContext());
+  /**
+   * Starts collecting information on the current thread for an operation, discarding any left
+   * over.
+   *
+   * <p>{@code actor} and {@code originalActor} are what the audit log records for who does the
+   *     operation (see {@link AuditLogWriter.Entry}); they are also used for the data change
+   *     history ({@code ecuacion-splib-jpa}), which records who changed the data.</p>
+   *
+   * @param actor who does the operation, {@code null} if not logged in
+   * @param originalActor during a switch user, the administrator who switched to {@code actor};
+   *     {@code null} otherwise
+   */
+  public static void begin(@Nullable String actor, @Nullable String originalActor) {
+    CURRENT.set(new AuditLogContext(actor, originalActor));
   }
 
   /**
@@ -64,6 +82,34 @@ public final class AuditLogContext {
    */
   public static @Nullable AuditLogContext current() {
     return CURRENT.get();
+  }
+
+  /**
+   * Returns the ID of the operation, a random UUID, which links the operation's audit log record
+   * to the data change history made by it.
+   *
+   * @return the ID
+   */
+  public String getOperationId() {
+    return operationId;
+  }
+
+  /**
+   * Returns who does the operation.
+   *
+   * @return who does the operation, {@code null} if not logged in
+   */
+  public @Nullable String getActor() {
+    return actor;
+  }
+
+  /**
+   * Returns the administrator who switched to {@link #getActor()} during a switch user.
+   *
+   * @return the administrator, {@code null} if not during a switch user
+   */
+  public @Nullable String getOriginalActor() {
+    return originalActor;
   }
 
   /**

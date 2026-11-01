@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan("jp.ecuacion.splib.core.config"
     + ",jp.ecuacion.splib.jpa.entitymanager"
     + ",jp.ecuacion.splib.jpa.util"
+    + ",jp.ecuacion.splib.jpa.datachangehistory"
     )
 public class SplibJpaConfig {
   

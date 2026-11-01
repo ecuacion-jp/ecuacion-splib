@@ -127,7 +127,9 @@ public class AuditLogger {
     try {
       // The server's own time zone, like the other log files.
       Entry record = new Entry(
-          OffsetDateTime.now(ZoneId.systemDefault()), eventType, result, actor, originalActor,
+          OffsetDateTime.now(ZoneId.systemDefault()),
+          context == null ? null : context.getOperationId(), eventType, result, actor,
+          originalActor,
           detailsOf(request, handler, context),
           context == null ? List.of() : context.getTargets(), error,
           context == null ? Map.of() : context.getAttributes());
@@ -141,8 +143,7 @@ public class AuditLogger {
   /**
    * Returns the value recorded for {@code authentication}, {@code null} if not logged in.
    */
-  @Nullable
-  String actorOf(@Nullable Authentication authentication) {
+  static @Nullable String actorOf(@Nullable Authentication authentication) {
     if (authentication == null || !authentication.isAuthenticated()
         || authentication instanceof AnonymousAuthenticationToken) {
       return null;
@@ -155,8 +156,7 @@ public class AuditLogger {
    * Returns the value recorded for the administrator behind a switch user, {@code null} if
    * {@code authentication} is not a switched user.
    */
-  @Nullable
-  String originalActorOf(@Nullable Authentication authentication) {
+  static @Nullable String originalActorOf(@Nullable Authentication authentication) {
     Authentication source = switchUserSourceOf(authentication);
     return source == null ? null : actorOf(source);
   }

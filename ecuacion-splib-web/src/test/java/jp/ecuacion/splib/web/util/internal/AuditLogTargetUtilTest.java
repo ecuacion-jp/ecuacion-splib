@@ -115,7 +115,7 @@ class AuditLogTargetUtilTest {
     other.setIds("6");
     form.other = other;
     TestForm empty = new TestForm();
-    AuditLogContext.begin();
+    AuditLogContext.begin(null, null);
 
     AuditLogTargetUtil.addTargetsOf(form, empty);
 

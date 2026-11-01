@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.lib.core.violation.Violations;
+import jp.ecuacion.splib.core.audit.AuditLogConstants;
 import jp.ecuacion.splib.core.audit.AuditLogContext;
 import jp.ecuacion.splib.core.audit.AuditLogTarget;
 import jp.ecuacion.splib.core.audit.AuditLogUtil;
@@ -40,6 +41,7 @@ import jp.ecuacion.splib.core.audit.AuditLogWriter.Entry;
 import jp.ecuacion.splib.core.audit.AuditLogWriter.TargetData;
 import jp.ecuacion.splib.core.audit.enums.AuditLogEventType;
 import jp.ecuacion.splib.core.audit.enums.AuditLogResult;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -83,7 +85,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
  */
 @DisplayName("AuditLogInterceptor")
 @SpringJUnitWebConfig(AuditLogInterceptorTest.TestConfig.class)
-@TestPropertySource(properties = AuditLogConfig.PROP_KEY_ENABLED + "=true")
+@TestPropertySource(properties = AuditLogConstants.PROP_KEY_ENABLED + "=true")
 class AuditLogInterceptorTest {
 
   /** Collects records instead of writing them. */
@@ -104,9 +106,13 @@ class AuditLogInterceptorTest {
   @RequestMapping("/account/sample")
   static class SampleController {
 
+    /** What was being collected while the last request to ok() or get() was processed. */
+    static @Nullable AuditLogContext seen;
+
     @PostMapping("ok")
     @ResponseBody
     String ok() {
+      seen = AuditLogContext.current();
       AuditLogUtil.addTarget("Sample", 1L);
       AuditLogUtil.putAttribute("systemCode", "S1");
       // As ecuacion-splib-web's SplibControllerAdvice does for loginState.
@@ -137,6 +143,7 @@ class AuditLogInterceptorTest {
     @GetMapping("get")
     @ResponseBody
     String get() {
+      seen = AuditLogContext.current();
       AuditLogUtil.addTarget("Sample", 1L);
       return "ok";
     }
@@ -360,6 +367,26 @@ class AuditLogInterceptorTest {
       assertThat(record.targets()).containsExactly(new TargetData("Sample", "1"));
       assertThat(record.error()).isNull();
       assertThat(record.attributes()).containsExactlyEntriesOf(Map.of("systemCode", "S1"));
+      AuditLogContext seen = Objects.requireNonNull(SampleController.seen);
+      assertThat(record.operationId()).isEqualTo(seen.getOperationId());
+    }
+
+    @Test
+    @DisplayName("while processing: who does the operation is kept for the data change history, "
+        + "even in a request not recorded")
+    void keptWhileProcessing() throws Exception {
+      Authentication admin = user("admin1");
+      login(UsernamePasswordAuthenticationToken.authenticated("user1", null,
+          List.of(new SimpleGrantedAuthority("ROLE_ACCOUNT"),
+              new SwitchUserGrantedAuthority("ROLE_PREVIOUS_ADMINISTRATOR", admin))));
+
+      mockMvc.perform(get("/account/sample/get")).andExpect(status().isOk());
+
+      AuditLogContext seen = Objects.requireNonNull(SampleController.seen);
+      assertThat(seen.getActor()).isEqualTo("user1");
+      assertThat(seen.getOriginalActor()).isEqualTo("admin1");
+      assertThat(seen.getOperationId()).isNotEmpty();
+      assertThat(writer.records).isEmpty();
     }
 
     @Test

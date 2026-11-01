@@ -58,5 +58,12 @@
 			<artifactId>ecuacion-splib-core</artifactId>
 		</dependency>
 
+		<!-- test: on the classpath, as in the applications using the data change history -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-envers</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 </project>

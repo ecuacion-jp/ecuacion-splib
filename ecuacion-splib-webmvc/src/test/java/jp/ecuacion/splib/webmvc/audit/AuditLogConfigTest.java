@@ -17,16 +17,20 @@ package jp.ecuacion.splib.webmvc.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jp.ecuacion.splib.core.audit.AuditLogConstants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
 /** Tests for {@link AuditLogConfig}. */
 @DisplayName("AuditLogConfig")
 class AuditLogConfigTest {
 
-  private final WebApplicationContextRunner runner =
-      new WebApplicationContextRunner().withUserConfiguration(AuditLogConfig.class);
+  /** Without Hibernate Envers, that is, without the data change history. */
+  private final WebApplicationContextRunner runner = new WebApplicationContextRunner()
+      .withUserConfiguration(AuditLogConfig.class)
+      .withClassLoader(new FilteredClassLoader("org.hibernate.envers"));
 
   @Test
   @DisplayName("property not set: nothing is registered")
@@ -42,17 +46,29 @@ class AuditLogConfigTest {
   @Test
   @DisplayName("enabled=false: nothing is registered")
   void disabled() {
-    runner.withPropertyValues(AuditLogConfig.PROP_KEY_ENABLED + "=false")
+    runner.withPropertyValues(AuditLogConstants.PROP_KEY_ENABLED + "=false")
         .run(context -> assertThat(context).doesNotHaveBean(AuditLogger.class));
   }
 
   @Test
   @DisplayName("enabled=true: the logger, the interceptor and the listener are registered")
   void enabled() {
-    runner.withPropertyValues(AuditLogConfig.PROP_KEY_ENABLED + "=true").run(context -> {
+    runner.withPropertyValues(AuditLogConstants.PROP_KEY_ENABLED + "=true").run(context -> {
       assertThat(context).hasSingleBean(AuditLogger.class);
       assertThat(context).hasSingleBean(AuditLogInterceptor.class);
       assertThat(context).hasSingleBean(AuditLogSecurityEventListener.class);
     });
+  }
+
+  @Test
+  @DisplayName("only the data change history used (Envers on the classpath): only the "
+      + "interceptor is registered, so that no audit log record is written")
+  void dataChangeHistoryOnly() {
+    new WebApplicationContextRunner().withUserConfiguration(AuditLogConfig.class)
+        .run(context -> {
+          assertThat(context).hasSingleBean(AuditLogInterceptor.class);
+          assertThat(context).doesNotHaveBean(AuditLogger.class);
+          assertThat(context).doesNotHaveBean(AuditLogSecurityEventListener.class);
+        });
   }
 }
