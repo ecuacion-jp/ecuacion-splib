@@ -704,9 +704,14 @@
 		- id					Specifies id attribute of the component.
 		- backgroundColorClass	Specifies the color of the background of the component
  	 */-->
+	<!--/* "id=" is added to options only when the caller didn't specify it. (scriptButton and
+			submitButtonWithIds always specify it, and adding it again caused a "Duplicated key: id"
+			warning on every such button. It also has to be kept as the caller escaped it,
+			since the id may contain "," like "delete_1,1".) */-->
 	<div th:fragment="internalButtonCommonComponent(name, label, submits, options)" th:remove="tag"
 			th:with="id=${#optUtil.getValueOrElse(options, 'id', name)}">
- 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentButtonCommonComponent}, 'id=' + ${id} + ',' + ${options})}"></div>
+ 		<div th:replace="~{ :: internalButtonLookComponent(~{ :: fragmentButtonCommonComponent},
+ 				${#optUtil.hasKey(options, 'id') ? options : 'id=' + id + ',' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentButtonCommonComponent" th:remove="tag"
 				th:with="id=${#optUtil.getValueOrElse(options, 'id', name)}">
