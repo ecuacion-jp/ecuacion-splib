@@ -78,6 +78,7 @@ public class AuditLogWriter {
   static String toJson(Entry record) {
     StringBuilder sb = new StringBuilder("{");
     field(sb, "timestamp", record.timestamp().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+    field(sb, "operationId", record.operationId());
     field(sb, "eventType", record.eventType().name());
     field(sb, "result", record.result().name());
     field(sb, "actor", record.actor());
@@ -171,6 +172,9 @@ public class AuditLogWriter {
    *     needed to detect brute-force attacks.</p>
    *
    * @param timestamp when the event happened
+   * @param operationId the ID of the operation ({@link AuditLogContext#getOperationId()}), which
+   *     the data change history made by the operation also holds; {@code null} for events that
+   *     are not operations, such as logins
    * @param eventType the kind of the event
    * @param result the result of the event
    * @param actor who did it: {@code Authentication#getName()} of the logged-in user (the key ID for
@@ -185,7 +189,8 @@ public class AuditLogWriter {
    *     {@code ViolationException}; {@code null} if no exception occurred
    * @param attributes items the application added with {@link AuditLogUtil#putAttribute}
    */
-  public record Entry(OffsetDateTime timestamp, AuditLogEventType eventType, AuditLogResult result,
+  public record Entry(OffsetDateTime timestamp, @Nullable String operationId,
+      AuditLogEventType eventType, AuditLogResult result,
       @Nullable String actor, @Nullable String originalActor, Map<String, @Nullable String> details,
       List<TargetData> targets, @Nullable String error, Map<String, String> attributes) {
   }

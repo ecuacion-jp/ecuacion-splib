@@ -35,7 +35,7 @@ class AuditLogContextTest {
   @Test
   @DisplayName("addTarget: the same data is added once, in the order first added")
   void addTargetOnce() {
-    AuditLogContext.begin();
+    AuditLogContext.begin(null, null);
 
     AuditLogUtil.addTarget("Acc", 5L);
     AuditLogUtil.addTarget("Acc", "6");

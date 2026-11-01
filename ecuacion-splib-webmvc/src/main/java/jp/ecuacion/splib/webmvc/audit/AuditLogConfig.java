@@ -16,29 +16,37 @@
 package jp.ecuacion.splib.webmvc.audit;
 
 import java.util.List;
+import jp.ecuacion.splib.core.audit.AuditLogConstants;
 import jp.ecuacion.splib.core.audit.AuditLogWriter;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Registers the audit log when {@value #PROP_KEY_ENABLED} is {@code true}.
+ * Registers the audit log when {@code jp.ecuacion.splib.core.audit-log.enabled}
+ * ({@link AuditLogConstants#PROP_KEY_ENABLED}) is {@code true}, and what the data change history
+ * needs when Hibernate Envers is on the classpath
+ * ({@link AuditLogConstants#DATA_CHANGE_HISTORY_CLASS}).
  *
- * <p>Disabled by default; when disabled, nothing in this class is registered, so applications
- *     that do not enable it behave exactly as before. When enabled, it registers:</p>
+ * <p>When neither applies, nothing in this class is registered, so applications that use
+ *     neither behave exactly as before.</p>
  *
  * <ul>
- *   <li>{@link AuditLogger}, writing with {@link AuditLogWriter}.</li>
- *   <li>{@link AuditLogInterceptor}, which records operations, and the
- *       {@link HandlerExceptionResolver} it needs
- *       ({@link AuditLogInterceptor#exceptionRecorder}, placed ahead of all other
- *       resolvers).</li>
- *   <li>{@link AuditLogSecurityEventListener}, which records login, logout and switch user.
- *       </li>
+ *   <li>{@link AuditLogInterceptor}, and the {@link HandlerExceptionResolver} it needs
+ *       ({@link AuditLogInterceptor#exceptionRecorder}, placed ahead of all other resolvers):
+ *       registered when either is enabled. It keeps who does the operation and its ID during
+ *       the request ({@code AuditLogContext}), which the data change history reads, and records
+ *       operations when the audit log is enabled.</li>
+ *   <li>{@link AuditLogger}, writing with {@link AuditLogWriter}, and
+ *       {@link AuditLogSecurityEventListener}, which records login, logout and switch user:
+ *       registered only when the audit log is enabled.</li>
  * </ul>
  *
  * <p>Scanned by {@code SplibWebConfig} and {@code SplibRestConfig}, so that an application using
@@ -46,12 +54,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 // Named explicitly, so that an application's own class named AuditLogConfig does not clash.
 @Configuration(value = "splibAuditLogConfig", proxyBeanMethods = false)
-@ConditionalOnProperty(prefix = "jp.ecuacion.splib.core.audit-log", name = "enabled",
-    havingValue = "true")
+@Conditional(AuditLogConfig.AuditLogOrDataChangeHistory.class)
 public class AuditLogConfig implements WebMvcConfigurer {
 
-  /** {@code application.properties} key enabling the audit log. */
-  public static final String PROP_KEY_ENABLED = "jp.ecuacion.splib.core.audit-log.enabled";
+  /** Matches when the audit log is enabled or the data change history is used. */
+  static class AuditLogOrDataChangeHistory extends AnyNestedCondition {
+
+    AuditLogOrDataChangeHistory() {
+      super(ConfigurationPhase.PARSE_CONFIGURATION);
+    }
+
+    @ConditionalOnProperty(name = AuditLogConstants.PROP_KEY_ENABLED, havingValue = "true")
+    static class AuditLog {
+    }
+
+    @ConditionalOnClass(name = AuditLogConstants.DATA_CHANGE_HISTORY_CLASS)
+    static class DataChangeHistory {
+    }
+  }
 
   private final ObjectProvider<AuditLogInterceptor> interceptor;
 
@@ -65,16 +85,18 @@ public class AuditLogConfig implements WebMvcConfigurer {
   }
 
   @Bean
+  @ConditionalOnProperty(name = AuditLogConstants.PROP_KEY_ENABLED, havingValue = "true")
   AuditLogger splibAuditLogger() {
     return new AuditLogger(new AuditLogWriter());
   }
 
   @Bean
-  AuditLogInterceptor splibAuditLogInterceptor(AuditLogger auditLogger) {
-    return new AuditLogInterceptor(auditLogger);
+  AuditLogInterceptor splibAuditLogInterceptor(ObjectProvider<AuditLogger> auditLogger) {
+    return new AuditLogInterceptor(auditLogger.getIfAvailable());
   }
 
   @Bean
+  @ConditionalOnProperty(name = AuditLogConstants.PROP_KEY_ENABLED, havingValue = "true")
   AuditLogSecurityEventListener splibAuditLogSecurityEventListener(
       AuditLogger auditLogger) {
     return new AuditLogSecurityEventListener(auditLogger);
