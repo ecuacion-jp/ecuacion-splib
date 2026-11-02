@@ -353,7 +353,7 @@
 					idsForAttr=${#strings.replace(#strings.replace(rawIds, '\', '\\'), ',', '\,')},
 					versionsForAttr=${#strings.replace(#strings.replace(rawVersions, '\', '\\'), ',', '\,')}">
 			<div th:replace="~{ :: submitButton(${name}, ${buttonText},
-						'id=' + ${name} + '_' + *{ids} + ',attr=data-ids|' + ${idsForAttr} + ',attr=data-versions|' + ${versionsForAttr}
+						'id=' + ${name} + '_' + ${idsForAttr} + ',attr=data-ids|' + ${idsForAttr} + ',attr=data-versions|' + ${versionsForAttr}
 						 + ',' + ${options} + ',event=click|tdSubmitButtonWithIds')}">
 			</div>
 		</th:block>
