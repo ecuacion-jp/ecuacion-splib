@@ -17,6 +17,7 @@ package jp.ecuacion.splib.jpa.util;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Map;
 import java.util.Objects;
 import org.hibernate.Filter;
 import org.hibernate.Session;
@@ -34,30 +35,31 @@ public abstract class SplibJpaFilterUtil {
 
   private boolean usesSoftDeleteFeature;
   private boolean usesGroupFeature;
-  private String groupColumnName;
-  private boolean hasCustomGroupColumn;
-  private String customGroupName;
-  private String customGroupColumnName;
+  private @Nullable String groupColumnName;
+  private Map<String, String> customGroupFilterParamNameMap;
 
   /**
    * Constructs a new instance.
-   * 
+   *
+   * <p>A custom group filter is the filter of a table which has a group identifier column
+   *     (a column treated as the group column under a different name, like the primary key of the
+   *     table representing the group itself).
+   *     Every custom group filter is enabled and disabled together with the common group filter,
+   *     with the same group ID.</p>
+   *
    * @param usesSoftDeleteFeature usesSoftDeleteFeature
    * @param usesGroupFeature usesGroupFeature
-   * @param groupColumnName groupColumnName
-   * @param hasCustomGroupColumn hasCustomGroupColumn
-   * @param customGroupName customGroupName
-   * @param customGroupColumnName customGroupColumnName
+   * @param groupColumnName the parameter name of the common group filter,
+   *     or {@code null} if the group feature is not used
+   * @param customGroupFilterParamNameMap a map of custom group filter names
+   *     to their parameter names; empty if no custom group filter exists
    */
   public SplibJpaFilterUtil(boolean usesSoftDeleteFeature, boolean usesGroupFeature,
-      String groupColumnName, boolean hasCustomGroupColumn, String customGroupName,
-      String customGroupColumnName) {
+      @Nullable String groupColumnName, Map<String, String> customGroupFilterParamNameMap) {
     this.usesSoftDeleteFeature = usesSoftDeleteFeature;
     this.usesGroupFeature = usesGroupFeature;
     this.groupColumnName = groupColumnName;
-    this.hasCustomGroupColumn = hasCustomGroupColumn;
-    this.customGroupName = customGroupName;
-    this.customGroupColumnName = customGroupColumnName;
+    this.customGroupFilterParamNameMap = Map.copyOf(customGroupFilterParamNameMap);
   }
 
   /**
@@ -69,11 +71,10 @@ public abstract class SplibJpaFilterUtil {
     if (usesGroupFeature) {
       Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
       Filter filter = session.enableFilter("groupFilter");
-      filter.setParameter(groupColumnName, groupId);
+      filter.setParameter(Objects.requireNonNull(groupColumnName), groupId);
 
-      if (hasCustomGroupColumn) {
-        Filter filterAccGroup = session.enableFilter(customGroupName);
-        filterAccGroup.setParameter(customGroupColumnName, groupId);
+      for (Map.Entry<String, String> entry : customGroupFilterParamNameMap.entrySet()) {
+        session.enableFilter(entry.getKey()).setParameter(entry.getValue(), groupId);
       }
     }
   }
@@ -86,8 +87,8 @@ public abstract class SplibJpaFilterUtil {
       Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
       session.disableFilter("groupFilter");
 
-      if (hasCustomGroupColumn) {
-        session.disableFilter(customGroupName);
+      for (String customGroupFilterName : customGroupFilterParamNameMap.keySet()) {
+        session.disableFilter(customGroupFilterName);
       }
     }
   }
