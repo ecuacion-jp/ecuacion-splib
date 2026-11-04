@@ -46,8 +46,13 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class SplibAppleClientSecretService {
 
-  /** Valid duration of the generated JWT: 6 months in milliseconds. */
-  private static final long EXPIRY_MS = 6L * 30 * 24 * 60 * 60 * 1000;
+  /**
+   * Valid duration of the generated JWT: 5 minutes in milliseconds.
+   *
+   * <p>The JWT is generated for every token request, so a short duration is enough.
+   *     It limits the damage when the JWT leaks (into logs, for example).</p>
+   */
+  static final long EXPIRY_MS = 5L * 60 * 1000;
 
   @Value("${ecuacion.oauth2.apple.team-id}")
   @SuppressWarnings({"NullAway", "null"})
@@ -75,10 +80,11 @@ public class SplibAppleClientSecretService {
     try {
       ECPrivateKey ecPrivateKey = parsePrivateKey(privateKeyPem);
 
+      Instant now = Instant.now();
       JWTClaimsSet claims = new JWTClaimsSet.Builder()
           .issuer(teamId)
-          .issueTime(Date.from(Instant.now()))
-          .expirationTime(Date.from(Instant.now().plusMillis(EXPIRY_MS)))
+          .issueTime(Date.from(now))
+          .expirationTime(Date.from(now.plusMillis(EXPIRY_MS)))
           .audience("https://appleid.apple.com")
           .subject(clientId)
           .build();
