@@ -34,8 +34,13 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public abstract class SplibGeneralService {
 
-  @Autowired
+  @SuppressWarnings("null")
   private HttpServletRequest request;
+
+  @Autowired
+  private void setRequest(HttpServletRequest request) {
+    this.request = request;
+  }
 
   private DetailLogger detailLog = new DetailLogger(this);
 

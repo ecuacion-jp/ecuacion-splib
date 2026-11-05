@@ -31,11 +31,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SplibJpaDataStoreDependentControllerAdvice
     extends SplibDataStoreDependentControllerAdvice {
 
-  @Autowired
+  @SuppressWarnings("null")
   SplibDataStoreDependentControllerAdviceService service;
 
   @Autowired
+  private void setService(SplibDataStoreDependentControllerAdviceService service) {
+    this.service = service;
+  }
+
+  @SuppressWarnings("null")
   SplibJpaFilterUtil filterUtil;
+
+  @Autowired
+  private void setFilterUtil(SplibJpaFilterUtil filterUtil) {
+    this.filterUtil = filterUtil;
+  }
 
   @Override
   protected void executeForAll() {

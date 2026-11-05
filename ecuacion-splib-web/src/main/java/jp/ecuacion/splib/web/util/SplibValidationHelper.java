@@ -29,7 +29,6 @@ import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import jp.ecuacion.splib.web.util.internal.NotEmptyCheckUtil;
 import jp.ecuacion.splib.web.util.internal.SplibControllerPrepareHelper;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,14 +46,18 @@ public class SplibValidationHelper {
   /** Request attribute key used to pass the return view name to the exception handler. */
   public static final String REQUEST_ATTR_RETURN_VIEW = "splibValidationReturnView";
 
-  @Autowired
-  private HttpServletRequest request;
+  private final HttpServletRequest request;
 
-  @Autowired
-  private SplibControllerPrepareHelper prepareHelper;
+  private final SplibControllerPrepareHelper prepareHelper;
 
-  @Autowired
-  private SplibLoginStateUtil loginStateUtil;
+  private final SplibLoginStateUtil loginStateUtil;
+
+  SplibValidationHelper(HttpServletRequest request, SplibControllerPrepareHelper prepareHelper,
+      SplibLoginStateUtil loginStateUtil) {
+    this.request = request;
+    this.prepareHelper = prepareHelper;
+    this.loginStateUtil = loginStateUtil;
+  }
 
   /**
    * Validates {@code form} and throws {@code ViolationException} if any violations are found.

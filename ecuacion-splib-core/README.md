@@ -26,6 +26,7 @@
 ### Manual Load Needed Libraries
 
 - (If you use `SplibMailUtil`, add `org.springframework.boot:spring-boot-starter-mail`.)
+- (If you use the `ClientHttpRequestFactory` bean of `SplibHttpClientConfig`, add `org.springframework:spring-web`. If you also set proxy credentials, add `org.apache.httpcomponents.client5:httpclient5`.)
 
 ## Documentation
 

@@ -15,17 +15,21 @@
  */
 package jp.ecuacion.splib.cli.config;
 
+import jp.ecuacion.splib.core.config.SplibHttpClientConfig;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
 /**
- * Registers ecuacion-splib-cli's own beans (currently just {@code SplibExceptionHandler}) via
+ * Registers ecuacion-splib-cli's own beans ({@code SplibExceptionHandler} and the HTTP client
+ * beans of {@link SplibHttpClientConfig}) via
  * Spring Boot auto-configuration, so they are picked up regardless of the consuming app's own
  * base package — unlike {@code ecuacion-splib-batch}, apps using ecuacion-splib-cli are not
  * expected to declare a {@code @ComponentScan} of their own.
  */
 @AutoConfiguration
 @ComponentScan("jp.ecuacion.splib.cli.exceptionhandler")
+@Import(SplibHttpClientConfig.class)
 public class SplibCliAutoConfig {
 
 }

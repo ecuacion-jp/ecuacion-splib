@@ -15,10 +15,24 @@
  */
 package jp.ecuacion.splib.web.oauth2;
 
+import jp.ecuacion.splib.core.config.SplibHttpClientConfig;
 import jp.ecuacion.splib.web.config.SplibOauth2WebSecurityConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Registers the beans of this package used by {@link SplibOauth2WebSecurityConfig}.
@@ -31,8 +45,14 @@ import org.springframework.context.annotation.Configuration;
  *     on the order of bean registration outside auto-configurations.
  *     Apps extending {@link SplibOauth2WebSecurityConfig} must register
  *     a {@link SplibOauth2UserHandler} bean, and the startup fails if it's missing.</p>
+ *
+ * <p>All the outbound communication of the login uses the client of
+ *     {@link SplibHttpClientConfig}, so its proxy and timeout settings apply.
+ *     An app registering its own {@link JwtDecoderFactory} bean fails at startup
+ *     since Spring Security requires it to be unique.</p>
  */
 @Configuration(value = "splibOauth2Config", proxyBeanMethods = false)
+@Import(SplibHttpClientConfig.class)
 public class SplibOauth2Config {
 
   /**
@@ -69,5 +89,53 @@ public class SplibOauth2Config {
   @ConditionalOnProperty(name = "ecuacion.oauth2.apple.team-id")
   SplibAppleClientSecretService splibAppleClientSecretService() {
     return new SplibAppleClientSecretService();
+  }
+
+  /**
+   * Provides the service to get user information when the {@code openid} scope isn't requested.
+   *
+   * @param requestFactory requestFactory
+   * @return OAuth2UserService
+   */
+  @Bean
+  OAuth2UserService<OAuth2UserRequest, OAuth2User> splibOauth2UserService(
+      @Qualifier(SplibHttpClientConfig.BEAN_NAME_REQUEST_FACTORY)
+      ClientHttpRequestFactory requestFactory) {
+    return buildOauth2UserService(requestFactory);
+  }
+
+  /**
+   * Provides the service to get user information when the {@code openid} scope is requested.
+   *
+   * @param requestFactory requestFactory
+   * @return OAuth2UserService
+   */
+  @Bean
+  OAuth2UserService<OidcUserRequest, OidcUser> splibOidcUserService(
+      @Qualifier(SplibHttpClientConfig.BEAN_NAME_REQUEST_FACTORY)
+      ClientHttpRequestFactory requestFactory) {
+    OidcUserService service = new OidcUserService();
+    service.setOauth2UserService(buildOauth2UserService(requestFactory));
+    return service;
+  }
+
+  /**
+   * Provides the factory of ID token decoders.
+   *
+   * @param requestFactory requestFactory
+   * @return JwtDecoderFactory
+   */
+  @Bean
+  JwtDecoderFactory<ClientRegistration> splibOauth2JwtDecoderFactory(
+      @Qualifier(SplibHttpClientConfig.BEAN_NAME_REQUEST_FACTORY)
+      ClientHttpRequestFactory requestFactory) {
+    return new SplibOauth2JwtDecoderFactory(new RestTemplate(requestFactory));
+  }
+
+  private DefaultOAuth2UserService buildOauth2UserService(
+      ClientHttpRequestFactory requestFactory) {
+    DefaultOAuth2UserService service = new DefaultOAuth2UserService();
+    service.setRestOperations(SplibOauth2HttpClients.forUserInfoEndpoint(requestFactory));
+    return service;
   }
 }

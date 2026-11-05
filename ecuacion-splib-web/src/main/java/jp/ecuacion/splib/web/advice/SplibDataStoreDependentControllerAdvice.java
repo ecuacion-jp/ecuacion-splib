@@ -38,8 +38,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  */
 public abstract class SplibDataStoreDependentControllerAdvice {
 
-  @Autowired
+  @SuppressWarnings("null")
   SplibDataStoreDependentControllerAdviceService service;
+
+  @Autowired
+  private void setService(SplibDataStoreDependentControllerAdviceService service) {
+    this.service = service;
+  }
 
   /**
    * Sets account info into a {@code Model}.

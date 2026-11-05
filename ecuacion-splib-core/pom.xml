@@ -53,6 +53,23 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- spring-web: optional. Only needed for the ClientHttpRequestFactory bean of SplibHttpClientConfig,
+			which RestClient / RestTemplate users receive (they already have spring-web). Apps using only the
+			JDK's HttpClient, such as CLI apps, don't get it transitively. -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- httpclient5: optional. Only needed for the ClientHttpRequestFactory bean of SplibHttpClientConfig
+			when proxy credentials are set. Apps using them add it themselves. -->
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- ecuacion-lib -->
 		<dependency>
 			<groupId>jp.ecuacion.lib</groupId>
