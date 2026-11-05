@@ -17,6 +17,7 @@ package jp.ecuacion.splib.web.config;
 
 import jp.ecuacion.splib.core.config.SplibHttpClientConfig;
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
+import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthFailureHandler;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthorizationRequestResolver;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2Config;
@@ -103,7 +104,8 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
         .authorizedClientRepository(new HttpSessionOAuth2AuthorizedClientRepository())
         .authorizationEndpoint(ep -> ep.authorizationRequestResolver(requestResolver))
         .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient(requestFactory)))
-        .successHandler(oauth2SuccessHandler));
+        .successHandler(oauth2SuccessHandler)
+        .failureHandler(new SplibOauth2AuthFailureHandler(getLoginNeededPage())));
   }
 
   /**

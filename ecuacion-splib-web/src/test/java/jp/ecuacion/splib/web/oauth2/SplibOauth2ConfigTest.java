@@ -126,6 +126,16 @@ class SplibOauth2ConfigTest {
     });
   }
 
+  @Test
+  @DisplayName("the login failure is handled by SplibOauth2AuthFailureHandler")
+  void failureHandlerUsed() {
+    runner.withUserConfiguration(UserHandlerConfig.class).run(ctx -> {
+      assertThat(ctx).hasNotFailed();
+      assertThat(field(loginFilter(ctx), "failureHandler"))
+          .isInstanceOf(SplibOauth2AuthFailureHandler.class);
+    });
+  }
+
   @SuppressWarnings("null")
   private static Object field(Object target, String name) {
     return Objects.requireNonNull(ReflectionTestUtils.getField(target, name));
@@ -139,12 +149,15 @@ class SplibOauth2ConfigTest {
 
   @SuppressWarnings("null")
   private static List<AuthenticationProvider> loginProviders(ApplicationContext ctx) {
-    Filter loginFilter = ctx.getBean(FilterChainProxy.class).getFilterChains().stream()
+    ProviderManager manager = (ProviderManager) Objects.requireNonNull(
+        ReflectionTestUtils.invokeMethod(loginFilter(ctx), "getAuthenticationManager"));
+    return manager.getProviders();
+  }
+
+  private static Filter loginFilter(ApplicationContext ctx) {
+    return ctx.getBean(FilterChainProxy.class).getFilterChains().stream()
         .flatMap(chain -> chain.getFilters().stream())
         .filter(OAuth2LoginAuthenticationFilter.class::isInstance).findFirst().orElseThrow();
-    ProviderManager manager = (ProviderManager) Objects.requireNonNull(
-        ReflectionTestUtils.invokeMethod(loginFilter, "getAuthenticationManager"));
-    return manager.getProviders();
   }
 
   @Configuration
