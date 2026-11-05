@@ -30,7 +30,6 @@ import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import jp.ecuacion.splib.web.util.SplibSecurityUtil.RolesAndAuthoritiesBean;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
@@ -44,11 +43,14 @@ import org.springframework.validation.BindingResult;
 @Component
 public class SplibControllerPrepareHelper {
 
-  @Autowired
-  private HttpServletRequest request;
+  private final HttpServletRequest request;
 
-  @Autowired
-  private SplibLoginStateUtil loginStateUtil;
+  private final SplibLoginStateUtil loginStateUtil;
+
+  SplibControllerPrepareHelper(HttpServletRequest request, SplibLoginStateUtil loginStateUtil) {
+    this.request = request;
+    this.loginStateUtil = loginStateUtil;
+  }
 
   /**
    * Registers a {@code BindingResult} for {@code form} in {@code model} under the

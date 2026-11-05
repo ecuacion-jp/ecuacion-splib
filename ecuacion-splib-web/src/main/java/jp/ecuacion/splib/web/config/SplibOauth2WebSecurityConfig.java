@@ -15,13 +15,17 @@
  */
 package jp.ecuacion.splib.web.config;
 
+import jp.ecuacion.splib.core.config.SplibHttpClientConfig;
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthorizationRequestResolver;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2Config;
+import jp.ecuacion.splib.web.oauth2.SplibOauth2HttpClients;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2TokenRequestParametersConverter;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -86,6 +90,11 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
 
     oauth2SuccessHandler.setDefaultTargetUrl(getDefaultSuccessUrl());
 
+    // Obtained here to keep the constructor, which the apps' subclasses call, unchanged.
+    ClientHttpRequestFactory requestFactory =
+        http.getSharedObject(ApplicationContext.class).getBean(
+            SplibHttpClientConfig.BEAN_NAME_REQUEST_FACTORY, ClientHttpRequestFactory.class);
+
     // splib uses OAuth2 only for login and doesn't use the tokens afterwards,
     // so they are kept in the session instead of Spring Boot's default
     // (InMemoryOAuth2AuthorizedClientService, which keeps them until the app stops).
@@ -93,17 +102,21 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
     http.oauth2Login(oauth2 -> oauth2.loginPage(getLoginNeededPage())
         .authorizedClientRepository(new HttpSessionOAuth2AuthorizedClientRepository())
         .authorizationEndpoint(ep -> ep.authorizationRequestResolver(requestResolver))
-        .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient()))
+        .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient(requestFactory)))
         .successHandler(oauth2SuccessHandler));
   }
 
   /**
    * Builds a token-response client that replaces {@code client_secret} with Apple's JWT
    * when a token request is sent to Apple.
+   *
+   * @param requestFactory requestFactory
    */
-  private RestClientAuthorizationCodeTokenResponseClient buildTokenResponseClient() {
+  private RestClientAuthorizationCodeTokenResponseClient buildTokenResponseClient(
+      ClientHttpRequestFactory requestFactory) {
     RestClientAuthorizationCodeTokenResponseClient client =
         new RestClientAuthorizationCodeTokenResponseClient();
+    client.setRestClient(SplibOauth2HttpClients.forTokenEndpoint(requestFactory));
 
     // setParametersConverter (not addParametersConverter, which adds a second client_secret)
     SplibOauth2TokenRequestParametersConverter converter =

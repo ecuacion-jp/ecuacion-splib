@@ -49,8 +49,13 @@ public abstract class SplibSearchListJpaService<FST extends SplibSearchForm,
     extends SplibSearchListService<FST, FLT> implements SplibJpaServiceInterface<E> {
   //@formatter:on
 
-  @Autowired
+  @SuppressWarnings("null")
   private HttpServletRequest request;
+
+  @Autowired
+  private void setRequest(HttpServletRequest request) {
+    this.request = request;
+  }
 
   @PersistenceContext
   @Nullable

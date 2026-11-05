@@ -24,7 +24,6 @@ import jp.ecuacion.splib.web.constant.SplibWebConstants;
 import jp.ecuacion.splib.web.exception.RedirectToHomePageException;
 import jp.ecuacion.splib.web.util.SplibLoginStateUtil;
 import org.slf4j.event.Level;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
@@ -60,8 +59,11 @@ import org.springframework.web.bind.annotation.RequestParam;
     "/ecuacion-splib/public/show"})
 public class ShowPageController extends SplibBaseController {
 
-  @Autowired
-  private SplibLoginStateUtil loginStateUtil;
+  private final SplibLoginStateUtil loginStateUtil;
+
+  ShowPageController(SplibLoginStateUtil loginStateUtil) {
+    this.loginStateUtil = loginStateUtil;
+  }
 
   /**
    * Shows the page designated by {@code id} parameter of the url.

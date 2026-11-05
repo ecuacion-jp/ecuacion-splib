@@ -27,8 +27,13 @@ import org.springframework.web.bind.annotation.InitBinder;
  */
 public abstract class SplibBaseController {
 
-  @Autowired
+  @SuppressWarnings("null")
   protected HttpServletRequest request;
+
+  @Autowired
+  private void setRequest(HttpServletRequest request) {
+    this.request = request;
+  }
 
   /**
    * Provides the feature that the item values in a request parameter changes all at once.

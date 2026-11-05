@@ -17,23 +17,35 @@ package jp.ecuacion.splib.web.oauth2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import jp.ecuacion.splib.core.bean.AuthorizationBean;
+import jp.ecuacion.splib.core.config.SplibHttpClientConfig;
 import jp.ecuacion.splib.web.config.SplibOauth2WebSecurityConfig;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcAuthorizationCodeAuthenticationProvider;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DisplayName("SplibOauth2Config")
 class SplibOauth2ConfigTest {
@@ -79,6 +91,60 @@ class SplibOauth2ConfigTest {
       assertThat(ctx).hasSingleBean(SplibOauth2AuthSuccessHandler.class);
       assertThat(ctx).hasSingleBean(SplibOauth2RegistrationConfirmService.class);
     });
+  }
+
+  @Test
+  @SuppressWarnings("null")
+  @DisplayName("the token, UserInfo and signing key requests all use the splib HTTP client")
+  void outboundRequestsUseSplibHttpClient() {
+    runner.withUserConfiguration(UserHandlerConfig.class).run(ctx -> {
+      assertThat(ctx).hasNotFailed();
+      Object expected = ctx.getBean(SplibHttpClientConfig.BEAN_NAME_REQUEST_FACTORY,
+          ClientHttpRequestFactory.class);
+
+      List<AuthenticationProvider> providers = loginProviders(ctx);
+      AuthenticationProvider oidc = providers.stream()
+          .filter(OidcAuthorizationCodeAuthenticationProvider.class::isInstance).findFirst()
+          .orElseThrow();
+      AuthenticationProvider oauth2 = providers.stream()
+          .filter(OAuth2LoginAuthenticationProvider.class::isInstance).findFirst().orElseThrow();
+
+      // token
+      Object restClient = field(field(oidc, "accessTokenResponseClient"), "restClient");
+      assertThat(field(restClient, "clientRequestFactory")).isSameAs(expected);
+
+      // UserInfo with and without the openid scope
+      Object delegate = field(field(oidc, "userService"), "oauth2UserService");
+      assertThat(requestFactoryOf(field(delegate, "restOperations"))).isSameAs(expected);
+      Object oauth2UserService = field(oauth2, "userService");
+      assertThat(requestFactoryOf(field(oauth2UserService, "restOperations"))).isSameAs(expected);
+
+      // signing keys
+      Object jwtDecoderFactory = field(oidc, "jwtDecoderFactory");
+      assertThat(jwtDecoderFactory).isInstanceOf(SplibOauth2JwtDecoderFactory.class);
+      assertThat(requestFactoryOf(field(jwtDecoderFactory, "restOperations"))).isSameAs(expected);
+    });
+  }
+
+  @SuppressWarnings("null")
+  private static Object field(Object target, String name) {
+    return Objects.requireNonNull(ReflectionTestUtils.getField(target, name));
+  }
+
+  @SuppressWarnings("null")
+  private static Object requestFactoryOf(Object restTemplate) {
+    return Objects.requireNonNull(
+        ReflectionTestUtils.invokeMethod(restTemplate, "getRequestFactory"));
+  }
+
+  @SuppressWarnings("null")
+  private static List<AuthenticationProvider> loginProviders(ApplicationContext ctx) {
+    Filter loginFilter = ctx.getBean(FilterChainProxy.class).getFilterChains().stream()
+        .flatMap(chain -> chain.getFilters().stream())
+        .filter(OAuth2LoginAuthenticationFilter.class::isInstance).findFirst().orElseThrow();
+    ProviderManager manager = (ProviderManager) Objects.requireNonNull(
+        ReflectionTestUtils.invokeMethod(loginFilter, "getAuthenticationManager"));
+    return manager.getProviders();
   }
 
   @Configuration

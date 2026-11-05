@@ -20,7 +20,6 @@ import jp.ecuacion.splib.web.controller.ConfigController.ConfigForm;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import jp.ecuacion.splib.web.record.ConfigRecord;
 import jp.ecuacion.splib.web.service.SplibGeneral1FormDoNothingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,14 +49,16 @@ public class ConfigController
    */
   static final String BASE_PATH = "/ecuacion-splib/admin/config";
 
-  @Autowired
-  private SplibPropertiesCacheClearer propertiesCacheClearer;
+  private final SplibPropertiesCacheClearer propertiesCacheClearer;
 
   /**
-   * Constructs a new instance.
+   * Constructs a new instance with {@code propertiesCacheClearer}.
+   *
+   * @param propertiesCacheClearer propertiesCacheClearer
    */
-  public ConfigController() {
+  public ConfigController(SplibPropertiesCacheClearer propertiesCacheClearer) {
     super("config");
+    this.propertiesCacheClearer = propertiesCacheClearer;
   }
 
   /**

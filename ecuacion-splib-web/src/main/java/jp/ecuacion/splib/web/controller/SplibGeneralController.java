@@ -54,8 +54,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public abstract class SplibGeneralController<S extends SplibGeneralService>
     extends SplibBaseController {
 
-  @Autowired
   protected HttpServletResponse response;
+
+  @Autowired
+  private void setResponse(HttpServletResponse response) {
+    this.response = response;
+  }
 
   /**
    * Adds a cookie for 'downloadButton' to know the download procedure is done.
@@ -114,8 +118,12 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    *     As a workaround, 
    *     we will first receive it as a List and select it on the getService() side.</p>
    */
-  @Autowired
   protected List<S> serviceList;
+
+  @Autowired
+  private void setServiceList(List<S> serviceList) {
+    this.serviceList = serviceList;
+  }
 
   /**
    * Returns a service instance.
@@ -148,11 +156,19 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
     return list.get(0);
   }
 
-  @Autowired
   private SplibLoginStateUtil loginStateUtil;
 
   @Autowired
+  private void setLoginStateUtil(SplibLoginStateUtil loginStateUtil) {
+    this.loginStateUtil = loginStateUtil;
+  }
+
   private SplibControllerPrepareHelper prepareHelper;
+
+  @Autowired
+  private void setPrepareHelper(SplibControllerPrepareHelper prepareHelper) {
+    this.prepareHelper = prepareHelper;
+  }
 
   /**
    * Constructs a new instance with {@code function}.
@@ -169,6 +185,7 @@ public abstract class SplibGeneralController<S extends SplibGeneralService>
    * @param function function
    * @param context context
    */
+  @SuppressWarnings("null")
   protected SplibGeneralController(String function, ControllerContext context) {
     context.function(function);
     this.context = context;
