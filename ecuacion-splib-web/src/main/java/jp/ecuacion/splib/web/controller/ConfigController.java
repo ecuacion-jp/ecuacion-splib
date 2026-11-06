@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @Scope("prototype")
-@RequestMapping(ConfigController.BASE_PATH)
+@RequestMapping("/ecuacion-splib/admin/config/action")
 public class ConfigController
     extends SplibGeneral1FormController<ConfigForm, SplibGeneral1FormDoNothingService<ConfigForm>> {
 
@@ -68,7 +68,7 @@ public class ConfigController
    *
    * @return URL
    */
-  @PostMapping(value = "action", params = "action=clearPropertiesCache")
+  @PostMapping(params = "action=clearPropertiesCache")
   public String clearPropertiesCache() {
     propertiesCacheClearer.clear();
 
@@ -81,7 +81,7 @@ public class ConfigController
    *
    * @return never returns
    */
-  @PostMapping(value = "action", params = "action=systemError")
+  @PostMapping(params = "action=systemError")
   public String systemError() {
     throw new RuntimeException("A system error was intentionally caused for testing purposes.");
   }

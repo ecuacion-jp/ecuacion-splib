@@ -69,9 +69,14 @@ public abstract class SplibSoftDeleteAdvice {
 
     filterUtil.disableAllFilters();
 
-    physicalDeleteSoftDeletedRecords(entity, repo);
+    try {
+      physicalDeleteSoftDeletedRecords(entity, repo);
 
-    filterUtil.enableAllFilters(groupId);
+    } finally {
+      // Restore the filters even on exceptions,
+      // since the rest of the request (like an error page) still uses the same session.
+      filterUtil.enableAllFilters(groupId);
+    }
   }
 
   private <T extends SplibEntity> void physicalDeleteSoftDeletedRecords(T entity,

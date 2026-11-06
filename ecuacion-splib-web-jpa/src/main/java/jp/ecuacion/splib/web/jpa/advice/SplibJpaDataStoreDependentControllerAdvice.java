@@ -19,8 +19,10 @@ import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.jpa.bean.SplibControllerAdviceInfoBean;
 import jp.ecuacion.splib.jpa.util.SplibJpaFilterUtil;
 import jp.ecuacion.splib.web.advice.SplibDataStoreDependentControllerAdvice;
+import jp.ecuacion.splib.web.bean.AdminScope;
 import jp.ecuacion.splib.web.service.SplibDataStoreDependentControllerAdviceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Provides the function that puts logged-in accounts obtained with JPA info to {@code Model}. 
@@ -63,5 +65,17 @@ public class SplibJpaDataStoreDependentControllerAdvice
 
     // Enable the group filter.
     filterUtil.enableGroupFilter(accGroupId);
+  }
+
+  @Override
+  protected void executeForAdmin(UserDetails loginUser) {
+    if (!filterUtil.usesAdminScopeFeature()) {
+      return;
+    }
+
+    AdminScope scope = service.getAdminScope(loginUser);
+    if (!scope.isUnrestricted()) {
+      filterUtil.enableAdminScopeFilter(scope.getValues());
+    }
   }
 }
