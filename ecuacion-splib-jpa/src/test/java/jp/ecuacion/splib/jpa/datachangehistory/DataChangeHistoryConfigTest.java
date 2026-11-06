@@ -87,6 +87,7 @@ class DataChangeHistoryConfigTest {
     }
   }
 
+  @SuppressWarnings("null")
   @Test
   @DisplayName("with Envers: each change is kept with when, who and by which operation")
   void enabled() {
@@ -117,6 +118,7 @@ class DataChangeHistoryConfigTest {
     });
   }
 
+  @SuppressWarnings("null")
   @Test
   @DisplayName("with Envers, outside an operation (e.g. batch): kept, without who and operation")
   void outsideOperation() {

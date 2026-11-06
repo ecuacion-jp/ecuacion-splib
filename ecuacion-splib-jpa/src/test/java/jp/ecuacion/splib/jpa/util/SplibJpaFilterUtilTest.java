@@ -15,6 +15,8 @@
  */
 package jp.ecuacion.splib.jpa.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -22,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import java.util.Map;
 import org.hibernate.Filter;
 import org.hibernate.Session;
@@ -95,6 +98,62 @@ class SplibJpaFilterUtilTest {
       create(false, null, Map.of()).enableGroupFilter(1L);
 
       verify(session, never()).enableFilter(anyString());
+    }
+  }
+
+  @Nested
+  @DisplayName("admin scope filter")
+  class AdminScopeFilter {
+
+    private SplibJpaFilterUtil createWithAdminScope() {
+      SplibJpaFilterUtil util = new SplibJpaFilterUtil(true, true, "accGeneralId", Map.of(),
+          Map.of("adminScopeFilter", "targetSystemId", "adminScopeFilterTargetSystem", "id")) {};
+      EntityManager em = mock(EntityManager.class);
+      when(em.unwrap(Session.class)).thenReturn(session);
+      util.em = em;
+      return util;
+    }
+
+    @Test
+    @DisplayName("is used only when an admin scope filter is passed")
+    void usesAdminScopeFeature() {
+      assertThat(createWithAdminScope().usesAdminScopeFeature()).isTrue();
+      assertThat(create(true, "accGeneralId", Map.of()).usesAdminScopeFeature()).isFalse();
+    }
+
+    @Test
+    @DisplayName("enables every admin scope filter with the values")
+    void enablesAllFilters() {
+      Filter common = mock(Filter.class);
+      Filter targetSystem = mock(Filter.class);
+      when(session.enableFilter("adminScopeFilter")).thenReturn(common);
+      when(session.enableFilter("adminScopeFilterTargetSystem")).thenReturn(targetSystem);
+
+      createWithAdminScope().enableAdminScopeFilter(List.of(1L, 2L));
+
+      verify(common).setParameterList("targetSystemId", List.of(1L, 2L));
+      verify(targetSystem).setParameterList("id", List.of(1L, 2L));
+    }
+
+    @Test
+    @DisplayName("sets null, not an empty list, when the values are empty")
+    void emptyValues() {
+      Filter common = mock(Filter.class);
+      when(session.enableFilter("adminScopeFilter")).thenReturn(common);
+
+      createWithAdminScope().enableAdminScopeFilter(List.of());
+
+      verify(common).setParameter("targetSystemId", null);
+      verify(common, never()).setParameterList(anyString(), anyCollection());
+    }
+
+    @Test
+    @DisplayName("is not disabled by disableAllFilters()")
+    void notDisabledByDisableAllFilters() {
+      createWithAdminScope().disableAllFilters();
+
+      verify(session, never()).disableFilter("adminScopeFilter");
+      verify(session, never()).disableFilter("adminScopeFilterTargetSystem");
     }
   }
 
