@@ -324,7 +324,7 @@
 						th:disabled="${isReadOnly}"
 						th:value="${optionId}">
 					<label class="form-check-label text-dark" th:for="${optionId}" th:text="${optionLabel}"></label>
-					<th:block th:if="${isReadOnly}">
+					<th:block th:if="${isReadOnly && #strUtil.isSelected(inputValue, optionId)}">
 						<input type="hidden" th:name="${recordPropertyPath}" th:value="${optionId}">
 					</th:block>
 				</th:block>
