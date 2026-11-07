@@ -54,8 +54,12 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
   @Nullable
   protected ReturnUrlBuilder redirectOnSuccess;
 
-  @Autowired
   private SplibLoginStateUtil loginStateUtil;
+
+  @Autowired
+  private void setLoginStateUtil(SplibLoginStateUtil loginStateUtil) {
+    this.loginStateUtil = loginStateUtil;
+  }
 
   /**
    * Construct a new instance with {@code function}.
@@ -73,6 +77,7 @@ public abstract class SplibEditController<F extends SplibEditForm, S extends Spl
    * @param function function
    * @param settings settings
    */
+  @SuppressWarnings("null")
   public SplibEditController(PageTemplatePatternEnum pageTemplatePattern, String function,
       ControllerContext settings) {
     super(function, settings.subFunction("edit"));

@@ -15,8 +15,13 @@
  */
 package jp.ecuacion.splib.web.util;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Is a string util called from thymeleaf.
@@ -78,5 +83,36 @@ public class SplibThymeleafStringUtil {
     }
 
     return "get" + rtn.toString();
+  }
+
+  /**
+   * Returns whether a checkbox option is selected, comparing each selected value exactly.
+   *
+   * <p>A partial match is not enough: option {@code 1} must not be selected by value {@code 10}.
+   *     A {@code String} is treated as comma-separated values since that is how Spring binds
+   *     multiple checked values to a {@code String} field.</p>
+   *
+   * @param selectedValues selected values: a {@code Collection}, an array or a single value
+   * @param optionValue the value of the option
+   * @return {@code true} if {@code optionValue} is one of {@code selectedValues}
+   */
+  public boolean isSelected(@Nullable Object selectedValues, @Nullable Object optionValue) {
+    if (selectedValues == null || optionValue == null) {
+      return false;
+    }
+
+    Stream<?> values;
+    if (selectedValues instanceof Collection<?> collection) {
+      values = collection.stream();
+
+    } else if (ObjectUtils.isArray(selectedValues)) {
+      values = Arrays.stream(ObjectUtils.toObjectArray(selectedValues));
+
+    } else {
+      values = Arrays.stream(selectedValues.toString().split(",", -1)).map(String::trim);
+    }
+
+    String option = optionValue.toString();
+    return values.anyMatch(value -> value != null && option.equals(value.toString()));
   }
 }

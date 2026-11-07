@@ -17,7 +17,6 @@ package jp.ecuacion.splib.rest.controller;
 
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.splib.core.util.SplibPropertiesCacheClearer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +31,11 @@ public class ClearPropertiesCacheController {
 
   private final DetailLogger detailLog = new DetailLogger(this);
 
-  @Autowired
-  private SplibPropertiesCacheClearer propertiesCacheClearer;
+  private final SplibPropertiesCacheClearer propertiesCacheClearer;
+
+  ClearPropertiesCacheController(SplibPropertiesCacheClearer propertiesCacheClearer) {
+    this.propertiesCacheClearer = propertiesCacheClearer;
+  }
 
   /**
    * Clears the cache of properties files read via {@code PropertiesFileUtil} (and, when

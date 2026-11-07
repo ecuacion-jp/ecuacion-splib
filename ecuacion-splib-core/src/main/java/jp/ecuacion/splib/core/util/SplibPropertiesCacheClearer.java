@@ -17,7 +17,6 @@ package jp.ecuacion.splib.core.util;
 
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.refresh.ContextRefresher;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -53,8 +52,11 @@ public class SplibPropertiesCacheClearer {
 
   private final DetailLogger detailLog = new DetailLogger(this);
 
-  @Autowired
-  private ApplicationContext applicationContext;
+  private final ApplicationContext applicationContext;
+
+  SplibPropertiesCacheClearer(ApplicationContext applicationContext) {
+    this.applicationContext = applicationContext;
+  }
 
   /**
    * Clears the {@code PropertiesFileUtil} cache and, when {@code spring-cloud-context} is on

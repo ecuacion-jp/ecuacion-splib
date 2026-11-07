@@ -15,19 +15,22 @@
  */
 package jp.ecuacion.splib.web.config;
 
+import jp.ecuacion.splib.core.config.SplibHttpClientConfig;
 import jp.ecuacion.splib.web.oauth2.SplibAppleClientSecretService;
+import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthFailureHandler;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthSuccessHandler;
+import jp.ecuacion.splib.web.oauth2.SplibOauth2AuthorizationRequestResolver;
 import jp.ecuacion.splib.web.oauth2.SplibOauth2Config;
+import jp.ecuacion.splib.web.oauth2.SplibOauth2HttpClients;
+import jp.ecuacion.splib.web.oauth2.SplibOauth2TokenRequestParametersConverter;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 /**
  * Provides the abstract SecurityConfig class for applications that add
@@ -49,10 +52,6 @@ import org.springframework.util.MultiValueMap;
  */
 @Import(SplibOauth2Config.class)
 public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfig {
-
-  /** Attribute key used by Spring Security to store the registrationId in the builder. */
-  private static final String REGISTRATION_ID_ATTR =
-      OAuth2AuthorizationRequest.class.getName() + ".REGISTRATION_ID";
 
   private final SplibOauth2AuthSuccessHandler oauth2SuccessHandler;
 
@@ -84,21 +83,18 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
     // Exempt OAuth2 redirect endpoints from CSRF so these POST callbacks are not blocked.
     http.csrf(csrf -> csrf.ignoringRequestMatchers("/login/oauth2/code/*"));
 
-    DefaultOAuth2AuthorizationRequestResolver requestResolver =
-        new DefaultOAuth2AuthorizationRequestResolver(
+    // Adds response_mode=form_post for Apple, which is required by Apple
+    // when the name or email scope is requested.
+    SplibOauth2AuthorizationRequestResolver requestResolver =
+        new SplibOauth2AuthorizationRequestResolver(
             clientRegistrationRepository, "/oauth2/authorization");
 
-    // Add response_mode=form_post for Apple so the user's name is returned on first login.
-    requestResolver.setAuthorizationRequestCustomizer(builder -> {
-      String[] registrationIdHolder = {null};
-      builder
-          .attributes(attrs -> registrationIdHolder[0] = (String) attrs.get(REGISTRATION_ID_ATTR));
-      if ("apple".equals(registrationIdHolder[0])) {
-        builder.additionalParameters(params -> params.put("response_mode", "form_post"));
-      }
-    });
-
     oauth2SuccessHandler.setDefaultTargetUrl(getDefaultSuccessUrl());
+
+    // Obtained here to keep the constructor, which the apps' subclasses call, unchanged.
+    ClientHttpRequestFactory requestFactory =
+        http.getSharedObject(ApplicationContext.class).getBean(
+            SplibHttpClientConfig.BEAN_NAME_REQUEST_FACTORY, ClientHttpRequestFactory.class);
 
     // splib uses OAuth2 only for login and doesn't use the tokens afterwards,
     // so they are kept in the session instead of Spring Boot's default
@@ -107,29 +103,27 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
     http.oauth2Login(oauth2 -> oauth2.loginPage(getLoginNeededPage())
         .authorizedClientRepository(new HttpSessionOAuth2AuthorizedClientRepository())
         .authorizationEndpoint(ep -> ep.authorizationRequestResolver(requestResolver))
-        .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient()))
-        .successHandler(oauth2SuccessHandler));
+        .tokenEndpoint(ep -> ep.accessTokenResponseClient(buildTokenResponseClient(requestFactory)))
+        .successHandler(oauth2SuccessHandler)
+        .failureHandler(new SplibOauth2AuthFailureHandler(getLoginNeededPage())));
   }
 
   /**
-   * Builds a token-response client that injects Apple's JWT client secret
-   * when a token request targets the "apple" registration.
+   * Builds a token-response client that replaces {@code client_secret} with Apple's JWT
+   * when a token request is sent to Apple.
+   *
+   * @param requestFactory requestFactory
    */
-  private RestClientAuthorizationCodeTokenResponseClient buildTokenResponseClient() {
+  private RestClientAuthorizationCodeTokenResponseClient buildTokenResponseClient(
+      ClientHttpRequestFactory requestFactory) {
     RestClientAuthorizationCodeTokenResponseClient client =
         new RestClientAuthorizationCodeTokenResponseClient();
+    client.setRestClient(SplibOauth2HttpClients.forTokenEndpoint(requestFactory));
 
-    SplibAppleClientSecretService appleService = appleClientSecretService;
-    if (appleService != null) {
-      client.addParametersConverter(grantRequest -> {
-        if (!"apple".equals(grantRequest.getClientRegistration().getRegistrationId())) {
-          return new LinkedMultiValueMap<>();
-        }
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_secret", appleService.generateClientSecret());
-        return params;
-      });
-    }
+    // setParametersConverter (not addParametersConverter, which adds a second client_secret)
+    SplibOauth2TokenRequestParametersConverter converter =
+        new SplibOauth2TokenRequestParametersConverter(appleClientSecretService);
+    client.setParametersConverter(converter::convert);
 
     return client;
   }

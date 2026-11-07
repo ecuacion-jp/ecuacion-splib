@@ -17,6 +17,7 @@ package jp.ecuacion.splib.jpa.util;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import org.hibernate.Filter;
@@ -37,6 +38,23 @@ public abstract class SplibJpaFilterUtil {
   private boolean usesGroupFeature;
   private @Nullable String groupColumnName;
   private Map<String, String> customGroupFilterParamNameMap;
+  private Map<String, String> adminScopeFilterParamNameMap;
+
+  /**
+   * Constructs a new instance for the app which doesn't use the admin scope feature.
+   *
+   * @param usesSoftDeleteFeature usesSoftDeleteFeature
+   * @param usesGroupFeature usesGroupFeature
+   * @param groupColumnName the parameter name of the common group filter,
+   *     or {@code null} if the group feature is not used
+   * @param customGroupFilterParamNameMap a map of custom group filter names
+   *     to their parameter names; empty if no custom group filter exists
+   */
+  public SplibJpaFilterUtil(boolean usesSoftDeleteFeature, boolean usesGroupFeature,
+      @Nullable String groupColumnName, Map<String, String> customGroupFilterParamNameMap) {
+    this(usesSoftDeleteFeature, usesGroupFeature, groupColumnName, customGroupFilterParamNameMap,
+        Map.of());
+  }
 
   /**
    * Constructs a new instance.
@@ -53,13 +71,17 @@ public abstract class SplibJpaFilterUtil {
    *     or {@code null} if the group feature is not used
    * @param customGroupFilterParamNameMap a map of custom group filter names
    *     to their parameter names; empty if no custom group filter exists
+   * @param adminScopeFilterParamNameMap a map of admin scope filter names
+   *     to their parameter names; empty if the admin scope feature is not used
    */
   public SplibJpaFilterUtil(boolean usesSoftDeleteFeature, boolean usesGroupFeature,
-      @Nullable String groupColumnName, Map<String, String> customGroupFilterParamNameMap) {
+      @Nullable String groupColumnName, Map<String, String> customGroupFilterParamNameMap,
+      Map<String, String> adminScopeFilterParamNameMap) {
     this.usesSoftDeleteFeature = usesSoftDeleteFeature;
     this.usesGroupFeature = usesGroupFeature;
     this.groupColumnName = groupColumnName;
     this.customGroupFilterParamNameMap = Map.copyOf(customGroupFilterParamNameMap);
+    this.adminScopeFilterParamNameMap = Map.copyOf(adminScopeFilterParamNameMap);
   }
 
   /**
@@ -110,6 +132,39 @@ public abstract class SplibJpaFilterUtil {
     if (usesSoftDeleteFeature) {
       Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
       session.disableFilter("softDeleteFilter");
+    }
+  }
+
+  /**
+   * Returns whether the app uses the admin scope feature.
+   *
+   * @return {@code true} if the app uses the admin scope feature
+   */
+  public boolean usesAdminScopeFeature() {
+    return !adminScopeFilterParamNameMap.isEmpty();
+  }
+
+  /**
+   * Enables admin scope filters.
+   *
+   * <p>They are not targets of {@link #disableAllFilters()}.</p>
+   *
+   * @param values the values of the admin scope column. If it's empty, no records are returned
+   *     from the tables narrowed by the admin scope.
+   */
+  public void enableAdminScopeFilter(Collection<?> values) {
+    Session session = Objects.requireNonNull(Objects.requireNonNull(em).unwrap(Session.class));
+
+    for (Map.Entry<String, String> entry : adminScopeFilterParamNameMap.entrySet()) {
+      Filter filter = session.enableFilter(entry.getKey());
+      if (values.isEmpty()) {
+        // An empty list is rendered as "in ()", which is a syntax error on some databases.
+        // A null makes it "in (null)", which matches no records.
+        filter.setParameter(entry.getValue(), null);
+
+      } else {
+        filter.setParameterList(entry.getValue(), values);
+      }
     }
   }
 

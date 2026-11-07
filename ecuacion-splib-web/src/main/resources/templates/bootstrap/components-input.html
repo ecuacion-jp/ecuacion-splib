@@ -319,12 +319,12 @@
 				<th:block th:with="optionId=${option[0]},optionLabel=${option[1]},optionOptions=${option.length == 2 ? '' : option[2]}">
 					<input th:id="${optionId}" class="form-check-input align-bottom mb-1" type="checkbox" 
 						th:name="${isReadOnly ? '' : recordPropertyPath}" 
-						th:checked="${inputValue == null ? false : #strings.contains(inputValue, optionId)}"
+						th:checked="${#strUtil.isSelected(inputValue, optionId)}"
 						th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
 						th:disabled="${isReadOnly}"
 						th:value="${optionId}">
 					<label class="form-check-label text-dark" th:for="${optionId}" th:text="${optionLabel}"></label>
-					<th:block th:if="${isReadOnly}">
+					<th:block th:if="${isReadOnly && #strUtil.isSelected(inputValue, optionId)}">
 						<input type="hidden" th:name="${recordPropertyPath}" th:value="${optionId}">
 					</th:block>
 				</th:block>

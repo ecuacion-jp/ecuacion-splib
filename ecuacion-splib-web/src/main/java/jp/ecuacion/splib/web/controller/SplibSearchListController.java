@@ -58,11 +58,19 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * Maybe a bug of spring mvc.
    * </p>
    */
-  @Autowired
   private FST newSearchForm;
 
   @Autowired
+  private void setNewSearchForm(FST newSearchForm) {
+    this.newSearchForm = newSearchForm;
+  }
+
   private SplibLoginStateUtil loginStateUtil;
+
+  @Autowired
+  private void setLoginStateUtil(SplibLoginStateUtil loginStateUtil) {
+    this.loginStateUtil = loginStateUtil;
+  }
 
   private static final String KEY_ERROR_OCCURS_WHILE_SEARCHING = "errorWhileSearching";
 
@@ -81,6 +89,7 @@ public abstract class SplibSearchListController<FST extends SplibSearchForm,
    * @param function function
    * @param settings settings
    */
+  @SuppressWarnings("null")
   public SplibSearchListController(String function, ControllerContext settings) {
     super(function, settings.subFunction("searchList"));
   }

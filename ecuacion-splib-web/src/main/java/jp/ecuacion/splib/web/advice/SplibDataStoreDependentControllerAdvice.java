@@ -38,8 +38,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  */
 public abstract class SplibDataStoreDependentControllerAdvice {
 
-  @Autowired
+  @SuppressWarnings("null")
   SplibDataStoreDependentControllerAdviceService service;
+
+  @Autowired
+  private void setService(SplibDataStoreDependentControllerAdviceService service) {
+    this.service = service;
+  }
 
   /**
    * Sets account info into a {@code Model}.
@@ -65,7 +70,10 @@ public abstract class SplibDataStoreDependentControllerAdvice {
     SplibRecord loginAcc =
         isAdmin ? service.getAccAdmin(loginUser) : service.getAccGeneral(loginUser);
 
-    if (!isAdmin) {
+    if (isAdmin) {
+      executeForAdmin(loginUser);
+
+    } else {
       executeForAccountBelongingToGroup(loginAcc);
     }
 
@@ -84,6 +92,15 @@ public abstract class SplibDataStoreDependentControllerAdvice {
    * Additional procedure for accounts belonging to group can be define by overriding the method.
    */
   protected void executeForAccountBelongingToGroup(SplibRecord acc) {
+
+  }
+
+  /**
+   * Additional procedure for admin accounts can be define by overriding the method.
+   *
+   * @param loginUser UserDetails of the logged-in admin account
+   */
+  protected void executeForAdmin(UserDetails loginUser) {
 
   }
 }
