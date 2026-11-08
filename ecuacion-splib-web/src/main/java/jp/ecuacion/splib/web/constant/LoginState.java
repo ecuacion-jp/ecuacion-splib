@@ -47,7 +47,7 @@ public enum LoginState {
 
   /**
    * It's the path for {@code ecuacion-splib}'s own built-in pages protected by its
-   * built-in admin login (see {@code SplibBuiltinAdminSecurityConfig}), such as
+   * built-in admin authentication (see {@code SplibBuiltinAdminSecurityConfig}), such as
    * {@code ConfigController}.
    *
    * <p>As url it becomes {@code ecuacion-splib/admin}.
