@@ -17,10 +17,10 @@ package jp.ecuacion.splib.web.oauth2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,7 +49,7 @@ class SplibOauth2OidcUserServiceTest {
     return new OidcUserRequest(REGISTRATION, accessToken, builder.build());
   }
 
-  static Stream<Arguments> verifiedValues() {
+  static Stream<@NonNull Arguments> verifiedValues() {
     // Apple may send it as a string
     return Stream.of(Arguments.of(true), Arguments.of("true"));
   }
@@ -63,7 +63,7 @@ class SplibOauth2OidcUserServiceTest {
         .getEmail()).isEqualTo("a@example.com");
   }
 
-  static Stream<Arguments> notVerifiedClaims() {
+  static Stream<@NonNull Arguments> notVerifiedClaims() {
     return Stream.of(Arguments.of("false", Map.of("email", "a@example.com",
         "email_verified", false)),
         Arguments.of("not set", Map.of("email", "a@example.com")));
