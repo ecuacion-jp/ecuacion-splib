@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @Scope("prototype")
-@RequestMapping("/ecuacion-splib/admin/config/action")
+@RequestMapping(ConfigController.BASE_PATH)
 public class ConfigController
     extends SplibGeneral1FormController<ConfigForm, SplibGeneral1FormDoNothingService<ConfigForm>> {
 
@@ -40,8 +40,8 @@ public class ConfigController
    * {@code /ecuacion-splib-admin/...}, which doesn't match this mapping), so redirects here
    * are built from this constant directly instead of via {@code getRedirectUrlOnSuccess()}.
    *
-   * <p>Mapped under {@code /ecuacion-splib/admin/**}, so it requires login via
-   * {@code ecuacion-splib}'s own built-in admin login; see
+   * <p>Mapped under {@code /ecuacion-splib/admin/**}, so it requires {@code ecuacion-splib}'s
+   * own built-in admin authentication, independent of the app's own login; see
    * {@code SplibBuiltinAdminSecurityConfig}. This controller exposes side-effecting actions
    * ({@link #clearPropertiesCache()}, {@link #systemError()}), so — unlike
    * {@code /ecuacion-splib/public/**}, which is {@code permitAll} — it must not be reachable
@@ -68,7 +68,7 @@ public class ConfigController
    *
    * @return URL
    */
-  @PostMapping(params = "action=clearPropertiesCache")
+  @PostMapping(value = "action", params = "action=clearPropertiesCache")
   public String clearPropertiesCache() {
     propertiesCacheClearer.clear();
 
@@ -81,7 +81,7 @@ public class ConfigController
    *
    * @return never returns
    */
-  @PostMapping(params = "action=systemError")
+  @PostMapping(value = "action", params = "action=systemError")
   public String systemError() {
     throw new RuntimeException("A system error was intentionally caused for testing purposes.");
   }

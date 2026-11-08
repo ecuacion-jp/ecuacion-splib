@@ -15,7 +15,9 @@
  */
 package jp.ecuacion.splib.web.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Outcome;
 import jp.ecuacion.splib.core.util.SplibHashedPropertyResolver.Result;
@@ -24,15 +26,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 /**
  * Provides security config for {@code ecuacion-splib}'s own built-in admin pages
@@ -40,11 +43,23 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
  *
  * <p>Unlike {@link SplibWebSecurityConfigForAdmin}, this class is concrete and registered
  *     automatically — apps do not need to subclass it. It protects
- *     {@code /ecuacion-splib/admin/**} (login required) and serves its own login page at
- *     {@code /ecuacion-splib/public/adminLogin/**} (no login required, consistent with the
- *     {@code public}/{@code admin} split used elsewhere under {@code /ecuacion-splib/**}), with
- *     a single fixed built-in user independent of whatever {@code UserDetailsService} the app
- *     itself registers for its own login.</p>
+ *     {@code /ecuacion-splib/admin/**} with HTTP Basic authentication against a single fixed
+ *     built-in user, independent of whatever {@code UserDetailsService} the app itself registers
+ *     for its own login.</p>
+ *
+ * <p><strong>Independent of the app's own login state.</strong> The authentication is neither
+ *     read from nor stored in the HTTP session
+ *     (see {@link RequestAttributeSecurityContextRepository}), so:</p>
+ * <ul>
+ * <li>a user logged in to the app itself is not let in, and is asked for the built-in admin
+ *     credentials just like an anonymous user,</li>
+ * <li>authenticating here neither replaces nor logs out the app's own login, and the app's own
+ *     pages never see the built-in admin as a logged-in user,</li>
+ * <li>it works the same in an app that has no login at all (every page public).</li>
+ * </ul>
+ * 
+ * <p>Since the browser keeps re-sending the credentials until it is closed, there is no logout.
+ *     CSRF protection stays enabled for the same reason.</p>
  *
  * <p><strong>Credential property.</strong> Exactly one of the following must be set:</p>
  * <ul>
@@ -55,26 +70,28 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
  * <p>See {@link SplibHashedPropertyResolver} for the shared convention this follows (also used by
  *     {@code ecuacion-splib-rest}'s built-in API key).</p>
  *
- * <p><strong>Fails closed, not open.</strong> If neither property is set, no login is possible —
- *     the safe default for an app that doesn't use this feature — and this is indistinguishable
- *     from a wrong password, mirroring how REST's equivalent {@code /api/ecuacion-splib/key/**}
- *     tier rejects every request when neither of its own credential properties is set (see
- *     {@code SplibBuiltinApiKeyAuthenticationFilter}). If <em>both</em> are set, that is instead
- *     a misconfiguration only whoever controls {@code application.properties} could cause, so it
- *     is surfaced distinctly, via a dedicated login-page error message rather than the generic
- *     "wrong credentials" one.</p>
+ * <p><strong>Fails closed, not open.</strong> If neither property is set, no authentication is
+ *     possible — the safe default for an app that doesn't use this feature — and this is
+ *     indistinguishable from a wrong password, mirroring how REST's equivalent
+ *     {@code /api/ecuacion-splib/key/**} tier rejects every request when neither of its own
+ *     credential properties is set (see {@code SplibBuiltinApiKeyAuthenticationFilter}). If
+ *     <em>both</em> are set, that is instead a misconfiguration only whoever controls
+ *     {@code application.properties} could cause, so, also like REST, it is logged as an error
+ *     and answered with 500 rather than the generic 401.</p>
  */
 @Configuration
 public class SplibBuiltinAdminSecurityConfig {
 
   /**
-   * Fixed username for {@code ecuacion-splib}'s built-in admin login.
+   * Fixed username for {@code ecuacion-splib}'s built-in admin authentication.
    */
   public static final String BUILTIN_ADMIN_USERNAME = "ecuacion-splib";
 
   private static final String PROPERTY_PREFIX = "jp.ecuacion.splib.web.builtin-admin-login";
 
-  private static final String LOGIN_PAGE = "/ecuacion-splib/public/adminLogin/page";
+  private static final String REALM_NAME = "ecuacion-splib";
+
+  private final DetailLogger detailLog = new DetailLogger(this);
 
   /**
    * Provides SecurityFilterChain for {@code ecuacion-splib}'s own built-in admin pages.
@@ -87,26 +104,22 @@ public class SplibBuiltinAdminSecurityConfig {
   @Bean
   SecurityFilterChain filterChainForBuiltinAdmin(HttpSecurity http) throws Exception {
 
-    http.securityMatcher("/ecuacion-splib/public/adminLogin/**", "/ecuacion-splib/admin/**",
-        "/ecuacion-splib/adminLogout");
+    http.securityMatcher("/ecuacion-splib/admin/**");
 
-    http.httpBasic(basic -> basic.disable());
+    // Keeps the authentication, and the request saved on a 401, out of the session shared with
+    // the app's own login.
+    http.securityContext(context -> context
+        .securityContextRepository(new RequestAttributeSecurityContextRepository()));
+    http.requestCache(cache -> cache.disable());
 
-    http.authenticationProvider(builtinAdminAuthenticationProvider());
+    // A ProviderManager without a parent, so a failure here never falls back to the app's own
+    // UserDetailsService (an app user's credentials must not authenticate here).
+    http.authenticationManager(new ProviderManager(builtinAdminAuthenticationProvider()));
 
-    http.formLogin(login -> login.loginPage(LOGIN_PAGE)
-        .loginProcessingUrl("/ecuacion-splib/public/adminLogin/action")
-        .usernameParameter("builtinAdminLogin.username")
-        .passwordParameter("builtinAdminLogin.password")
-        .defaultSuccessUrl("/ecuacion-splib/admin/config/page", true)
-        .failureHandler(builtinAdminFailureHandler()));
+    http.httpBasic(basic -> basic.realmName(REALM_NAME)
+        .authenticationEntryPoint(builtinAdminAuthenticationEntryPoint()));
 
-    http.authorizeHttpRequests(
-        requests -> requests.requestMatchers("/ecuacion-splib/public/adminLogin/**").permitAll()
-            .anyRequest().authenticated());
-
-    http.logout(logout -> logout.logoutUrl("/ecuacion-splib/adminLogout")
-        .logoutSuccessUrl(LOGIN_PAGE + "?logoutDone"));
+    http.authorizeHttpRequests(requests -> requests.anyRequest().hasRole("BUILTIN_ADMIN"));
 
     return http.build();
   }
@@ -151,17 +164,23 @@ public class SplibBuiltinAdminSecurityConfig {
   }
 
   /**
-   * Redirects to the login page with {@code ?credentialMisconfigured} for a
-   * {@link BuiltinCredentialMisconfiguredException}, or {@code ?error} for anything else (wrong
-   * username/password), so the two cases show distinct messages.
+   * Answers 401 with the Basic challenge, or, for a
+   * {@link BuiltinCredentialMisconfiguredException}, logs it and answers 500, so the
+   * misconfiguration is not mistaken for a wrong password.
    */
-  private AuthenticationFailureHandler builtinAdminFailureHandler() {
-    RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+  private AuthenticationEntryPoint builtinAdminAuthenticationEntryPoint() {
+    BasicAuthenticationEntryPoint basicEntryPoint = new BasicAuthenticationEntryPoint();
+    basicEntryPoint.setRealmName(REALM_NAME);
     return (request, response, exception) -> {
-      String query =
-          exception instanceof BuiltinCredentialMisconfiguredException ? "?credentialMisconfigured"
-              : "?error";
-      redirectStrategy.sendRedirect(request, response, LOGIN_PAGE + query);
+      if (exception instanceof BuiltinCredentialMisconfiguredException) {
+        detailLog.error(exception.getMessage() + " Rejecting request to "
+            + request.getRequestURI() + ".");
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            "ecuacion-splib built-in admin authentication is misconfigured.");
+        return;
+      }
+
+      basicEntryPoint.commence(request, response, exception);
     };
   }
 
