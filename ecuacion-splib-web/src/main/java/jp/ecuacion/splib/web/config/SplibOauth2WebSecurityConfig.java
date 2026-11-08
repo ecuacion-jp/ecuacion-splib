@@ -90,6 +90,7 @@ public abstract class SplibOauth2WebSecurityConfig extends SplibWebSecurityConfi
             clientRegistrationRepository, "/oauth2/authorization");
 
     oauth2SuccessHandler.setDefaultTargetUrl(getDefaultSuccessUrl());
+    oauth2SuccessHandler.setLoginPage(getLoginNeededPage());
 
     // Obtained here to keep the constructor, which the apps' subclasses call, unchanged.
     ClientHttpRequestFactory requestFactory =

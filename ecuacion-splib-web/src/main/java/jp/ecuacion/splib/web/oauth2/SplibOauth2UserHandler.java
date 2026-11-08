@@ -35,13 +35,22 @@ public interface SplibOauth2UserHandler {
    *     {@link SplibOauth2UserInfo#subject()}, not by the email address
    *     (see {@link SplibOauth2UserInfo}).</p>
    *
+   * <p>The login is rejected when the returned {@link UserDetails} is locked, disabled
+   *     or expired, or when {@link SplibOauth2LoginRejectedException} is thrown
+   *     (for example, when the user cannot be created).
+   *     So this being called doesn't mean the login succeeds.
+   *     Write what must be done only on the successful login in {@link #afterLoginSuccess}.</p>
+   *
    * @param userInfo the information of the user received from the OAuth2 provider
    * @return {@link UserDetails} for the found or newly created user
+   * @throws SplibOauth2LoginRejectedException to reject the login
    */
   UserDetails findOrCreateUser(SplibOauth2UserInfo userInfo);
 
   /**
    * Called after the security context has been populated with the {@link UserDetails}.
+   *
+   * <p>This is not called when the login is rejected.</p>
    *
    * <p>Override this to set session attributes or perform any post-login
    * setup that is specific to your application (e.g. storing the user ID in the

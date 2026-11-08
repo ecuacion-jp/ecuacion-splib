@@ -36,7 +36,9 @@ import org.springframework.security.core.userdetails.UserDetails;
  *       agrees, the app registers the user and calls
  *       {@link SplibOauth2RegistrationConfirmService#loginAfterRegistration}, which logs the user
  *       in and returns the url to redirect to. When the user cancels, the app calls
- *       {@link SplibOauth2RegistrationConfirmService#discardPendingRegistration}.</li>
+ *       {@link SplibOauth2RegistrationConfirmService#discardPendingRegistration}.
+ *       When the app decides not to let the user log in, it calls
+ *       {@link SplibOauth2RegistrationConfirmService#rejectLogin}.</li>
  * </ol>
  *
  * <p>{@link #findOrCreateUser} is not called by splib in this flow.</p>
@@ -50,8 +52,13 @@ public interface SplibOauth2UserHandlerWithRegistrationConfirm extends SplibOaut
    *     {@link SplibOauth2UserInfo#subject()}, not by the email address
    *     (see {@link SplibOauth2UserInfo}).</p>
    *
+   * <p>The login is rejected as with {@link #findOrCreateUser} when the returned
+   *     {@link UserDetails} is locked, disabled or expired,
+   *     or when {@link SplibOauth2LoginRejectedException} is thrown.</p>
+   *
    * @param userInfo the information of the user received from the OAuth2 provider
    * @return {@link UserDetails} for the found user, {@code null} if the user is not registered
+   * @throws SplibOauth2LoginRejectedException to reject the login
    */
   @Nullable
   UserDetails findUser(SplibOauth2UserInfo userInfo);

@@ -71,6 +71,11 @@ public class SplibOauth2RegistrationConfirmService {
    *     (session id change and csrf token renewal) are applied.
    *     {@link SplibOauth2UserHandler#afterLoginSuccess} is also called.</p>
    *
+   * <p>When {@code userDetails} is locked, disabled or expired, the login is rejected
+   *     as {@link #rejectLogin} does, and the url of the login page is returned.
+   *     The registered user is not removed. To reject before registering,
+   *     call {@link #rejectLogin} instead of registering the user.</p>
+   *
    * <p>The returned url is the one saved before login (like the url in a notification mail),
    *     or the default success url if not saved. Return {@code "redirect:" + url}
    *     from the controller.</p>
@@ -83,5 +88,28 @@ public class SplibOauth2RegistrationConfirmService {
   public String loginAfterRegistration(HttpServletRequest request, HttpServletResponse response,
       UserDetails userDetails) {
     return successHandler.loginAfterRegistration(request, response, userDetails);
+  }
+
+  /**
+   * Rejects the login of the user waiting for the registration confirmation
+   * and returns the url to redirect to.
+   *
+   * <p>Call this instead of {@link #loginAfterRegistration} when the app decides not to let
+   *     the user log in (for example, the user cannot be registered).
+   *     The pending registration is discarded, and the user is not logged in.
+   *     {@link SplibOauth2UserHandler#afterLoginSuccess} is not called.</p>
+   *
+   * <p>The returned url is the login page with {@code ?oauth2Rejected}, which shows
+   *     the message telling that the user cannot log in.
+   *     Return {@code "redirect:" + url} from the controller.</p>
+   *
+   * @param request the current HTTP request
+   * @param response the current HTTP response
+   * @param reason the reason of the rejection, written to the log and not shown to the user
+   * @return the url to redirect to
+   */
+  public String rejectLogin(HttpServletRequest request, HttpServletResponse response,
+      String reason) {
+    return successHandler.rejectLogin(request, response, reason);
   }
 }
