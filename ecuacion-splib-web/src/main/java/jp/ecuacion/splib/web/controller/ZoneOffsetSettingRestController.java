@@ -16,6 +16,8 @@
 package jp.ecuacion.splib.web.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.DateTimeException;
+import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,18 +43,22 @@ public class ZoneOffsetSettingRestController {
    * Receives zone offset value from the user PC and set it into the session.
    *
    * <p>{@code zoneOffset} is silently ignored (the session is left unchanged) when it is not a
-   *     valid integer, rather than storing it as-is and letting {@link
+   *     valid integer, or when it is out of the range {@link java.time.ZoneOffset} supports
+   *     (-18:00 to +18:00), rather than storing it as-is and letting {@link
    *     jp.ecuacion.splib.web.util.SplibDatetimeFormatUtil#getParams} fail later with a
-   *     {@code NumberFormatException} when the value is finally parsed.</p>
+   *     {@code NumberFormatException} or a {@code DateTimeException}
+   *     when the value is finally used.</p>
    *
    * @param zoneOffset zoneOffset
    */
   @GetMapping("/public/zoneOffset")
   public void zoneOffset(@RequestParam String zoneOffset) {
     try {
-      Integer.parseInt(zoneOffset);
+      // Converts it the same way as SplibDatetimeFormatUtil#getParams does,
+      // so that only the values accepted there are stored.
+      new DatetimeFormatParameters().setZoneOffsetWithJsMinutes(Integer.parseInt(zoneOffset));
 
-    } catch (NumberFormatException ex) {
+    } catch (NumberFormatException | DateTimeException ex) {
       return;
     }
 
