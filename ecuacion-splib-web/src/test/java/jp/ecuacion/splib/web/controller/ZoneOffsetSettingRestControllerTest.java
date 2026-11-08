@@ -18,6 +18,8 @@ package jp.ecuacion.splib.web.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /** Tests for {@link ZoneOffsetSettingRestController}. */
@@ -40,6 +42,29 @@ class ZoneOffsetSettingRestControllerTest {
     ZoneOffsetSettingRestController controller = new ZoneOffsetSettingRestController(request);
 
     controller.zoneOffset("not-a-number");
+
+    assertThat(Objects.requireNonNull(request.getSession()).getAttribute("zoneOffset")).isNull();
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"1080", "-1080"})
+  void storesAnOffsetAtTheBoundaryOfTheSupportedRange(String offset) {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    ZoneOffsetSettingRestController controller = new ZoneOffsetSettingRestController(request);
+
+    controller.zoneOffset(offset);
+
+    assertThat(Objects.requireNonNull(request.getSession()).getAttribute("zoneOffset"))
+        .isEqualTo(offset);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"1081", "-1081", "2000000000", "-2147483648"})
+  void ignoresAnOutOfRangeOffsetWithoutTouchingTheSession(String offset) {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    ZoneOffsetSettingRestController controller = new ZoneOffsetSettingRestController(request);
+
+    controller.zoneOffset(offset);
 
     assertThat(Objects.requireNonNull(request.getSession()).getAttribute("zoneOffset")).isNull();
   }
