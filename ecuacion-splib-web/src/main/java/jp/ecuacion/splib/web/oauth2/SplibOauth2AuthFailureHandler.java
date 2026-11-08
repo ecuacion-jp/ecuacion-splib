@@ -38,7 +38,10 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
  *     the message for id/password login, which is shown with {@code ?error}.
  *     The cause is not shown to the user. It's found in the log.
  *     When the user cancelled the login at the provider,
- *     the redirect has no parameters since it needs no explanation.</p>
+ *     the redirect has no parameters since it needs no explanation.
+ *     When the app rejects the login after a successful OAuth2 authentication,
+ *     the redirect has {@code ?oauth2Rejected} instead
+ *     (see {@link SplibOauth2AuthSuccessHandler}).</p>
  *
  * <p>The log level is {@code INFO} for the errors that happen in normal use,
  *     and {@code WARN} for the others, which may need a fix on the server.

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import jp.ecuacion.lib.core.logging.DetailLogger;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -64,6 +67,9 @@ import tools.jackson.databind.ObjectMapper;
  *       {@link SplibOauth2UserHandlerWithRegistrationConfirm#findUser} is called instead,
  *       and if it returns {@code null}, the user is redirected to the registration confirm page
  *       without being logged in (the following steps are skipped).</li>
+ *   <li>Rejects the login when the {@link UserDetails} is locked, disabled or expired,
+ *       or when the app throws {@link SplibOauth2LoginRejectedException} in the step above
+ *       (the following steps are skipped).</li>
  *   <li>Replaces the OAuth2 token in the security context with a
  *       {@link UsernamePasswordAuthenticationToken} so that the rest of the
  *       application behaves identically to form-based login.</li>
@@ -72,13 +78,31 @@ import tools.jackson.databind.ObjectMapper;
  *   <li>Redirects to the saved request or default success URL.</li>
  * </ol>
  *
+ * <p>When the login is rejected, the user is not logged in,
+ *     {@link SplibOauth2UserHandler#afterLoginSuccess} is not called,
+ *     and the user is redirected to the login page with {@code ?oauth2Rejected}.
+ *     The reason is written to the log with {@code INFO}, and not shown to the user.</p>
+ *
  * <p>This bean is registered by {@link SplibOauth2Config}.</p>
  */
 public class SplibOauth2AuthSuccessHandler
     extends SavedRequestAwareAuthenticationSuccessHandler {
 
+  /** The url parameter added to the login page when the login is rejected. */
+  static final String REJECTED_PARAM = "oauth2Rejected";
+
+  private final DetailLogger detailLog = new DetailLogger(this);
+
   private final SplibOauth2UserHandler userHandler;
   private final ObjectMapper objectMapper = new ObjectMapper();
+
+  /**
+   * The same as the one set in {@link jp.ecuacion.splib.web.config.SplibOauth2WebSecurityConfig}.
+   */
+  private final OAuth2AuthorizedClientRepository authorizedClientRepository =
+      new HttpSessionOAuth2AuthorizedClientRepository();
+
+  private String loginPage = "/public/login/page";
 
   /** The same as Spring Security's default for servlet apps. */
   private final SecurityContextRepository securityContextRepository =
@@ -106,6 +130,15 @@ public class SplibOauth2AuthSuccessHandler
     setRequestCache(requestCache);
   }
 
+  /**
+   * Sets the login page, to which the user is redirected when the login is rejected.
+   *
+   * @param loginPage the path of the login page, without the context path
+   */
+  public void setLoginPage(String loginPage) {
+    this.loginPage = loginPage;
+  }
+
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
@@ -121,22 +154,36 @@ public class SplibOauth2AuthSuccessHandler
     SplibOauth2UserInfo userInfo = new SplibOauth2UserInfo(email, name, provider, subject);
 
     UserDetails userDetails;
-    if (userHandler instanceof SplibOauth2UserHandlerWithRegistrationConfirm confirmHandler) {
-      UserDetails foundUser = confirmHandler.findUser(userInfo);
-      if (foundUser == null) {
-        redirectToRegistrationConfirmPage(request, response,
-            new SplibOauth2PendingRegistration(userInfo),
-            confirmHandler.getRegistrationConfirmPage());
-        return;
+    try {
+      if (userHandler instanceof SplibOauth2UserHandlerWithRegistrationConfirm confirmHandler) {
+        UserDetails foundUser = confirmHandler.findUser(userInfo);
+        if (foundUser == null) {
+          redirectToRegistrationConfirmPage(request, response, oauth2Token,
+              new SplibOauth2PendingRegistration(userInfo),
+              confirmHandler.getRegistrationConfirmPage());
+          return;
+        }
+        userDetails = foundUser;
+
+      } else {
+        userDetails = userHandler.findOrCreateUser(userInfo);
       }
-      userDetails = foundUser;
 
-      // Discard the one left by an abandoned registration confirmation.
-      removePendingRegistration(request);
-
-    } else {
-      userDetails = userHandler.findOrCreateUser(userInfo);
+    } catch (SplibOauth2LoginRejectedException ex) {
+      getRedirectStrategy().sendRedirect(request, response,
+          reject(request, response, oauth2Token, userInfo, String.valueOf(ex.getMessage())));
+      return;
     }
+
+    String rejectionReason = accountStatusRejectionReason(userDetails);
+    if (rejectionReason != null) {
+      getRedirectStrategy().sendRedirect(request, response,
+          reject(request, response, oauth2Token, userInfo, rejectionReason));
+      return;
+    }
+
+    // Discard the one left by an abandoned registration confirmation.
+    removePendingRegistration(request);
 
     login(request, response, createAuthentication(request, userDetails), userDetails);
 
@@ -150,6 +197,11 @@ public class SplibOauth2AuthSuccessHandler
    */
   String loginAfterRegistration(HttpServletRequest request, HttpServletResponse response,
       UserDetails userDetails) {
+    String rejectionReason = accountStatusRejectionReason(userDetails);
+    if (rejectionReason != null) {
+      return rejectLogin(request, response, rejectionReason);
+    }
+
     removePendingRegistration(request);
 
     UsernamePasswordAuthenticationToken auth = createAuthentication(request, userDetails);
@@ -160,6 +212,16 @@ public class SplibOauth2AuthSuccessHandler
     SavedRequest savedRequest = requestCache.getRequest(request, response);
     return savedRequest == null ? determineTargetUrl(request, response)
         : savedRequest.getRedirectUrl();
+  }
+
+  /**
+   * Rejects the login on the registration confirm page.
+   *
+   * @return the url to redirect to
+   */
+  String rejectLogin(HttpServletRequest request, HttpServletResponse response, String reason) {
+    SplibOauth2PendingRegistration pending = getPendingRegistration(request);
+    return reject(request, response, null, pending == null ? null : pending.userInfo(), reason);
   }
 
   /**
@@ -181,6 +243,71 @@ public class SplibOauth2AuthSuccessHandler
     if (session != null) {
       session.removeAttribute(SplibOauth2PendingRegistration.SESSION_KEY);
     }
+  }
+
+  /**
+   * Returns the reason when the account status doesn't allow the login, otherwise {@code null}.
+   *
+   * <p>The items and the order are the same as the ones Spring Security checks
+   *     before the id / password login.
+   *     {@link UserDetails#isCredentialsNonExpired()} is not checked
+   *     since the credentials are not used in the OAuth2 login.</p>
+   */
+  private static @Nullable String accountStatusRejectionReason(UserDetails userDetails) {
+    if (!userDetails.isAccountNonLocked()) {
+      return "the account is locked.";
+    }
+    if (!userDetails.isEnabled()) {
+      return "the account is disabled.";
+    }
+    if (!userDetails.isAccountNonExpired()) {
+      return "the account has expired.";
+    }
+    return null;
+  }
+
+  /**
+   * Clears what the login has left, logs the reason and returns the url to redirect to.
+   *
+   * @param oauth2Token the OAuth2 authentication to clear the authorized client of,
+   *     {@code null} if it's already cleared
+   * @param userInfo the user rejected, {@code null} if unknown
+   */
+  private String reject(HttpServletRequest request, HttpServletResponse response,
+      @Nullable OAuth2AuthenticationToken oauth2Token, @Nullable SplibOauth2UserInfo userInfo,
+      String reason) {
+    clearLogin(request, response, oauth2Token);
+
+    detailLog.info("OAuth2 login rejected. provider: "
+        + (userInfo == null ? null : userInfo.provider()) + ", subject: "
+        + (userInfo == null ? null : userInfo.subject()) + ", reason: " + reason);
+
+    return loginPage + "?" + REJECTED_PARAM;
+  }
+
+  /**
+   * Clears the security context, the OAuth2 authorized client and the pending registration.
+   *
+   * <p>Spring Security has already saved the OAuth2 authentication and the authorized client
+   *     to the session before calling this handler.</p>
+   *
+   * @param oauth2Token the OAuth2 authentication to clear the authorized client of,
+   *     {@code null} if it's already cleared
+   */
+  private void clearLogin(HttpServletRequest request, HttpServletResponse response,
+      @Nullable OAuth2AuthenticationToken oauth2Token) {
+    SecurityContext emptyContext =
+        SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
+    SecurityContextHolder.getContextHolderStrategy().clearContext();
+    securityContextRepository.saveContext(emptyContext, request, response);
+
+    if (oauth2Token != null) {
+      authorizedClientRepository.removeAuthorizedClient(
+          oauth2Token.getAuthorizedClientRegistrationId(), oauth2Token, request, response);
+    }
+
+    removePendingRegistration(request);
+    clearAuthenticationAttributes(request);
   }
 
   private UsernamePasswordAuthenticationToken createAuthentication(HttpServletRequest request,
@@ -212,16 +339,12 @@ public class SplibOauth2AuthSuccessHandler
    *     this handler, so it's explicitly cleared here.</p>
    */
   private void redirectToRegistrationConfirmPage(HttpServletRequest request,
-      HttpServletResponse response, SplibOauth2PendingRegistration pendingRegistration,
-      String confirmPage) throws IOException {
-    SecurityContext emptyContext =
-        SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
-    SecurityContextHolder.getContextHolderStrategy().clearContext();
-    securityContextRepository.saveContext(emptyContext, request, response);
+      HttpServletResponse response, OAuth2AuthenticationToken oauth2Token,
+      SplibOauth2PendingRegistration pendingRegistration, String confirmPage) throws IOException {
+    clearLogin(request, response, oauth2Token);
 
     request.getSession().setAttribute(SplibOauth2PendingRegistration.SESSION_KEY,
         pendingRegistration);
-    clearAuthenticationAttributes(request);
 
     getRedirectStrategy().sendRedirect(request, response, confirmPage);
   }
