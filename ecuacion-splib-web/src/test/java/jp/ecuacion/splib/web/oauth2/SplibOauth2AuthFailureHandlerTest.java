@@ -82,6 +82,8 @@ class SplibOauth2AuthFailureHandlerTest {
   @CsvSource({"access_denied, /app/public/login/page, INFO",
       "user_cancelled_authorize, /app/public/login/page, INFO",
       "authorization_request_not_found, /app/public/login/page?oauth2Error, INFO",
+      "email_not_verified, /app/public/login/page?oauth2Error, INFO",
+      "email_not_provided, /app/public/login/page?oauth2Error, WARN",
       "invalid_token_response, /app/public/login/page?oauth2Error, WARN",
       "invalid_client, /app/public/login/page?oauth2Error, WARN",
       "invalid_id_token, /app/public/login/page?oauth2Error, WARN",

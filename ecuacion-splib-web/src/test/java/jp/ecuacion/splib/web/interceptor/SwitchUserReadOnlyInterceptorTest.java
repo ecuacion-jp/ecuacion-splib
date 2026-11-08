@@ -20,11 +20,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.List;
 import jp.ecuacion.lib.core.exception.ViolationException;
 import jp.ecuacion.splib.core.annotation.ReadOnlyOperation;
 import jp.ecuacion.splib.web.config.SplibWebSecurityConfigForSwitchUser;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -104,7 +104,7 @@ class SwitchUserReadOnlyInterceptorTest {
   static class Advice {
 
     @ExceptionHandler(ViolationException.class)
-    ResponseEntity<String> violation(ViolationException ex) {
+    ResponseEntity<@NonNull String> violation(ViolationException ex) {
       return ResponseEntity.status(HttpStatus.CONFLICT)
           .body(ex.getViolations().getBusinessViolations().get(0).getMessageId());
     }
