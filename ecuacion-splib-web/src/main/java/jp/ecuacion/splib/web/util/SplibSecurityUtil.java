@@ -18,12 +18,38 @@ package jp.ecuacion.splib.web.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Provides utilities on spring security.
  */
 public class SplibSecurityUtil {
+
+  /**
+   * Returns {@code loginUser} itself if it is not {@code null}, throws an exception otherwise.
+   *
+   * <p>{@code loginUser} received by services is {@code @Nullable}
+   *     because some pages can be accessed without login.
+   *     Use this method on pages which require login to obtain non-null {@code loginUser}.</p>
+   *
+   * <p>Use this method instead of {@code Objects.requireNonNull(loginUser)}.
+   *     SpotBugs reports {@code NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE}
+   *     when a {@code @Nullable} parameter is passed to {@code Objects.requireNonNull}.</p>
+   *
+   * @param loginUser loginUser, may be {@code null}
+   * @return loginUser, never {@code null}
+   * @throws IllegalStateException when {@code loginUser} is {@code null},
+   *     which means the page is accessed without login although it requires login.
+   */
+  public static UserDetails requireLoginUser(@Nullable UserDetails loginUser) {
+    if (loginUser == null) {
+      throw new IllegalStateException(
+          "loginUser is null although the page requires login.");
+    }
+
+    return loginUser;
+  }
 
   /**
    * Returns a new instance with no roles or authorities.
