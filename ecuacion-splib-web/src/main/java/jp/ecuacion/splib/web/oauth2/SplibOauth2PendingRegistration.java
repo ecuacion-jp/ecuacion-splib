@@ -26,16 +26,13 @@ import java.io.Serializable;
  *     and obtained by the app through
  *     {@link SplibOauth2RegistrationConfirmService#getPendingRegistration}.</p>
  *
- * <p>{@code name} is resolved in the same way as the one passed to
- *     {@link SplibOauth2UserHandler#findOrCreateUser}, so Apple's first-login-only name is kept
- *     here as well.</p>
+ * <p>{@code userInfo} is the same as the one passed to
+ *     {@link SplibOauth2UserHandlerWithRegistrationConfirm#findUser}, so Apple's first-login-only
+ *     name is kept here as well.</p>
  *
- * @param email email address provided by the OAuth2 provider
- * @param name display name provided by the provider
- *     (falls back to the local part of the email address when the provider doesn't provide it)
- * @param provider provider identifier: {@code "GOOGLE"} or {@code "APPLE"}
+ * @param userInfo the information of the user received from the provider
  */
-public record SplibOauth2PendingRegistration(String email, String name, String provider)
+public record SplibOauth2PendingRegistration(SplibOauth2UserInfo userInfo)
     implements Serializable {
 
   /** Session attribute key used to keep the pending registration. */

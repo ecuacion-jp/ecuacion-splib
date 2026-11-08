@@ -114,6 +114,7 @@ class SplibOauth2ConfigTest {
       assertThat(field(restClient, "clientRequestFactory")).isSameAs(expected);
 
       // UserInfo with and without the openid scope
+      assertThat(field(oidc, "userService")).isInstanceOf(SplibOauth2OidcUserService.class);
       Object delegate = field(field(oidc, "userService"), "oauth2UserService");
       assertThat(requestFactoryOf(field(delegate, "restOperations"))).isSameAs(expected);
       Object oauth2UserService = field(oauth2, "userService");
@@ -210,8 +211,8 @@ class SplibOauth2ConfigTest {
     SplibOauth2UserHandler userHandler() {
       return new SplibOauth2UserHandler() {
         @Override
-        public UserDetails findOrCreateUser(String email, String name, String provider) {
-          return User.withUsername(email).password("").build();
+        public UserDetails findOrCreateUser(SplibOauth2UserInfo userInfo) {
+          return User.withUsername(userInfo.email()).password("").build();
         }
 
         @Override
