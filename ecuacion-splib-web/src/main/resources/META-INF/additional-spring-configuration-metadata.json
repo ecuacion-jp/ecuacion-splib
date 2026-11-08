@@ -113,5 +113,50 @@
     "name": "jp.ecuacion.splib.web.builtin-admin-login.password-bcrypt",
     "type": "java.lang.String",
     "description": "Optional. A bcrypt hash of the password for ecuacion-splib's built-in admin pages (HTTP Basic authentication, username 'ecuacion-splib'). Exactly one of this and 'jp.ecuacion.splib.web.builtin-admin-login.password-plain' must be set; if neither is set, the built-in admin pages are not accessible (fails closed)."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.login-code.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Optional. Sends a 6-digit login code by mail after the password of the admin login, and requires it before /admin/** can be used (multi-factor authentication). Needs a SplibAdminAccountProvider bean and the mail settings. Default: false. See jp.ecuacion.splib.web.adminlogin.SplibAdminLoginProtection."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.session-check.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Optional. Logs out the session of an admin on /admin/** (and while switched to another user) when the account cannot log in anymore or its stamp (mail address, role, password hash, and so on) has changed since the login. Needs a SplibAdminAccountProvider bean. Default: false. See jp.ecuacion.splib.web.adminlogin.SplibAdminLoginProtection."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.attempt-limit.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Optional. Rejects the admin login of a login ID with too many wrong passwords without checking the password. Default: false. See jp.ecuacion.splib.web.adminlogin.SplibAdminLoginProtection."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.password-failure.max-attempts",
+    "type": "java.lang.Integer",
+    "description": "Optional. The number of wrong passwords of a login ID allowed in password-failure.window-minutes. Default: 10."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.password-failure.window-minutes",
+    "type": "java.lang.Integer",
+    "description": "Optional. The minutes in which wrong passwords are counted. Default: 15."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.code-resend.max-attempts",
+    "type": "java.lang.Integer",
+    "description": "Optional. The number of times the login code can be resent in code-resend.window-minutes. Default: 5."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.code-resend.window-minutes",
+    "type": "java.lang.Integer",
+    "description": "Optional. The minutes in which resending the login code is counted. Default: 60."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.code-failure.max-attempts",
+    "type": "java.lang.Integer",
+    "description": "Optional. The number of wrong login codes of a login ID allowed in code-failure.window-minutes, counted across the codes (logging in again does not reset it). Default: 10."
+  },
+  {
+    "name": "jp.ecuacion.splib.web.admin-login.code-failure.window-minutes",
+    "type": "java.lang.Integer",
+    "description": "Optional. The minutes in which wrong login codes are counted. Default: 60."
   }
 ]}
