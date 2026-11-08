@@ -1,0 +1,45 @@
+<!--
+
+	Copyright © 2012 ecuacion.jp (info@ecuacion.jp)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		layout:decorate="~{bootstrap/page-general-narrow}"
+		th:with="title=#{jp.ecuacion.splib.web.adminLoginCode.title}">
+
+<head>
+	<meta charset="UTF-8"/>
+</head>
+<body>
+	<div layout:fragment="form-content" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: paragraph('jp.ecuacion.splib.web.adminLoginCode.desc', '')}"></div>
+		<div th:replace="~{bootstrap/components-input :: inputText('code', 'width=full')}"></div>
+		<br>
+		<div class="d-flex justify-content-center gap-3">
+			<div th:replace="~{bootstrap/components-input :: submitButton('verify', 'jp.ecuacion.splib.web.adminLoginCode.button.verify', '')}"></div>
+			<div th:replace="~{bootstrap/components-input :: submitButton('resend', 'jp.ecuacion.splib.web.adminLoginCode.button.resend', '')}"></div>
+		</div>
+	</div>
+
+	<!--/* to give up (outside the form of the page) */-->
+	<div layout:fragment="bottom-space" th:remove="tag">
+		<form method="post" th:action="@{/public/adminLogout}" class="text-center mt-3">
+			<div th:replace="~{bootstrap/components-input :: submitButton('logout', 'jp.ecuacion.splib.web.adminLoginCode.button.logout', '')}"></div>
+		</form>
+	</div>
+</body>
+</html>
