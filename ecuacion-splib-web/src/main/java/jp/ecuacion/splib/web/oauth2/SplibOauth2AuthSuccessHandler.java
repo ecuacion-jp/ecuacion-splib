@@ -53,9 +53,11 @@ import tools.jackson.databind.ObjectMapper;
  *
  * <p>After Spring Security completes the OAuth2 / OIDC flow, this handler:</p>
  * <ol>
- *   <li>Extracts {@code email} and {@code name} from the {@link OidcUser}
+ *   <li>Extracts {@code email}, {@code name} and {@code sub} from the {@link OidcUser}
+ *       as {@link SplibOauth2UserInfo}
  *       (for Apple first-login, the {@code name} is read from the {@code user}
- *       POST parameter).</li>
+ *       POST parameter). {@code email_verified} has already been checked by
+ *       {@link SplibOauth2OidcUserService}.</li>
  *   <li>Calls {@link SplibOauth2UserHandler#findOrCreateUser} to obtain
  *       the application's {@link UserDetails}.
  *       When the handler is a {@link SplibOauth2UserHandlerWithRegistrationConfirm},
@@ -115,13 +117,15 @@ public class SplibOauth2AuthSuccessHandler
     String email = Objects.requireNonNull(oidcUser.getEmail());
     String name = resolveName(oidcUser, registrationId, email, request);
     String provider = registrationId.toUpperCase(Locale.ROOT);
+    String subject = Objects.requireNonNull(oidcUser.getSubject());
+    SplibOauth2UserInfo userInfo = new SplibOauth2UserInfo(email, name, provider, subject);
 
     UserDetails userDetails;
     if (userHandler instanceof SplibOauth2UserHandlerWithRegistrationConfirm confirmHandler) {
-      UserDetails foundUser = confirmHandler.findUser(email, name, provider);
+      UserDetails foundUser = confirmHandler.findUser(userInfo);
       if (foundUser == null) {
         redirectToRegistrationConfirmPage(request, response,
-            new SplibOauth2PendingRegistration(email, name, provider),
+            new SplibOauth2PendingRegistration(userInfo),
             confirmHandler.getRegistrationConfirmPage());
         return;
       }
@@ -131,7 +135,7 @@ public class SplibOauth2AuthSuccessHandler
       removePendingRegistration(request);
 
     } else {
-      userDetails = userHandler.findOrCreateUser(email, name, provider);
+      userDetails = userHandler.findOrCreateUser(userInfo);
     }
 
     login(request, response, createAuthentication(request, userDetails), userDetails);

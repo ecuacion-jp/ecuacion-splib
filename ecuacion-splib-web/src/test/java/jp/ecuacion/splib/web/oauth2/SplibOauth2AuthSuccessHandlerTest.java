@@ -113,8 +113,8 @@ class SplibOauth2AuthSuccessHandlerTest {
     }
 
     @Override
-    public @Nullable UserDetails findUser(String email, String name, String provider) {
-      calls.add("findUser:" + email + "," + name + "," + provider);
+    public @Nullable UserDetails findUser(SplibOauth2UserInfo userInfo) {
+      calls.add("findUser:" + userInfo);
       return foundUser;
     }
 
@@ -137,8 +137,8 @@ class SplibOauth2AuthSuccessHandlerTest {
     @DisplayName("logs in the user returned by findOrCreateUser")
     void logsIn() throws Exception {
       List<String> calls = new ArrayList<>();
-      SplibOauth2UserHandler userHandler = (email, name, provider) -> {
-        calls.add(email + "," + name + "," + provider);
+      SplibOauth2UserHandler userHandler = userInfo -> {
+        calls.add(userInfo.toString());
         return userDetails();
       };
       MockHttpServletResponse response = new MockHttpServletResponse();
@@ -146,7 +146,8 @@ class SplibOauth2AuthSuccessHandlerTest {
       handler(userHandler).onAuthenticationSuccess(
           oauth2CallbackRequest(token("google", "Taro")), response, token("google", "Taro"));
 
-      assertThat(calls).containsExactly("a@example.com,Taro,GOOGLE");
+      assertThat(calls).containsExactly(
+          new SplibOauth2UserInfo("a@example.com", "Taro", "GOOGLE", "sub1").toString());
       assertThat(loggedInPrincipal()).isEqualTo(userDetails());
       assertThat(response.getRedirectedUrl()).isEqualTo(DEFAULT_URL);
     }
@@ -162,12 +163,14 @@ class SplibOauth2AuthSuccessHandlerTest {
       ConfirmHandler userHandler = new ConfirmHandler(userDetails());
       MockHttpServletRequest request = oauth2CallbackRequest(token("google", "Taro"));
       session.setAttribute(SplibOauth2PendingRegistration.SESSION_KEY,
-          new SplibOauth2PendingRegistration("old@example.com", "old", "APPLE"));
+          new SplibOauth2PendingRegistration(
+              new SplibOauth2UserInfo("old@example.com", "old", "APPLE", "sub0")));
       MockHttpServletResponse response = new MockHttpServletResponse();
 
       handler(userHandler).onAuthenticationSuccess(request, response, token("google", "Taro"));
 
-      assertThat(userHandler.calls).containsExactly("findUser:a@example.com,Taro,GOOGLE",
+      assertThat(userHandler.calls).containsExactly(
+          "findUser:" + new SplibOauth2UserInfo("a@example.com", "Taro", "GOOGLE", "sub1"),
           "afterLoginSuccess:a@example.com");
       assertThat(loggedInPrincipal()).isEqualTo(userDetails());
       assertThat(session.getAttribute(SplibOauth2PendingRegistration.SESSION_KEY)).isNull();
@@ -184,12 +187,14 @@ class SplibOauth2AuthSuccessHandlerTest {
 
       handler(userHandler).onAuthenticationSuccess(request, response, token("apple", null));
 
-      assertThat(userHandler.calls).containsExactly("findUser:a@example.com,Hanako Sato,APPLE");
+      SplibOauth2UserInfo userInfo =
+          new SplibOauth2UserInfo("a@example.com", "Hanako Sato", "APPLE", "sub1");
+      assertThat(userHandler.calls).containsExactly("findUser:" + userInfo);
       assertThat(session.getAttribute(CONTEXT_KEY)).isNull();
       assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
       assertThat(new SplibOauth2RegistrationConfirmService(handler(userHandler))
-          .getPendingRegistration(request)).isEqualTo(
-              new SplibOauth2PendingRegistration("a@example.com", "Hanako Sato", "APPLE"));
+          .getPendingRegistration(request))
+              .isEqualTo(new SplibOauth2PendingRegistration(userInfo));
       assertThat(response.getRedirectedUrl()).isEqualTo(CONFIRM_PAGE);
     }
   }
@@ -205,7 +210,8 @@ class SplibOauth2AuthSuccessHandlerTest {
       // As if the session cookie is sent (false by default after setSession())
       request.setRequestedSessionIdValid(true);
       session.setAttribute(SplibOauth2PendingRegistration.SESSION_KEY,
-          new SplibOauth2PendingRegistration("a@example.com", "Taro", "GOOGLE"));
+          new SplibOauth2PendingRegistration(
+              new SplibOauth2UserInfo("a@example.com", "Taro", "GOOGLE", "sub1")));
       return request;
     }
 

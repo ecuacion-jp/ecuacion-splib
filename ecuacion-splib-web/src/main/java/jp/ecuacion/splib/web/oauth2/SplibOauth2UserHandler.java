@@ -29,15 +29,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 public interface SplibOauth2UserHandler {
 
   /**
-   * Finds an existing user by email, or creates one on first login.
+   * Finds an existing user, or creates one on first login.
    *
-   * @param email    email address provided by the OAuth2 provider
-   * @param name     display name provided by the provider (may be null for Apple
-   *                 on subsequent logins)
-   * @param provider provider identifier: {@code "GOOGLE"} or {@code "APPLE"}
+   * <p>Find the user by {@link SplibOauth2UserInfo#provider()} and
+   *     {@link SplibOauth2UserInfo#subject()}, not by the email address
+   *     (see {@link SplibOauth2UserInfo}).</p>
+   *
+   * @param userInfo the information of the user received from the OAuth2 provider
    * @return {@link UserDetails} for the found or newly created user
    */
-  UserDetails findOrCreateUser(String email, String name, String provider);
+  UserDetails findOrCreateUser(SplibOauth2UserInfo userInfo);
 
   /**
    * Called after the security context has been populated with the {@link UserDetails}.

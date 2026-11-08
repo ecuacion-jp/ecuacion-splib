@@ -107,6 +107,9 @@ public class SplibOauth2Config {
   /**
    * Provides the service to get user information when the {@code openid} scope is requested.
    *
+   * <p>The login fails when the email address is not verified.
+   *     See {@link SplibOauth2OidcUserService}.</p>
+   *
    * @param requestFactory requestFactory
    * @return OAuth2UserService
    */
@@ -114,7 +117,7 @@ public class SplibOauth2Config {
   OAuth2UserService<OidcUserRequest, OidcUser> splibOidcUserService(
       @Qualifier(SplibHttpClientConfig.BEAN_NAME_REQUEST_FACTORY)
       ClientHttpRequestFactory requestFactory) {
-    OidcUserService service = new OidcUserService();
+    OidcUserService service = new SplibOauth2OidcUserService();
     service.setOauth2UserService(buildOauth2UserService(requestFactory));
     return service;
   }

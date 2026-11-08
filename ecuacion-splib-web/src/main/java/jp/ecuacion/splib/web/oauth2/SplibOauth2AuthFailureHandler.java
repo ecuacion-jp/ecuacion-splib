@@ -43,7 +43,9 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
  * <p>The log level is {@code INFO} for the errors that happen in normal use,
  *     and {@code WARN} for the others, which may need a fix on the server.
  *     {@code authorization_request_not_found} is one of the former, since it's also caused by
- *     an expired session or by anyone accessing the callback url without logging in.</p>
+ *     an expired session or by anyone accessing the callback url without logging in.
+ *     {@code email_not_verified} (see {@link SplibOauth2OidcUserService}) is also one of
+ *     the former, since it depends on the user's account at the provider.</p>
  *
  * <p>The error code and the description may come from the parameters of the callback,
  *     so the values are shortened. Their control characters are removed by the logger.
@@ -89,7 +91,8 @@ public class SplibOauth2AuthFailureHandler implements AuthenticationFailureHandl
     String message = "OAuth2 login failed. registrationId: "
         + shorten(StringUtils.substringAfterLast(request.getRequestURI(), "/")) + ", errorCode: "
         + shorten(errorCode) + ", description: " + shorten(description) + causeOf(exception);
-    if (isCancelled || AUTHORIZATION_REQUEST_NOT_FOUND.equals(errorCode)) {
+    if (isCancelled || AUTHORIZATION_REQUEST_NOT_FOUND.equals(errorCode)
+        || SplibOauth2OidcUserService.EMAIL_NOT_VERIFIED_ERROR_CODE.equals(errorCode)) {
       detailLog.info(message);
     } else {
       detailLog.warn(message);

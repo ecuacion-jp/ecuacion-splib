@@ -44,16 +44,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 public interface SplibOauth2UserHandlerWithRegistrationConfirm extends SplibOauth2UserHandler {
 
   /**
-   * Finds an existing user by email without creating one.
+   * Finds an existing user without creating one.
    *
-   * @param email    email address provided by the OAuth2 provider
-   * @param name     display name provided by the provider (falls back to the local part of the
-   *                 email address when the provider doesn't provide it)
-   * @param provider provider identifier: {@code "GOOGLE"} or {@code "APPLE"}
+   * <p>Find the user by {@link SplibOauth2UserInfo#provider()} and
+   *     {@link SplibOauth2UserInfo#subject()}, not by the email address
+   *     (see {@link SplibOauth2UserInfo}).</p>
+   *
+   * @param userInfo the information of the user received from the OAuth2 provider
    * @return {@link UserDetails} for the found user, {@code null} if the user is not registered
    */
   @Nullable
-  UserDetails findUser(String email, String name, String provider);
+  UserDetails findUser(SplibOauth2UserInfo userInfo);
 
   /**
    * Returns the url of the registration confirm page, which is shown when {@link #findUser}
@@ -70,13 +71,11 @@ public interface SplibOauth2UserHandlerWithRegistrationConfirm extends SplibOaut
   /**
    * Throws {@link UnsupportedOperationException} since it's not used in this flow.
    *
-   * @param email    email address provided by the OAuth2 provider
-   * @param name     display name provided by the provider
-   * @param provider provider identifier: {@code "GOOGLE"} or {@code "APPLE"}
+   * @param userInfo the information of the user received from the OAuth2 provider
    * @return never returns
    */
   @Override
-  default UserDetails findOrCreateUser(String email, String name, String provider) {
+  default UserDetails findOrCreateUser(SplibOauth2UserInfo userInfo) {
     throw new UnsupportedOperationException(
         "findOrCreateUser is not used in SplibOauth2UserHandlerWithRegistrationConfirm.");
   }
