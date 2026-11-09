@@ -143,7 +143,7 @@
 	<div th:fragment="internalAllHtmlInputComponent(position)" th:remove="tag">
 		<input th:type="${type}" th:id="${inputId}" th:name="${inputName}" 
 				th:value="${#optUtil.hasKey(options, 'value') ? (#messages.msgOrNull(#optUtil.getValue(options, 'value')) ?: #optUtil.getValue(options, 'value')) : inputValue}"
-				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{getStringLength('__${propertyPathField}__')}"
+				th:maxlength="${isReadOnly || type == 'hidden' || needsMaxLength == null || !needsMaxLength} ? '' : *{getStringLength('__${itemPropertyPath}__')}"
 				class="form-control text-dark"
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
 						+ ' ' + ${position == 'right' ? 'text-end' : ''}
@@ -282,7 +282,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTextArea" th:remove="tag">
 			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
-				th:maxlength="*{getStringLength('__${propertyPathField}__')}" 
+				th:maxlength="*{getStringLength('__${itemPropertyPath}__')}" 
 				class="text-dark"
 				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + ((isRowTemplate != true and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : '')}"
 				th:readonly="${isReadOnly}" rows="3">
