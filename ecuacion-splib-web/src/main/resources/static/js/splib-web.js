@@ -231,3 +231,67 @@ document.addEventListener('DOMContentLoaded', function() {
 	[...tooltipTriggerList].filter(el => el.dataset.tooltipSanitize == "false")
 			.forEach(el => new bootstrap.Tooltip(el, {sanitize: false, html: true}));
 });
+
+/*
+ * rowAddableTable (components-edit.html).
+ * Rows are added from the <template> and removed by the buttons in the rows.
+ * Indexes in 'name', 'id' and 'for' attributes are renumbered from 0 after that,
+ * so that the rows are bound to the list without gaps.
+ * Clicks are received by the document so that added rows and multiple tables are handled.
+ */
+function splibRowAddableTableRows(table) {
+	return Array.from(table.querySelector(':scope > table > tbody').children);
+}
+
+function splibRowAddableTableRenumber(table) {
+	const prefix = table.dataset.namePrefix;
+	const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	// "(^|\.)" not to match a path which only ends with the prefix.
+	const regex = new RegExp('(^|\\.)' + escaped + '\\[\\d*\\]');
+	splibRowAddableTableRows(table).forEach((tr, i) => {
+		tr.querySelectorAll('[name], [id], label[for]').forEach(el => {
+			['name', 'id', 'for'].forEach(attr => {
+				const value = el.getAttribute(attr);
+				if (value !== null) {
+					el.setAttribute(attr, value.replace(regex, '$1' + prefix + '[' + i + ']'));
+				}
+			});
+		});
+	});
+}
+
+function splibRowAddableTableUpdateButtons(table) {
+	const count = splibRowAddableTableRows(table).length;
+	const min = parseInt(table.dataset.minRows, 10);
+	const max = parseInt(table.dataset.maxRows, 10);
+	const addButton = table.querySelector(':scope > [data-splib-row-add]');
+	if (addButton) {
+		addButton.disabled = !isNaN(max) && count >= max;
+	}
+	splibRowAddableTableRows(table).forEach(tr => {
+		const removeButton = tr.querySelector('[data-splib-row-remove]');
+		if (removeButton) {
+			removeButton.disabled = !isNaN(min) && count <= min;
+		}
+	});
+}
+
+document.addEventListener('click', function(event) {
+	const button = event.target.closest('[data-splib-row-add], [data-splib-row-remove]');
+	if (!button) return;
+	const table = button.closest('[data-splib-row-addable-table]');
+	if (!table) return;
+
+	if (button.hasAttribute('data-splib-row-add')) {
+		const row = table.querySelector(':scope > template').content.cloneNode(true);
+		table.querySelector(':scope > table > tbody').appendChild(row);
+	} else {
+		button.closest('tr').remove();
+	}
+	splibRowAddableTableRenumber(table);
+	splibRowAddableTableUpdateButtons(table);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+	document.querySelectorAll('[data-splib-row-addable-table]').forEach(splibRowAddableTableUpdateButtons);
+});

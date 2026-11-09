@@ -18,6 +18,7 @@ package jp.ecuacion.splib.web.util;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Stream;
+import jp.ecuacion.lib.core.util.PropertyPathUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -33,9 +34,13 @@ public class SplibThymeleafStringUtil {
    * Change string like acc -> getAccList, acc.name -> getAcc_NameList.
    * 
    * <p>"_" is derived from repository query method definition  when relation is used.</p>
+   *
+   * <p>Indexes of lists are ignored: {@code rows[3].name} and {@code rows[].name}
+   *     both result in {@code getRows_NameList}.</p>
    */
   public String selectListMethodName(String itemName) {
-    String[] strs = itemName.split("\\.", -1);
+    String[] strs =
+        PropertyPathUtil.toIndexlessPath(itemName).replace("[]", "").split("\\.", -1);
 
     boolean is1st = true;
     StringBuilder rtn = new StringBuilder();

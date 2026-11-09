@@ -148,11 +148,16 @@
 	</div>
 
 	<!--/* subtitle  */-->
+	<!--/* options (also for paragraphWithSubtitle):
+			- borderColorClass	arbitrary	the class of the color of the bar on the left. Default: 'border-color-subtitle'.
+										Used to show the subtitle in another color like 'border-danger'.
+	*/-->
 	<div th:fragment="subtitle(title, options)" th:remove="tag">
  		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: subtitleInternal}, ${'mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subtitleInternal" th:remove="tag">
-			<div class="border-5 border-color-subtitle fs-5 fw-bold pt-1 pb-1 ps-3" style="border-left: solid;" th:text="${titleString}"></div>
+			<div class="border-5 fs-5 fw-bold pt-1 pb-1 ps-3" style="border-left: solid;"
+					th:classappend="${#optUtil.getValueOrElse(options, 'borderColorClass', 'border-color-subtitle')}" th:text="${titleString}"></div>
 		</div></th:block>
 	</div>
 

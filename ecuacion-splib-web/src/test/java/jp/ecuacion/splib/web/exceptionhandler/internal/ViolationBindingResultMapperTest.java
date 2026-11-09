@@ -37,6 +37,7 @@ import jp.ecuacion.lib.core.util.internal.PropertiesFileUtilBundleReader;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
 import jp.ecuacion.lib.validation.constraints.AnyNotNull;
+import jp.ecuacion.splib.core.config.PropertiesFileUtilMessageSource;
 import jp.ecuacion.splib.core.record.SplibRecord;
 import jp.ecuacion.splib.web.form.SplibGeneralForm;
 import org.jspecify.annotations.NonNull;
@@ -61,6 +62,7 @@ class ViolationBindingResultMapperTest {
   // message IDs defined in messages_splib-web-test.properties
   private static final String MSG1 = "jp.ecuacion.splib.web.test.violation1";
   private static final String MSG2 = "jp.ecuacion.splib.web.test.violation2";
+  private static final String MSG_WITH_ARG = "jp.ecuacion.splib.web.test.violationWithArg";
 
   @BeforeAll
   static void init() {
@@ -487,6 +489,24 @@ class ViolationBindingResultMapperTest {
       assertThat(br.getFieldErrorCount()).isEqualTo(1);
       assertThat(br.getFieldErrors().get(0).getField()).isEqualTo("name");
       assertThat(br.getGlobalErrorCount()).isEqualTo(2);
+    }
+
+    /**
+     * The field error is shown by resolving it with the {@code MessageSource}
+     * ({@code #fields.errors(...)} in Thymeleaf). It must result in the already formatted
+     * message, not the raw message of the message ID without arguments ("{0}" left as is).
+     */
+    @Test
+    void atItem_messageWithArgs__resolvedWithArgsByMessageSource() {
+      ViolationException ex = violationOf(
+          new BusinessViolation(new String[] {"name"}, MSG_WITH_ARG, "argument"));
+      BindingResult br = newBindingResult();
+
+      ViolationBindingResultMapper.addViolationErrorsToBindingResult(ex, br, true, false,
+          Locale.ROOT);
+
+      assertThat(new PropertiesFileUtilMessageSource().getMessage(br.getFieldErrors().get(0),
+          Locale.ROOT)).isEqualTo("Test violation with argument");
     }
   }
 

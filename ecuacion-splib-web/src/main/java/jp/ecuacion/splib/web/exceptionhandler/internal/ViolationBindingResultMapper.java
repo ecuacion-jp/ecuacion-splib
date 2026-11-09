@@ -181,7 +181,7 @@ public class ViolationBindingResultMapper {
         String[] representativePaths =
             applyRepresentativePropertyPathFallback(new String[0], representativePropertyPath);
         if (representativePaths.length > 0) {
-          addFieldError(br, representativePaths[0], errorCode, cv.getMessage());
+          addFieldError(br, representativePaths[0], cv.getMessage());
         }
         return representativePaths.length > 0; // at-each-item error added iff fallback resolved
       } else if (br.getTarget() instanceof SplibGeneralForm form) {
@@ -389,7 +389,7 @@ public class ViolationBindingResultMapper {
     if (propertyPaths.length > 0) {
       String message = ExceptionUtil.getMessageList(singleViolation, locale, false).get(0);
       for (String propertyPath : propertyPaths) {
-        addFieldError(br, propertyPath, errorCode, message);
+        addFieldError(br, propertyPath, message);
       }
       atEachItemAdded = needsMsgAtItem;
     }
@@ -402,11 +402,17 @@ public class ViolationBindingResultMapper {
 
   /**
    * Adds a {@code FieldError} (at-each-item) to the given {@code BindingResult}.
+   *
+   * <p>The {@code FieldError} has no error codes, only {@code message} as its default message.
+   *     Field errors are shown by resolving them with the {@code MessageSource}
+   *     ({@code #fields.errors(...)} in Thymeleaf), which resolves the codes first.
+   *     Since the error code of a {@code BusinessViolation} is its message ID,
+   *     it would be resolved to the raw message without arguments (like "{0}" left as is)
+   *     instead of {@code message}, which is already formatted.</p>
    */
-  private static void addFieldError(BindingResult br, String propertyPath, String errorCode,
-      String message) {
-    br.addError(new FieldError(br.getObjectName(), propertyPath, null, false,
-        new String[] {errorCode}, new Object[] {}, message));
+  private static void addFieldError(BindingResult br, String propertyPath, String message) {
+    br.addError(new FieldError(br.getObjectName(), propertyPath, null, false, null, null,
+        message));
   }
 
   /**

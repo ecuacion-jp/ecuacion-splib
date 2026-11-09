@@ -22,7 +22,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link SplibThymeleafStringUtil#isSelected}.
+ * Unit tests for {@link SplibThymeleafStringUtil}.
  */
 class SplibThymeleafStringUtilTest {
 
@@ -56,6 +56,20 @@ class SplibThymeleafStringUtilTest {
     assertThat(util.isSelected("10, 20", "20")).isTrue();
     assertThat(util.isSelected("10,20", "2")).isFalse();
     assertThat(util.isSelected("", "1")).isFalse();
+  }
+
+  @Test
+  void selectListMethodName_withoutLists() {
+    assertThat(util.selectListMethodName("acc")).isEqualTo("getAccList");
+    assertThat(util.selectListMethodName("acc.name")).isEqualTo("getAcc_NameList");
+  }
+
+  /** Indexes of lists are ignored so that rows in a table share the same method. */
+  @Test
+  void selectListMethodName_withLists_ignoresIndexes() {
+    assertThat(util.selectListMethodName("rows[3].lang")).isEqualTo("getRows_LangList");
+    assertThat(util.selectListMethodName("rows[].lang")).isEqualTo("getRows_LangList");
+    assertThat(util.selectListMethodName("acc.rows[0].lang")).isEqualTo("getAcc_Rows_LangList");
   }
 
   @Test
