@@ -32,6 +32,11 @@
       "name": "jp.ecuacion.splib.core.app-conf-dir",
       "type": "java.lang.String",
       "description": "Directory an app externalizes its config to, set in the app's own bundled application.properties. SplibEnvironmentPostProcessor looks for logback-spring.xml here; the app also references it from spring.config.import."
+    },
+    {
+      "name": "jp.ecuacion.splib.core.audit-log.enabled",
+      "type": "java.lang.String",
+      "description": ""
     }
   ]
 }
