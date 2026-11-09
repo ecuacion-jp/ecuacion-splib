@@ -17,12 +17,17 @@ package jp.ecuacion.splib.core.record;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import jp.ecuacion.lib.core.util.PropertiesFileUtil;
 import jp.ecuacion.splib.core.container.DatetimeFormatParameters;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +42,18 @@ public abstract class SplibRecord {
 
   protected DatetimeFormatParameters dateTimeFormatParams;
 
+  /** Holds string lengths registered through the deprecated {@link #getStringLengthMap()}. */
   static final Map<String, Integer> stringLengthMap = new HashMap<>();
+
+  /**
+   * Holds string lengths per class registered through {@link #getStringLengthMap(Class)}.
+   *
+   * <p>The inner maps allow {@code null} values
+   *     (code-generator registers {@code null} for some columns), so they're not
+   *     {@code ConcurrentHashMap}.</p>
+   */
+  private static final Map<Class<?>, Map<String, @Nullable Integer>> stringLengthMapByClass =
+      new ConcurrentHashMap<>();
 
   /**
    * Constructs a new instance.
@@ -65,17 +81,138 @@ public abstract class SplibRecord {
   }
 
   /**
-   * Gets string length.
-   * 
-   * @param itemName itemName
-   * @return Integer
+   * Gets the string length of the item, which is used as the {@code maxlength} attribute
+   *     of the html input components.
+   *
+   * <p>The class which holds the field is resolved by following {@code itemPropertyPath}
+   *     from the class of this record, using the declared (not runtime) types of the getters.
+   *     A segment can have an index like {@code rows[3]} or {@code rows[]},
+   *     whose element type is taken from the type argument of the collection or the array.
+   *     Then the length is looked up from that class up to its superclasses
+   *     in the map registered with {@link #getStringLengthMap(Class)}.</p>
+   *
+   * <p>When the length isn't found that way,
+   *     the value registered with the deprecated {@link #getStringLengthMap()}
+   *     for the last field name is returned for backward compatibility.</p>
+   *
+   * @param itemPropertyPath the itemPropertyPath from this record, like {@code name},
+   *     {@code acc.name} or {@code nameRows[3].name}
+   * @return the string length, {@code null} if not registered
    */
-  public @Nullable Integer getStringLength(String itemName) {
-    return stringLengthMap.get(itemName);
+  public @Nullable Integer getStringLength(String itemPropertyPath) {
+    String[] segments = itemPropertyPath.split("\\.");
+    String fieldName = removeIndex(segments[segments.length - 1]);
+
+    Class<?> cls = getClass();
+    for (int i = 0; i < segments.length - 1; i++) {
+      Class<?> next = getPropertyClass(cls, segments[i]);
+      if (next == null) {
+        return stringLengthMap.get(fieldName);
+      }
+
+      cls = next;
+    }
+
+    initialize(cls);
+    for (@Nullable Class<?> c = cls; c != null; c = c.getSuperclass()) {
+      @Nullable Map<String, @Nullable Integer> map = stringLengthMapByClass.get(c);
+      if (map != null && map.containsKey(fieldName)) {
+        return map.get(fieldName);
+      }
+    }
+
+    return stringLengthMap.get(fieldName);
   }
 
+  /**
+   * Gets the map to register string lengths without distinguishing classes.
+   *
+   * <p>Since the map is shared by all the records, a length registered here is overwritten
+   *     when another record registers a field with the same name.</p>
+   *
+   * @return the map
+   * @deprecated Use {@link #getStringLengthMap(Class)} instead.
+   */
+  @Deprecated
   protected static Map<String, Integer> getStringLengthMap() {
     return stringLengthMap;
+  }
+
+  /**
+   * Gets the map to register string lengths of the fields of {@code cls}.
+   *
+   * <p>Register the lengths in the static initializer of the record like
+   *     {@code getStringLengthMap(XxxRecord.class).put("name", 50)}.
+   *     The lengths are also applied to the subclasses of {@code cls}.</p>
+   *
+   * <p>{@code cls} doesn't need to be a {@code SplibRecord}.
+   *     For the classes of the rows in a list of a record (like the rows of rowAddableTable),
+   *     register the lengths in the static initializer of the record which has the list,
+   *     like {@code getStringLengthMap(XxxRow.class).put("name", 50)}.</p>
+   *
+   * @param cls the class which has the fields
+   * @return the map whose keys are field names and values are string lengths
+   */
+  protected static Map<String, @Nullable Integer> getStringLengthMap(Class<?> cls) {
+    return Objects.requireNonNull(stringLengthMapByClass.computeIfAbsent(cls,
+        k -> Collections.synchronizedMap(new HashMap<>())));
+  }
+
+  /**
+   * Gets the declared type of the property, or the element type when the segment has an index.
+   *
+   * @return the class, {@code null} if it can't be resolved
+   */
+  private static @Nullable Class<?> getPropertyClass(Class<?> cls, String segment) {
+    boolean hasIndex = segment.contains("[");
+    String name = removeIndex(segment);
+
+    Type type;
+    try {
+      type = cls.getMethod("get" + StringUtils.capitalize(name)).getGenericReturnType();
+
+    } catch (NoSuchMethodException e) {
+      return null;
+    }
+
+    if (hasIndex) {
+      if (type instanceof ParameterizedType pt && pt.getActualTypeArguments().length == 1) {
+        type = pt.getActualTypeArguments()[0];
+
+      } else if (type instanceof Class<?> c && c.isArray()) {
+        return c.getComponentType();
+
+      } else {
+        return null;
+      }
+    }
+
+    if (type instanceof Class<?> c) {
+      return c;
+
+    } else if (type instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> c) {
+      return c;
+    }
+
+    return null;
+  }
+
+  private static String removeIndex(String segment) {
+    int index = segment.indexOf('[');
+    return index < 0 ? segment : segment.substring(0, index);
+  }
+
+  /**
+   * Runs the static initializer of {@code cls} if it hasn't run yet,
+   *     since the lengths are registered there.
+   */
+  private static void initialize(Class<?> cls) {
+    try {
+      Class.forName(cls.getName(), true, cls.getClassLoader());
+
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**

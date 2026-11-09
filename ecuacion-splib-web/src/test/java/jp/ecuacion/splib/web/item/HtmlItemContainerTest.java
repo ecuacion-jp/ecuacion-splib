@@ -31,30 +31,30 @@ class HtmlItemContainerTest {
 
   /** A row of the list in {@link ParentRecord}. */
   public static class RowRecord extends SplibRecord {
-    private @Nullable String name;
-    private @Nullable String note;
+    @SuppressWarnings("unused")
+    @Nullable
+    String name;
 
-    public @Nullable String getName() {
-      return name;
-    }
-
-    public @Nullable String getNote() {
-      return note;
-    }
+    @SuppressWarnings("unused")
+    @Nullable
+    String note;
   }
 
-  /** A record with a list of rows. */
+  /**
+   * A record with a list of rows.
+   *
+   * <p>{@code @SuppressWarnings("null")} is needed because Eclipse null analysis reports
+   *     {@code getNewItem()} of {@code HtmlItemContainer} and {@code ItemContainer}
+   *     as incompatible when implemented outside a {@code @NullMarked} package.</p>
+   */
+  @SuppressWarnings("null")
   public static class ParentRecord extends SplibRecord implements HtmlItemContainer {
-    private @Nullable String code;
-    private List<RowRecord> rows = new ArrayList<>();
+    @SuppressWarnings("unused")
+    @Nullable
+    String code;
 
-    public @Nullable String getCode() {
-      return code;
-    }
-
-    public List<RowRecord> getRows() {
-      return rows;
-    }
+    @SuppressWarnings("unused")
+    List<RowRecord> rows = new ArrayList<>();
 
     @Override
     public HtmlItem[] customizedItems() {
