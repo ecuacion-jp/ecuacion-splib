@@ -658,8 +658,10 @@
 	<div th:fragment="internalButtonLookComponent(buttonLookContents, options)" th:remove="tag">
  		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentButtonLookComponent}, false, ${options})}"></div>
 
+		<!--/* my-1 my-lg-0: keeps a small gap between buttons when they wrap or are stacked on narrow screens
+		     (below lg, where the rows of the pages turn into one column). No margin on wide screens. */-->
 		<th:block th:if="false"><div th:fragment="fragmentButtonLookComponent" th:remove="tag"
-				th:with="buttonLookClasses=|btn text-white ${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'} 
+				th:with="buttonLookClasses=|btn my-1 my-lg-0 text-white ${bsBgGradient == null || !bsBgGradient ? '' : 'bg-gradient'} 
 						${#optUtil.getValueOrElse(options, 'backgroundColorClass', 'btn-color-btn')} ${classappend}|">
 			
 			<th:block th:replace="${buttonLookContents}" />
