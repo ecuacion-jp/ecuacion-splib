@@ -152,7 +152,7 @@ public interface HtmlItemContainer extends ItemContainer {
   /**
    * Returns whether isNotEmpty or not.
    *
-   * @param itemPropertyPath itemPropertyPath
+   * @param itemPropertyPath itemPropertyPath. It can contain indexes like {@code rows[3].name}.
    * @param loginState loginState
    * @param rolesOrAuthoritiesString rolesOrAuthoritiesString
    * @return boolean
@@ -161,7 +161,10 @@ public interface HtmlItemContainer extends ItemContainer {
       String rolesOrAuthoritiesString) {
     SplibSecurityUtil.RolesAndAuthoritiesBean bean =
         new SplibSecurityUtil().getRolesAndAuthoritiesBean(rolesOrAuthoritiesString);
-    return getNotEmptyItemPropertyPathList(loginState, bean).contains(itemPropertyPath);
+    // Items are defined with indexless paths (like "rows[].name"),
+    // so a path with indexes (like "rows[3].name") is converted before comparison.
+    return getNotEmptyItemPropertyPathList(loginState, bean)
+        .contains(PropertyPathUtil.toIndexlessPath(itemPropertyPath));
   }
 
   /** Returns search pattern for each item. */

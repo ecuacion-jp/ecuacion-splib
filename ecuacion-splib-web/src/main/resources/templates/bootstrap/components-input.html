@@ -45,6 +45,13 @@
 			- componentType	arbitrary	speciifes the kind of the component. Used to change the look or action by its type.
 			                            'switch' is used in the fragment for now.
 			- readOnly		arbitrary	specifies whether the component is read-only.			                            
+			- cell			arbitrary	shows the component in a table cell: no column div ('col-...'), no label and no margin.
+									Used in the cells of rowAddableTable in components-edit.html.
+	*/-->
+	<!--/* external variables:
+			- isRowTemplate	boolean		true while the row template of rowAddableTable in components-edit.html is rendered.
+										itemPropertyPath has no index like 'rows[].name' then, which is not a valid SpEL property path,
+										so the value and the field errors are not evaluated.
 	*/-->
 	<div th:fragment="internalAllInputCommonComponent(itemPropertyPath, allInputContents, allInputPostfixContents, required, needsLabel, needsFieldEmssages, 
 			labelPostfix, options)" th:remove="tag" 
@@ -63,7 +70,7 @@
 				${inputValue}/${itemNameKey} variables inside the fragment body is safe. */-->
 		<th:block th:with="id=${#optUtil.getValueOrElse(options, 'id', javaFormName + '.' + recordPropertyPathClass + '.' + propertyPathField)},
 				submitOnChangeToRefreshOption=${#optUtil.hasKey(options, 'submitOnChangeToRefresh') ? 'event=change|submitOnChangeToRefresh' : ''},
-				inputValue=*{__${itemPropertyPath}__},
+				inputValue=${isRowTemplate == true} ? null : *{__${itemPropertyPath}__},
 				itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey()}">
 
 			<!--/* submitOnChangeToRefresh should be the last event because it submits. */-->
@@ -79,12 +86,12 @@
 							widthValue=${#optUtil.getValueOrElse(options, 'width', '')},
 							widthNumber=${#optUtil.hasKey(options, 'width') ? (widthValue == 'full' ? '12' : (widthValue == 'half' ? '6' : widthValue)) : ''}">
 
-						<div th:id="${componentId}" class="" th:classappend="${widthNumber == '' ? 'col-xl-3 col-lg-4 col-md-6' : 'col-md-' + widthNumber} + ' '
-								+ ${mtClass} + ' ' + ${mbClass == '' ? 'mb-4' : mbClass}
+						<div th:id="${componentId}" class="" th:classappend="${#optUtil.hasKey(options, 'cell')} ? ${mtClass + ' ' + mbClass} : (${widthNumber == '' ? 'col-xl-3 col-lg-4 col-md-6' : 'col-md-' + widthNumber} + ' '
+								+ ${mtClass} + ' ' + ${mbClass == '' ? 'mb-4' : mbClass})
 						">
 
 							<!--/* label */-->
-							<th:block th:if="${needsLabel}">
+							<th:block th:if="${needsLabel and !#optUtil.hasKey(options, 'cell')}">
 								<label th:for="${inputId}" class="form-label text-dark mb-0">
 									[[#{__${itemNameKey}__}]][[${labelPostfix}]]
 									<span class="text-danger" th:if="${required}">*</span>
@@ -110,7 +117,7 @@
 							<th:block th:replace="${allInputContents}" />
 							
 							<!--/* field messages */-->
-							<th:block th:if="${@environment.getProperty('jp.ecuacion.splib.web.process-result-message.shown-at-each-item') ?: true} and ${needsFieldEmssages}">
+							<th:block th:if="${@environment.getProperty('jp.ecuacion.splib.web.process-result-message.shown-at-each-item') ?: true} and ${needsFieldEmssages} and ${isRowTemplate != true}">
 								<div class="text-danger" th:if="${#fields.hasErrors('__${itemPropertyPath}__')}"
 									th:classappend="${#optUtil.hasKey(options, 'componentType') and #optUtil.getValue(options, 'componentType') == 'switch' ? 'mt-1' : ''}"
 									th:each="message : ${#fields.errors('__${itemPropertyPath}__')}">[[${message}]]</div>
@@ -140,7 +147,7 @@
 				class="form-control text-dark"
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
 						+ ' ' + ${position == 'right' ? 'text-end' : ''}
-						+ ' ' + ${(recordPropertyPath != null and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
+						+ ' ' + ${(isRowTemplate != true and recordPropertyPath != null and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
 				th:readonly="${isReadOnly}">
 	</div>
 
@@ -168,7 +175,7 @@
 		<select th:id="${inputId}" th:name="${inputName}"
 				class="form-select text-dark" 
 				th:classappend="${isReadOnly ? 'input-read-only' : ''}
-				 + ' ' + ${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
+				 + ' ' + ${(isRowTemplate != true and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
 				th:disabled="${isReadOnly}">
 				
 			<option th:if="${!#optUtil.hasKey(options, 'noEmptyOption')}" th:selected="${inputValue == null || inputValue == ''}"></option>
@@ -193,7 +200,7 @@
 				<input th:id="${inputId}" th:name="${isReadOnly ? '' : inputName}"
 					class="form-check-input align-bottom mb-1" type="checkbox" 
 					th:checked="${inputValue}"
-					th:classappend="${(recordPropertyPath != null and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
+					th:classappend="${(isRowTemplate != true and recordPropertyPath != null and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
 					th:disabled="${isReadOnly}">
 			</div>
 		</div>
@@ -277,7 +284,7 @@
 			<textarea th:id="${inputId}" th:name="${inputName}" th:text="${inputValue}"
 				th:maxlength="*{getStringLength('__${propertyPathField}__')}" 
 				class="text-dark"
-				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + (#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : '')}"
+				th:classappend="${(isReadOnly) ? 'form-control-plaintext' : 'form-control ' + ((isRowTemplate != true and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : '')}"
 				th:readonly="${isReadOnly}" rows="3">
 			</textarea>
 		</div></th:block>
@@ -320,7 +327,7 @@
 					<input th:id="${optionId}" class="form-check-input align-bottom mb-1" type="checkbox" 
 						th:name="${isReadOnly ? '' : recordPropertyPath}" 
 						th:checked="${#strUtil.isSelected(inputValue, optionId)}"
-						th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}"
+						th:classappend="${(isRowTemplate != true and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}"
 						th:disabled="${isReadOnly}"
 						th:value="${optionId}">
 					<label class="form-check-label text-dark" th:for="${optionId}" th:text="${optionLabel}"></label>
@@ -371,7 +378,7 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentInputFile" th:remove="tag">
 			<input class="form-control" type="file" th:id="${inputId}" th:name="${inputName}" 
-					th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}">
+					th:classappend="${(isRowTemplate != true and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}">
 		</div></th:block>
 	</div>
 	
@@ -380,7 +387,7 @@
 		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputTakenPhotoMobile}, ~{ :: fragmentInputTakenPhotoMobilePostfix}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputTakenPhotoMobile" th:remove="tag">
-			<input class="form-control" th:classappend="${#fields.hasErrors('__${itemPropertyPath}__') ? 'is-invalid' : ''}" 
+			<input class="form-control" th:classappend="${(isRowTemplate != true and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}" 
 					type="file" th:name="${recordPropertyPath}"  th:id="${inputId}" accept="image/*" capture="user">
 		</div></th:block>
 		

@@ -43,5 +43,100 @@
 				'event=click|waitForDownloadToFinish,' + ${options})}"></div>
 	</div>
 
+	<!--/*
+		### row-addable table
+	 */-->
+
+	<!--/* rowAddableTable */-->
+	<!--/* A table whose rows can be added and removed on the page. Rows are bound to a list in the root record.
+		parameters:
+			- itemPropertyPath	String		not empty	itemPropertyPath of the list from the root record. (like 'nameRows')
+			- headerContents	Fragment	not empty	'<th>'s of the header, without the one for the remove buttons.
+			- rowContents		Fragment	not empty	'<td>'s of a row, without the one for the remove button.
+			- options			String		not null	options for the component. When you don't need it, set blank('').
+		variables available in rowContents:
+			- row				Object		the element of the list. It is null in the row template.
+			- rowPath			String		itemPropertyPath of the row with a trailing '.' (like 'nameRows[3].').
+										It is 'nameRows[].' in the row template.
+			- isRowTemplate		boolean		true while the row template is rendered.
+		Notice:
+			- Use the input components in components-input.html with 'cell' option in rowContents
+			  (like inputText(${rowPath + 'name'}, 'cell')).
+			- Write headerContents and rowContents outside layout:fragment. Otherwise they are rendered there too.
+			- The indexes in 'name', 'id' and 'for' attributes in the rows are renumbered from 0
+			  when rows are added or removed. So write ids with the path of the row (input components do it by default).
+			- Scripts in rowContents (like the ones added by 'event' option) don't work in added rows.
+	*/-->
+	<!--/* options:
+			- readonly				arbitrary	doesn't show the add and remove buttons.
+			- minRows				number		the remove buttons are disabled when the number of rows is this or less.
+			- maxRows				number		the add button is disabled when the number of rows is this or more.
+			- addButtonLabel		String		message key or string of the add button label.
+			- removeButtonLabel		String		message key or string of the remove button labels.
+	*/-->
+	<div th:fragment="rowAddableTable(itemPropertyPath, headerContents, rowContents, options)" th:remove="tag">
+		<th:block th:with="rowList=*{__${itemPropertyPath}__},
+				namePrefix=${rootRecordName + '.' + itemPropertyPath},
+				idPrefix=${javaFormName + '.' + rootRecordName + '.' + itemPropertyPath},
+				isTableReadOnly=${#optUtil.hasKey(options, 'readonly')},
+				addButtonLabel=${#optUtil.getValueOrElse(options, 'addButtonLabel', 'jp.ecuacion.splib.web.common.button.addRow')},
+				removeButtonLabel=${#optUtil.getValueOrElse(options, 'removeButtonLabel', 'jp.ecuacion.splib.web.common.button.removeRow')}">
+			<div data-splib-row-addable-table th:data-name-prefix="${namePrefix}"
+					th:data-min-rows="${#optUtil.getValueOrElse(options, 'minRows', '')}"
+					th:data-max-rows="${#optUtil.getValueOrElse(options, 'maxRows', '')}">
+				<table class="table">
+					<thead>
+						<tr>
+							<th:block th:replace="${headerContents}" />
+							<th th:if="${!isTableReadOnly}"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="row, stat : ${rowList}" th:with="rowPath=${itemPropertyPath + '[' + stat.index + '].'}, isRowTemplate=false">
+							<th:block th:replace="${rowContents}" />
+							<td th:if="${!isTableReadOnly}">
+								<div th:replace="~{ :: internalRowAddableTableRemoveButton(${idPrefix + '[' + stat.index + ']'}, ${removeButtonLabel})}"></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<th:block th:if="${!isTableReadOnly}">
+					<!--/* "[]" in names and ids are renumbered when the row is added. */-->
+					<template>
+						<tr th:with="row=null, rowPath=${itemPropertyPath + '[].'}, isRowTemplate=true">
+							<th:block th:replace="${rowContents}" />
+							<td>
+								<div th:replace="~{ :: internalRowAddableTableRemoveButton(${idPrefix + '[]'}, ${removeButtonLabel})}"></div>
+							</td>
+						</tr>
+					</template>
+					<div th:replace="~{bootstrap/components :: scriptButton(${idPrefix + '.splibRowAddButton'}, ${addButtonLabel},
+							'classappend=mb-3,attr=data-splib-row-add|true')}"></div>
+				</th:block>
+			</div>
+		</th:block>
+	</div>
+
+	<!--/* internalRowAddableTableRemoveButton. Its id contains the path of the row so that it's renumbered with the row. */-->
+	<div th:fragment="internalRowAddableTableRemoveButton(rowIdPrefix, label)" th:remove="tag">
+		<div th:replace="~{bootstrap/components :: scriptButton(${rowIdPrefix + '.splibRowRemoveButton'}, ${label},
+				'backgroundColorClass=btn-color-btn-danger,attr=data-splib-row-remove|true')}"></div>
+	</div>
+
+	<!--/* rowAddableTableHeaderCell */-->
+	<!--/* A '<th>' of rowAddableTable which shows the item name and the required mark ('*') like the labels of the input components.
+		parameters:
+			- itemPropertyPath	String		not empty	itemPropertyPath of the item in the row without indexes. (like 'nameRows[].name')
+			- options			String		not null	options for the component. When you don't need it, set blank('').
+	*/-->
+	<th th:fragment="rowAddableTableHeaderCell(itemPropertyPath, options)">
+		<th:block th:with="itemNameKey=*{getItem('__${itemPropertyPath}__').getItemNameKey()},
+				required=*{isNotEmpty('__${itemPropertyPath}__', '__${loginState}__', '__${#authentication.principal.class.name == 'java.lang.String' ? '' : #authentication.principal.authorities}__')}">
+			[[#{__${itemNameKey}__}]]
+			<span class="text-danger" th:if="${required}">*</span>
+		</th:block>
+	</th>
+
 </body>
 </html>

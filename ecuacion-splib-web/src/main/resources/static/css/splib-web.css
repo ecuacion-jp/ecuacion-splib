@@ -8,6 +8,16 @@
 	background-color: #e3e3e3;
 }
 
+/* a small gap between buttons when they wrap or are stacked on narrow screens (below lg,
+   where the rows of the pages turn into one column). Not !important, so mt-* / mb-* set on
+   a button still take effect. */
+@media (max-width: 991.98px) {
+	.btn {
+		margin-top: .25rem;
+		margin-bottom: .25rem;
+	}
+}
+
 /* oauth2 login buttons (default values following Apple/Google official brand guidelines.
    Colors are exposed as CSS variables, so each app can override the design by
    redefining --btn-google-signin-* / --btn-apple-signin-* in its own app.css) */
