@@ -43,6 +43,9 @@
 		<ecuacion-splib.version>0.0.2-SNAPSHOT</ecuacion-splib.version>
 		<ecuacion-lib.version>0.0.1-SNAPSHOT</ecuacion-lib.version>
 		<ecuacion-util.version>0.0.2-SNAPSHOT</ecuacion-util.version>
+		<!-- Central Portal deployment name (defined in ecuacion-lib-parent). Also set in
+		     ecuacion-splib-dependencies, since splib's modules inherit from there, not from this POM. -->
+		<central-publishing.deploymentName>ecuacion-splib-${project.version}</central-publishing.deploymentName>
 		<!-- 3rd party module versions -->
 		<spring-boot.version>4.1.2</spring-boot.version>
 		<!-- Spring Cloud release train compatible with spring-boot.version above (per the
@@ -244,24 +247,6 @@
 
 		</dependencies>
 	</dependencyManagement>
-
-	<profiles>
-		<!-- ecuacion-repository profile is also used for builds, but fully inherited from ecuacion-lib, so no definition here. -->
-		<profile>
-			<id>maven-central</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.sonatype.central</groupId>
-						<artifactId>central-publishing-maven-plugin</artifactId>
-						<configuration>
-							<deploymentName>ecuacion-splib-${project.version}</deploymentName>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 	<modules>
 		<module>ecuacion-splib-dependencies</module>

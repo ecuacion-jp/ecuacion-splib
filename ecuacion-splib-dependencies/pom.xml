@@ -48,6 +48,10 @@
 
 	<properties>
 		<ecuacion-splib.version>0.0.2-SNAPSHOT</ecuacion-splib.version>
+		<!-- Central Portal deployment name (defined in ecuacion-lib-parent). splib's own modules are
+		     published through this POM's <parent> chain, so ecuacion-splib-parent's value doesn't reach
+		     them. Projects using this POM as <parent> should override it with their own name. -->
+		<central-publishing.deploymentName>ecuacion-splib-${project.version}</central-publishing.deploymentName>
 		<!-- Extra args inserted into "-Xplugin:ErrorProne <here> -Xep:NullAway:ERROR ...".
 		     Override in child projects to customize Error Prone behavior.
 		     e.g. set "-XepDisableAllChecks" to run NullAway only. -->
