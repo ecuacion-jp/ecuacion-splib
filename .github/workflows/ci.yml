@@ -68,7 +68,10 @@ jobs:
           # A later, separate `mvn` call can't fix it either: parsing the now-inconsistent
           # POMs to start that call already fails before versions:set-property can run.
           mvn versions:set -DnewVersion=0.0.0-CI-TEST -DprocessAllModules=true -DgenerateBackupPoms=false versions:set-property -Dproperty=ecuacion-splib.version -DnewVersion=0.0.0-CI-TEST -DprocessAllModules=true -DgenerateBackupPoms=false
-          mvn versions:update-properties -DprocessAllModules=true -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DgenerateBackupPoms=false
+          # -DallowPreReleases=true: since versions-maven-plugin 2.25, pre-release versions such as
+          # ecuacion-utils' 5.0.0-rc.N are no longer offered by default, which left
+          # ecuacion-util.version at its SNAPSHOT value and broke the Maven Central validation.
+          mvn versions:update-properties -DprocessAllModules=true -Dincludes=jp.ecuacion.lib,jp.ecuacion.util,jp.ecuacion.internal-util,jp.ecuacion.splib -DallowPreReleases=true -DgenerateBackupPoms=false
           mvn validate
           git checkout -- .
 
