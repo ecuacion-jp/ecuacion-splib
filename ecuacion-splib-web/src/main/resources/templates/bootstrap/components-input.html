@@ -397,7 +397,7 @@
 			<th:block th:if="${#optUtil.hasKey(options, 'addable')}">
 				<ul class="list-group mt-2 d-none" th:id="${inputId + '.selectedFiles'}"></ul>
 				<template th:id="${inputId + '.selectedFileTemplate'}">
-					<li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+					<li class="list-group-item py-1 d-flex justify-content-between align-items-center gap-3">
 						<span class="text-break" data-splib-file-name></span>
 						<div th:replace="~{bootstrap/components :: scriptButton(${inputId + '.removeFileButton'}, 'jp.ecuacion.splib.web.common.button.removeFile',
 								'backgroundColorClass=btn-color-btn-danger,classappend=btn-sm,attr=data-splib-file-remove|true')}"></div>
