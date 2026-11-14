@@ -373,12 +373,37 @@
 	</div>
 	
 	<!--/* component for file upload */-->
+	<!--/* options:
+		- multiple	boolean		allows selecting multiple files (the 'multiple' attribute). Bind it to a List<MultipartFile> property.
+		- addable	boolean		like 'multiple', but files selected each time are added to the ones selected before
+								instead of replacing them (the browser's standard file input replaces them).
+								The selected files are listed under the input with a remove button each (splib-web.js).
+		- accept	arbitrary	limits the selectable file types (the 'accept' attribute). Specify one type per key,
+								repeating the key for multiple types, like 'accept=.png,accept=.pdf,accept=image/*'.
+	*/-->
 	<div  th:fragment="inputFile(itemPropertyPath, options)" th:remove="tag">
-		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ~{bootstrap/components :: nullFragment}, ${options})}"></div>
+		<div th:replace="~{ :: internalInputCommonComponent(${itemPropertyPath}, ~{ :: fragmentInputFile}, ~{ :: fragmentInputFilePostfix}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentInputFile" th:remove="tag">
 			<input class="form-control" type="file" th:id="${inputId}" th:name="${inputName}" 
+					th:multiple="${#optUtil.hasKey(options, 'multiple') or #optUtil.hasKey(options, 'addable')}"
+					th:data-splib-file-addable="${#optUtil.hasKey(options, 'addable') ? 'true' : null}"
+					th:accept="${#optUtil.hasKey(options, 'accept') ? #strings.arrayJoin(#optUtil.getValues(options, 'accept'), ',') : null}"
 					th:classappend="${(isRowTemplate != true and #fields.hasErrors('__${itemPropertyPath}__')) ? 'is-invalid' : ''}">
+		</div></th:block>
+
+		<!--/* addable: the list of the selected files and the template of its item (filled by splib-web.js) */-->
+		<th:block th:if="false"><div th:fragment="fragmentInputFilePostfix" th:remove="tag">
+			<th:block th:if="${#optUtil.hasKey(options, 'addable')}">
+				<ul class="list-group mt-2 d-none" th:id="${inputId + '.selectedFiles'}"></ul>
+				<template th:id="${inputId + '.selectedFileTemplate'}">
+					<li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+						<span class="text-break" data-splib-file-name></span>
+						<div th:replace="~{bootstrap/components :: scriptButton(${inputId + '.removeFileButton'}, 'jp.ecuacion.splib.web.common.button.removeFile',
+								'backgroundColorClass=btn-color-btn-danger,classappend=btn-sm,attr=data-splib-file-remove|true')}"></div>
+					</li>
+				</template>
+			</th:block>
 		</div></th:block>
 	</div>
 	
