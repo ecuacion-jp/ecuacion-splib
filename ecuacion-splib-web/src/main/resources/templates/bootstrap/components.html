@@ -250,20 +250,36 @@
 	<!--/* 
 		special thanks to: https://stand-4u.com/css/fukidashi.html
 	 */-->
+	<!--/* options:
+		- continuesToNext		boolean	Specifies that another balloon of the same post (e.g. an attached file) follows this one.
+										The space below is narrowed and the timestamp is not shown
+										(show it on the last balloon of the post instead).
+		- continuesFromPrevious	boolean	Specifies that this balloon continues a post started by the balloon above.
+										The space above is narrowed and the name is not shown.
+										The face icon is hidden but its space is kept, so the balloons stay aligned.
+		The timestamp line is not shown either when 'timestamp' is null or empty.
+ 	 */-->
 	<div  th:fragment="speechBalloon(message, isMyMessage, name, timestamp, options)" th:remove="tag">
  		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: fragmentSpeechBalloon}, ${options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentSpeechBalloon" th:remove="tag">
 			<!--/* Add space character when the input string is blank. */-->
-			<div th:classappend="'balloon_' + ${isMyMessage ? 'r' : 'l'}" th:with="message=${message == null || message == '' ? '&nbsp;' : message}">
-				<div class="faceicon" th:if="${!isMyMessage}">
+			<div th:classappend="'balloon_' + ${isMyMessage ? 'r' : 'l'}
+						+ ${continuesToNext ? ' balloon-continues-to-next' : ''}
+						+ ${continuesFromPrevious ? ' balloon-continues-from-previous' : ''}"
+					th:with="message=${message == null || message == '' ? '&nbsp;' : message},
+						continuesToNext=${#optUtil.hasKey(options, 'continuesToNext')},
+						continuesFromPrevious=${#optUtil.hasKey(options, 'continuesFromPrevious')}">
+				<div class="faceicon" th:if="${!isMyMessage}" th:classappend="${continuesFromPrevious ? 'invisible' : ''}">
 					<img th:src="@{/images/speech-balloon-account-icon.png}" alt="" />
 				</div>
 				<div>
-					<div class="name" th:if="${!isMyMessage}" th:text="${name}"></div>
+					<div class="name" th:if="${!isMyMessage and !continuesFromPrevious}" th:text="${name}"></div>
 					<div th:classappend="${'says' + (isSelectable ? '-selectable' : '')}" th:text="${messageString}"></div>
-					<div class="name mt-1" th:style="${'font-size: 60%; ' + (isMyMessage ? '' : 'display: flex; align-items: flex-end;')}">
-					<span th:style="${isMyMessage ? 'margin-left: auto;' : ''}" th:text="${timestamp}"></span>
+					<div class="name mt-1" th:if="${!continuesToNext and !#strings.isEmpty(timestamp)}"
+							th:style="${'font-size: 60%; ' + (isMyMessage ? '' : 'display: flex; align-items: flex-end;')}">
+						<span th:style="${isMyMessage ? 'margin-left: auto;' : ''}" th:text="${timestamp}"></span>
+					</div>
 				</div>
 			</div>
 		</div></th:block>

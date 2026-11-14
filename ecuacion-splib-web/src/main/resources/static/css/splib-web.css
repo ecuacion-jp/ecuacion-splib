@@ -191,6 +191,18 @@ footer{
   margin-left: 50px;
 }
 
+/* speechBalloon options "continuesToNext" / "continuesFromPrevious":
+   balloons of the same post (e.g. a message and its attached files) are shown close together. */
+.balloon_l.balloon-continues-to-next,
+.balloon_r.balloon-continues-to-next {
+  margin-bottom: 8px;
+}
+
+.balloon_l.balloon-continues-from-previous,
+.balloon_r.balloon-continues-from-previous {
+  margin-top: 8px;
+}
+
 .faceicon img {
   width: 80px;
   height: auto;
