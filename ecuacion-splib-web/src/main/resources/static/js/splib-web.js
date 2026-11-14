@@ -295,3 +295,60 @@ document.addEventListener('click', function(event) {
 document.addEventListener('DOMContentLoaded', function() {
 	document.querySelectorAll('[data-splib-row-addable-table]').forEach(splibRowAddableTableUpdateButtons);
 });
+
+/*
+ * inputFile with the 'addable' option (components-input.html).
+ * Files selected each time are added to the ones selected before instead of replacing them,
+ * and listed under the input with a remove button each.
+ * The selected files are kept in a DataTransfer and set back to the input's 'files',
+ * so that they are submitted with the form as usual.
+ */
+const splibAddableFileInputFiles = new WeakMap();
+
+function splibAddableFileInputFormatSize(bytes) {
+	if (bytes < 1024) return bytes + ' B';
+	if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+	return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function splibAddableFileInputUpdate(input, files) {
+	const dataTransfer = new DataTransfer();
+	files.forEach(file => dataTransfer.items.add(file));
+	splibAddableFileInputFiles.set(input, dataTransfer);
+	input.files = dataTransfer.files;
+
+	const list = document.getElementById(input.id + '.selectedFiles');
+	const template = document.getElementById(input.id + '.selectedFileTemplate');
+	list.replaceChildren();
+	files.forEach((file, i) => {
+		const item = template.content.firstElementChild.cloneNode(true);
+		item.querySelector('[data-splib-file-name]').textContent =
+				file.name + ' (' + splibAddableFileInputFormatSize(file.size) + ')';
+		const button = item.querySelector('[data-splib-file-remove]');
+		// ids in the template are not unique once cloned. The index is used to remove the file instead.
+		button.removeAttribute('id');
+		button.dataset.splibFileIndex = i;
+		list.appendChild(item);
+	});
+	list.classList.toggle('d-none', files.length === 0);
+}
+
+document.addEventListener('change', function(event) {
+	const input = event.target;
+	if (!(input instanceof HTMLInputElement) || !input.hasAttribute('data-splib-file-addable')) return;
+	const before = splibAddableFileInputFiles.has(input) ? Array.from(splibAddableFileInputFiles.get(input).files) : [];
+	// The same file selected again is not added twice.
+	const added = Array.from(input.files).filter(file => !before.some(f =>
+			f.name === file.name && f.size === file.size && f.lastModified === file.lastModified));
+	splibAddableFileInputUpdate(input, before.concat(added));
+});
+
+document.addEventListener('click', function(event) {
+	const button = event.target.closest('[data-splib-file-remove]');
+	if (!button) return;
+	const list = button.closest('ul');
+	const input = document.getElementById(list.id.replace(/\.selectedFiles$/, ''));
+	const index = parseInt(button.dataset.splibFileIndex, 10);
+	const files = Array.from(splibAddableFileInputFiles.get(input).files).filter((file, i) => i !== index);
+	splibAddableFileInputUpdate(input, files);
+});
