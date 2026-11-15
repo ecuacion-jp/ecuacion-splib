@@ -28,12 +28,13 @@
 	<div layout:fragment="form-content" th:remove="tag">
 		<div th:replace="~{bootstrap/components :: paragraph('jp.ecuacion.splib.web.adminLoginCode.desc', '')}"></div>
 		<div th:replace="~{bootstrap/components-input :: inputText('code', 'width=full')}"></div>
-		<br>
-		<div class="d-flex justify-content-center gap-3">
-			<div th:replace="~{bootstrap/components-input :: submitButton('verify', 'jp.ecuacion.splib.web.adminLoginCode.button.verify', '')}"></div>
-			<div th:replace="~{bootstrap/components-input :: submitButton('resend', 'jp.ecuacion.splib.web.adminLoginCode.button.resend', '')}"></div>
-		</div>
+		<div th:replace="~{bootstrap/components :: layoutCluster(~{ :: buttons}, 'justify=center,layoutItem=buttons')}"></div>
 	</div>
+
+	<th:block th:if="false"><div th:fragment="buttons" th:remove="tag">
+		<div th:replace="~{bootstrap/components-input :: submitButton('verify', 'jp.ecuacion.splib.web.adminLoginCode.button.verify', '')}"></div>
+		<div th:replace="~{bootstrap/components-input :: submitButton('resend', 'jp.ecuacion.splib.web.adminLoginCode.button.resend', '')}"></div>
+	</div></th:block>
 
 	<!--/* to give up (outside the form of the page) */-->
 	<div layout:fragment="bottom-space" th:remove="tag">

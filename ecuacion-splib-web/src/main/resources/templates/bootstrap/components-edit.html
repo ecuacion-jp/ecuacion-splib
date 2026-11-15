@@ -81,7 +81,7 @@
 				isTableReadOnly=${#optUtil.hasKey(options, 'readonly')},
 				addButtonLabel=${#optUtil.getValueOrElse(options, 'addButtonLabel', 'jp.ecuacion.splib.web.common.button.addRow')},
 				removeButtonLabel=${#optUtil.getValueOrElse(options, 'removeButtonLabel', 'jp.ecuacion.splib.web.common.button.removeRow')}">
-			<div data-splib-row-addable-table th:data-name-prefix="${namePrefix}"
+			<div class="layout-item-input" data-splib-row-addable-table th:data-name-prefix="${namePrefix}"
 					th:data-min-rows="${#optUtil.getValueOrElse(options, 'minRows', '')}"
 					th:data-max-rows="${#optUtil.getValueOrElse(options, 'maxRows', '')}">
 				<table class="table">
