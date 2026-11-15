@@ -493,6 +493,13 @@ footer{
 		margin-left: auto;
 		margin-top: 0.5rem;
 	}
+	/* When the caller passes no right-hand contents (e.g. public pages
+	   before login), that row would still be laid out empty, its
+	   margin-top plus the list's "mb-2" leaving a blank band under the
+	   brand so the title looks pushed up. Drop the row in that case. */
+	.navbar.navbar-expand-md > .container-fluid > .container + div:not(:has(.navbar-nav > *)) {
+		display: none;
+	}
 	/* ".navbar-nav" sets "--bs-nav-link-padding-x: 0", and the horizontal
 	   padding dropdown items rely on for their left indent is only ever
 	   restored by the "navbar-expand-md .navbar-nav .nav-link" rule,
