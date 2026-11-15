@@ -22,6 +22,7 @@ import jakarta.persistence.EntityManagerFactory;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -82,7 +83,8 @@ class DataChangeHistoryConfigTest {
 
   private static boolean tableExists(DataSource dataSource, String name) throws Exception {
     try (Connection con = dataSource.getConnection();
-        ResultSet rs = con.getMetaData().getTables(null, null, name.toUpperCase(), null)) {
+        ResultSet rs = con.getMetaData()
+            .getTables(null, null, name.toUpperCase(Locale.ROOT), null)) {
       return rs.next();
     }
   }

@@ -100,7 +100,7 @@ public abstract class SplibRecord {
    * @return the string length, {@code null} if not registered
    */
   public @Nullable Integer getStringLength(String itemPropertyPath) {
-    String[] segments = itemPropertyPath.split("\\.");
+    String[] segments = itemPropertyPath.split("\\.", -1);
     String fieldName = removeIndex(segments[segments.length - 1]);
 
     Class<?> cls = getClass();

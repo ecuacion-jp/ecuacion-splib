@@ -33,7 +33,7 @@ class NotEmptyCheckUtilTest {
   @Test
   void nonEmptyStringAndOtherObjectsAreNotEmpty() {
     assertThat(NotEmptyCheckUtil.isEmpty("a")).isFalse();
-    assertThat(NotEmptyCheckUtil.isEmpty(Boolean.FALSE)).isFalse();
+    assertThat(NotEmptyCheckUtil.isEmpty(false)).isFalse();
     assertThat(NotEmptyCheckUtil.isEmpty(new byte[0])).isFalse();
   }
 
