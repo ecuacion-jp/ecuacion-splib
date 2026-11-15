@@ -28,16 +28,16 @@
 <body>
 	<div layout:fragment="form-content" th:remove="tag" 
 			th:with="isInsert=${__${function + 'EditForm'}__.isInsert},dataKind=${__${function + 'EditForm'}__.dataKind}">
-		<div class="container-fluid mt-6">
+		<!--/* the edit fields are stacked (see 'layoutStack' in bootstrap/components.html). */-->
+		<div class="container-fluid layout-stack">
 			<input type="hidden" name="isInsert" th:value="${isInsert}">
 			<input type="hidden" name="dataKind" th:value="${dataKind}">
 		
 			<div layout:fragment="edit-fields-content"></div>
 
 		</div>
-		<br>
 
-		<div class="container-fluid">
+		<div class="container-fluid layout-item-buttons">
 			<div layout:fragment="edit-buttons-content"></div>
 		</div>
 
