@@ -53,6 +53,8 @@
 						It's implemented in addition to classappend because it's appended not to the main component, but to the most outside tag. 
 		- layoutItem	(internal) Specifies the kind of the component used in a layoutStack (see 'layoutStack' fragment).
 						It turns into 'class="layout-item-xxx"'. It's valid only when createsComponentIdDiv == true.
+						Multiple designation allowed like 'layoutItem=heading,layoutItem=paragraph'
+						(a component which has both kinds, like paragraphWithSubtitle).
 		- classappend   Appends designated class to main component.
 		                Multiple designation allowed like 'class=cls1,class=cls2'. 
 		- attr			Is used for th:attr. Set like 'attr=key1|value1'. 10 attrs tops.
@@ -67,7 +69,7 @@
 				componentId=${#optUtil.getValueOrElse(options, 'componentId', null)}
 				,mtClass=${#optUtil.hasKey(options, 'mt') ? 'mt-' + #optUtil.getValue(options, 'mt') : ''}
 				,mbClass=${#optUtil.hasKey(options, 'mb') ? 'mb-' + #optUtil.getValue(options, 'mb') : ''}
-				,layoutItemClass=${#optUtil.hasKey(options, 'layoutItem') ? 'layout-item-' + #optUtil.getValue(options, 'layoutItem') : ''}
+				,layoutItemClass=${#strings.arrayJoin(#strings.arrayPrepend(#optUtil.getValues(options, 'layoutItem'), 'layout-item-'), ' ')}
 				,classappend=' ' + ${#optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}
 				,attr1Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 0, 0, 'attr1')}, attr1Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 0, 1)}
 				,attr2Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 1, 0, 'attr2')}, attr2Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 1, 1)}
@@ -206,7 +208,7 @@
 
 	<!--/* paragraphWithSubtitle */-->
 	<div th:fragment="paragraphWithSubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${'layoutItem=heading,mt=5,mb=3,' + options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${'layoutItem=heading,layoutItem=paragraph,mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subtitleInternal}"></div>
@@ -229,7 +231,7 @@
 
 	<!--/* paragraphWithSubsubtitle */-->
 	<div th:fragment="paragraphWithSubsubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${'layoutItem=subheading,mb=3,' + options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${'layoutItem=subheading,layoutItem=paragraph,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubsubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subsubtitleInternal}"></div>
