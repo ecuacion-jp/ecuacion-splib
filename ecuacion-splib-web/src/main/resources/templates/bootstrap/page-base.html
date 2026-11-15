@@ -120,18 +120,24 @@
 			<div class="container" th:if="${width == 'narrow'}">
 				<div class="row justify-content-center">
 					<div class="col-sm-8 col-md-6 col-lg-4 col-xl-3">
-						<th:block th:replace="~{:: page-base-title-part}" />
-						
-						<div layout:fragment="base-content"></div>
-						
+						<!--/* The whole page content is a layoutStack (see 'layoutStack' in bootstrap/components.html).
+						'pt-3' is the space between the navbar and the page content. */-->
+						<div class="layout-stack pt-3">
+							<th:block th:replace="~{:: page-base-title-part}" />
+							
+							<div layout:fragment="base-content"></div>
+						</div>
 					</div>
 				</div>
 			</div>
 			<th:block th:if="${width == 'wide'}">
-				<th:block th:replace="~{:: page-base-title-part}" />
-				
-				<div layout:fragment="base-content"></div>
-
+				<!--/* The whole page content is a layoutStack (see 'layoutStack' in bootstrap/components.html).
+						'pt-3' is the space between the navbar and the page content. */-->
+				<div class="layout-stack pt-3">
+					<th:block th:replace="~{:: page-base-title-part}" />
+					
+					<div layout:fragment="base-content"></div>
+				</div>
 			</th:block>
 			<h1 style="color: red" th:if="${width != 'narrow' && width != 'wide'}">
 				parameter: ${width} is not properly designated.
@@ -167,11 +173,19 @@
 	</div></th:block>
 		
 	<!--/* fragment: messages */-->
+	<!--/* Nothing is output when there's no message to show, so that it doesn't make a space in the layoutStack. */-->
 	<th:block th:if="false"><div th:fragment="messages(options)" th:remove="tag" th:if="${!(noMessages != null && noMessages)}">
- 		<div th:replace="~{bootstrap/components :: internalAllCommonComponent(~{ :: fragmentMessages}, true, ${options})}"></div>
+		<th:block th:if="${param.error != null or param.logoutDone != null or param.accessDenied != null or param.notFound != null
+				or param.switchUserFailure != null or param.logoutDoneBecauseMailAddressChanged != null
+				or param.oauth2Error != null or param.oauth2Rejected != null
+				or param.switchUserSuccess != null or param.switchUserExit != null
+				or param.keySet().contains('success') or (needsSuccessMessage != null and needsSuccessMessage)
+				or (globalErrors != null and !globalErrors.isEmpty())}">
+ 			<div th:replace="~{bootstrap/components :: internalAllCommonComponent(~{ :: fragmentMessages}, true, ${'layoutItem=messages,' + options})}"></div>
+		</th:block>
 
 		<th:block th:if="false"><div th:fragment="fragmentMessages" th:remove="tag">
-			<div class="mt-5 mb-5">
+			<div>
 				<!--/* messages from url parameter */-->
 				<!--/* error */-->
 				<div class="all-error-messages-list-wrapper text-danger"

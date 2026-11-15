@@ -31,13 +31,13 @@
 
 <body>
 	<div layout:fragment="form-content-1" th:remove="tag">
-		<div class="container-fluid mt-6">
+		<!--/* the search conditions are stacked (see 'layoutStack' in bootstrap/components.html). */-->
+		<div class="container-fluid layout-stack">
 			<th:block th:if="${needsSearchPane}">
 			
 				<div layout:fragment="search-content"></div>
 	
-				<br>
-				<div class="row">
+				<div class="row layout-item-buttons">
 					<div class="col-lg-4 col-12"></div>
 					<div class="col-lg-4 col-12 d-flex justify-content-center">
 						<div th:replace="~{bootstrap/components-search :: searchButton('')}"></div>
@@ -54,7 +54,8 @@
 	</div>
 	
 	<div layout:fragment="form-content-2" th:remove="tag">
-		<div class="container-fluid">
+		<!--/* the list and its buttons are stacked (see 'layoutStack' in bootstrap/components.html). */-->
+		<div class="container-fluid layout-stack">
 			<input type="hidden" name="dataKind" th:value="${__${function + 'SearchForm'}__.dataKind}">
 			
 			<div class="table-responsive">
@@ -76,7 +77,6 @@
 					</tbody>
 				</table>
 			</div>
-			<br>
 
 			<div layout:fragment="list-buttons-content"></div>
 

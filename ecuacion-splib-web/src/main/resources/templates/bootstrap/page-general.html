@@ -30,8 +30,6 @@
 		
 		<div layout:fragment="top-space"></div>
 
-		<div class="mt-3"></div>
-
 		<th:block th:if="${multipleForms != null && multipleForms}">
 			<!--/* Zero forms on a general page is not a supported case, so form1 is always assumed to be used — hence there is no usesForm1 parameter. */-->
 			<th th:replace="~{bootstrap/components-general-form :: generalForm(~{::internalForm1FormContent}, ~{::internalForm1TopSpaceContent}, ~{::internalForm1BottomSpaceContent}, 

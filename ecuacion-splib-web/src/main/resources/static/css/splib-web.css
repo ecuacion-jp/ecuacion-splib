@@ -18,6 +18,112 @@
 	}
 }
 
+/* layout components (see 'layout components' in bootstrap/components.html) */
+
+/* layout-stack: stacks components vertically.
+   The spacing is made by 'gap', and some kinds of components add extra margin on their own side.
+   The extra margin depends only on the kind of the component itself, not on its neighbors,
+   so elements which are not displayed (like <script> or <input type="hidden">) don't affect the spacing.
+   Margins in a flex container never collapse: the gap and the extra margins are simply added up.
+   '!important' is needed to override Bootstrap margin utilities (like 'mt-3'), which have '!important'.
+   Only the components directly inside the stack are affected.
+   The values follow the spacers of the bootstrap.min.css which ecuacion apps use
+   ('mt-5' / 'mb-5' = 2rem. Standard Bootstrap has 3rem for them). */
+
+.layout-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+/* components inside it have no outer margin of their own (including the ones from Bootstrap like '.table') */
+.layout-stack > * {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+}
+
+/* title: 2rem below in total */
+.layout-stack > .layout-item-title {
+	margin-bottom: 1rem !important;
+}
+
+/* messages (page-base.html): 2rem below in total.
+   Nothing is added above, because it usually comes just after the title, which has 2rem below. */
+.layout-stack > .layout-item-messages {
+	margin-bottom: 1rem !important;
+}
+
+/* heading (subtitle, paragraphWithSubtitle): 2rem above in total */
+.layout-stack > .layout-item-heading {
+	margin-top: 1rem !important;
+}
+
+/* subheading (subsubtitle, paragraphWithSubsubtitle): 1.5rem above in total */
+.layout-stack > .layout-item-subheading {
+	margin-top: .5rem !important;
+}
+
+/* input (or a row of inputs, rowAddableTable): 1.5rem below in total */
+.layout-stack > :is(.layout-item-input, .row) {
+	margin-bottom: .5rem !important;
+}
+
+/* buttons: 2rem above in total (2.5rem after an input, which has .5rem below) */
+.layout-stack > .layout-item-buttons {
+	margin-top: 1rem !important;
+}
+
+/* divider (horizontalLine): 1.5rem above and below in total. The margins of the <hr> inside are replaced with it. */
+.layout-stack > .layout-item-divider {
+	margin-top: .5rem !important;
+	margin-bottom: .5rem !important;
+}
+
+.layout-stack > .layout-item-divider > hr {
+	margin: 0 !important;
+}
+
+/* empty elements (like a layout:fragment which is not overridden by the page) and <br> are not shown,
+   so that they don't make a space with 'gap'. (A <br> becomes a flex item in a flex container.) */
+.layout-stack > :is(div, span):empty,
+.layout-stack > br {
+	display: none;
+}
+
+/* a button put directly in a stack is not stretched to the full width.
+   (Buttons are supposed to be put in a layout-cluster, though.) */
+.layout-stack > .btn {
+	align-self: flex-start;
+}
+
+/* no extra margin outside the first and the last displayed component */
+.layout-stack > :nth-child(1 of :not(script, input[type="hidden"])) {
+	margin-top: 0 !important;
+}
+
+.layout-stack > :nth-last-child(1 of :not(script, input[type="hidden"])) {
+	margin-bottom: 0 !important;
+}
+
+/* a row (Bootstrap grid) of inputs inside a layout-stack: the gap between the lines of the row.
+   The margins of the inputs are replaced with it. Don't add 'gy-*' to the row. */
+.layout-stack > .row {
+	row-gap: 1.5rem;
+}
+
+.layout-stack > .row > .layout-item-input {
+	margin-bottom: 0 !important;
+}
+
+/* layout-cluster: lines up small components like buttons horizontally, wrapping when the width is not enough. */
+
+.layout-cluster {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 1rem;
+}
+
 /* oauth2 login buttons (default values following Apple/Google official brand guidelines.
    Colors are exposed as CSS variables, so each app can override the design by
    redefining --btn-google-signin-* / --btn-apple-signin-* in its own app.css) */

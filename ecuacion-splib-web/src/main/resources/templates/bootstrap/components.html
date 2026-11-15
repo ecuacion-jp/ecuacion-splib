@@ -51,6 +51,8 @@
 		- mb			Specifies the margin bottom value of the integrated component.
 						When you set 'mb=3' to options, it turns into 'class="mb-3"'. It's valid only when createsComponentIdDiv == true.
 						It's implemented in addition to classappend because it's appended not to the main component, but to the most outside tag. 
+		- layoutItem	(internal) Specifies the kind of the component used in a layoutStack (see 'layoutStack' fragment).
+						It turns into 'class="layout-item-xxx"'. It's valid only when createsComponentIdDiv == true.
 		- classappend   Appends designated class to main component.
 		                Multiple designation allowed like 'class=cls1,class=cls2'. 
 		- attr			Is used for th:attr. Set like 'attr=key1|value1'. 10 attrs tops.
@@ -65,6 +67,7 @@
 				componentId=${#optUtil.getValueOrElse(options, 'componentId', null)}
 				,mtClass=${#optUtil.hasKey(options, 'mt') ? 'mt-' + #optUtil.getValue(options, 'mt') : ''}
 				,mbClass=${#optUtil.hasKey(options, 'mb') ? 'mb-' + #optUtil.getValue(options, 'mb') : ''}
+				,layoutItemClass=${#optUtil.hasKey(options, 'layoutItem') ? 'layout-item-' + #optUtil.getValue(options, 'layoutItem') : ''}
 				,classappend=' ' + ${#optUtil.getValuesInSpaceSeparetedFormat(options, 'classappend')}
 				,attr1Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 0, 0, 'attr1')}, attr1Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 0, 1)}
 				,attr2Key=${#optUtil.getElementFromValuesOfPsvOrElse(options, 'attr', 1, 0, 'attr2')}, attr2Value=${#optUtil.getElementFromValuesOfPsv(options, 'attr', 1, 1)}
@@ -83,7 +86,7 @@
 				[[${#exUtil.systemError('Maximum number of option: attr is 10.')}]]
 			</th:block>
 			
-			<div th:if="${createsComponentIdDiv}" th:id="${componentId}" th:classappend="${mtClass} + ' ' + ${mbClass}">
+			<div th:if="${createsComponentIdDiv}" th:id="${componentId}" th:classappend="${mtClass} + ' ' + ${mbClass} + ' ' + ${layoutItemClass}">
 				<th:block th:replace="${contentsOfAllCommon}" />
 			</div>
 			<th:block th:if="${!createsComponentIdDiv}">
@@ -108,6 +111,46 @@
 	<th:block th:if="false"><div th:fragment="paragraphTextInternal(extraClass)" th:remove="tag">
 		<div th:class="${extraClass}" style="white-space: pre-wrap;" th:text="${messageString}"></div>
 	</div></th:block>
+
+	<!--/* 
+		### layout components
+		They own the spacing between the components in them, so that pages don't need to designate margins.
+		See '.layout-stack' and '.layout-cluster' in splib-web.css for the spacing values.
+	 */-->
+
+	<!--/* layoutStack */-->
+	<!--/* 
+		Stacks components vertically. The spacing is decided by the container ('gap')
+		and the kind of each component ('layout-item-xxx' class), not by the margins of the components.
+		- The margins of the components directly inside it are ignored (including the options 'mt' and 'mb').
+		  Components nested deeper (like inputs inside a '.row') are not affected.
+		- Bootstrap grid ('.row' and 'col-*') can be used inside it as it is.
+		  Don't add 'gy-*' to the '.row' because the vertical spacing between the lines is given by the stack.
+		Usage: <div th:replace="~{bootstrap/components :: layoutStack(~{ :: myContents})}"></div>
+	 */-->
+	<div th:fragment="layoutStack(contents)" th:remove="tag">
+		<div class="layout-stack">
+			<th:block th:replace="${contents}" />
+		</div>
+	</div>
+
+	<!--/* layoutCluster */-->
+	<!--/* 
+		Lines up small components like buttons horizontally with the same spacing, and wraps them when the width is not enough.
+		Usage: <div th:replace="~{bootstrap/components :: layoutCluster(~{ :: myButtons}, 'justify=center,layoutItem=buttons')}"></div>
+	 */-->
+	<!--/* options:
+		- justify		start (default) / center / end / between. The horizontal alignment of the components.
+		- layoutItem	Specifies the kind of the cluster itself when it's put in a layoutStack. 
+						It turns into 'class="layout-item-xxx"'. Set 'layoutItem=buttons' for a row of buttons.
+	 */-->
+	<div th:fragment="layoutCluster(contents, options)" th:remove="tag">
+		<div class="layout-cluster" 
+				th:classappend="${'justify-content-' + #optUtil.getValueOrElse(options, 'justify', 'start')}
+						+ ${#optUtil.hasKey(options, 'layoutItem') ? ' layout-item-' + #optUtil.getValue(options, 'layoutItem') : ''}">
+			<th:block th:replace="${contents}" />
+		</div>
+	</div>
 
 	<!--/* 
 		### message components
@@ -140,7 +183,7 @@
 
 	<!--/* title */-->
 	<div th:fragment="title(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: titleInternal}, ${'mt=3,mb=5,' + options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: titleInternal}, ${'layoutItem=title,mt=3,mb=5,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="titleInternal" th:remove="tag">
 			<div class="fs-3" th:text="${titleString}"></div>
@@ -153,7 +196,7 @@
 										Used to show the subtitle in another color like 'border-danger'.
 	*/-->
 	<div th:fragment="subtitle(title, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: subtitleInternal}, ${'mt=5,mb=3,' + options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: subtitleInternal}, ${'layoutItem=heading,mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subtitleInternal" th:remove="tag">
 			<div class="border-5 fs-5 fw-bold pt-1 pb-1 ps-3" style="border-left: solid;"
@@ -163,7 +206,7 @@
 
 	<!--/* paragraphWithSubtitle */-->
 	<div th:fragment="paragraphWithSubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${'mt=5,mb=3,' + options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubtitleInternal}, ${'layoutItem=heading,mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subtitleInternal}"></div>
@@ -173,7 +216,7 @@
 	
 	<!--/* subsubtitle  */-->
 	<div th:fragment="subsubtitle(title, options)" th:remove="tag">
-		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: subsubtitleInternal}, ${'mt=5,mb=3,' + options})}"></div>
+		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: subsubtitleInternal}, ${'layoutItem=subheading,mt=5,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="subsubtitleInternal" th:remove="tag">
 			<div>
@@ -186,7 +229,7 @@
 
 	<!--/* paragraphWithSubsubtitle */-->
 	<div th:fragment="paragraphWithSubsubtitle(title, message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${'mb=3,' + options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphWithSubsubtitleInternal}, ${'layoutItem=subheading,mb=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphWithSubsubtitleInternal" th:remove="tag">
  			<div th:replace="~{ :: subsubtitleInternal}"></div>
@@ -196,7 +239,7 @@
 	
 	<!--/* paragraph */-->
 	<div th:fragment="paragraph(message, options)" th:remove="tag">
- 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphInternal}, ${'mt=3,' + options})}"></div>
+ 		<div th:replace="~{ :: internalMessageCommonComponent(~{ :: paragraphInternal}, ${'layoutItem=paragraph,mt=3,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="paragraphInternal" th:remove="tag">
 			<div th:replace="~{ :: paragraphTextInternal('')}"></div>
@@ -473,7 +516,7 @@
 	
 	<!--/* hr */-->
 	<div th:fragment=horizontalLine(options) th:remove="tag">
- 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentHorizontalLine}, true, ${options})}"></div>
+ 		<div th:replace="~{ :: internalAllCommonComponent(~{ :: fragmentHorizontalLine}, true, ${'layoutItem=divider,' + options})}"></div>
 
 		<th:block th:if="false"><div th:fragment="fragmentHorizontalLine" th:remove="tag">
 			<hr class="mt-4 mb-4">

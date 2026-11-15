@@ -37,7 +37,8 @@
 
 		<th:block th:if="false"><div th:fragment="fragmentGeneralForm" th:remove="tag">
 			<th:block th:with="subFunction=${subFunction == null ? '' : subFunction}">
-				<th:block th:with="javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
+				<!--/* top space, form and bottom space are stacked (see 'layoutStack' in bootstrap/components.html). */-->
+				<div class="layout-stack" th:with="javaFormName=${function + #strings.capitalize(subFunction) + 'Form'}">
 
 					<th:block th:replace="${topSpaceContent}" />
 
@@ -75,7 +76,10 @@
 			 					th:value="*{ids}">
 						<input type="hidden" th:id="${javaFormName + '.' + rootRecordName + '.optimisticLockVersions'}" th:name="${rootRecordName + '.optimisticLockVersions'}"
 								th:value="*{optimisticLockVersions}" />
-						<th:block th:replace="${formContent}" />
+						<!--/* the contents of the form are stacked (see 'layoutStack' in bootstrap/components.html). */-->
+						<div class="layout-stack">
+							<th:block th:replace="${formContent}" />
+						</div>
 
 						<div th:replace="~{ :: internalWarnMessage(${javaFormName}, '')}"></div>
 
@@ -83,7 +87,7 @@
 
 					<th:block th:replace="${bottomSpaceContent}" />
 
-				</th:block>
+				</div>
 			</th:block>
 		</div></th:block>
 	</div>
