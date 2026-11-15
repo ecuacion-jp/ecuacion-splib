@@ -25,7 +25,7 @@
 		layout:decorate="~{bootstrap/page-general-2-forms}"
 		th:with="ctrlSubFunction='searchList'
 				, subFunction1='search', formMethod1='get', options1='transactionToken=false'
-				, subFunction2='list', formMethod2='post'
+				, subFunction2='list', formMethod2='post', options2='layoutItem=continued'
 				, itemDisplayedOnDelete2=${itemDisplayedOnDelete}
 		">
 
@@ -78,7 +78,10 @@
 				</table>
 			</div>
 
-			<div layout:fragment="list-buttons-content"></div>
+			<!--/* not shown when the page has no list buttons (see '.layout-item-buttons' in splib-web.css) */-->
+			<div class="layout-item-buttons">
+				<div layout:fragment="list-buttons-content"></div>
+			</div>
 
 		</div>
 	</div>

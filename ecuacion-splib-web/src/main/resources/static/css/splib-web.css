@@ -22,8 +22,9 @@
 
 /* layout-stack: stacks components vertically.
    The spacing is made by 'gap', and some kinds of components add extra margin on their own side.
-   The extra margin depends only on the kind of the component itself, not on its neighbors,
-   so elements which are not displayed (like <script> or <input type="hidden">) don't affect the spacing.
+   The extra margin depends only on the kind of the component itself, not on its neighbors
+   (except the paragraph rule below), so elements which are not displayed (like <script> or <input type="hidden">)
+   don't affect the spacing.
    Margins in a flex container never collapse: the gap and the extra margins are simply added up.
    '!important' is needed to override Bootstrap margin utilities (like 'mt-3'), which have '!important'.
    Only the components directly inside the stack are affected.
@@ -63,9 +64,24 @@
 	margin-top: .5rem !important;
 }
 
-/* input (or a row of inputs, rowAddableTable): 1.5rem below in total */
-.layout-stack > :is(.layout-item-input, .row) {
+/* paragraph followed by contents (inputs, tables, a form, etc.): 1.5rem below in total.
+   This is the only rule which looks at the neighbor, so that consecutive paragraphs stay 1rem apart.
+   Nothing is added when a paragraph is followed by a paragraph or by a component which has its own extra margin above
+   (heading, subheading, buttons, divider). */
+.layout-stack > .layout-item-paragraph:has(+ :not(.layout-item-paragraph, .layout-item-heading,
+		.layout-item-subheading, .layout-item-buttons, .layout-item-divider)) {
 	margin-bottom: .5rem !important;
+}
+
+/* input (or a row of inputs, rowAddableTable) and table: 1.5rem below in total.
+   A table is treated as a block of contents like inputs, so that "table -> buttons" is 2.5rem like "inputs -> buttons". */
+.layout-stack > :is(.layout-item-input, .row, .table, .table-responsive) {
+	margin-bottom: .5rem !important;
+}
+
+/* the margin of Bootstrap's '.table' inside '.table-responsive' is replaced with the one above */
+.layout-stack > .table-responsive > .table {
+	margin-bottom: 0;
 }
 
 /* buttons: 2rem above in total (2.5rem after an input, which has .5rem below) */
@@ -81,6 +97,18 @@
 
 .layout-stack > .layout-item-divider > hr {
 	margin: 0 !important;
+}
+
+/* continued: shown right after the previous component without any space, as a part of it.
+   (e.g. the list form of page-search-list.html, which follows the paging part at the end of the search form) */
+.layout-stack > .layout-item-continued {
+	margin-top: -1rem !important;
+}
+
+/* a container of buttons which has nothing to show (e.g. the list buttons of page-search-list.html
+   when the page doesn't add any) is not shown, so that it doesn't make a space. */
+.layout-stack > .layout-item-buttons:not(:has(:not(:empty))) {
+	display: none;
 }
 
 /* empty elements (like a layout:fragment which is not overridden by the page) and <br> are not shown,
