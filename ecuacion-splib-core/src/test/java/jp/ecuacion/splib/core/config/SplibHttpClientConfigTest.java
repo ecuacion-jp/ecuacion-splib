@@ -300,8 +300,13 @@ class SplibHttpClientConfigTest {
 
             connects.add("auth=" + authorization);
             String response = authorization == null
-                ? "HTTP/1.1 407 Auth\r\nProxy-Authenticate: Basic realm=\"p\"\r\n"
-                    + "Connection: close\r\nContent-Length: 0\r\n\r\n"
+                ? """
+                    HTTP/1.1 407 Auth\r
+                    Proxy-Authenticate: Basic realm="p"\r
+                    Connection: close\r
+                    Content-Length: 0\r
+                    \r
+                    """
                 : "HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n";
             socket.getOutputStream().write(response.getBytes(StandardCharsets.UTF_8));
             socket.getOutputStream().flush();
