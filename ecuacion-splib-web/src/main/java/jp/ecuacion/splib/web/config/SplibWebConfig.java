@@ -17,12 +17,14 @@ package jp.ecuacion.splib.web.config;
 
 import jakarta.servlet.SessionTrackingMode;
 import java.util.Collections;
+import jp.ecuacion.splib.web.botguard.SplibBotGuard;
 import jp.ecuacion.splib.web.interceptor.AccessLoggingInterceptor;
 import jp.ecuacion.splib.web.interceptor.LoggingInterceptor;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -76,6 +78,11 @@ public class SplibWebConfig implements WebMvcConfigurer {
     };
 
     return initializer;
+  }
+
+  @Bean
+  SplibBotGuard splibBotGuard(Environment environment) {
+    return new SplibBotGuard(environment);
   }
 
   @Bean
