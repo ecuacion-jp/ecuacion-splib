@@ -23,13 +23,9 @@ import java.time.Instant;
 import jp.ecuacion.lib.core.logging.DetailLogger;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
-import net.logicsquad.nanocaptcha.content.LatinContentProducer;
-import net.logicsquad.nanocaptcha.image.ImageCaptcha;
-import net.logicsquad.nanocaptcha.image.background.GradiatedBackgroundProducer;
-import net.logicsquad.nanocaptcha.image.noise.CurvedLineNoiseProducer;
-import net.logicsquad.nanocaptcha.image.renderer.DefaultWordRenderer;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.env.Environment;
+import org.springframework.util.ClassUtils;
 
 /**
  * Provides the protection of forms open to anyone (an inquiry form, a sign-up form, etc.)
@@ -48,7 +44,9 @@ import org.springframework.core.env.Environment;
  *     is also regarded as a bot.</li>
  * <li><strong>Image CAPTCHA</strong> (only when the form is prepared by
  *     {@link #prepareFormWithCaptcha}): 6 latin characters, case-insensitive. The answer is kept in
- *     the session and can be used only once, so a new image is needed after a wrong answer.</li>
+ *     the session and can be used only once, so a new image is needed after a wrong answer.
+ *     It needs {@code net.logicsquad:nanocaptcha}, an optional dependency of ecuacion-splib-web
+ *     (see below).</li>
  * </ol>
  *
  * <p>Apps call {@link #prepareForm} or {@link #prepareFormWithCaptcha} every time the form is
@@ -63,6 +61,17 @@ import org.springframework.core.env.Environment;
  *
  * <p>The honeypot and the minimum time stop simple bots without bothering people. Bots which read
  *     the image (by OCR, AI or people paid to read it) can pass the CAPTCHA.</p>
+ *
+ * <p>Apps using the image CAPTCHA need to add the following dependency, since it's optional in
+ *     ecuacion-splib-web (its version is managed by ecuacion-splib-parent). The honeypot and the
+ *     minimum time work without it.</p>
+ *
+ * <pre>{@code
+ * <dependency>
+ *   <groupId>net.logicsquad</groupId>
+ *   <artifactId>nanocaptcha</artifactId>
+ * </dependency>
+ * }</pre>
  */
 public class SplibBotGuard {
 
@@ -87,8 +96,8 @@ public class SplibBotGuard {
   /** The number of characters of the CAPTCHA. */
   static final int CAPTCHA_LENGTH = 6;
 
-  private static final int CAPTCHA_WIDTH = 200;
-  private static final int CAPTCHA_HEIGHT = 50;
+  /** A class of nanocaptcha, used to check whether it's in the classpath. */
+  private static final String NANOCAPTCHA_CLASS = "net.logicsquad.nanocaptcha.image.ImageCaptcha";
 
   private static final String SESSION_KEY_PREFIX = "jp.ecuacion.splib.web.botGuard.";
 
@@ -152,18 +161,21 @@ public class SplibBotGuard {
    *     log)
    * @return the image as a data URI ({@code data:image/png;base64,...}), to be put in the field
    *     the {@code inputCaptcha} component reads ({@code <itemPropertyPath>ImageData})
+   * @throws IllegalStateException when {@code net.logicsquad:nanocaptcha} is not in the classpath
    */
   public String prepareFormWithCaptcha(HttpServletRequest request, String formName) {
-    ImageCaptcha captcha = new ImageCaptcha.Factory.Builder(CAPTCHA_WIDTH, CAPTCHA_HEIGHT)
-        .addContent(new LatinContentProducer(CAPTCHA_LENGTH),
-            new DefaultWordRenderer.Builder().build())
-        .addBackground(new GradiatedBackgroundProducer()).addNoise(new CurvedLineNoiseProducer())
-        .build().create();
+    if (!ClassUtils.isPresent(NANOCAPTCHA_CLASS, SplibBotGuard.class.getClassLoader())) {
+      throw new IllegalStateException("The image CAPTCHA of SplibBotGuard needs "
+          + "'net.logicsquad:nanocaptcha', an optional dependency of ecuacion-splib-web. "
+          + "Add it to the dependencies of the app.");
+    }
+
+    CaptchaImageGenerator.CaptchaImage captcha =
+        CaptchaImageGenerator.create(CAPTCHA_LENGTH);
 
     prepareForm(request, formName);
-    request.getSession().setAttribute(sessionKey(formName, "captchaAnswer"),
-        captcha.getContent());
-    return captcha.toDataUri();
+    request.getSession().setAttribute(sessionKey(formName, "captchaAnswer"), captcha.answer());
+    return captcha.dataUri();
   }
 
   /**

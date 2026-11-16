@@ -54,6 +54,8 @@
 		     version, but importing the full BOM keeps that version aligned with spring-boot.version
 		     instead of hand-pinning a single artifact version that could drift out of sync. -->
 		<spring-cloud.version>2025.1.1</spring-cloud.version>
+		<!-- image CAPTCHA of SplibBotGuard (an optional dependency of ecuacion-splib-web; see its pom.xml) -->
+		<nanocaptcha.version>3.0</nanocaptcha.version>
 		<!-- Delimiter used for build-time property filtering of application*.{yml,yaml,properties}
 		     below (e.g. "@project.version@"). Using "@" instead of Maven's default "${...}" avoids
 		     colliding with Spring's own runtime "${...}" placeholders (env var substitution etc.)
@@ -243,6 +245,14 @@
 				<groupId>jp.ecuacion.splib</groupId>
 				<artifactId>ecuacion-splib-web-markdown</artifactId>
 				<version>${ecuacion-splib.version}</version>
+			</dependency>
+
+			<!-- 3rd party: optional dependencies of splib modules, managed here so that apps using
+			     them can add them without a version -->
+			<dependency>
+				<groupId>net.logicsquad</groupId>
+				<artifactId>nanocaptcha</artifactId>
+				<version>${nanocaptcha.version}</version>
 			</dependency>
 
 		</dependencies>
