@@ -74,11 +74,14 @@
 			<groupId>org.thymeleaf.extras</groupId>
 			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
 		</dependency>
-		<!-- image CAPTCHA of SplibBotGuard (jp.ecuacion.splib.web.botguard). It has no dependencies of its own. -->
+		<!-- nanocaptcha: optional. Only needed for the image CAPTCHA of SplibBotGuard
+		     (SplibBotGuard#prepareFormWithCaptcha). Apps using it add this dependency themselves
+		     (the version is managed by ecuacion-splib-parent). It's optional because the jar (about 2.3MB)
+		     mostly consists of the sounds of the audio CAPTCHA, which splib doesn't use. -->
 		<dependency>
 			<groupId>net.logicsquad</groupId>
 			<artifactId>nanocaptcha</artifactId>
-			<version>3.0</version>
+			<optional>true</optional>
 		</dependency>
 		
 		<!-- ecuacion-splib -->
