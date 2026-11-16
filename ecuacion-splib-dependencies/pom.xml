@@ -67,6 +67,9 @@
 		<!-- Not inherited from ecuacion-splib-parent (properties don't propagate via the BOM
 		     import below either), so redeclared here for spring-boot-maven-plugin's version. -->
 		<spring-boot.version>4.0.7</spring-boot.version>
+		<!-- Default for surefire's "@{argLine}" below, so that it doesn't remain as a literal
+		     when jacoco's prepare-agent (which sets / appends to this property) is skipped. -->
+		<argLine></argLine>
 	</properties>
 
 	<build>
@@ -114,7 +117,7 @@
 							<arg>-XDcompilePolicy=simple</arg>
 							<arg>-XDshould-stop.ifError=FLOW</arg>
 							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
-							<arg>-Xplugin:ErrorProne ${errorprone.extra.args} -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
+							<arg>-Xplugin:ErrorProne -XepOpt:UnusedMethod:ExemptingMethodAnnotations=org.springframework.beans.factory.annotation.Autowired ${errorprone.extra.args} -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked=true</arg>
 							<arg>-Xlint:-requires-transitive-automatic</arg>
 						</compilerArgs>
 						<annotationProcessorPaths>
@@ -142,6 +145,9 @@
 					<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
 					<configuration>
 						<useModulePath>false</useModulePath>
+						<!-- Mockito (byte-buddy) attaches its agent dynamically at runtime, which
+						     JDK 21+ warns about. "@{argLine}" keeps jacoco's agent setting. -->
+						<argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
 					</configuration>
 				</plugin>
 

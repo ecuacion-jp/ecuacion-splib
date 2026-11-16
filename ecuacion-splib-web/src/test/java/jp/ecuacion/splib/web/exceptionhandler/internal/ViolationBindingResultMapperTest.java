@@ -233,10 +233,9 @@ class ViolationBindingResultMapperTest {
    * {@code nestedList[0]} fails with {@code propertyPath = "nestedList[0]"}.</p>
    */
   private static class TestRecordWithNestedList extends SplibRecord implements ItemContainer {
-    @SuppressWarnings("UnusedVariable")
-    @Valid
+    @SuppressWarnings("unused")
     @Nullable
-    List<@Nullable AnyNotNullBean> nestedList = List.of(new AnyNotNullBean());
+    List<@Valid @Nullable AnyNotNullBean> nestedList = List.of(new AnyNotNullBean());
 
     @Override
     public Item @NonNull [] customizedItems() {

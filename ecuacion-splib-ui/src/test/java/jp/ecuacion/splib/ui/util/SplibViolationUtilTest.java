@@ -31,11 +31,12 @@ import org.junit.jupiter.api.Test;
  */
 class SplibViolationUtilTest {
 
-  /** Prefix a real caller (e.g. {@code SplibGeneralForm#toItemPropertyPath}) would strip off a
+  /** Strips the prefix a real caller (e.g. {@code SplibGeneralForm#toItemPropertyPath}) would strip off a
    *  {@code ConstraintViolation}'s fully qualified propertyPath before comparing it against
    *  {@code BusinessViolation} item property paths. */
-  private static final Function<String, String> STRIP_TEST_RECORD_PREFIX = path -> path
-      .startsWith("testRecord.") ? path.substring("testRecord.".length()) : path;
+  private static String stripTestRecordPrefix(String path) {
+    return path.startsWith("testRecord.") ? path.substring("testRecord.".length()) : path;
+  }
 
   /**
    * Record with a {@code @NotNull name} field, left {@code null} by default so validating a
@@ -54,6 +55,7 @@ class SplibViolationUtilTest {
    * {@code SplibEditRecForm}'s root record field is declared.
    */
   private static class TestForm {
+    @SuppressWarnings("UnusedVariable")
     @Valid
     TestRecord testRecord = new TestRecord();
   }
@@ -68,7 +70,8 @@ class SplibViolationUtilTest {
             SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
 
     Violations filtered = SplibViolationUtil
-        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
+        .excludeConstraintViolationsMaskedByRequiredError(violations,
+            SplibViolationUtilTest::stripTestRecordPrefix);
 
     assertThat(filtered.getConstraintViolations()).isEmpty();
     assertThat(filtered.getBusinessViolations()).hasSize(1);
@@ -82,7 +85,8 @@ class SplibViolationUtilTest {
             SplibUiConstants.MESSAGE_KEY_NOT_EMPTY));
 
     Violations filtered = SplibViolationUtil
-        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
+        .excludeConstraintViolationsMaskedByRequiredError(violations,
+            SplibViolationUtilTest::stripTestRecordPrefix);
 
     assertThat(filtered.getConstraintViolations().stream()
         .map(cv -> cv.getPropertyPath().toString())).containsExactly("testRecord.name");
@@ -96,7 +100,8 @@ class SplibViolationUtilTest {
         .add(new BusinessViolation(new String[] {"name"}, "some.other.message"));
 
     Violations filtered = SplibViolationUtil
-        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
+        .excludeConstraintViolationsMaskedByRequiredError(violations,
+            SplibViolationUtilTest::stripTestRecordPrefix);
 
     assertThat(filtered.getConstraintViolations().stream()
         .map(cv -> cv.getPropertyPath().toString())).containsExactly("testRecord.name");
@@ -107,7 +112,8 @@ class SplibViolationUtilTest {
     Violations violations = new Violations().validate(new TestForm());
 
     Violations filtered = SplibViolationUtil
-        .excludeConstraintViolationsMaskedByRequiredError(violations, STRIP_TEST_RECORD_PREFIX);
+        .excludeConstraintViolationsMaskedByRequiredError(violations,
+            SplibViolationUtilTest::stripTestRecordPrefix);
 
     assertThat(filtered.getConstraintViolations()).hasSize(1);
     assertThat(filtered.getBusinessViolations()).isEmpty();
