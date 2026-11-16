@@ -8,6 +8,17 @@
 	background-color: #e3e3e3;
 }
 
+/* the honeypot of SplibBotGuard (inputHoneypot in components-input.html): not shown to people.
+   It's moved out of the screen instead of "display: none", which bots tend to see through. */
+.splib-honeypot {
+	position: absolute;
+	left: -10000px;
+	top: auto;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
 /* a small gap between buttons when they wrap or are stacked on narrow screens (below lg,
    where the rows of the pages turn into one column). Not !important, so mt-* / mb-* set on
    a button still take effect. */

@@ -466,6 +466,20 @@
 		</div></th:block>
 	</div>
 
+	<!--/* component for the honeypot of SplibBotGuard */-->
+	<!--/*
+		- A text field people cannot see. Bots tend to fill in every field, so SplibBotGuard#check regards a value in it as a bot.
+		- It's not type="hidden" (bots often skip hidden fields). It's moved out of the screen by the "splib-honeypot" class of
+		  splib-web.css, so the page needs splib-web.css.
+		- tabindex / autocomplete / aria-hidden keep people from filling it in by the Tab key, autofill or screen readers.
+		- The parameter "website" must be the same as SplibBotGuard.HONEYPOT_PARAMETER. It's not bound to the form, and it's
+		  always empty when displayed.
+	*/-->
+	<div th:fragment="inputHoneypot()" class="splib-honeypot" aria-hidden="true">
+		<label for="splib-honeypot-input" th:text="#{jp.ecuacion.splib.web.components.inputHoneypot.label}"></label>
+		<input type="text" id="splib-honeypot-input" name="website" value="" tabindex="-1" autocomplete="off">
+	</div>
+
 	<!--/* 
 		### general-form-page button
 	 */-->
