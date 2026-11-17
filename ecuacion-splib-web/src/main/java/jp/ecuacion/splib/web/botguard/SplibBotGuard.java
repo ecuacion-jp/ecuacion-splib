@@ -72,6 +72,14 @@ import org.springframework.util.ClassUtils;
  *   <artifactId>nanocaptcha</artifactId>
  * </dependency>
  * }</pre>
+ *
+ * <p>The image CAPTCHA draws the characters with the fonts in nanocaptcha, but the JDK needs
+ *     fontconfig and at least one font installed in the OS to use fonts at all. They are missing
+ *     in some environments, like slim and Alpine container images and minimal OS installations
+ *     (the official Tomcat and eclipse-temurin images have them). When nanocaptcha is in the
+ *     classpath, an image is created once when this bean is constructed, so the app fails to
+ *     start with an explanatory {@link IllegalStateException} in such environments, instead of
+ *     failing when the form is displayed.</p>
  */
 public class SplibBotGuard {
 
@@ -125,10 +133,19 @@ public class SplibBotGuard {
   /**
    * Constructs a new instance with {@code environment}.
    *
+   * <p>When {@code net.logicsquad:nanocaptcha} is in the classpath, it creates a CAPTCHA image
+   *     once to check that the image CAPTCHA works in the environment.</p>
+   *
    * @param environment the environment to read the properties from
+   * @throws IllegalStateException when nanocaptcha is in the classpath and a CAPTCHA image cannot
+   *     be created (usually because the JDK cannot use fonts in the environment)
    */
   public SplibBotGuard(Environment environment) {
     this(environment, Clock.systemUTC());
+
+    if (isNanocaptchaPresent()) {
+      checkCaptchaImageAvailable(() -> CaptchaImageGenerator.create(CAPTCHA_LENGTH));
+    }
   }
 
   SplibBotGuard(Environment environment, Clock clock) {
@@ -164,7 +181,7 @@ public class SplibBotGuard {
    * @throws IllegalStateException when {@code net.logicsquad:nanocaptcha} is not in the classpath
    */
   public String prepareFormWithCaptcha(HttpServletRequest request, String formName) {
-    if (!ClassUtils.isPresent(NANOCAPTCHA_CLASS, SplibBotGuard.class.getClassLoader())) {
+    if (!isNanocaptchaPresent()) {
       throw new IllegalStateException("The image CAPTCHA of SplibBotGuard needs "
           + "'net.logicsquad:nanocaptcha', an optional dependency of ecuacion-splib-web. "
           + "Add it to the dependencies of the app.");
@@ -255,6 +272,34 @@ public class SplibBotGuard {
     }
 
     return null;
+  }
+
+  /**
+   * Runs {@code createImage} and throws an explanatory exception if it fails.
+   *
+   * @param createImage the creation of a CAPTCHA image
+   * @throws IllegalStateException when {@code createImage} fails
+   */
+  static void checkCaptchaImageAvailable(Runnable createImage) {
+    try {
+      createImage.run();
+
+    } catch (RuntimeException | LinkageError e) {
+      // The font loading of nanocaptcha fails in its static initializer, so the first failure is
+      // ExceptionInInitializerError and the following ones are NoClassDefFoundError.
+      throw new IllegalStateException("The image CAPTCHA of SplibBotGuard cannot create an "
+          + "image in this environment. It usually means the JDK cannot use fonts because "
+          + "fontconfig and a font package are not installed in the OS (as in slim and Alpine "
+          + "container images and minimal OS installations). Install them "
+          + "(e.g. 'dnf install fontconfig dejavu-sans-fonts', "
+          + "'apt-get install fontconfig fonts-dejavu-core' or 'apk add fontconfig ttf-dejavu'), "
+          + "or remove 'net.logicsquad:nanocaptcha' from the dependencies if the image CAPTCHA "
+          + "is not used. See the cause for details.", e);
+    }
+  }
+
+  private static boolean isNanocaptchaPresent() {
+    return ClassUtils.isPresent(NANOCAPTCHA_CLASS, SplibBotGuard.class.getClassLoader());
   }
 
   private static String sessionKey(String formName, String name) {

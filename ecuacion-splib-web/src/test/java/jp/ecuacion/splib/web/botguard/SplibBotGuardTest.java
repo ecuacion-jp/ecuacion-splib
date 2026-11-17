@@ -206,4 +206,43 @@ class SplibBotGuardTest {
       assertThat(submit(null)).isEqualTo(Result.PASSED);
     }
   }
+
+  @Nested
+  @DisplayName("check of the CAPTCHA image at startup")
+  class StartupCheck {
+
+    @Test
+    @DisplayName("the public constructor succeeds when an image can be created")
+    void succeeds() {
+      new SplibBotGuard(new MockEnvironment());
+    }
+
+    @Test
+    @DisplayName("nothing is thrown when the image creation succeeds")
+    void creationSucceeds() {
+      SplibBotGuard.checkCaptchaImageAvailable(() -> { });
+    }
+
+    @Test
+    @DisplayName("a failure in the font loading is thrown as an explanatory exception")
+    void fontLoadingFails() {
+      ExceptionInInitializerError cause =
+          new ExceptionInInitializerError(new IllegalStateException("can't load its font"));
+
+      assertThatThrownBy(() -> SplibBotGuard.checkCaptchaImageAvailable(() -> {
+        throw cause;
+      })).isInstanceOf(IllegalStateException.class).hasMessageContaining("fontconfig")
+          .hasCause(cause);
+    }
+
+    @Test
+    @DisplayName("a runtime exception is also thrown as an explanatory exception")
+    void runtimeExceptionThrown() {
+      RuntimeException cause = new RuntimeException("failed");
+
+      assertThatThrownBy(() -> SplibBotGuard.checkCaptchaImageAvailable(() -> {
+        throw cause;
+      })).isInstanceOf(IllegalStateException.class).hasCause(cause);
+    }
+  }
 }
