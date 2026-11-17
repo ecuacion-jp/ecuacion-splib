@@ -546,8 +546,11 @@
 				<span class="dropdown-item-text nav-link" style="white-space: nowrap" th:text="${labelString}"></span>
 			</th:block>
 			<th:block th:if="${method == 'post'}">
-				<form method="post" name="navbarForm" th:action="${href}">
-					<a th:class="${isSubMenuItem ? 'dropdown-item nav-link' : 'nav-link'}" style="white-space: nowrap" href="javascript:navbarForm.submit()" th:text="${labelString}"></a>
+				<!--/* Submit the enclosing form rather than one looked up by name:
+						 multiple post items (e.g. logout and exitUser) would otherwise share the same form name
+						 and "navbarForm" would resolve to a collection without submit(). */-->
+				<form method="post" th:action="${href}">
+					<a th:class="${isSubMenuItem ? 'dropdown-item nav-link' : 'nav-link'}" style="white-space: nowrap" href="#" onclick="this.closest('form').submit(); return false;" th:text="${labelString}"></a>
 				</form>
 			</th:block>
 			<th:block th:if="${method != 'none' and method != 'post'}">
