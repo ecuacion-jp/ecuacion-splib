@@ -382,9 +382,14 @@
 	</div>
 
 	<!--/* inline switch user button */-->
+	<!--/* The button id must be unique per row: the click listener is bound via getElementById(id),
+			so a shared id would bind every row's listener to the first row's button only
+			and the buttons in the other rows would do nothing. */-->
 	<div th:fragment="switchUserButton(username, options)" th:remove="tag">
-		<div th:replace="~{ :: scriptButton('switchUser', 'jp.ecuacion.splib.web.switchUser.switchButton',
-				'attr=data-username|' + ${#strings.replace(#strings.replace(username, '\', '\\'), ',', '\,')} + ',' + ${options} + ',event=click|switchUser')}"></div>
+		<th:block th:with="buttonId=${#ids.seq('switchUser')}">
+			<div th:replace="~{ :: scriptButton(${buttonId}, 'jp.ecuacion.splib.web.switchUser.switchButton',
+					'attr=data-username|' + ${#strings.replace(#strings.replace(username, '\', '\\'), ',', '\,')} + ',' + ${options} + ',event=click|switchUser')}"></div>
+		</th:block>
 	</div>
 
 	<!--/* javaScript for inline update button. Use with tdUpdateButton. Put it at "bottom-space" part in a page template.  */-->
