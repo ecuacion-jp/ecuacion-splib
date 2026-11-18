@@ -20,7 +20,6 @@ import jakarta.validation.Validation;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import jp.ecuacion.lib.core.violation.BusinessViolation;
 import jp.ecuacion.lib.core.violation.Violations;
@@ -85,17 +84,10 @@ public class SplibControllerPrepareHelper {
     String tokenFromHtml =
         (String) request.getParameter(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
 
-    @SuppressWarnings("unchecked")
-    Set<String> tokenSet = (Set<String>) request.getSession()
-        .getAttribute(TransactionTokenUtil.SESSION_KEY_TRANSACTION_TOKEN);
-
-    if (tokenSet != null && tokenFromHtml != null) {
-      if (!tokenSet.contains(tokenFromHtml)) {
-        String msgId = "jp.ecuacion.splib.web.common.message.tokenInvalidate";
-        new Violations().add(new BusinessViolation(msgId)).throwIfAny();
-      }
-
-      tokenSet.remove(tokenFromHtml);
+    if (tokenFromHtml != null
+        && !new TransactionTokenUtil().consumeToken(request, tokenFromHtml)) {
+      String msgId = "jp.ecuacion.splib.web.common.message.tokenInvalidate";
+      new Violations().add(new BusinessViolation(msgId)).throwIfAny();
     }
   }
 
