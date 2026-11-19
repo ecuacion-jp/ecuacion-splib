@@ -53,7 +53,7 @@
 		     (an optional dependency of ecuacion-splib-core; see its pom.xml) needs a managed
 		     version, but importing the full BOM keeps that version aligned with spring-boot.version
 		     instead of hand-pinning a single artifact version that could drift out of sync. -->
-		<spring-cloud.version>2025.1.1</spring-cloud.version>
+		<spring-cloud.version>2025.1.4</spring-cloud.version>
 		<!-- image CAPTCHA of SplibBotGuard (an optional dependency of ecuacion-splib-web; see its pom.xml) -->
 		<nanocaptcha.version>3.0</nanocaptcha.version>
 		<!-- Delimiter used for build-time property filtering of application*.{yml,yaml,properties}
